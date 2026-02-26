@@ -1,0 +1,20 @@
+[package]
+name = "liblzma-rs-sys"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "liblzma-sys compatible API layer backed by pure Rust liblzma-rs"
+
+[features]
+default = []
+# Feature stubs matching liblzma-sys for smooth migration
+static = []
+parallel = []
+bindgen = []
+wasm = []
+uncheck_liblzma_version = []
+fat-lto = []
+thin-lto = []
+
+[dependencies]
+liblzma-rs = { path = "../liblzma-rs" }
