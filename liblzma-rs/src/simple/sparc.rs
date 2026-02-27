@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_int, c_void};
 extern "C" {
     fn lzma_simple_coder_init(
         next: *mut lzma_next_coder,
@@ -106,30 +106,27 @@ pub type lzma_init_function = Option<
     ) -> lzma_ret,
 >;
 pub type lzma_filter_info = lzma_filter_info_s;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 unsafe extern "C" fn sparc_code(
-    mut simple: *mut c_void,
-    mut now_pos: u32,
-    mut is_encoder: bool,
-    mut buffer: *mut u8,
+    _simple: *mut c_void,
+    now_pos: u32,
+    is_encoder: bool,
+    buffer: *mut u8,
     mut size: size_t,
 ) -> size_t {
-    size &= !(3 as size_t);
+    size &= !(3);
     let mut i: size_t = 0;
-    i = 0 as size_t;
+    i = 0;
     while i < size {
         if *buffer.offset(i as isize) as c_int == 0x40 as c_int
-            && *buffer.offset(i.wrapping_add(1 as size_t) as isize) as c_int & 0xc0 as c_int
-                == 0 as c_int
+            && *buffer.offset(i.wrapping_add(1) as isize) as c_int & 0xc0 as c_int == 0 as c_int
             || *buffer.offset(i as isize) as c_int == 0x7f as c_int
-                && *buffer.offset(i.wrapping_add(1 as size_t) as isize) as c_int & 0xc0 as c_int
+                && *buffer.offset(i.wrapping_add(1) as isize) as c_int & 0xc0 as c_int
                     == 0xc0 as c_int
         {
-            let mut src: u32 = (*buffer.offset(i.wrapping_add(0 as size_t) as isize) as u32) << 24
-                | (*buffer.offset(i.wrapping_add(1 as size_t) as isize) as u32) << 16
-                | (*buffer.offset(i.wrapping_add(2 as size_t) as isize) as u32) << 8
-                | *buffer.offset(i.wrapping_add(3 as size_t) as isize) as u32;
+            let mut src: u32 = (*buffer.offset(i.wrapping_add(0) as isize) as u32) << 24
+                | (*buffer.offset(i.wrapping_add(1) as isize) as u32) << 16
+                | (*buffer.offset(i.wrapping_add(2) as isize) as u32) << 8
+                | *buffer.offset(i.wrapping_add(3) as isize) as u32;
             src <<= 2 as c_int;
             let mut dest: u32 = 0;
             if is_encoder {
@@ -138,48 +135,52 @@ unsafe extern "C" fn sparc_code(
                 dest = src.wrapping_sub(now_pos.wrapping_add(i as u32));
             }
             dest >>= 2 as c_int;
-            dest = (0 as u32).wrapping_sub(dest >> 22 & 1 as u32) << 22 & 0x3fffffff as u32
+            dest = 0u32.wrapping_sub(dest >> 22 & 1) << 22 & 0x3fffffff as u32
                 | dest & 0x3fffff as u32
                 | 0x40000000 as u32;
-            *buffer.offset(i.wrapping_add(0 as size_t) as isize) = (dest >> 24) as u8;
-            *buffer.offset(i.wrapping_add(1 as size_t) as isize) = (dest >> 16) as u8;
-            *buffer.offset(i.wrapping_add(2 as size_t) as isize) = (dest >> 8) as u8;
-            *buffer.offset(i.wrapping_add(3 as size_t) as isize) = dest as u8;
+            *buffer.offset(i.wrapping_add(0) as isize) = (dest >> 24) as u8;
+            *buffer.offset(i.wrapping_add(1) as isize) = (dest >> 16) as u8;
+            *buffer.offset(i.wrapping_add(2) as isize) = (dest >> 8) as u8;
+            *buffer.offset(i.wrapping_add(3) as isize) = dest as u8;
         }
-        i = i.wrapping_add(4 as size_t);
+        i = i.wrapping_add(4);
     }
     return i;
 }
-unsafe extern "C" fn sparc_coder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut filters: *const lzma_filter_info,
-    mut is_encoder: bool,
+extern "C" fn sparc_coder_init(
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    filters: *const lzma_filter_info,
+    is_encoder: bool,
 ) -> lzma_ret {
-    return lzma_simple_coder_init(
-        next,
-        allocator,
-        filters,
-        Some(sparc_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
-        0 as size_t,
-        4 as size_t,
-        4 as u32,
-        is_encoder,
-    );
+    return unsafe {
+        lzma_simple_coder_init(
+            next,
+            allocator,
+            filters,
+            Some(
+                sparc_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t
+            ),
+            0,
+            4,
+            4,
+            is_encoder,
+        )
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_sparc_encoder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut filters: *const lzma_filter_info,
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return sparc_coder_init(next, allocator, filters, true_0 != 0);
+    return sparc_coder_init(next, allocator, filters, true);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_sparc_decoder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut filters: *const lzma_filter_info,
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return sparc_coder_init(next, allocator, filters, false_0 != 0);
+    return sparc_coder_init(next, allocator, filters, false);
 }

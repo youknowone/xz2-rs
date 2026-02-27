@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_uint, c_ulonglong, c_void};
 extern "C" {
     fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
     fn lzma_stream_decoder_init(
@@ -88,22 +88,20 @@ pub type lzma_code_function = Option<
         lzma_action,
     ) -> lzma_ret,
 >;
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_buffer_decode(
-    mut memlimit: *mut u64,
-    mut flags: u32,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_pos: *mut size_t,
-    mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
+    memlimit: *mut u64,
+    flags: u32,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_pos: *mut size_t,
+    in_size: size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
 ) -> lzma_ret {
     if in_pos.is_null()
         || in_0.is_null() && *in_pos != in_size
@@ -118,9 +116,9 @@ pub unsafe extern "C" fn lzma_stream_buffer_decode(
         return LZMA_PROG_ERROR;
     }
     let mut stream_decoder: lzma_next_coder = lzma_next_coder_s {
-        coder: NULL,
+        coder: core::ptr::null_mut(),
         id: LZMA_VLI_UNKNOWN as lzma_vli,
-        init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+        init: 0,
         code: None,
         end: None,
         get_progress: None,
@@ -162,7 +160,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_decode(
                     stream_decoder.coder,
                     memlimit,
                     &raw mut memusage,
-                    0 as u64,
+                    0,
                 );
             }
         }

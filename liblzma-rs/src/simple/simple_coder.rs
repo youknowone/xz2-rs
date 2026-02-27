@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_int, c_ulonglong, c_void};
 extern "C" {
     fn memcpy(__dst: *mut c_void, __src: *const c_void, __n: size_t) -> *mut c_void;
     fn memmove(__dst: *mut c_void, __src: *const c_void, __len: size_t) -> *mut c_void;
@@ -139,27 +139,23 @@ pub struct lzma_simple_coder {
     pub size: size_t,
     pub buffer: [u8; 0],
 }
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 unsafe extern "C" fn copy_or_code(
-    mut coder: *mut lzma_simple_coder,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_pos: *mut size_t,
-    mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
-    mut action: lzma_action,
+    coder: *mut lzma_simple_coder,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_pos: *mut size_t,
+    in_size: size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
+    action: lzma_action,
 ) -> lzma_ret {
     if (*coder).next.code.is_none() {
         lzma_bufcpy(in_0, in_pos, in_size, out, out_pos, out_size);
         if (*coder).is_encoder as c_int != 0 && action == LZMA_FINISH && *in_pos == in_size {
-            (*coder).end_was_reached = true_0 != 0;
+            (*coder).end_was_reached = true;
         }
     } else {
         let ret: lzma_ret = (*coder).next.code.expect("non-null function pointer")(
@@ -174,7 +170,7 @@ unsafe extern "C" fn copy_or_code(
             action,
         ) as lzma_ret;
         if ret == LZMA_STREAM_END {
-            (*coder).end_was_reached = true_0 != 0;
+            (*coder).end_was_reached = true;
         } else if ret != LZMA_OK {
             return ret;
         }
@@ -182,9 +178,9 @@ unsafe extern "C" fn copy_or_code(
     return LZMA_OK;
 }
 unsafe extern "C" fn call_filter(
-    mut coder: *mut lzma_simple_coder,
-    mut buffer: *mut u8,
-    mut size: size_t,
+    coder: *mut lzma_simple_coder,
+    buffer: *mut u8,
+    size: size_t,
 ) -> size_t {
     let filtered: size_t = (*coder).filter.expect("non-null function pointer")(
         (*coder).simple,
@@ -197,17 +193,17 @@ unsafe extern "C" fn call_filter(
     return filtered;
 }
 unsafe extern "C" fn simple_code(
-    mut coder_ptr: *mut c_void,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_pos: *mut size_t,
-    mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
-    mut action: lzma_action,
+    coder_ptr: *mut c_void,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_pos: *mut size_t,
+    in_size: size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
+    action: lzma_action,
 ) -> lzma_ret {
-    let mut coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
+    let coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
     if action == LZMA_SYNC_FLUSH {
         return LZMA_OPTIONS_ERROR;
     }
@@ -227,12 +223,12 @@ unsafe extern "C" fn simple_code(
             return LZMA_STREAM_END;
         }
     }
-    (*coder).filtered = 0 as size_t;
+    (*coder).filtered = 0;
     let out_avail: size_t = out_size.wrapping_sub(*out_pos);
     let buf_avail: size_t = (*coder).size.wrapping_sub((*coder).pos);
-    if out_avail > buf_avail || buf_avail == 0 as size_t {
+    if out_avail > buf_avail || buf_avail == 0 {
         let out_start: size_t = *out_pos;
-        if buf_avail > 0 as size_t {
+        if buf_avail > 0 {
             memcpy(
                 out.offset(*out_pos as isize) as *mut c_void,
                 (&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize)
@@ -248,17 +244,17 @@ unsafe extern "C" fn simple_code(
             return ret;
         }
         let size: size_t = (*out_pos).wrapping_sub(out_start);
-        let filtered: size_t = if size == 0 as size_t {
-            0 as size_t
+        let filtered: size_t = if size == 0 {
+            0
         } else {
             call_filter(coder, out.offset(out_start as isize), size) as size_t
         };
         let unfiltered: size_t = size.wrapping_sub(filtered);
-        (*coder).pos = 0 as size_t;
+        (*coder).pos = 0;
         (*coder).size = unfiltered;
         if (*coder).end_was_reached {
-            (*coder).size = 0 as size_t;
-        } else if unfiltered > 0 as size_t {
+            (*coder).size = 0;
+        } else if unfiltered > 0 {
             *out_pos = (*out_pos).wrapping_sub(unfiltered);
             memcpy(
                 &raw mut (*coder).buffer as *mut u8 as *mut c_void,
@@ -266,16 +262,16 @@ unsafe extern "C" fn simple_code(
                 unfiltered,
             );
         }
-    } else if (*coder).pos > 0 as size_t {
+    } else if (*coder).pos > 0 {
         memmove(
             &raw mut (*coder).buffer as *mut u8 as *mut c_void,
             (&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize) as *const c_void,
             buf_avail,
         );
         (*coder).size = (*coder).size.wrapping_sub((*coder).pos);
-        (*coder).pos = 0 as size_t;
+        (*coder).pos = 0;
     }
-    if (*coder).size > 0 as size_t {
+    if (*coder).size > 0 {
         let ret_0: lzma_ret = copy_or_code(
             coder,
             allocator,
@@ -308,22 +304,19 @@ unsafe extern "C" fn simple_code(
     }
     return LZMA_OK;
 }
-unsafe extern "C" fn simple_coder_end(
-    mut coder_ptr: *mut c_void,
-    mut allocator: *const lzma_allocator,
-) {
-    let mut coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
+unsafe extern "C" fn simple_coder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+    let coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
     lzma_next_end(&raw mut (*coder).next, allocator);
     lzma_free((*coder).simple, allocator);
     lzma_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn simple_coder_update(
-    mut coder_ptr: *mut c_void,
-    mut allocator: *const lzma_allocator,
-    mut filters_null: *const lzma_filter,
-    mut reversed_filters: *const lzma_filter,
+    coder_ptr: *mut c_void,
+    allocator: *const lzma_allocator,
+    _filters_null: *const lzma_filter,
+    reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
-    let mut coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
+    let coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
     return lzma_next_filter_update(
         &raw mut (*coder).next,
         allocator,
@@ -332,19 +325,19 @@ unsafe extern "C" fn simple_coder_update(
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_coder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut filters: *const lzma_filter_info,
-    mut filter: Option<unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t>,
-    mut simple_size: size_t,
-    mut unfiltered_max: size_t,
-    mut alignment: u32,
-    mut is_encoder: bool,
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    filters: *const lzma_filter_info,
+    filter: Option<unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t>,
+    simple_size: size_t,
+    unfiltered_max: size_t,
+    alignment: u32,
+    is_encoder: bool,
 ) -> lzma_ret {
     let mut coder: *mut lzma_simple_coder = (*next).coder as *mut lzma_simple_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            (::core::mem::size_of::<lzma_simple_coder>() as size_t)
+            (core::mem::size_of::<lzma_simple_coder>() as size_t)
                 .wrapping_add((2 as size_t).wrapping_mul(unfiltered_max)),
             allocator,
         ) as *mut lzma_simple_coder;
@@ -387,9 +380,9 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
                 ) -> lzma_ret,
             >;
         (*coder).next = lzma_next_coder_s {
-            coder: NULL,
+            coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0,
             code: None,
             end: None,
             get_progress: None,
@@ -400,29 +393,29 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
         };
         (*coder).filter = filter;
         (*coder).allocated = (2 as size_t).wrapping_mul(unfiltered_max);
-        if simple_size > 0 as size_t {
+        if simple_size > 0 {
             (*coder).simple = lzma_alloc(simple_size, allocator);
             if (*coder).simple.is_null() {
                 return LZMA_MEM_ERROR;
             }
         } else {
-            (*coder).simple = NULL;
+            (*coder).simple = core::ptr::null_mut();
         }
     }
     if !(*filters.offset(0)).options.is_null() {
-        let mut simple: *const lzma_options_bcj =
+        let simple: *const lzma_options_bcj =
             (*filters.offset(0)).options as *const lzma_options_bcj;
         (*coder).now_pos = (*simple).start_offset;
-        if (*coder).now_pos & alignment.wrapping_sub(1 as u32) != 0 {
+        if (*coder).now_pos & alignment.wrapping_sub(1) != 0 {
             return LZMA_OPTIONS_ERROR;
         }
     } else {
-        (*coder).now_pos = 0 as u32;
+        (*coder).now_pos = 0;
     }
     (*coder).is_encoder = is_encoder;
-    (*coder).end_was_reached = false_0 != 0;
-    (*coder).pos = 0 as size_t;
-    (*coder).filtered = 0 as size_t;
-    (*coder).size = 0 as size_t;
+    (*coder).end_was_reached = false;
+    (*coder).pos = 0;
+    (*coder).filtered = 0;
+    (*coder).size = 0;
     return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }

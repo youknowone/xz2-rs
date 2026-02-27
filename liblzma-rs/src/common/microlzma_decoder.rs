@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uchar, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
 extern "C" {
     fn lzma_end(strm: *mut lzma_stream);
     fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
@@ -198,27 +198,23 @@ pub type lzma_init_function = Option<
         *const lzma_filter_info,
     ) -> lzma_ret,
 >;
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002;
 unsafe extern "C" fn microlzma_decode(
-    mut coder_ptr: *mut c_void,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_pos: *mut size_t,
+    coder_ptr: *mut c_void,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_pos: *mut size_t,
     mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
     mut out_size: size_t,
-    mut action: lzma_action,
+    action: lzma_action,
 ) -> lzma_ret {
-    let mut coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
+    let coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
     let in_start: size_t = *in_pos;
     let out_start: size_t = *out_pos;
     if in_size.wrapping_sub(*in_pos) as u64 > (*coder).comp_size {
@@ -236,7 +232,7 @@ unsafe extern "C" fn microlzma_decode(
         let mut options: lzma_options_lzma = lzma_options_lzma {
             dict_size: (*coder).dict_size,
             preset_dict: ::core::ptr::null::<u8>(),
-            preset_dict_size: 0 as u32,
+            preset_dict_size: 0,
             lc: 0,
             lp: 0,
             pb: 0,
@@ -244,7 +240,7 @@ unsafe extern "C" fn microlzma_decode(
             nice_len: 0,
             mf: 0 as lzma_match_finder,
             depth: 0,
-            ext_flags: 0 as u32,
+            ext_flags: 0,
             ext_size_low: UINT32_MAX as u32,
             ext_size_high: UINT32_MAX as u32,
             reserved_int4: 0,
@@ -256,8 +252,8 @@ unsafe extern "C" fn microlzma_decode(
             reserved_enum2: LZMA_RESERVED_ENUM,
             reserved_enum3: LZMA_RESERVED_ENUM,
             reserved_enum4: LZMA_RESERVED_ENUM,
-            reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
-            reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
+            reserved_ptr1: core::ptr::null_mut(),
+            reserved_ptr2: core::ptr::null_mut(),
         };
         if (*coder).uncomp_size_is_exact {
             options.ext_size_low = (*coder).uncomp_size as u32;
@@ -286,7 +282,7 @@ unsafe extern "C" fn microlzma_decode(
             lzma_filter_info_s {
                 id: 0,
                 init: None,
-                options: ::core::ptr::null_mut::<c_void>(),
+                options: core::ptr::null_mut(),
             },
         ];
         let ret_: lzma_ret = lzma_next_filter_init(
@@ -297,14 +293,14 @@ unsafe extern "C" fn microlzma_decode(
         if ret_ != LZMA_OK {
             return ret_;
         }
-        let dummy_in: u8 = 0 as u8;
-        let mut dummy_in_pos: size_t = 0 as size_t;
+        let dummy_in: u8 = 0;
+        let mut dummy_in_pos: size_t = 0;
         if (*coder).lzma.code.expect("non-null function pointer")(
             (*coder).lzma.coder,
             allocator,
             &raw const dummy_in,
             &raw mut dummy_in_pos,
-            1 as size_t,
+            1,
             out,
             out_pos,
             out_size,
@@ -313,7 +309,7 @@ unsafe extern "C" fn microlzma_decode(
         {
             return LZMA_PROG_ERROR;
         }
-        (*coder).props_decoded = true_0 != 0;
+        (*coder).props_decoded = true;
     }
     let mut ret: lzma_ret = (*coder).lzma.code.expect("non-null function pointer")(
         (*coder).lzma.coder,
@@ -330,7 +326,7 @@ unsafe extern "C" fn microlzma_decode(
         .comp_size
         .wrapping_sub((*in_pos).wrapping_sub(in_start) as u64);
     if (*coder).uncomp_size_is_exact {
-        if ret == LZMA_STREAM_END && (*coder).comp_size != 0 as u64 {
+        if ret == LZMA_STREAM_END && (*coder).comp_size != 0 {
             ret = LZMA_DATA_ERROR;
         }
     } else {
@@ -346,20 +342,20 @@ unsafe extern "C" fn microlzma_decode(
     return ret;
 }
 unsafe extern "C" fn microlzma_decoder_end(
-    mut coder_ptr: *mut c_void,
-    mut allocator: *const lzma_allocator,
+    coder_ptr: *mut c_void,
+    allocator: *const lzma_allocator,
 ) {
-    let mut coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
+    let coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
     lzma_next_end(&raw mut (*coder).lzma, allocator);
     lzma_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn microlzma_decoder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut comp_size: u64,
-    mut uncomp_size: u64,
-    mut uncomp_size_is_exact: bool,
-    mut dict_size: u32,
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    comp_size: u64,
+    uncomp_size: u64,
+    uncomp_size_is_exact: bool,
+    dict_size: u32,
 ) -> lzma_ret {
     if ::core::mem::transmute::<
         Option<
@@ -413,7 +409,7 @@ unsafe extern "C" fn microlzma_decoder_init(
     let mut coder: *mut lzma_microlzma_coder = (*next).coder as *mut lzma_microlzma_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_microlzma_coder>() as size_t,
+            core::mem::size_of::<lzma_microlzma_coder>() as size_t,
             allocator,
         ) as *mut lzma_microlzma_coder;
         if coder.is_null() {
@@ -438,9 +434,9 @@ unsafe extern "C" fn microlzma_decoder_init(
             microlzma_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
         ) as lzma_end_function;
         (*coder).lzma = lzma_next_coder_s {
-            coder: NULL,
+            coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0,
             code: None,
             end: None,
             get_progress: None,
@@ -457,16 +453,16 @@ unsafe extern "C" fn microlzma_decoder_init(
     (*coder).uncomp_size = uncomp_size as lzma_vli;
     (*coder).uncomp_size_is_exact = uncomp_size_is_exact;
     (*coder).dict_size = dict_size;
-    (*coder).props_decoded = false_0 != 0;
+    (*coder).props_decoded = false;
     return LZMA_OK;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_microlzma_decoder(
-    mut strm: *mut lzma_stream,
-    mut comp_size: u64,
-    mut uncomp_size: u64,
-    mut uncomp_size_is_exact: lzma_bool,
-    mut dict_size: u32,
+    strm: *mut lzma_stream,
+    comp_size: u64,
+    uncomp_size: u64,
+    uncomp_size_is_exact: lzma_bool,
+    dict_size: u32,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
     if ret_ != LZMA_OK {
@@ -484,7 +480,7 @@ pub unsafe extern "C" fn lzma_microlzma_decoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

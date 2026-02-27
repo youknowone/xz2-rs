@@ -1,8 +1,6 @@
-use crate::types::*;
-extern "C" {
-    fn tuklib_cpucores() -> u32;
-}
+use crate::tuklib::tuklib_cpucores::tuklib_cpucores;
+
 #[no_mangle]
-pub unsafe extern "C" fn lzma_cputhreads() -> u32 {
+pub extern "C" fn lzma_cputhreads() -> u32 {
     return tuklib_cpucores();
 }

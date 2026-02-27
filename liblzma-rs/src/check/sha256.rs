@@ -30,7 +30,7 @@ pub union C2RustUnnamed_0 {
     pub u64_0: [u64; 8],
 }
 #[inline]
-unsafe extern "C" fn rotr_32(mut num: u32, mut amount: c_uint) -> u32 {
+extern "C" fn rotr_32(num: u32, amount: c_uint) -> u32 {
     return num >> amount | num << 32u32.wrapping_sub(amount);
 }
 static mut SHA256_K: [u32; 64] = [
@@ -43,13 +43,13 @@ static mut SHA256_K: [u32; 64] = [
     0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 ];
-unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
+unsafe extern "C" fn transform(state: *mut u32, data: *const u32) {
     let mut W: [u32; 16] = [0; 16];
     let mut T: [u32; 8] = [0; 8];
     memcpy(
         &raw mut T as *mut u32 as *mut c_void,
         state as *const c_void,
-        ::core::mem::size_of::<[u32; 8]>() as size_t,
+        core::mem::size_of::<[u32; 8]>() as size_t,
     );
     W[0] = (*data.offset(0) & 0xff) << 24
         | (*data.offset(0) & 0xff00) << 8
@@ -568,14 +568,14 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
     let ref mut fresh7 = *state.offset(7);
     *fresh7 = (*fresh7).wrapping_add(T[7]);
 }
-unsafe extern "C" fn process(mut check: *mut lzma_check_state) {
+unsafe extern "C" fn process(check: *mut lzma_check_state) {
     transform(
         &raw mut (*check).state.sha256.state as *mut u32,
         &raw mut (*check).buffer.u32_0 as *mut u32 as *const u32,
     );
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_sha256_init(mut check: *mut lzma_check_state) {
+pub unsafe extern "C" fn lzma_sha256_init(check: *mut lzma_check_state) {
     static mut s: [u32; 8] = [
         0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
         0x5be0cd19,
@@ -583,17 +583,17 @@ pub unsafe extern "C" fn lzma_sha256_init(mut check: *mut lzma_check_state) {
     memcpy(
         &raw mut (*check).state.sha256.state as *mut u32 as *mut c_void,
         &raw const s as *const u32 as *const c_void,
-        ::core::mem::size_of::<[u32; 8]>() as size_t,
+        core::mem::size_of::<[u32; 8]>() as size_t,
     );
-    (*check).state.sha256.size = 0 as u64;
+    (*check).state.sha256.size = 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_sha256_update(
     mut buf: *const u8,
     mut size: size_t,
-    mut check: *mut lzma_check_state,
+    check: *mut lzma_check_state,
 ) {
-    while size > 0 as size_t {
+    while size > 0 {
         let copy_start: size_t = ((*check).state.sha256.size & 0x3f as u64) as size_t;
         let mut copy_size: size_t = (64 as size_t).wrapping_sub(copy_start);
         if copy_size > size {
@@ -607,27 +607,27 @@ pub unsafe extern "C" fn lzma_sha256_update(
         buf = buf.offset(copy_size as isize);
         size = size.wrapping_sub(copy_size);
         (*check).state.sha256.size = (*check).state.sha256.size.wrapping_add(copy_size as u64);
-        if (*check).state.sha256.size & 0x3f as u64 == 0 as u64 {
+        if (*check).state.sha256.size & 0x3f as u64 == 0 {
             process(check);
         }
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_sha256_finish(mut check: *mut lzma_check_state) {
+pub unsafe extern "C" fn lzma_sha256_finish(check: *mut lzma_check_state) {
     let mut pos: size_t = ((*check).state.sha256.size & 0x3f as u64) as size_t;
     let fresh8 = pos;
     pos = pos.wrapping_add(1);
     (*check).buffer.u8_0[fresh8 as usize] = 0x80 as u8;
     while pos != (64 as c_int - 8 as c_int) as size_t {
-        if pos == 64 as size_t {
+        if pos == 64 {
             process(check);
-            pos = 0 as size_t;
+            pos = 0;
         }
         let fresh9 = pos;
         pos = pos.wrapping_add(1);
-        (*check).buffer.u8_0[fresh9 as usize] = 0 as u8;
+        (*check).buffer.u8_0[fresh9 as usize] = 0;
     }
-    (*check).state.sha256.size = (*check).state.sha256.size.wrapping_mul(8 as u64);
+    (*check).state.sha256.size = (*check).state.sha256.size.wrapping_mul(8);
     (*check).buffer.u64_0[7] = ((*check).state.sha256.size & 0xff as u64) << 56
         | ((*check).state.sha256.size & 0xff00 as u64) << 40
         | ((*check).state.sha256.size & 0xff0000 as u64) << 24
@@ -637,8 +637,8 @@ pub unsafe extern "C" fn lzma_sha256_finish(mut check: *mut lzma_check_state) {
         | ((*check).state.sha256.size & 0xff000000000000 as u64) >> 40
         | ((*check).state.sha256.size & 0xff00000000000000 as u64) >> 56;
     process(check);
-    let mut i: size_t = 0 as size_t;
-    while i < 8 as size_t {
+    let mut i: size_t = 0;
+    while i < 8 {
         (*check).buffer.u32_0[i as usize] = ((*check).state.sha256.state[i as usize] & 0xff) << 24
             | ((*check).state.sha256.state[i as usize] & 0xff00) << 8
             | ((*check).state.sha256.state[i as usize] & 0xff0000) >> 8

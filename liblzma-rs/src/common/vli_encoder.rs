@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_int, c_ulonglong};
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -21,20 +21,18 @@ pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
 pub const LZMA_NO_CHECK: lzma_ret = 2;
 pub const LZMA_STREAM_END: lzma_ret = 1;
 pub const LZMA_OK: lzma_ret = 0;
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
-pub const LZMA_VLI_BYTES_MAX: c_int = 9 as c_int;
+pub const LZMA_VLI_BYTES_MAX: c_int = 9;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_vli_encode(
     mut vli: lzma_vli,
     mut vli_pos: *mut size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
 ) -> lzma_ret {
-    let mut vli_pos_internal: size_t = 0 as size_t;
+    let mut vli_pos_internal: size_t = 0;
     if vli_pos.is_null() {
         vli_pos = &raw mut vli_pos_internal;
         if *out_pos >= out_size {
@@ -46,7 +44,7 @@ pub unsafe extern "C" fn lzma_vli_encode(
     if *vli_pos >= LZMA_VLI_BYTES_MAX as size_t || vli > LZMA_VLI_MAX as lzma_vli {
         return LZMA_PROG_ERROR;
     }
-    vli >>= (*vli_pos).wrapping_mul(7 as size_t);
+    vli >>= (*vli_pos).wrapping_mul(7);
     while vli >= 0x80 as lzma_vli {
         *vli_pos = (*vli_pos).wrapping_add(1);
         *out.offset(*out_pos as isize) = (vli as u8 as c_int | 0x80 as c_int) as u8;

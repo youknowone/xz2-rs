@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_ulonglong, c_void};
 extern "C" {
     fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
     fn lzma_raw_decoder_init(
@@ -87,20 +87,18 @@ pub type lzma_code_function = Option<
         lzma_action,
     ) -> lzma_ret,
 >;
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_buffer_decode(
-    mut filters: *const lzma_filter,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_pos: *mut size_t,
-    mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
+    filters: *const lzma_filter,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_pos: *mut size_t,
+    in_size: size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
 ) -> lzma_ret {
     if in_0.is_null()
         || in_pos.is_null()
@@ -112,9 +110,9 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
         return LZMA_PROG_ERROR;
     }
     let mut next: lzma_next_coder = lzma_next_coder_s {
-        coder: NULL,
+        coder: core::ptr::null_mut(),
         id: LZMA_VLI_UNKNOWN as lzma_vli,
-        init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+        init: 0,
         code: None,
         end: None,
         get_progress: None,
@@ -150,7 +148,7 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
                 ret = LZMA_DATA_ERROR;
             } else {
                 let mut tmp: [u8; 1] = [0; 1];
-                let mut tmp_pos: size_t = 0 as size_t;
+                let mut tmp_pos: size_t = 0;
                 next.code.expect("non-null function pointer")(
                     next.coder,
                     allocator,
@@ -159,10 +157,10 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
                     in_size,
                     &raw mut tmp as *mut u8,
                     &raw mut tmp_pos,
-                    1 as size_t,
+                    1,
                     LZMA_FINISH,
                 );
-                if tmp_pos == 1 as size_t {
+                if tmp_pos == 1 {
                     ret = LZMA_BUF_ERROR;
                 } else {
                     ret = LZMA_DATA_ERROR;

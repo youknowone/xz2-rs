@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_int, c_void};
 extern "C" {
     fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
     fn lzma_delta_coder_init(
@@ -123,16 +123,10 @@ pub struct lzma_delta_coder {
     pub pos: u8,
     pub history: [u8; LZMA_DELTA_DIST_MAX as usize],
 }
-pub const LZMA_DELTA_DIST_MAX: c_int = 256 as c_int;
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
-unsafe extern "C" fn decode_buffer(
-    mut coder: *mut lzma_delta_coder,
-    mut buffer: *mut u8,
-    mut size: size_t,
-) {
+pub const LZMA_DELTA_DIST_MAX: c_int = 256;
+unsafe extern "C" fn decode_buffer(coder: *mut lzma_delta_coder, buffer: *mut u8, size: size_t) {
     let distance: size_t = (*coder).distance;
-    let mut i: size_t = 0 as size_t;
+    let mut i: size_t = 0;
     while i < size {
         let ref mut fresh0 = *buffer.offset(i as isize);
         *fresh0 = (*fresh0 as c_int
@@ -146,17 +140,17 @@ unsafe extern "C" fn decode_buffer(
     }
 }
 unsafe extern "C" fn delta_decode(
-    mut coder_ptr: *mut c_void,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_pos: *mut size_t,
-    mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
-    mut action: lzma_action,
+    coder_ptr: *mut c_void,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_pos: *mut size_t,
+    in_size: size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
+    action: lzma_action,
 ) -> lzma_ret {
-    let mut coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
+    let coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
     let out_start: size_t = *out_pos;
     let ret: lzma_ret = (*coder).next.code.expect("non-null function pointer")(
         (*coder).next.coder,
@@ -170,16 +164,16 @@ unsafe extern "C" fn delta_decode(
         action,
     ) as lzma_ret;
     let size: size_t = (*out_pos).wrapping_sub(out_start);
-    if size > 0 as size_t {
+    if size > 0 {
         decode_buffer(coder, out.offset(out_start as isize), size);
     }
     return ret;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_decoder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut filters: *const lzma_filter_info,
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    filters: *const lzma_filter_info,
 ) -> lzma_ret {
     (*next).code = Some(
         delta_decode
@@ -199,16 +193,16 @@ pub unsafe extern "C" fn lzma_delta_decoder_init(
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_props_decode(
-    mut options: *mut *mut c_void,
-    mut allocator: *const lzma_allocator,
-    mut props: *const u8,
-    mut props_size: size_t,
+    options: *mut *mut c_void,
+    allocator: *const lzma_allocator,
+    props: *const u8,
+    props_size: size_t,
 ) -> lzma_ret {
-    if props_size != 1 as size_t {
+    if props_size != 1 {
         return LZMA_OPTIONS_ERROR;
     }
-    let mut opt: *mut lzma_options_delta = lzma_alloc(
-        ::core::mem::size_of::<lzma_options_delta>() as size_t,
+    let opt: *mut lzma_options_delta = lzma_alloc(
+        core::mem::size_of::<lzma_options_delta>() as size_t,
         allocator,
     ) as *mut lzma_options_delta;
     if opt.is_null() {

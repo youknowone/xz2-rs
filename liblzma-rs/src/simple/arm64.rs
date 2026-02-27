@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_int, c_void};
 extern "C" {
     fn lzma_simple_coder_init(
         next: *mut lzma_next_coder,
@@ -106,35 +106,35 @@ pub type lzma_init_function = Option<
     ) -> lzma_ret,
 >;
 pub type lzma_filter_info = lzma_filter_info_s;
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
-unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0) as u32;
-    num |= (*buf.offset(1) as u32) << 8;
-    num |= (*buf.offset(2) as u32) << 16;
-    num |= (*buf.offset(3) as u32) << 24;
-    return num;
+extern "C" fn read32le(buf: *const u8) -> u32 {
+    return unsafe {
+        let mut num: u32 = *buf.offset(0) as u32;
+        num |= (*buf.offset(1) as u32) << 8;
+        num |= (*buf.offset(2) as u32) << 16;
+        num |= (*buf.offset(3) as u32) << 24;
+        num
+    };
 }
 #[inline]
-unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
-    *buf.offset(0) = num as u8;
-    *buf.offset(1) = (num >> 8) as u8;
-    *buf.offset(2) = (num >> 16) as u8;
-    *buf.offset(3) = (num >> 24) as u8;
+extern "C" fn write32le(buf: *mut u8, num: u32) {
+    unsafe {
+        *buf.offset(0) = num as u8;
+        *buf.offset(1) = (num >> 8) as u8;
+        *buf.offset(2) = (num >> 16) as u8;
+        *buf.offset(3) = (num >> 24) as u8;
+    }
 }
 unsafe extern "C" fn arm64_code(
-    mut simple: *mut c_void,
-    mut now_pos: u32,
-    mut is_encoder: bool,
-    mut buffer: *mut u8,
+    _simple: *mut c_void,
+    now_pos: u32,
+    is_encoder: bool,
+    buffer: *mut u8,
     mut size: size_t,
 ) -> size_t {
-    size &= !(3 as size_t);
+    size &= !(3);
     let mut i: size_t = 0;
-    i = 0 as size_t;
+    i = 0;
     while i < size {
         let mut pc: u32 = (now_pos as size_t).wrapping_add(i) as u32;
         let mut instr: u32 = read32le(buffer.offset(i as isize));
@@ -143,78 +143,83 @@ unsafe extern "C" fn arm64_code(
             instr = 0x94000000 as u32;
             pc >>= 2 as c_int;
             if !is_encoder {
-                pc = (0 as u32).wrapping_sub(pc);
+                pc = 0u32.wrapping_sub(pc);
             }
             instr |= src.wrapping_add(pc) & 0x3ffffff as u32;
             write32le(buffer.offset(i as isize), instr);
         } else if instr & 0x9f000000 as u32 == 0x90000000 as u32 {
-            let src_0: u32 = instr >> 29 & 3 as u32 | instr >> 3 & 0x1ffffc as u32;
+            let src_0: u32 = instr >> 29 & 3 | instr >> 3 & 0x1ffffc as u32;
             if !(src_0.wrapping_add(0x20000 as u32) & 0x1c0000 as u32 != 0) {
                 instr = (instr & 0x9000001f) as u32;
                 pc >>= 12 as c_int;
                 if !is_encoder {
-                    pc = (0 as u32).wrapping_sub(pc);
+                    pc = 0u32.wrapping_sub(pc);
                 }
                 let dest: u32 = src_0.wrapping_add(pc);
-                instr |= (dest & 3 as u32) << 29;
+                instr |= (dest & 3) << 29;
                 instr |= (dest & 0x3fffc as u32) << 3;
-                instr = (instr | ((0 as u32).wrapping_sub(dest & 0x20000 as u32) & 0xe00000 as u32))
-                    as u32;
+                instr =
+                    (instr | (0u32.wrapping_sub(dest & 0x20000 as u32) & 0xe00000 as u32)) as u32;
                 write32le(buffer.offset(i as isize), instr);
             }
         }
-        i = i.wrapping_add(4 as size_t);
+        i = i.wrapping_add(4);
     }
     return i;
 }
-unsafe extern "C" fn arm64_coder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut filters: *const lzma_filter_info,
-    mut is_encoder: bool,
+extern "C" fn arm64_coder_init(
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    filters: *const lzma_filter_info,
+    is_encoder: bool,
 ) -> lzma_ret {
-    return lzma_simple_coder_init(
-        next,
-        allocator,
-        filters,
-        Some(arm64_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
-        0 as size_t,
-        4 as size_t,
-        4 as u32,
-        is_encoder,
-    );
+    return unsafe {
+        lzma_simple_coder_init(
+            next,
+            allocator,
+            filters,
+            Some(
+                arm64_code
+                    as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t
+            ),
+            0,
+            4,
+            4,
+            is_encoder,
+        )
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_arm64_encoder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut filters: *const lzma_filter_info,
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return arm64_coder_init(next, allocator, filters, true_0 != 0);
+    return arm64_coder_init(next, allocator, filters, true);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_arm64_encode(
     mut start_offset: u32,
-    mut buf: *mut u8,
-    mut size: size_t,
+    buf: *mut u8,
+    size: size_t,
 ) -> size_t {
     start_offset = (start_offset & !3u32) as u32;
-    return arm64_code(NULL, start_offset, true_0 != 0, buf, size);
+    return arm64_code(core::ptr::null_mut(), start_offset, true, buf, size);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_arm64_decoder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut filters: *const lzma_filter_info,
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return arm64_coder_init(next, allocator, filters, false_0 != 0);
+    return arm64_coder_init(next, allocator, filters, false);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_arm64_decode(
     mut start_offset: u32,
-    mut buf: *mut u8,
-    mut size: size_t,
+    buf: *mut u8,
+    size: size_t,
 ) -> size_t {
     start_offset = (start_offset & !3u32) as u32;
-    return arm64_code(NULL, start_offset, false_0 != 0, buf, size);
+    return arm64_code(core::ptr::null_mut(), start_offset, false, buf, size);
 }

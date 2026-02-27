@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uchar, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_int, c_void};
 #[repr(C)]
 pub struct lzma_index_s {
     _opaque: [u8; 0],
@@ -130,45 +130,42 @@ pub struct lzma_block {
     pub reserved_bool7: lzma_bool,
     pub reserved_bool8: lzma_bool,
 }
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const LZMA_VLI_BYTES_MAX: c_int = 9 as c_int;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
-pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
+pub const LZMA_VLI_BYTES_MAX: c_int = 9;
 pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
-pub const LZMA_STREAM_HEADER_SIZE: c_int = 12 as c_int;
+pub const LZMA_STREAM_HEADER_SIZE: c_int = 12;
 pub const INDEX_BOUND: c_int =
     1 as c_int + 1 as c_int + 2 as c_int * LZMA_VLI_BYTES_MAX + 4 as c_int + 3 as c_int
         & !(3 as c_int);
-pub const HEADERS_BOUND: c_int = 2 as c_int * LZMA_STREAM_HEADER_SIZE + INDEX_BOUND;
+pub const HEADERS_BOUND: c_int = 2 * LZMA_STREAM_HEADER_SIZE + INDEX_BOUND;
+pub const LZMA_VLI_MAX: lzma_vli = u64::MAX / 2;
 #[no_mangle]
-pub unsafe extern "C" fn lzma_stream_buffer_bound(mut uncompressed_size: size_t) -> size_t {
-    let block_bound: size_t = lzma_block_buffer_bound(uncompressed_size) as size_t;
-    if block_bound == 0 as size_t {
-        return 0 as size_t;
+pub extern "C" fn lzma_stream_buffer_bound(uncompressed_size: size_t) -> size_t {
+    let block_bound: size_t = unsafe { lzma_block_buffer_bound(uncompressed_size) } as size_t;
+    if block_bound == 0 {
+        return 0;
     }
 
     // Match C: my_min(SIZE_MAX, LZMA_VLI_MAX) - block_bound < HEADERS_BOUND.
     let stream_bound_max: size_t = core::cmp::min(size_t::MAX, LZMA_VLI_MAX as size_t);
     if stream_bound_max.wrapping_sub(block_bound) < HEADERS_BOUND as size_t {
-        return 0 as size_t;
+        return 0;
     }
     return block_bound.wrapping_add(HEADERS_BOUND as size_t);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_buffer_encode(
-    mut filters: *mut lzma_filter,
-    mut check: lzma_check,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos_ptr: *mut size_t,
+    filters: *mut lzma_filter,
+    check: lzma_check,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_size: size_t,
+    out: *mut u8,
+    out_pos_ptr: *mut size_t,
     mut out_size: size_t,
 ) -> lzma_ret {
     if filters.is_null()
         || check > LZMA_CHECK_ID_MAX
-        || in_0.is_null() && in_size != 0 as size_t
+        || in_0.is_null() && in_size != 0
         || out.is_null()
         || out_pos_ptr.is_null()
         || *out_pos_ptr > out_size
@@ -184,7 +181,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
     }
     out_size = out_size.wrapping_sub(LZMA_STREAM_HEADER_SIZE as size_t);
     let mut stream_flags: lzma_stream_flags = lzma_stream_flags {
-        version: 0 as u32,
+        version: 0,
         backward_size: 0,
         check: check,
         reserved_enum1: LZMA_RESERVED_ENUM,
@@ -207,16 +204,16 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
     }
     out_pos = out_pos.wrapping_add(LZMA_STREAM_HEADER_SIZE as size_t);
     let mut block: lzma_block = lzma_block {
-        version: 0 as u32,
+        version: 0,
         header_size: 0,
         check: check,
         compressed_size: 0,
         uncompressed_size: 0,
         filters: filters,
         raw_check: [0; 64],
-        reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
-        reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
-        reserved_ptr3: ::core::ptr::null_mut::<c_void>(),
+        reserved_ptr1: core::ptr::null_mut(),
+        reserved_ptr2: core::ptr::null_mut(),
+        reserved_ptr3: core::ptr::null_mut(),
         reserved_int1: 0,
         reserved_int2: 0,
         reserved_int3: 0,
@@ -238,7 +235,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
         reserved_bool7: 0,
         reserved_bool8: 0,
     };
-    if in_size > 0 as size_t {
+    if in_size > 0 {
         let ret_: lzma_ret = lzma_block_buffer_encode(
             &raw mut block,
             allocator,
@@ -252,12 +249,12 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
             return ret_;
         }
     }
-    let mut i: *mut lzma_index = lzma_index_init(allocator);
+    let i: *mut lzma_index = lzma_index_init(allocator);
     if i.is_null() {
         return LZMA_MEM_ERROR;
     }
     let mut ret: lzma_ret = LZMA_OK;
-    if in_size > 0 as size_t {
+    if in_size > 0 {
         ret = lzma_index_append(
             i,
             allocator,

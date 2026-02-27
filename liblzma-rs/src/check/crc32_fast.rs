@@ -1,7 +1,6 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint};
 #[inline]
-unsafe extern "C" fn aligned_read32ne(mut buf: *const u8) -> u32 {
+unsafe extern "C" fn aligned_read32ne(buf: *const u8) -> u32 {
     return *(buf as *const u32);
 }
 #[no_mangle]
@@ -321,15 +320,15 @@ pub static mut lzma_crc32_table: [[u32; 256]; 8] = [
 ];
 unsafe extern "C" fn lzma_crc32_generic(mut buf: *const u8, mut size: size_t, mut crc: u32) -> u32 {
     crc = !crc;
-    if size > 8 as size_t {
+    if size > 8 {
         while buf as uintptr_t & 7 as uintptr_t != 0 {
             let fresh0 = buf;
             buf = buf.offset(1);
             crc = lzma_crc32_table[0][(*fresh0 as u32 ^ crc & 0xff) as usize] ^ crc >> 8;
             size = size.wrapping_sub(1);
         }
-        let limit: *const u8 = buf.offset((size & !(7 as size_t)) as isize);
-        size &= 7 as size_t;
+        let limit: *const u8 = buf.offset((size & !(7)) as isize);
+        size &= 7;
         while buf < limit {
             crc ^= aligned_read32ne(buf);
             buf = buf.offset(4);
@@ -349,7 +348,7 @@ unsafe extern "C" fn lzma_crc32_generic(mut buf: *const u8, mut size: size_t, mu
     loop {
         let fresh1 = size;
         size = size.wrapping_sub(1);
-        if !(fresh1 != 0 as size_t) {
+        if !(fresh1 != 0) {
             break;
         }
         let fresh2 = buf;
@@ -359,6 +358,6 @@ unsafe extern "C" fn lzma_crc32_generic(mut buf: *const u8, mut size: size_t, mu
     return !crc;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_crc32(mut buf: *const u8, mut size: size_t, mut crc: u32) -> u32 {
+pub unsafe extern "C" fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32 {
     return lzma_crc32_generic(buf, size, crc);
 }

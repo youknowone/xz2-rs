@@ -194,24 +194,21 @@ pub struct lzma_microlzma_coder {
     pub lzma: lzma_next_coder,
     pub props: u8,
 }
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001;
 unsafe extern "C" fn microlzma_encode(
-    mut coder_ptr: *mut c_void,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_pos: *mut size_t,
-    mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
-    mut action: lzma_action,
+    coder_ptr: *mut c_void,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_pos: *mut size_t,
+    in_size: size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
+    action: lzma_action,
 ) -> lzma_ret {
-    let mut coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
+    let coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
     let out_start: size_t = *out_pos;
     let in_start: size_t = *in_pos;
     let mut uncomp_size: u64 = 0;
@@ -248,17 +245,17 @@ unsafe extern "C" fn microlzma_encode(
     return ret;
 }
 unsafe extern "C" fn microlzma_encoder_end(
-    mut coder_ptr: *mut c_void,
-    mut allocator: *const lzma_allocator,
+    coder_ptr: *mut c_void,
+    allocator: *const lzma_allocator,
 ) {
-    let mut coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
+    let coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
     lzma_next_end(&raw mut (*coder).lzma, allocator);
     lzma_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn microlzma_encoder_init(
-    mut next: *mut lzma_next_coder,
-    mut allocator: *const lzma_allocator,
-    mut options: *const lzma_options_lzma,
+    next: *mut lzma_next_coder,
+    allocator: *const lzma_allocator,
+    options: *const lzma_options_lzma,
 ) -> lzma_ret {
     if ::core::mem::transmute::<
         Option<
@@ -300,7 +297,7 @@ unsafe extern "C" fn microlzma_encoder_init(
     let mut coder: *mut lzma_microlzma_coder = (*next).coder as *mut lzma_microlzma_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_microlzma_coder>() as size_t,
+            core::mem::size_of::<lzma_microlzma_coder>() as size_t,
             allocator,
         ) as *mut lzma_microlzma_coder;
         if coder.is_null() {
@@ -325,9 +322,9 @@ unsafe extern "C" fn microlzma_encoder_init(
             microlzma_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
         ) as lzma_end_function;
         (*coder).lzma = lzma_next_coder_s {
-            coder: NULL,
+            coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0,
             code: None,
             end: None,
             get_progress: None,
@@ -356,7 +353,7 @@ unsafe extern "C" fn microlzma_encoder_init(
         lzma_filter_info_s {
             id: 0,
             init: None,
-            options: ::core::ptr::null_mut::<c_void>(),
+            options: core::ptr::null_mut(),
         },
     ];
     return lzma_next_filter_init(
@@ -367,8 +364,8 @@ unsafe extern "C" fn microlzma_encoder_init(
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_microlzma_encoder(
-    mut strm: *mut lzma_stream,
-    mut options: *const lzma_options_lzma,
+    strm: *mut lzma_stream,
+    options: *const lzma_options_lzma,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
     if ret_ != LZMA_OK {
@@ -383,6 +380,6 @@ pub unsafe extern "C" fn lzma_microlzma_encoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

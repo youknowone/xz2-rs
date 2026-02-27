@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uchar, c_uint, c_void};
+use core::ffi::{c_int, c_uint, c_void};
 pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
 pub const LZMA_MF_BT4: lzma_match_finder = 20;
 pub const LZMA_MF_BT3: lzma_match_finder = 19;
@@ -36,72 +36,65 @@ pub struct lzma_options_lzma {
     pub reserved_ptr1: *mut c_void,
     pub reserved_ptr2: *mut c_void,
 }
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
-pub const LZMA_LC_DEFAULT: c_int = 3 as c_int;
-pub const LZMA_LP_DEFAULT: c_int = 0 as c_int;
-pub const LZMA_PB_DEFAULT: c_int = 2 as c_int;
+pub const LZMA_LC_DEFAULT: c_int = 3;
+pub const LZMA_LP_DEFAULT: c_int = 0;
+pub const LZMA_PB_DEFAULT: c_int = 2;
 pub const LZMA_PRESET_LEVEL_MASK: c_uint = 0x1f;
 pub const LZMA_PRESET_EXTREME: c_uint = 1u32 << 31;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_preset(
-    mut options: *mut lzma_options_lzma,
-    mut preset: u32,
+    options: *mut lzma_options_lzma,
+    preset: u32,
 ) -> lzma_bool {
     let level: u32 = preset & LZMA_PRESET_LEVEL_MASK as u32;
     let flags: u32 = preset & !(LZMA_PRESET_LEVEL_MASK as u32);
     let supported_flags: u32 = LZMA_PRESET_EXTREME as u32;
-    if level > 9 as u32 || flags & !supported_flags != 0 {
-        return true_0 as lzma_bool;
+    if level > 9 || flags & !supported_flags != 0 {
+        return true as lzma_bool;
     }
     (*options).preset_dict = ::core::ptr::null::<u8>();
-    (*options).preset_dict_size = 0 as u32;
+    (*options).preset_dict_size = 0;
     (*options).lc = LZMA_LC_DEFAULT as u32;
     (*options).lp = LZMA_LP_DEFAULT as u32;
     (*options).pb = LZMA_PB_DEFAULT as u32;
-    static mut dict_pow2: [u8; 10] = [
-        18 as u8, 20 as u8, 21 as u8, 22 as u8, 22 as u8, 23 as u8, 23 as u8, 24 as u8, 25 as u8,
-        26 as u8,
-    ];
+    static mut dict_pow2: [u8; 10] = [18, 20, 21, 22, 22, 23, 23, 24, 25, 26];
     (*options).dict_size = (1u32 << dict_pow2[level as usize] as c_int) as u32;
-    if level <= 3 as u32 {
+    if level <= 3 {
         (*options).mode = LZMA_MODE_FAST;
-        (*options).mf = (if level == 0 as u32 {
+        (*options).mf = (if level == 0 {
             LZMA_MF_HC3 as c_int
         } else {
             LZMA_MF_HC4 as c_int
         }) as lzma_match_finder;
-        (*options).nice_len = (if level <= 1 as u32 {
+        (*options).nice_len = (if level <= 1 {
             128 as c_int
         } else {
             273 as c_int
         }) as u32;
-        static mut depths: [u8; 4] = [4 as u8, 8 as u8, 24 as u8, 48 as u8];
+        static mut depths: [u8; 4] = [4, 8, 24, 48];
         (*options).depth = depths[level as usize] as u32;
     } else {
         (*options).mode = LZMA_MODE_NORMAL;
         (*options).mf = LZMA_MF_BT4;
-        (*options).nice_len = (if level == 4 as u32 {
+        (*options).nice_len = (if level == 4 {
             16 as c_int
-        } else if level == 5 as u32 {
+        } else if level == 5 {
             32 as c_int
         } else {
             64 as c_int
         }) as u32;
-        (*options).depth = 0 as u32;
+        (*options).depth = 0;
     }
     if flags & LZMA_PRESET_EXTREME as u32 != 0 {
         (*options).mode = LZMA_MODE_NORMAL;
         (*options).mf = LZMA_MF_BT4;
-        if level == 3 as u32 || level == 5 as u32 {
-            (*options).nice_len = 192 as u32;
-            (*options).depth = 0 as u32;
+        if level == 3 || level == 5 {
+            (*options).nice_len = 192;
+            (*options).depth = 0;
         } else {
-            (*options).nice_len = 273 as u32;
-            (*options).depth = 512 as u32;
+            (*options).nice_len = 273;
+            (*options).depth = 512;
         }
     }
-    return false_0 as lzma_bool;
+    return false as lzma_bool;
 }

@@ -1,8 +1,6 @@
-use crate::types::*;
-extern "C" {
-    fn tuklib_physmem() -> u64;
-}
+use crate::tuklib::tuklib_physmem::tuklib_physmem;
+
 #[no_mangle]
-pub unsafe extern "C" fn lzma_physmem() -> u64 {
+pub extern "C" fn lzma_physmem() -> u64 {
     return tuklib_physmem();
 }

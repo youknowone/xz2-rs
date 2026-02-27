@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_ulonglong, c_void};
 extern "C" {
     fn lzma_vli_encode(
         vli: lzma_vli,
@@ -42,8 +42,8 @@ pub struct lzma_filter {
 pub const LZMA_FILTER_RESERVED_START: c_ulonglong = 1 << 62;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_filter_flags_size(
-    mut size: *mut u32,
-    mut filter: *const lzma_filter,
+    size: *mut u32,
+    filter: *const lzma_filter,
 ) -> lzma_ret {
     if (*filter).id >= LZMA_FILTER_RESERVED_START as lzma_vli {
         return LZMA_PROG_ERROR;
@@ -58,21 +58,16 @@ pub unsafe extern "C" fn lzma_filter_flags_size(
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_filter_flags_encode(
-    mut filter: *const lzma_filter,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
+    filter: *const lzma_filter,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
 ) -> lzma_ret {
     if (*filter).id >= LZMA_FILTER_RESERVED_START as lzma_vli {
         return LZMA_PROG_ERROR;
     }
-    let ret_: lzma_ret = lzma_vli_encode(
-        (*filter).id,
-        ::core::ptr::null_mut::<size_t>(),
-        out,
-        out_pos,
-        out_size,
-    ) as lzma_ret;
+    let ret_: lzma_ret =
+        lzma_vli_encode((*filter).id, core::ptr::null_mut(), out, out_pos, out_size) as lzma_ret;
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -83,7 +78,7 @@ pub unsafe extern "C" fn lzma_filter_flags_encode(
     }
     let ret__1: lzma_ret = lzma_vli_encode(
         props_size as lzma_vli,
-        ::core::ptr::null_mut::<size_t>(),
+        core::ptr::null_mut(),
         out,
         out_pos,
         out_size,

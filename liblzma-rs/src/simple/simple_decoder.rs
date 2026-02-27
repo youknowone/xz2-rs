@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::c_void;
 extern "C" {
     fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
     fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
@@ -37,38 +37,38 @@ pub struct lzma_allocator {
 pub struct lzma_options_bcj {
     pub start_offset: u32,
 }
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 #[inline]
-unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0) as u32;
-    num |= (*buf.offset(1) as u32) << 8;
-    num |= (*buf.offset(2) as u32) << 16;
-    num |= (*buf.offset(3) as u32) << 24;
-    return num;
+extern "C" fn read32le(buf: *const u8) -> u32 {
+    return unsafe {
+        let mut num: u32 = *buf.offset(0) as u32;
+        num |= (*buf.offset(1) as u32) << 8;
+        num |= (*buf.offset(2) as u32) << 16;
+        num |= (*buf.offset(3) as u32) << 24;
+        num
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_decode(
-    mut options: *mut *mut c_void,
-    mut allocator: *const lzma_allocator,
-    mut props: *const u8,
-    mut props_size: size_t,
+    options: *mut *mut c_void,
+    allocator: *const lzma_allocator,
+    props: *const u8,
+    props_size: size_t,
 ) -> lzma_ret {
-    if props_size == 0 as size_t {
+    if props_size == 0 {
         return LZMA_OK;
     }
-    if props_size != 4 as size_t {
+    if props_size != 4 {
         return LZMA_OPTIONS_ERROR;
     }
-    let mut opt: *mut lzma_options_bcj = lzma_alloc(
-        ::core::mem::size_of::<lzma_options_bcj>() as size_t,
+    let opt: *mut lzma_options_bcj = lzma_alloc(
+        core::mem::size_of::<lzma_options_bcj>() as size_t,
         allocator,
     ) as *mut lzma_options_bcj;
     if opt.is_null() {
         return LZMA_MEM_ERROR;
     }
     (*opt).start_offset = read32le(props);
-    if (*opt).start_offset == 0 as u32 {
+    if (*opt).start_offset == 0 {
         lzma_free(opt as *mut c_void, allocator);
     } else {
         *options = opt as *mut c_void;

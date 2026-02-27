@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_int, c_void};
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -26,22 +26,22 @@ pub const LZMA_OK: lzma_ret = 0;
 pub struct lzma_options_bcj {
     pub start_offset: u32,
 }
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 #[inline]
-unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
-    *buf.offset(0) = num as u8;
-    *buf.offset(1) = (num >> 8) as u8;
-    *buf.offset(2) = (num >> 16) as u8;
-    *buf.offset(3) = (num >> 24) as u8;
+extern "C" fn write32le(buf: *mut u8, num: u32) {
+    unsafe {
+        *buf.offset(0) = num as u8;
+        *buf.offset(1) = (num >> 8) as u8;
+        *buf.offset(2) = (num >> 16) as u8;
+        *buf.offset(3) = (num >> 24) as u8;
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_size(
-    mut size: *mut u32,
-    mut options: *const c_void,
+    size: *mut u32,
+    options: *const c_void,
 ) -> lzma_ret {
     let opt: *const lzma_options_bcj = options as *const lzma_options_bcj;
-    *size = (if opt.is_null() || (*opt).start_offset == 0 as u32 {
+    *size = (if opt.is_null() || (*opt).start_offset == 0 {
         0 as c_int
     } else {
         4 as c_int
@@ -50,11 +50,11 @@ pub unsafe extern "C" fn lzma_simple_props_size(
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_encode(
-    mut options: *const c_void,
-    mut out: *mut u8,
+    options: *const c_void,
+    out: *mut u8,
 ) -> lzma_ret {
     let opt: *const lzma_options_bcj = options as *const lzma_options_bcj;
-    if opt.is_null() || (*opt).start_offset == 0 as u32 {
+    if opt.is_null() || (*opt).start_offset == 0 {
         return LZMA_OK;
     }
     write32le(out, (*opt).start_offset);

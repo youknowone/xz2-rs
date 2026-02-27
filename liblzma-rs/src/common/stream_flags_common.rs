@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uchar, c_uint, c_ulonglong};
+use core::ffi::{c_int, c_ulonglong};
 pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
@@ -50,26 +50,28 @@ pub struct lzma_stream_flags {
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
-pub const LZMA_BACKWARD_SIZE_MIN: c_int = 4 as c_int;
+pub const LZMA_BACKWARD_SIZE_MIN: c_int = 4;
 pub const LZMA_BACKWARD_SIZE_MAX: c_ulonglong = 1 << 34;
 #[inline]
-unsafe extern "C" fn is_backward_size_valid(mut options: *const lzma_stream_flags) -> bool {
-    return (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
-        && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
-        && (*options).backward_size & 3 as lzma_vli == 0 as lzma_vli;
+extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
+    return unsafe {
+        (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
+            && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
+            && (*options).backward_size & 3 as lzma_vli == 0 as lzma_vli
+    };
 }
 #[no_mangle]
 pub static mut lzma_header_magic: [u8; 6] = [
-    0xfd as u8, 0x37 as u8, 0x7a as u8, 0x58 as u8, 0x5a as u8, 0 as u8,
+    0xfd as u8, 0x37 as u8, 0x7a as u8, 0x58 as u8, 0x5a as u8, 0,
 ];
 #[no_mangle]
 pub static mut lzma_footer_magic: [u8; 2] = [0x59 as u8, 0x5a as u8];
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_flags_compare(
-    mut a: *const lzma_stream_flags,
-    mut b: *const lzma_stream_flags,
+    a: *const lzma_stream_flags,
+    b: *const lzma_stream_flags,
 ) -> lzma_ret {
-    if (*a).version != 0 as u32 || (*b).version != 0 as u32 {
+    if (*a).version != 0 || (*b).version != 0 {
         return LZMA_OPTIONS_ERROR;
     }
     if (*a).check > LZMA_CHECK_ID_MAX || (*b).check > LZMA_CHECK_ID_MAX {

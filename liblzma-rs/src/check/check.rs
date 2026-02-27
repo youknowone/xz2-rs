@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uchar, c_uint};
+use core::ffi::c_uint;
 extern "C" {
     fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
     fn lzma_crc64(buf: *const u8, size: size_t, crc: u64) -> u64;
@@ -38,53 +38,51 @@ pub union C2RustUnnamed_0 {
     pub u64_0: [u64; 8],
 }
 pub const UINT32_MAX: c_uint = 4294967295;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 #[no_mangle]
-pub unsafe extern "C" fn lzma_check_is_supported(mut type_0: lzma_check) -> lzma_bool {
+pub extern "C" fn lzma_check_is_supported(type_0: lzma_check) -> lzma_bool {
     if type_0 > LZMA_CHECK_ID_MAX {
-        return false_0 as lzma_bool;
+        return false as lzma_bool;
     }
-    static mut available_checks: [lzma_bool; 16] = [
-        true_0 as lzma_bool,
-        true_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        true_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        true_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
+    static available_checks: [lzma_bool; 16] = [
+        true as lzma_bool,
+        true as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        true as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        true as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
     ];
     return available_checks[type_0 as usize];
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_check_size(mut type_0: lzma_check) -> u32 {
+pub extern "C" fn lzma_check_size(type_0: lzma_check) -> u32 {
     if type_0 > LZMA_CHECK_ID_MAX {
         return UINT32_MAX as u32;
     }
-    static mut check_sizes: [u8; 16] = [
-        0 as u8, 4 as u8, 4 as u8, 4 as u8, 8 as u8, 8 as u8, 8 as u8, 16 as u8, 16 as u8,
-        16 as u8, 32 as u8, 32 as u8, 32 as u8, 64 as u8, 64 as u8, 64 as u8,
+    static check_sizes: [u8; 16] = [
+        0, 4 as u8, 4 as u8, 4 as u8, 8 as u8, 8 as u8, 8 as u8, 16 as u8, 16 as u8, 16 as u8,
+        32 as u8, 32 as u8, 32 as u8, 64 as u8, 64 as u8, 64 as u8,
     ];
     return check_sizes[type_0 as usize] as u32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_check_init(mut check: *mut lzma_check_state, mut type_0: lzma_check) {
+pub unsafe extern "C" fn lzma_check_init(check: *mut lzma_check_state, type_0: lzma_check) {
     match type_0 {
         1 => {
-            (*check).state.crc32 = 0 as u32;
+            (*check).state.crc32 = 0;
         }
         4 => {
-            (*check).state.crc64 = 0 as u64;
+            (*check).state.crc64 = 0;
         }
         10 => {
             lzma_sha256_init(check);
@@ -94,10 +92,10 @@ pub unsafe extern "C" fn lzma_check_init(mut check: *mut lzma_check_state, mut t
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_check_update(
-    mut check: *mut lzma_check_state,
-    mut type_0: lzma_check,
-    mut buf: *const u8,
-    mut size: size_t,
+    check: *mut lzma_check_state,
+    type_0: lzma_check,
+    buf: *const u8,
+    size: size_t,
 ) {
     match type_0 {
         1 => {
@@ -113,10 +111,7 @@ pub unsafe extern "C" fn lzma_check_update(
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_check_finish(
-    mut check: *mut lzma_check_state,
-    mut type_0: lzma_check,
-) {
+pub unsafe extern "C" fn lzma_check_finish(check: *mut lzma_check_state, type_0: lzma_check) {
     match type_0 {
         1 => {
             (*check).buffer.u32_0[0] = (*check).state.crc32;

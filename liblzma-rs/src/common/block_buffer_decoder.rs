@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uchar, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_ulonglong, c_void};
 extern "C" {
     fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
     fn lzma_block_decoder_init(
@@ -122,20 +122,18 @@ pub struct lzma_block {
     pub reserved_bool7: lzma_bool,
     pub reserved_bool8: lzma_bool,
 }
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_buffer_decode(
-    mut block: *mut lzma_block,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
-    mut in_pos: *mut size_t,
-    mut in_size: size_t,
-    mut out: *mut u8,
-    mut out_pos: *mut size_t,
-    mut out_size: size_t,
+    block: *mut lzma_block,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
+    in_pos: *mut size_t,
+    in_size: size_t,
+    out: *mut u8,
+    out_pos: *mut size_t,
+    out_size: size_t,
 ) -> lzma_ret {
     if in_pos.is_null()
         || in_0.is_null() && *in_pos != in_size
@@ -147,9 +145,9 @@ pub unsafe extern "C" fn lzma_block_buffer_decode(
         return LZMA_PROG_ERROR;
     }
     let mut block_decoder: lzma_next_coder = lzma_next_coder_s {
-        coder: NULL,
+        coder: core::ptr::null_mut(),
         id: LZMA_VLI_UNKNOWN as lzma_vli,
-        init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+        init: 0,
         code: None,
         end: None,
         get_progress: None,

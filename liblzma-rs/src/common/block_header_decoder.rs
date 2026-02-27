@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uchar, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_int, c_ulonglong, c_void};
 extern "C" {
     fn lzma_vli_decode(
         vli: *mut lzma_vli,
@@ -92,61 +92,57 @@ pub struct lzma_block {
     pub reserved_bool7: lzma_bool,
     pub reserved_bool8: lzma_bool,
 }
-pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
-pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
-unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0) as u32;
-    num |= (*buf.offset(1) as u32) << 8;
-    num |= (*buf.offset(2) as u32) << 16;
-    num |= (*buf.offset(3) as u32) << 24;
-    return num;
+extern "C" fn read32le(buf: *const u8) -> u32 {
+    return unsafe {
+        let mut num: u32 = *buf.offset(0) as u32;
+        num |= (*buf.offset(1) as u32) << 8;
+        num |= (*buf.offset(2) as u32) << 16;
+        num |= (*buf.offset(3) as u32) << 24;
+        num
+    };
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
-pub const LZMA_FILTERS_MAX: c_int = 4 as c_int;
+pub const LZMA_FILTERS_MAX: c_int = 4;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_header_decode(
-    mut block: *mut lzma_block,
-    mut allocator: *const lzma_allocator,
-    mut in_0: *const u8,
+    block: *mut lzma_block,
+    allocator: *const lzma_allocator,
+    in_0: *const u8,
 ) -> lzma_ret {
     if block.is_null() || (*block).filters.is_null() || in_0.is_null() {
         return LZMA_PROG_ERROR;
     }
-    let mut i: size_t = 0 as size_t;
+    let mut i: size_t = 0;
     while i <= LZMA_FILTERS_MAX as size_t {
         (*(*block).filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN as lzma_vli;
         let ref mut fresh0 = (*(*block).filters.offset(i as isize)).options;
-        *fresh0 = NULL;
+        *fresh0 = core::ptr::null_mut();
         i = i.wrapping_add(1);
     }
-    if (*block).version > 1 as u32 {
-        (*block).version = 1 as u32;
+    if (*block).version > 1 {
+        (*block).version = 1;
     }
-    (*block).ignore_check = false_0 as lzma_bool;
-    if (*in_0.offset(0) as u32)
-        .wrapping_add(1 as u32)
-        .wrapping_mul(4 as u32)
-        != (*block).header_size
+    (*block).ignore_check = false as lzma_bool;
+    if (*in_0.offset(0) as u32).wrapping_add(1).wrapping_mul(4) != (*block).header_size
         || (*block).check > LZMA_CHECK_ID_MAX
     {
         return LZMA_PROG_ERROR;
     }
-    let in_size: size_t = (*block).header_size.wrapping_sub(4 as u32) as size_t;
-    if lzma_crc32(in_0, in_size, 0 as u32) != read32le(in_0.offset(in_size as isize)) {
+    let in_size: size_t = (*block).header_size.wrapping_sub(4) as size_t;
+    if lzma_crc32(in_0, in_size, 0) != read32le(in_0.offset(in_size as isize)) {
         return LZMA_DATA_ERROR;
     }
     if *in_0.offset(1) as c_int & 0x3c as c_int != 0 {
         return LZMA_OPTIONS_ERROR;
     }
-    let mut in_pos: size_t = 2 as size_t;
+    let mut in_pos: size_t = 2;
     if *in_0.offset(1) as c_int & 0x40 as c_int != 0 {
         let ret_: lzma_ret = lzma_vli_decode(
             &raw mut (*block).compressed_size,
-            ::core::ptr::null_mut::<size_t>(),
+            core::ptr::null_mut(),
             in_0,
             &raw mut in_pos,
             in_size,
@@ -163,7 +159,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     if *in_0.offset(1) as c_int & 0x80 as c_int != 0 {
         let ret__0: lzma_ret = lzma_vli_decode(
             &raw mut (*block).uncompressed_size,
-            ::core::ptr::null_mut::<size_t>(),
+            core::ptr::null_mut(),
             in_0,
             &raw mut in_pos,
             in_size,
@@ -175,7 +171,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
         (*block).uncompressed_size = LZMA_VLI_UNKNOWN as lzma_vli;
     }
     let filter_count: size_t = (u32::from(*in_0.offset(1)) & 3).wrapping_add(1) as size_t;
-    let mut i_0: size_t = 0 as size_t;
+    let mut i_0: size_t = 0;
     while i_0 < filter_count {
         let ret: lzma_ret = lzma_filter_flags_decode(
             (*block).filters.offset(i_0 as isize) as *mut lzma_filter,
