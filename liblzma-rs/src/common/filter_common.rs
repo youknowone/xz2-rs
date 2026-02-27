@@ -178,24 +178,24 @@ pub struct lzma_filter_coder {
 pub type lzma_filter_find = Option<unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder>;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTERS_MAX: c_int = 4 as c_int;
-pub const LZMA_FILTER_X86: c_ulonglong = 0x4 as c_ulonglong;
-pub const LZMA_FILTER_POWERPC: c_ulonglong = 0x5 as c_ulonglong;
-pub const LZMA_FILTER_IA64: c_ulonglong = 0x6 as c_ulonglong;
-pub const LZMA_FILTER_ARM: c_ulonglong = 0x7 as c_ulonglong;
-pub const LZMA_FILTER_ARMTHUMB: c_ulonglong = 0x8 as c_ulonglong;
-pub const LZMA_FILTER_SPARC: c_ulonglong = 0x9 as c_ulonglong;
-pub const LZMA_FILTER_ARM64: c_ulonglong = 0xa as c_ulonglong;
-pub const LZMA_FILTER_RISCV: c_ulonglong = 0xb as c_ulonglong;
-pub const LZMA_FILTER_DELTA: c_ulonglong = 0x3 as c_ulonglong;
-pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
-pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002 as c_ulonglong;
-pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21 as c_ulonglong;
-pub const LZMA_MEMUSAGE_BASE: c_ulonglong = (1 as c_ulonglong) << 15 as c_int;
+pub const LZMA_FILTER_X86: c_ulonglong = 0x4;
+pub const LZMA_FILTER_POWERPC: c_ulonglong = 0x5;
+pub const LZMA_FILTER_IA64: c_ulonglong = 0x6;
+pub const LZMA_FILTER_ARM: c_ulonglong = 0x7;
+pub const LZMA_FILTER_ARMTHUMB: c_ulonglong = 0x8;
+pub const LZMA_FILTER_SPARC: c_ulonglong = 0x9;
+pub const LZMA_FILTER_ARM64: c_ulonglong = 0xa;
+pub const LZMA_FILTER_RISCV: c_ulonglong = 0xb;
+pub const LZMA_FILTER_DELTA: c_ulonglong = 0x3;
+pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001;
+pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002;
+pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21;
+pub const LZMA_MEMUSAGE_BASE: c_ulonglong = 1 << 15;
 static mut features: [C2RustUnnamed; 13] = [
     C2RustUnnamed {
         id: LZMA_FILTER_LZMA1 as lzma_vli,
@@ -393,7 +393,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
     mut filters: *const lzma_filter,
     mut count: *mut size_t,
 ) -> lzma_ret {
-    if filters.is_null() || (*filters.offset(0 as isize)).id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if filters.is_null() || (*filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli {
         return LZMA_PROG_ERROR;
     }
     let mut changes_size_count: size_t = 0 as size_t;
@@ -437,7 +437,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
 ) -> lzma_ret {
     let mut count: size_t = 0;
     let ret_: lzma_ret = lzma_validate_chain(options, &raw mut count) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let mut filters: [lzma_filter_info; 5] = [lzma_filter_info_s {
@@ -480,7 +480,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
     let ret: lzma_ret =
         lzma_next_filter_init(next, allocator, &raw mut filters as *mut lzma_filter_info)
             as lzma_ret;
-    if ret as c_uint != LZMA_OK as c_uint {
+    if ret != LZMA_OK {
         lzma_next_end(next, allocator);
     }
     return ret;
@@ -491,7 +491,7 @@ pub unsafe extern "C" fn lzma_raw_coder_memusage(
     mut filters: *const lzma_filter,
 ) -> u64 {
     let mut tmp: size_t = 0;
-    if lzma_validate_chain(filters, &raw mut tmp) as c_uint != LZMA_OK as c_uint {
+    if lzma_validate_chain(filters, &raw mut tmp) != LZMA_OK {
         return UINT64_MAX as u64;
     }
     let mut total: u64 = 0 as u64;

@@ -89,7 +89,7 @@ pub type lzma_code_function = Option<
 >;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_buffer_encode(
@@ -121,7 +121,7 @@ pub unsafe extern "C" fn lzma_raw_buffer_encode(
         set_out_limit: None,
     };
     let ret_: lzma_ret = lzma_raw_encoder_init(&raw mut next, allocator, filters) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let out_start: size_t = *out_pos;
@@ -138,10 +138,10 @@ pub unsafe extern "C" fn lzma_raw_buffer_encode(
         LZMA_FINISH,
     );
     lzma_next_end(&raw mut next, allocator);
-    if ret as c_uint == LZMA_STREAM_END as c_uint {
+    if ret == LZMA_STREAM_END {
         ret = LZMA_OK;
     } else {
-        if ret as c_uint == LZMA_OK as c_uint {
+        if ret == LZMA_OK {
             ret = LZMA_BUF_ERROR;
         }
         *out_pos = out_start;

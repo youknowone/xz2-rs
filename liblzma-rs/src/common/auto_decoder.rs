@@ -153,16 +153,16 @@ pub struct lzma_auto_coder {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const true_0: c_int = 1 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_TELL_NO_CHECK: c_uint = 0x1 as c_uint;
-pub const LZMA_TELL_UNSUPPORTED_CHECK: c_uint = 0x2 as c_uint;
-pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4 as c_uint;
-pub const LZMA_IGNORE_CHECK: c_uint = 0x10 as c_uint;
-pub const LZMA_CONCATENATED: c_uint = 0x8 as c_uint;
-pub const LZMA_FAIL_FAST: c_uint = 0x20 as c_uint;
-pub const LZMA_MEMUSAGE_BASE: c_ulonglong = (1 as c_ulonglong) << 15 as c_int;
+pub const LZMA_TELL_NO_CHECK: c_uint = 0x1;
+pub const LZMA_TELL_UNSUPPORTED_CHECK: c_uint = 0x2;
+pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4;
+pub const LZMA_IGNORE_CHECK: c_uint = 0x10;
+pub const LZMA_CONCATENATED: c_uint = 0x8;
+pub const LZMA_FAIL_FAST: c_uint = 0x20;
+pub const LZMA_MEMUSAGE_BASE: c_ulonglong = 1 << 15;
 pub const LZMA_SUPPORTED_FLAGS: c_uint = LZMA_TELL_NO_CHECK
     | LZMA_TELL_UNSUPPORTED_CHECK
     | LZMA_TELL_ANY_CHECK
@@ -182,7 +182,7 @@ unsafe extern "C" fn auto_decode(
 ) -> lzma_ret {
     let mut coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
     let mut current_block_28: u64;
-    match (*coder).sequence as c_uint {
+    match (*coder).sequence {
         0 => {
             if *in_pos >= in_size {
                 return LZMA_OK;
@@ -195,7 +195,7 @@ unsafe extern "C" fn auto_decode(
                     (*coder).memlimit,
                     (*coder).flags,
                 ) as lzma_ret;
-                if ret_ as c_uint != LZMA_OK as c_uint {
+                if ret_ != LZMA_OK {
                     return ret_;
                 }
             } else {
@@ -205,7 +205,7 @@ unsafe extern "C" fn auto_decode(
                     (*coder).memlimit,
                     1 as c_int != 0,
                 ) as lzma_ret;
-                if ret__0 as c_uint != LZMA_OK as c_uint {
+                if ret__0 != LZMA_OK {
                     return ret__0;
                 }
                 if (*coder).flags & LZMA_TELL_NO_CHECK as u32 != 0 {
@@ -238,9 +238,7 @@ unsafe extern "C" fn auto_decode(
                 out_size,
                 action,
             ) as lzma_ret;
-            if ret as c_uint != LZMA_STREAM_END as c_uint
-                || (*coder).flags & LZMA_CONCATENATED as u32 == 0 as u32
-            {
+            if ret != LZMA_STREAM_END || (*coder).flags & LZMA_CONCATENATED as u32 == 0 as u32 {
                 return ret;
             }
             (*coder).sequence = SEQ_FINISH;
@@ -250,7 +248,7 @@ unsafe extern "C" fn auto_decode(
     if *in_pos < in_size {
         return LZMA_DATA_ERROR;
     }
-    return (if action as c_uint == LZMA_FINISH as c_uint {
+    return (if action == LZMA_FINISH {
         LZMA_STREAM_END as c_int
     } else {
         LZMA_OK as c_int
@@ -267,9 +265,9 @@ unsafe extern "C" fn auto_decoder_end(
 unsafe extern "C" fn auto_decoder_get_check(mut coder_ptr: *const c_void) -> lzma_check {
     let mut coder: *const lzma_auto_coder = coder_ptr as *const lzma_auto_coder;
     return (if (*coder).next.get_check.is_none() {
-        LZMA_CHECK_NONE as c_uint
+        LZMA_CHECK_NONE
     } else {
-        (*coder).next.get_check.expect("non-null function pointer")((*coder).next.coder) as c_uint
+        (*coder).next.get_check.expect("non-null function pointer")((*coder).next.coder)
     }) as lzma_check;
 }
 unsafe extern "C" fn auto_decoder_memconfig(
@@ -295,7 +293,7 @@ unsafe extern "C" fn auto_decoder_memconfig(
             ret = LZMA_MEMLIMIT_ERROR;
         }
     }
-    if ret as c_uint == LZMA_OK as c_uint && new_memlimit != 0 as u64 {
+    if ret == LZMA_OK && new_memlimit != 0 as u64 {
         (*coder).memlimit = new_memlimit;
     }
     return ret;
@@ -404,7 +402,7 @@ pub unsafe extern "C" fn lzma_auto_decoder(
     mut flags: u32,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = auto_decoder_init(
@@ -413,7 +411,7 @@ pub unsafe extern "C" fn lzma_auto_decoder(
         memlimit,
         flags,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

@@ -90,9 +90,9 @@ pub type lzma_code_function = Option<
 >;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4 as c_uint;
+pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_buffer_decode(
     mut memlimit: *mut u64,
@@ -131,7 +131,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_decode(
     };
     let mut ret: lzma_ret =
         lzma_stream_decoder_init(&raw mut stream_decoder, allocator, *memlimit, flags);
-    if ret as c_uint == LZMA_OK as c_uint {
+    if ret == LZMA_OK {
         let in_start: size_t = *in_pos;
         let out_start: size_t = *out_pos;
         ret = stream_decoder.code.expect("non-null function pointer")(
@@ -145,18 +145,18 @@ pub unsafe extern "C" fn lzma_stream_buffer_decode(
             out_size,
             LZMA_FINISH,
         );
-        if ret as c_uint == LZMA_STREAM_END as c_uint {
+        if ret == LZMA_STREAM_END {
             ret = LZMA_OK;
         } else {
             *in_pos = in_start;
             *out_pos = out_start;
-            if ret as c_uint == LZMA_OK as c_uint {
+            if ret == LZMA_OK {
                 if *in_pos == in_size {
                     ret = LZMA_DATA_ERROR;
                 } else {
                     ret = LZMA_BUF_ERROR;
                 }
-            } else if ret as c_uint == LZMA_MEMLIMIT_ERROR as c_uint {
+            } else if ret == LZMA_MEMLIMIT_ERROR {
                 let mut memusage: u64 = 0;
                 stream_decoder.memconfig.expect("non-null function pointer")(
                     stream_decoder.coder,

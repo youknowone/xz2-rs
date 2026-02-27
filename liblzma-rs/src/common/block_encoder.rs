@@ -233,17 +233,17 @@ pub const SEQ_PADDING: C2RustUnnamed_2 = 1;
 pub const SEQ_CODE: C2RustUnnamed_2 = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const true_0: c_int = 1 as c_int;
-pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2 as c_ulonglong);
+pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_CHECK_ID_MAX: c_int = 15 as c_int;
+pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 pub const LZMA_CHECK_SIZE_MAX: c_int = 64 as c_int;
 pub const LZMA_BLOCK_HEADER_SIZE_MAX: c_int = 1024 as c_int;
 pub const COMPRESSED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX
-    .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as c_ulonglong)
-    .wrapping_sub(LZMA_CHECK_SIZE_MAX as c_ulonglong)
-    & !(3 as c_ulonglong);
+    .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as u64)
+    .wrapping_sub(LZMA_CHECK_SIZE_MAX as u64)
+    & !3;
 unsafe extern "C" fn block_encode(
     mut coder_ptr: *mut c_void,
     mut allocator: *const lzma_allocator,
@@ -263,7 +263,7 @@ unsafe extern "C" fn block_encode(
     }
     's_142: {
         let mut current_block_34: u64;
-        match (*coder).sequence as c_uint {
+        match (*coder).sequence {
             0 => {
                 let in_start: size_t = *in_pos;
                 let out_start: size_t = *out_pos;
@@ -297,9 +297,7 @@ unsafe extern "C" fn block_encode(
                         in_used,
                     );
                 }
-                if ret as c_uint != LZMA_STREAM_END as c_uint
-                    || action as c_uint == LZMA_SYNC_FLUSH as c_uint
-                {
+                if ret != LZMA_STREAM_END || action == LZMA_SYNC_FLUSH {
                     return ret;
                 }
                 (*(*coder).block).compressed_size = (*coder).compressed_size;
@@ -327,7 +325,7 @@ unsafe extern "C" fn block_encode(
                     *out_pos = (*out_pos).wrapping_add(1);
                     (*coder).compressed_size = (*coder).compressed_size.wrapping_add(1);
                 }
-                if (*(*coder).block).check as c_uint == LZMA_CHECK_NONE as c_uint {
+                if (*(*coder).block).check == LZMA_CHECK_NONE {
                     return LZMA_STREAM_END;
                 }
                 lzma_check_finish(&raw mut (*coder).check, (*(*coder).block).check);
@@ -371,7 +369,7 @@ unsafe extern "C" fn block_encoder_update(
     mut reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
     let mut coder: *mut lzma_block_coder = coder_ptr as *mut lzma_block_coder;
-    if (*coder).sequence as c_uint != SEQ_CODE as c_uint {
+    if (*coder).sequence != SEQ_CODE {
         return LZMA_PROG_ERROR;
     }
     return lzma_next_filter_update(&raw mut (*coder).next, allocator, reversed_filters);
@@ -425,7 +423,7 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
     if (*block).version > 1 as u32 {
         return LZMA_OPTIONS_ERROR;
     }
-    if (*block).check as c_uint > LZMA_CHECK_ID_MAX as c_uint {
+    if (*block).check > LZMA_CHECK_ID_MAX {
         return LZMA_PROG_ERROR;
     }
     if lzma_check_is_supported((*block).check) == 0 {
@@ -502,13 +500,13 @@ pub unsafe extern "C" fn lzma_block_encoder(
     mut block: *mut lzma_block,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret =
         lzma_block_encoder_init(&raw mut (*(*strm).internal).next, (*strm).allocator, block)
             as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

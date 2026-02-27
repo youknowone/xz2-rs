@@ -112,18 +112,18 @@ pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0 as isize) as u32;
-    num |= (*buf.offset(1 as isize) as u32) << 8 as c_int;
-    num |= (*buf.offset(2 as isize) as u32) << 16 as c_int;
-    num |= (*buf.offset(3 as isize) as u32) << 24 as c_int;
+    let mut num: u32 = *buf.offset(0) as u32;
+    num |= (*buf.offset(1) as u32) << 8;
+    num |= (*buf.offset(2) as u32) << 16;
+    num |= (*buf.offset(3) as u32) << 24;
     return num;
 }
 #[inline]
 unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
-    *buf.offset(0 as isize) = num as u8;
-    *buf.offset(1 as isize) = (num >> 8 as c_int) as u8;
-    *buf.offset(2 as isize) = (num >> 16 as c_int) as u8;
-    *buf.offset(3 as isize) = (num >> 24 as c_int) as u8;
+    *buf.offset(0) = num as u8;
+    *buf.offset(1) = (num >> 8) as u8;
+    *buf.offset(2) = (num >> 16) as u8;
+    *buf.offset(3) = (num >> 24) as u8;
 }
 unsafe extern "C" fn arm64_code(
     mut simple: *mut c_void,
@@ -138,9 +138,9 @@ unsafe extern "C" fn arm64_code(
     while i < size {
         let mut pc: u32 = (now_pos as size_t).wrapping_add(i) as u32;
         let mut instr: u32 = read32le(buffer.offset(i as isize));
-        if instr >> 26 as c_int == 0x25 as u32 {
+        if instr >> 26 == 0x25 as u32 {
             let src: u32 = instr;
-            instr = 0x94000000 as c_uint as u32;
+            instr = 0x94000000 as u32;
             pc >>= 2 as c_int;
             if !is_encoder {
                 pc = (0 as u32).wrapping_sub(pc);
@@ -148,19 +148,17 @@ unsafe extern "C" fn arm64_code(
             instr |= src.wrapping_add(pc) & 0x3ffffff as u32;
             write32le(buffer.offset(i as isize), instr);
         } else if instr & 0x9f000000 as u32 == 0x90000000 as u32 {
-            let src_0: u32 =
-                instr >> 29 as c_int & 3 as u32 | instr >> 3 as c_int & 0x1ffffc as u32;
+            let src_0: u32 = instr >> 29 & 3 as u32 | instr >> 3 & 0x1ffffc as u32;
             if !(src_0.wrapping_add(0x20000 as u32) & 0x1c0000 as u32 != 0) {
-                instr = (instr as c_uint & 0x9000001f as c_uint) as u32;
+                instr = (instr & 0x9000001f) as u32;
                 pc >>= 12 as c_int;
                 if !is_encoder {
                     pc = (0 as u32).wrapping_sub(pc);
                 }
                 let dest: u32 = src_0.wrapping_add(pc);
-                instr |= (dest & 3 as u32) << 29 as c_int;
-                instr |= (dest & 0x3fffc as u32) << 3 as c_int;
-                instr = (instr as c_uint
-                    | ((0 as u32).wrapping_sub(dest & 0x20000 as u32) & 0xe00000 as u32) as c_uint)
+                instr |= (dest & 3 as u32) << 29;
+                instr |= (dest & 0x3fffc as u32) << 3;
+                instr = (instr | ((0 as u32).wrapping_sub(dest & 0x20000 as u32) & 0xe00000 as u32))
                     as u32;
                 write32le(buffer.offset(i as isize), instr);
             }
@@ -200,7 +198,7 @@ pub unsafe extern "C" fn lzma_bcj_arm64_encode(
     mut buf: *mut u8,
     mut size: size_t,
 ) -> size_t {
-    start_offset = (start_offset as c_uint & !(3 as c_uint)) as u32;
+    start_offset = (start_offset & !3u32) as u32;
     return arm64_code(NULL, start_offset, true_0 != 0, buf, size);
 }
 #[no_mangle]
@@ -217,6 +215,6 @@ pub unsafe extern "C" fn lzma_bcj_arm64_decode(
     mut buf: *mut u8,
     mut size: size_t,
 ) -> size_t {
-    start_offset = (start_offset as c_uint & !(3 as c_uint)) as u32;
+    start_offset = (start_offset & !3u32) as u32;
     return arm64_code(NULL, start_offset, false_0 != 0, buf, size);
 }

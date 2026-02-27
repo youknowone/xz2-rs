@@ -141,7 +141,7 @@ pub struct lzma_length_encoder {
     pub counters: [u32; 16],
 }
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 #[inline]
 unsafe extern "C" fn mf_ptr(mut mf: *const lzma_mf) -> *const u8 {
     return (*mf).buffer.offset((*mf).read_pos as isize);
@@ -191,20 +191,14 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         len_main = (*coder).longest_match_length;
         matches_count = (*coder).matches_count;
     }
-    let mut buf: *const u8 = mf_ptr(mf).offset(-(1 as isize));
+    let mut buf: *const u8 = mf_ptr(mf).offset(-1);
     let buf_avail: u32 = if mf_avail(mf).wrapping_add(1 as u32)
-        < (2 as c_int
-            + (((1 as c_int) << 3 as c_int)
-                + ((1 as c_int) << 3 as c_int)
-                + ((1 as c_int) << 8 as c_int))
+        < (2 as c_int + (((1 as c_int) << 3) + ((1 as c_int) << 3) + ((1 as c_int) << 8))
             - 1 as c_int) as u32
     {
         (mf_avail(mf) as u32).wrapping_add(1 as u32)
     } else {
-        (2 as c_int
-            + (((1 as c_int) << 3 as c_int)
-                + ((1 as c_int) << 3 as c_int)
-                + ((1 as c_int) << 8 as c_int))
+        (2 as c_int + (((1 as c_int) << 3) + ((1 as c_int) << 3) + ((1 as c_int) << 8))
             - 1 as c_int) as u32
     };
     if buf_avail < 2 as u32 {
@@ -216,11 +210,9 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
     let mut rep_index: u32 = 0 as u32;
     let mut i: u32 = 0 as u32;
     while i < REPS as u32 {
-        let buf_back: *const u8 = buf
-            .offset(-((*coder).reps[i as usize] as isize))
-            .offset(-(1 as isize));
-        if !(*buf.offset(0 as isize) as c_int != *buf_back.offset(0 as isize) as c_int
-            || *buf.offset(1 as isize) as c_int != *buf_back.offset(1 as isize) as c_int)
+        let buf_back: *const u8 = buf.offset(-((*coder).reps[i as usize] as isize)).offset(-1);
+        if !(*buf.offset(0) as c_int != *buf_back.offset(0) as c_int
+            || *buf.offset(1) as c_int != *buf_back.offset(1) as c_int)
         {
             let len: u32 = lzma_memcmplen(buf, buf_back, 2 as u32, buf_avail) as u32;
             if len >= nice_len {
@@ -253,7 +245,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
                     .len
                     .wrapping_add(1 as u32)
         {
-            if !(back_main >> 7 as c_int
+            if !(back_main >> 7
                 > (*coder).matches[matches_count.wrapping_sub(2 as u32) as usize].dist)
             {
                 break;
@@ -268,8 +260,8 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
     }
     if rep_len >= 2 as u32 {
         if rep_len.wrapping_add(1 as u32) >= len_main
-            || rep_len.wrapping_add(2 as u32) >= len_main && back_main > (1 as u32) << 9 as c_int
-            || rep_len.wrapping_add(3 as u32) >= len_main && back_main > (1 as u32) << 15 as c_int
+            || rep_len.wrapping_add(2 as u32) >= len_main && back_main > (1 as u32) << 9
+            || rep_len.wrapping_add(3 as u32) >= len_main && back_main > (1 as u32) << 15
         {
             *back_res = rep_index;
             *len_res = rep_len;
@@ -292,11 +284,11 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
             (*coder).matches[(*coder).matches_count.wrapping_sub(1 as u32) as usize].dist;
         if (*coder).longest_match_length >= len_main && new_dist < back_main
             || (*coder).longest_match_length == len_main.wrapping_add(1 as u32)
-                && !(new_dist >> 7 as c_int > back_main)
+                && !(new_dist >> 7 > back_main)
             || (*coder).longest_match_length > len_main.wrapping_add(1 as u32)
             || (*coder).longest_match_length.wrapping_add(1 as u32) >= len_main
                 && len_main >= 3 as u32
-                && back_main >> 7 as c_int > new_dist
+                && back_main >> 7 > new_dist
         {
             *back_res = UINT32_MAX as u32;
             *len_res = 1 as u32;
@@ -314,7 +306,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         if memcmp(
             buf as *const c_void,
             buf.offset(-((*coder).reps[i_0 as usize] as isize))
-                .offset(-(1 as isize)) as *const c_void,
+                .offset(-1) as *const c_void,
             limit as size_t,
         ) == 0 as c_int
         {

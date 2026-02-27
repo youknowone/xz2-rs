@@ -133,7 +133,7 @@ pub struct lzma_block {
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const LZMA_VLI_BYTES_MAX: c_int = 9 as c_int;
-pub const LZMA_CHECK_ID_MAX: c_int = 15 as c_int;
+pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 pub const LZMA_STREAM_HEADER_SIZE: c_int = 12 as c_int;
 pub const INDEX_BOUND: c_int =
     1 as c_int + 1 as c_int + 2 as c_int * LZMA_VLI_BYTES_MAX + 4 as c_int + 3 as c_int
@@ -145,15 +145,13 @@ pub unsafe extern "C" fn lzma_stream_buffer_bound(mut uncompressed_size: size_t)
     if block_bound == 0 as size_t {
         return 0 as size_t;
     }
-    if (if (18446744073709551615 as c_ulonglong)
-        < (18446744073709551615 as c_ulonglong).wrapping_div(2 as c_ulonglong)
-    {
-        18446744073709551615 as c_ulonglong
+    if (if 18446744073709551615_u64 < 18446744073709551615_u64.wrapping_div(2) {
+        18446744073709551615_u64
     } else {
-        (18446744073709551615 as c_ulonglong).wrapping_div(2 as c_ulonglong)
+        18446744073709551615_u64.wrapping_div(2)
     })
-    .wrapping_sub(block_bound as c_ulonglong)
-        < HEADERS_BOUND as c_ulonglong
+    .wrapping_sub(block_bound as u64)
+        < HEADERS_BOUND as u64
     {
         return 0 as size_t;
     }
@@ -171,7 +169,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
     mut out_size: size_t,
 ) -> lzma_ret {
     if filters.is_null()
-        || check as c_uint > LZMA_CHECK_ID_MAX as c_uint
+        || check > LZMA_CHECK_ID_MAX
         || in_0.is_null() && in_size != 0 as size_t
         || out.is_null()
         || out_pos_ptr.is_null()
@@ -206,9 +204,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
         reserved_int1: 0,
         reserved_int2: 0,
     };
-    if lzma_stream_header_encode(&raw mut stream_flags, out.offset(out_pos as isize)) as c_uint
-        != LZMA_OK as c_uint
-    {
+    if lzma_stream_header_encode(&raw mut stream_flags, out.offset(out_pos as isize)) != LZMA_OK {
         return LZMA_PROG_ERROR;
     }
     out_pos = out_pos.wrapping_add(LZMA_STREAM_HEADER_SIZE as size_t);
@@ -254,7 +250,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
             &raw mut out_pos,
             out_size,
         ) as lzma_ret;
-        if ret_ as c_uint != LZMA_OK as c_uint {
+        if ret_ != LZMA_OK {
             return ret_;
         }
     }
@@ -271,17 +267,15 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
             block.uncompressed_size,
         );
     }
-    if ret as c_uint == LZMA_OK as c_uint {
+    if ret == LZMA_OK {
         ret = lzma_index_buffer_encode(i, out, &raw mut out_pos, out_size);
         stream_flags.backward_size = lzma_index_size(i);
     }
     lzma_index_end(i, allocator);
-    if ret as c_uint != LZMA_OK as c_uint {
+    if ret != LZMA_OK {
         return ret;
     }
-    if lzma_stream_footer_encode(&raw mut stream_flags, out.offset(out_pos as isize)) as c_uint
-        != LZMA_OK as c_uint
-    {
+    if lzma_stream_footer_encode(&raw mut stream_flags, out.offset(out_pos as isize)) != LZMA_OK {
         return LZMA_PROG_ERROR;
     }
     out_pos = out_pos.wrapping_add(LZMA_STREAM_HEADER_SIZE as size_t);

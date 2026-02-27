@@ -198,22 +198,22 @@ pub struct lzma_sha256_state {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
-pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2 as c_ulonglong);
+pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_VLI_BYTES_MAX: c_int = 9 as c_int;
-pub const LZMA_CHECK_ID_MAX: c_int = 15 as c_int;
+pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 pub const LZMA_CHECK_SIZE_MAX: c_int = 64 as c_int;
-pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21 as c_ulonglong;
-pub const LZMA_DICT_SIZE_MIN: c_uint = 4096 as c_uint;
+pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21;
+pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 pub const LZMA_BLOCK_HEADER_SIZE_MAX: c_int = 1024 as c_int;
 pub const COMPRESSED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX
-    .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as c_ulonglong)
-    .wrapping_sub(LZMA_CHECK_SIZE_MAX as c_ulonglong)
-    & !(3 as c_ulonglong);
-pub const LZMA2_CHUNK_MAX: c_uint = (1 as c_uint) << 16 as c_int;
+    .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as u64)
+    .wrapping_sub(LZMA_CHECK_SIZE_MAX as u64)
+    & !3;
+pub const LZMA2_CHUNK_MAX: c_uint = 1u32 << 16;
 pub const LZMA2_HEADER_UNCOMPRESSED: c_int = 3 as c_int;
 pub const HEADERS_BOUND: c_int = 1 as c_int
     + 1 as c_int
@@ -290,12 +290,12 @@ unsafe extern "C" fn block_encode_uncompressed(
         id: 0,
         options: ::core::ptr::null_mut::<c_void>(),
     }; 2];
-    filters[0 as usize].id = LZMA_FILTER_LZMA2 as lzma_vli;
-    filters[0 as usize].options = &raw mut lzma2 as *mut c_void;
-    filters[1 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+    filters[0].id = LZMA_FILTER_LZMA2 as lzma_vli;
+    filters[0].options = &raw mut lzma2 as *mut c_void;
+    filters[1].id = LZMA_VLI_UNKNOWN as lzma_vli;
     let mut filters_orig: *mut lzma_filter = (*block).filters;
     (*block).filters = &raw mut filters as *mut lzma_filter;
-    if lzma_block_header_size(block) as c_uint != LZMA_OK as c_uint {
+    if lzma_block_header_size(block) != LZMA_OK {
         (*block).filters = filters_orig;
         return LZMA_PROG_ERROR;
     }
@@ -305,8 +305,7 @@ unsafe extern "C" fn block_encode_uncompressed(
         (*block).filters = filters_orig;
         return LZMA_BUF_ERROR;
     }
-    if lzma_block_header_encode(block, out.offset(*out_pos as isize)) as c_uint != LZMA_OK as c_uint
-    {
+    if lzma_block_header_encode(block, out.offset(*out_pos as isize)) != LZMA_OK {
         (*block).filters = filters_orig;
         return LZMA_PROG_ERROR;
     }
@@ -319,15 +318,14 @@ unsafe extern "C" fn block_encode_uncompressed(
         *out_pos = (*out_pos).wrapping_add(1);
         *out.offset(fresh1 as isize) = control;
         control = 0x2 as u8;
-        let copy_size: size_t =
-            if in_size.wrapping_sub(in_pos) < ((1 as c_uint) << 16 as c_int) as size_t {
-                in_size.wrapping_sub(in_pos)
-            } else {
-                ((1 as c_uint) << 16 as c_int) as size_t
-            };
+        let copy_size: size_t = if in_size.wrapping_sub(in_pos) < (1u32 << 16) as size_t {
+            in_size.wrapping_sub(in_pos)
+        } else {
+            (1u32 << 16) as size_t
+        };
         let fresh2 = *out_pos;
         *out_pos = (*out_pos).wrapping_add(1);
-        *out.offset(fresh2 as isize) = (copy_size.wrapping_sub(1 as size_t) >> 8 as c_int) as u8;
+        *out.offset(fresh2 as isize) = (copy_size.wrapping_sub(1 as size_t) >> 8) as u8;
         let fresh3 = *out_pos;
         *out_pos = (*out_pos).wrapping_add(1);
         *out.offset(fresh3 as isize) = (copy_size.wrapping_sub(1 as size_t) & 0xff as size_t) as u8;
@@ -354,7 +352,7 @@ unsafe extern "C" fn block_encode_normal(
     mut out_size: size_t,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_block_header_size(block) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     if out_size.wrapping_sub(*out_pos) <= (*block).header_size as size_t {
@@ -379,7 +377,7 @@ unsafe extern "C" fn block_encode_normal(
     };
     let mut ret: lzma_ret =
         lzma_raw_encoder_init(&raw mut raw_encoder, allocator, (*block).filters);
-    if ret as c_uint == LZMA_OK as c_uint {
+    if ret == LZMA_OK {
         let mut in_pos: size_t = 0 as size_t;
         ret = raw_encoder.code.expect("non-null function pointer")(
             raw_encoder.coder,
@@ -394,18 +392,18 @@ unsafe extern "C" fn block_encode_normal(
         );
     }
     lzma_next_end(&raw mut raw_encoder, allocator);
-    if ret as c_uint == LZMA_STREAM_END as c_uint {
+    if ret == LZMA_STREAM_END {
         (*block).compressed_size = (*out_pos)
             .wrapping_sub(out_start.wrapping_add((*block).header_size as size_t))
             as lzma_vli;
         ret = lzma_block_header_encode(block, out.offset(out_start as isize));
-        if ret as c_uint != LZMA_OK as c_uint {
+        if ret != LZMA_OK {
             ret = LZMA_PROG_ERROR;
         }
-    } else if ret as c_uint == LZMA_OK as c_uint {
+    } else if ret == LZMA_OK {
         ret = LZMA_BUF_ERROR;
     }
-    if ret as c_uint != LZMA_OK as c_uint {
+    if ret != LZMA_OK {
         *out_pos = out_start;
     }
     return ret;
@@ -431,7 +429,7 @@ unsafe extern "C" fn block_buffer_encode(
     if (*block).version > 1 as u32 {
         return LZMA_OPTIONS_ERROR;
     }
-    if (*block).check as c_uint > LZMA_CHECK_ID_MAX as c_uint
+    if (*block).check > LZMA_CHECK_ID_MAX
         || try_to_compress as c_int != 0 && (*block).filters.is_null()
     {
         return LZMA_PROG_ERROR;
@@ -454,13 +452,13 @@ unsafe extern "C" fn block_buffer_encode(
     if try_to_compress {
         ret = block_encode_normal(block, allocator, in_0, in_size, out, out_pos, out_size);
     }
-    if ret as c_uint != LZMA_OK as c_uint {
-        if ret as c_uint != LZMA_BUF_ERROR as c_uint {
+    if ret != LZMA_OK {
+        if ret != LZMA_BUF_ERROR {
             return ret;
         }
         let ret_: lzma_ret =
             block_encode_uncompressed(block, in_0, in_size, out, out_pos, out_size) as lzma_ret;
-        if ret_ as c_uint != LZMA_OK as c_uint {
+        if ret_ != LZMA_OK {
             return ret_;
         }
     }

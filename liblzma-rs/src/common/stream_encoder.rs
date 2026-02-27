@@ -249,7 +249,7 @@ pub struct lzma_stream_flags {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
@@ -261,7 +261,7 @@ unsafe extern "C" fn block_encoder_init(
     (*coder).block_options.compressed_size = LZMA_VLI_UNKNOWN as lzma_vli;
     (*coder).block_options.uncompressed_size = LZMA_VLI_UNKNOWN as lzma_vli;
     let ret_: lzma_ret = lzma_block_header_size(&raw mut (*coder).block_options) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     return lzma_block_encoder_init(
@@ -283,7 +283,7 @@ unsafe extern "C" fn stream_encode(
 ) -> lzma_ret {
     let mut coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
     while *out_pos < out_size {
-        match (*coder).sequence as c_uint {
+        match (*coder).sequence {
             0 | 2 | 5 => {
                 lzma_bufcpy(
                     &raw mut (*coder).buffer as *mut u8,
@@ -296,7 +296,7 @@ unsafe extern "C" fn stream_encode(
                 if (*coder).buffer_pos < (*coder).buffer_size {
                     return LZMA_OK;
                 }
-                if (*coder).sequence as c_uint == SEQ_STREAM_FOOTER as c_uint {
+                if (*coder).sequence == SEQ_STREAM_FOOTER {
                     return LZMA_STREAM_END;
                 }
                 (*coder).buffer_pos = 0 as size_t;
@@ -304,8 +304,8 @@ unsafe extern "C" fn stream_encode(
             }
             1 => {
                 if *in_pos == in_size {
-                    if action as c_uint != LZMA_FINISH as c_uint {
-                        return (if action as c_uint == LZMA_RUN as c_uint {
+                    if action != LZMA_FINISH {
+                        return (if action == LZMA_RUN {
                             LZMA_OK as c_int
                         } else {
                             LZMA_STREAM_END as c_int
@@ -316,14 +316,14 @@ unsafe extern "C" fn stream_encode(
                         allocator,
                         (*coder).index,
                     ) as lzma_ret;
-                    if ret_ as c_uint != LZMA_OK as c_uint {
+                    if ret_ != LZMA_OK {
                         return ret_;
                     }
                     (*coder).sequence = SEQ_INDEX_ENCODE;
                 } else {
                     if !(*coder).block_encoder_is_initialized {
                         let ret__0: lzma_ret = block_encoder_init(coder, allocator) as lzma_ret;
-                        if ret__0 as c_uint != LZMA_OK as c_uint {
+                        if ret__0 != LZMA_OK {
                             return ret__0;
                         }
                     }
@@ -331,8 +331,7 @@ unsafe extern "C" fn stream_encode(
                     if lzma_block_header_encode(
                         &raw mut (*coder).block_options,
                         &raw mut (*coder).buffer as *mut u8,
-                    ) as c_uint
-                        != LZMA_OK as c_uint
+                    ) != LZMA_OK
                     {
                         return LZMA_PROG_ERROR;
                     }
@@ -362,9 +361,7 @@ unsafe extern "C" fn stream_encode(
                     out_size,
                     convert[action as usize],
                 ) as lzma_ret;
-                if ret as c_uint != LZMA_STREAM_END as c_uint
-                    || action as c_uint == LZMA_SYNC_FLUSH as c_uint
-                {
+                if ret != LZMA_STREAM_END || action == LZMA_SYNC_FLUSH {
                     return ret;
                 }
                 let unpadded_size: lzma_vli =
@@ -375,7 +372,7 @@ unsafe extern "C" fn stream_encode(
                     unpadded_size,
                     (*coder).block_options.uncompressed_size,
                 ) as lzma_ret;
-                if ret__1 as c_uint != LZMA_OK as c_uint {
+                if ret__1 != LZMA_OK {
                     return ret__1;
                 }
                 (*coder).sequence = SEQ_BLOCK_INIT;
@@ -395,7 +392,7 @@ unsafe extern "C" fn stream_encode(
                     out_size,
                     LZMA_RUN,
                 ) as lzma_ret;
-                if ret_0 as c_uint != LZMA_STREAM_END as c_uint {
+                if ret_0 != LZMA_STREAM_END {
                     return ret_0;
                 }
                 let stream_flags: lzma_stream_flags = lzma_stream_flags {
@@ -420,8 +417,7 @@ unsafe extern "C" fn stream_encode(
                 if lzma_stream_footer_encode(
                     &raw const stream_flags,
                     &raw mut (*coder).buffer as *mut u8,
-                ) as c_uint
-                    != LZMA_OK as c_uint
+                ) != LZMA_OK
                 {
                     return LZMA_PROG_ERROR;
                 }
@@ -459,21 +455,21 @@ unsafe extern "C" fn stream_encoder_update(
     }; 5];
     let ret_: lzma_ret =
         lzma_filters_copy(filters, &raw mut temp as *mut lzma_filter, allocator) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
-    if (*coder).sequence as c_uint <= SEQ_BLOCK_INIT as c_uint {
+    if (*coder).sequence <= SEQ_BLOCK_INIT {
         (*coder).block_encoder_is_initialized = false_0 != 0;
         (*coder).block_options.filters = &raw mut temp as *mut lzma_filter;
         ret = block_encoder_init(coder, allocator);
         (*coder).block_options.filters = &raw mut (*coder).filters as *mut lzma_filter;
-        if ret as c_uint != LZMA_OK as c_uint {
+        if ret != LZMA_OK {
             current_block = 9913398440939854562;
         } else {
             (*coder).block_encoder_is_initialized = true_0 != 0;
             current_block = 8236137900636309791;
         }
-    } else if (*coder).sequence as c_uint <= SEQ_BLOCK_ENCODE as c_uint {
+    } else if (*coder).sequence <= SEQ_BLOCK_ENCODE {
         ret = (*coder)
             .block_encoder
             .update
@@ -483,7 +479,7 @@ unsafe extern "C" fn stream_encoder_update(
             filters,
             reversed_filters,
         );
-        if ret as c_uint != LZMA_OK as c_uint {
+        if ret != LZMA_OK {
             current_block = 9913398440939854562;
         } else {
             current_block = 8236137900636309791;
@@ -602,7 +598,7 @@ unsafe extern "C" fn stream_encoder_init(
                     *const lzma_filter,
                 ) -> lzma_ret,
             >;
-        (*coder).filters[0 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*coder).filters[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
         (*coder).block_encoder = lzma_next_coder_s {
             coder: NULL,
             id: LZMA_VLI_UNKNOWN as lzma_vli,
@@ -659,7 +655,7 @@ unsafe extern "C" fn stream_encoder_init(
     let ret_: lzma_ret =
         lzma_stream_header_encode(&raw mut stream_flags, &raw mut (*coder).buffer as *mut u8)
             as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     (*coder).buffer_pos = 0 as size_t;
@@ -678,7 +674,7 @@ pub unsafe extern "C" fn lzma_stream_encoder(
     mut check: lzma_check,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = stream_encoder_init(
@@ -687,7 +683,7 @@ pub unsafe extern "C" fn lzma_stream_encoder(
         filters,
         check,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

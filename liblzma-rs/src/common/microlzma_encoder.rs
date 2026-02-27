@@ -196,10 +196,10 @@ pub struct lzma_microlzma_coder {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const true_0: c_int = 1 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
+pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001;
 unsafe extern "C" fn microlzma_encode(
     mut coder_ptr: *mut c_void,
     mut allocator: *const lzma_allocator,
@@ -222,8 +222,7 @@ unsafe extern "C" fn microlzma_encode(
         (*coder).lzma.coder,
         &raw mut uncomp_size,
         out_size.wrapping_sub(*out_pos) as u64,
-    ) as c_uint
-        != LZMA_OK as c_uint
+    ) != LZMA_OK
     {
         return LZMA_PROG_ERROR;
     }
@@ -238,8 +237,8 @@ unsafe extern "C" fn microlzma_encode(
         out_size,
         action,
     ) as lzma_ret;
-    if ret as c_uint != LZMA_STREAM_END as c_uint {
-        if ret as c_uint == LZMA_OK as c_uint {
+    if ret != LZMA_STREAM_END {
+        if ret == LZMA_OK {
             return LZMA_PROG_ERROR;
         }
         return ret;
@@ -372,7 +371,7 @@ pub unsafe extern "C" fn lzma_microlzma_encoder(
     mut options: *const lzma_options_lzma,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = microlzma_encoder_init(
@@ -380,7 +379,7 @@ pub unsafe extern "C" fn lzma_microlzma_encoder(
         (*strm).allocator,
         options,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

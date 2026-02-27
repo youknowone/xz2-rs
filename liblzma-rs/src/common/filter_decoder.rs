@@ -256,18 +256,18 @@ pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
-pub const LZMA_FILTER_X86: c_ulonglong = 0x4 as c_ulonglong;
-pub const LZMA_FILTER_POWERPC: c_ulonglong = 0x5 as c_ulonglong;
-pub const LZMA_FILTER_IA64: c_ulonglong = 0x6 as c_ulonglong;
-pub const LZMA_FILTER_ARM: c_ulonglong = 0x7 as c_ulonglong;
-pub const LZMA_FILTER_ARMTHUMB: c_ulonglong = 0x8 as c_ulonglong;
-pub const LZMA_FILTER_SPARC: c_ulonglong = 0x9 as c_ulonglong;
-pub const LZMA_FILTER_ARM64: c_ulonglong = 0xa as c_ulonglong;
-pub const LZMA_FILTER_RISCV: c_ulonglong = 0xb as c_ulonglong;
-pub const LZMA_FILTER_DELTA: c_ulonglong = 0x3 as c_ulonglong;
-pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
-pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002 as c_ulonglong;
-pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21 as c_ulonglong;
+pub const LZMA_FILTER_X86: c_ulonglong = 0x4;
+pub const LZMA_FILTER_POWERPC: c_ulonglong = 0x5;
+pub const LZMA_FILTER_IA64: c_ulonglong = 0x6;
+pub const LZMA_FILTER_ARM: c_ulonglong = 0x7;
+pub const LZMA_FILTER_ARMTHUMB: c_ulonglong = 0x8;
+pub const LZMA_FILTER_SPARC: c_ulonglong = 0x9;
+pub const LZMA_FILTER_ARM64: c_ulonglong = 0xa;
+pub const LZMA_FILTER_RISCV: c_ulonglong = 0xb;
+pub const LZMA_FILTER_DELTA: c_ulonglong = 0x3;
+pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001;
+pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002;
+pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21;
 static mut decoders: [lzma_filter_decoder; 12] = [
     lzma_filter_decoder {
         id: LZMA_FILTER_LZMA1 as lzma_vli,
@@ -562,7 +562,7 @@ pub unsafe extern "C" fn lzma_raw_decoder(
     mut options: *const lzma_filter,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = lzma_raw_decoder_init(
@@ -570,7 +570,7 @@ pub unsafe extern "C" fn lzma_raw_decoder(
         (*strm).allocator,
         options,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

@@ -39,7 +39,7 @@ pub struct lzma_filter {
     pub id: lzma_vli,
     pub options: *mut c_void,
 }
-pub const LZMA_FILTER_RESERVED_START: c_ulonglong = (1 as c_ulonglong) << 62 as c_int;
+pub const LZMA_FILTER_RESERVED_START: c_ulonglong = 1 << 62;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_filter_flags_size(
     mut size: *mut u32,
@@ -49,7 +49,7 @@ pub unsafe extern "C" fn lzma_filter_flags_size(
         return LZMA_PROG_ERROR;
     }
     let ret_: lzma_ret = lzma_properties_size(size, filter) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     *size = (*size)
@@ -73,12 +73,12 @@ pub unsafe extern "C" fn lzma_filter_flags_encode(
         out_pos,
         out_size,
     ) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let mut props_size: u32 = 0;
     let ret__0: lzma_ret = lzma_properties_size(&raw mut props_size, filter) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         return ret__0;
     }
     let ret__1: lzma_ret = lzma_vli_encode(
@@ -88,7 +88,7 @@ pub unsafe extern "C" fn lzma_filter_flags_encode(
         out_pos,
         out_size,
     ) as lzma_ret;
-    if ret__1 as c_uint != LZMA_OK as c_uint {
+    if ret__1 != LZMA_OK {
         return ret__1;
     }
     if out_size.wrapping_sub(*out_pos) < props_size as size_t {
@@ -96,7 +96,7 @@ pub unsafe extern "C" fn lzma_filter_flags_encode(
     }
     let ret__2: lzma_ret =
         lzma_properties_encode(filter, out.offset(*out_pos as isize)) as lzma_ret;
-    if ret__2 as c_uint != LZMA_OK as c_uint {
+    if ret__2 != LZMA_OK {
         return ret__2;
     }
     *out_pos = (*out_pos).wrapping_add(props_size as size_t);

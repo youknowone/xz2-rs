@@ -124,7 +124,7 @@ pub struct lzma_block {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_buffer_decode(
@@ -159,7 +159,7 @@ pub unsafe extern "C" fn lzma_block_buffer_decode(
         set_out_limit: None,
     };
     let mut ret: lzma_ret = lzma_block_decoder_init(&raw mut block_decoder, allocator, block);
-    if ret as c_uint == LZMA_OK as c_uint {
+    if ret == LZMA_OK {
         let in_start: size_t = *in_pos;
         let out_start: size_t = *out_pos;
         ret = block_decoder.code.expect("non-null function pointer")(
@@ -173,10 +173,10 @@ pub unsafe extern "C" fn lzma_block_buffer_decode(
             out_size,
             LZMA_FINISH,
         );
-        if ret as c_uint == LZMA_STREAM_END as c_uint {
+        if ret == LZMA_STREAM_END {
             ret = LZMA_OK;
         } else {
-            if ret as c_uint == LZMA_OK as c_uint {
+            if ret == LZMA_OK {
                 if *in_pos == in_size {
                     ret = LZMA_DATA_ERROR;
                 } else {

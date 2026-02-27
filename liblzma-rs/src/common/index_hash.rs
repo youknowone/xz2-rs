@@ -113,12 +113,12 @@ pub const SEQ_BLOCK: C2RustUnnamed_1 = 0;
 pub type lzma_index_hash = lzma_index_hash_s;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
-pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2 as c_ulonglong);
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
+pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_STREAM_HEADER_SIZE: c_int = 12 as c_int;
-pub const LZMA_BACKWARD_SIZE_MAX: c_ulonglong = (1 as c_ulonglong) << 34 as c_int;
-pub const UNPADDED_SIZE_MIN: c_ulonglong = 5 as c_ulonglong;
-pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !(3 as c_ulonglong);
+pub const LZMA_BACKWARD_SIZE_MAX: c_ulonglong = 1 << 34;
+pub const UNPADDED_SIZE_MIN: c_ulonglong = 5;
+pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
 pub const INDEX_INDICATOR: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn vli_ceil4(mut vli: lzma_vli) -> lzma_vli {
@@ -219,7 +219,7 @@ pub unsafe extern "C" fn lzma_index_hash_append(
     mut uncompressed_size: lzma_vli,
 ) -> lzma_ret {
     if index_hash.is_null()
-        || (*index_hash).sequence as c_uint != SEQ_BLOCK as c_uint
+        || (*index_hash).sequence != SEQ_BLOCK
         || unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
         || unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
         || uncompressed_size > LZMA_VLI_MAX as lzma_vli
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
     let in_start: size_t = *in_pos;
     let mut ret: lzma_ret = LZMA_OK;
     while *in_pos < in_size {
-        match (*index_hash).sequence as c_uint {
+        match (*index_hash).sequence {
             0 => {
                 let fresh0 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
@@ -279,7 +279,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                     in_pos,
                     in_size,
                 );
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     break;
                 }
                 if (*index_hash).remaining != (*index_hash).blocks.count {
@@ -295,19 +295,18 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                 continue;
             }
             2 | 3 => {
-                let mut size: *mut lzma_vli =
-                    if (*index_hash).sequence as c_uint == SEQ_UNPADDED as c_uint {
-                        &raw mut (*index_hash).unpadded_size
-                    } else {
-                        &raw mut (*index_hash).uncompressed_size
-                    };
+                let mut size: *mut lzma_vli = if (*index_hash).sequence == SEQ_UNPADDED {
+                    &raw mut (*index_hash).unpadded_size
+                } else {
+                    &raw mut (*index_hash).uncompressed_size
+                };
                 ret = lzma_vli_decode(size, &raw mut (*index_hash).pos, in_0, in_pos, in_size);
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     break;
                 }
                 ret = LZMA_OK;
                 (*index_hash).pos = 0 as size_t;
-                if (*index_hash).sequence as c_uint == SEQ_UNPADDED as c_uint {
+                if (*index_hash).sequence == SEQ_UNPADDED {
                     if (*index_hash).unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
                         || (*index_hash).unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
                     {

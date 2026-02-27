@@ -130,7 +130,7 @@ pub struct lzma_delta_coder {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const LZMA_DELTA_DIST_MIN: c_int = 1 as c_int;
 unsafe extern "C" fn copy_and_encode(
     mut coder: *mut lzma_delta_coder,
@@ -199,7 +199,7 @@ unsafe extern "C" fn delta_encode(
         }
         *in_pos = (*in_pos).wrapping_add(size);
         *out_pos = (*out_pos).wrapping_add(size);
-        ret = (if action as c_uint != LZMA_RUN as c_uint && *in_pos == in_size {
+        ret = (if action != LZMA_RUN && *in_pos == in_size {
             LZMA_STREAM_END as c_int
         } else {
             LZMA_OK as c_int
@@ -234,7 +234,7 @@ unsafe extern "C" fn delta_encoder_update(
     return lzma_next_filter_update(
         &raw mut (*coder).next,
         allocator,
-        reversed_filters.offset(1 as isize),
+        reversed_filters.offset(1),
     );
 }
 #[no_mangle]
@@ -285,6 +285,6 @@ pub unsafe extern "C" fn lzma_delta_props_encode(
         return LZMA_PROG_ERROR;
     }
     let mut opt: *const lzma_options_delta = options as *const lzma_options_delta;
-    *out.offset(0 as isize) = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN as u32) as u8;
+    *out.offset(0) = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN as u32) as u8;
     return LZMA_OK;
 }

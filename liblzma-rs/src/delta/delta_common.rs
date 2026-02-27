@@ -128,7 +128,7 @@ pub struct lzma_delta_coder {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_DELTA_DIST_MIN: c_int = 1 as c_int;
 pub const LZMA_DELTA_DIST_MAX: c_int = 256 as c_int;
@@ -172,11 +172,11 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
             set_out_limit: None,
         };
     }
-    if lzma_delta_coder_memusage((*filters.offset(0 as isize)).options) == UINT64_MAX as u64 {
+    if lzma_delta_coder_memusage((*filters.offset(0)).options) == UINT64_MAX as u64 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut opt: *const lzma_options_delta =
-        (*filters.offset(0 as isize)).options as *const lzma_options_delta;
+        (*filters.offset(0)).options as *const lzma_options_delta;
     (*coder).distance = (*opt).dist as size_t;
     (*coder).pos = 0 as u8;
     memset(
@@ -184,17 +184,13 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
         0 as c_int,
         256 as size_t,
     );
-    return lzma_next_filter_init(
-        &raw mut (*coder).next,
-        allocator,
-        filters.offset(1 as isize),
-    );
+    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_coder_memusage(mut options: *const c_void) -> u64 {
     let mut opt: *const lzma_options_delta = options as *const lzma_options_delta;
     if opt.is_null()
-        || (*opt).type_0 as c_uint != LZMA_DELTA_TYPE_BYTE as c_uint
+        || (*opt).type_0 != LZMA_DELTA_TYPE_BYTE
         || (*opt).dist < LZMA_DELTA_DIST_MIN as u32
         || (*opt).dist > LZMA_DELTA_DIST_MAX as u32
     {

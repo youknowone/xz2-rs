@@ -94,18 +94,18 @@ pub struct lzma_block {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0 as isize) as u32;
-    num |= (*buf.offset(1 as isize) as u32) << 8 as c_int;
-    num |= (*buf.offset(2 as isize) as u32) << 16 as c_int;
-    num |= (*buf.offset(3 as isize) as u32) << 24 as c_int;
+    let mut num: u32 = *buf.offset(0) as u32;
+    num |= (*buf.offset(1) as u32) << 8;
+    num |= (*buf.offset(2) as u32) << 16;
+    num |= (*buf.offset(3) as u32) << 24;
     return num;
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_CHECK_ID_MAX: c_int = 15 as c_int;
+pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 pub const LZMA_FILTERS_MAX: c_int = 4 as c_int;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_header_decode(
@@ -127,11 +127,11 @@ pub unsafe extern "C" fn lzma_block_header_decode(
         (*block).version = 1 as u32;
     }
     (*block).ignore_check = false_0 as lzma_bool;
-    if (*in_0.offset(0 as isize) as u32)
+    if (*in_0.offset(0) as u32)
         .wrapping_add(1 as u32)
         .wrapping_mul(4 as u32)
         != (*block).header_size
-        || (*block).check as c_uint > LZMA_CHECK_ID_MAX as c_uint
+        || (*block).check > LZMA_CHECK_ID_MAX
     {
         return LZMA_PROG_ERROR;
     }
@@ -139,11 +139,11 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     if lzma_crc32(in_0, in_size, 0 as u32) != read32le(in_0.offset(in_size as isize)) {
         return LZMA_DATA_ERROR;
     }
-    if *in_0.offset(1 as isize) as c_int & 0x3c as c_int != 0 {
+    if *in_0.offset(1) as c_int & 0x3c as c_int != 0 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut in_pos: size_t = 2 as size_t;
-    if *in_0.offset(1 as isize) as c_int & 0x40 as c_int != 0 {
+    if *in_0.offset(1) as c_int & 0x40 as c_int != 0 {
         let ret_: lzma_ret = lzma_vli_decode(
             &raw mut (*block).compressed_size,
             ::core::ptr::null_mut::<size_t>(),
@@ -151,7 +151,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             &raw mut in_pos,
             in_size,
         ) as lzma_ret;
-        if ret_ as c_uint != LZMA_OK as c_uint {
+        if ret_ != LZMA_OK {
             return ret_;
         }
         if lzma_block_unpadded_size(block) == 0 as lzma_vli {
@@ -160,7 +160,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     } else {
         (*block).compressed_size = LZMA_VLI_UNKNOWN as lzma_vli;
     }
-    if *in_0.offset(1 as isize) as c_int & 0x80 as c_int != 0 {
+    if *in_0.offset(1) as c_int & 0x80 as c_int != 0 {
         let ret__0: lzma_ret = lzma_vli_decode(
             &raw mut (*block).uncompressed_size,
             ::core::ptr::null_mut::<size_t>(),
@@ -168,14 +168,13 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             &raw mut in_pos,
             in_size,
         ) as lzma_ret;
-        if ret__0 as c_uint != LZMA_OK as c_uint {
+        if ret__0 != LZMA_OK {
             return ret__0;
         }
     } else {
         (*block).uncompressed_size = LZMA_VLI_UNKNOWN as lzma_vli;
     }
-    let filter_count: size_t =
-        (*in_0.offset(1 as isize) as c_uint & 3 as c_uint).wrapping_add(1 as c_uint) as size_t;
+    let filter_count: size_t = (u32::from(*in_0.offset(1)) & 3).wrapping_add(1) as size_t;
     let mut i_0: size_t = 0 as size_t;
     while i_0 < filter_count {
         let ret: lzma_ret = lzma_filter_flags_decode(
@@ -185,7 +184,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             &raw mut in_pos,
             in_size,
         ) as lzma_ret;
-        if ret as c_uint != LZMA_OK as c_uint {
+        if ret != LZMA_OK {
             lzma_filters_free((*block).filters, allocator);
             return ret;
         }

@@ -144,7 +144,7 @@ pub type lzma_init_function = Option<
 pub type lzma_filter_info = lzma_filter_info_s;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VERSION_MAJOR: c_int = 5 as c_int;
@@ -152,13 +152,13 @@ pub const LZMA_VERSION_MINOR: c_int = 8 as c_int;
 pub const LZMA_VERSION_PATCH: c_int = 2 as c_int;
 pub const LZMA_VERSION_STABILITY: c_int = LZMA_VERSION_STABILITY_STABLE;
 pub const LZMA_VERSION_STABILITY_STABLE: c_int = 2 as c_int;
-pub const LZMA_VERSION: c_uint = (LZMA_VERSION_MAJOR as c_uint)
-    .wrapping_mul(10000000 as c_uint)
-    .wrapping_add((LZMA_VERSION_MINOR as c_uint).wrapping_mul(10000 as c_uint))
-    .wrapping_add((LZMA_VERSION_PATCH as c_uint).wrapping_mul(10 as c_uint))
-    .wrapping_add(LZMA_VERSION_STABILITY as c_uint);
+pub const LZMA_VERSION: c_uint = (LZMA_VERSION_MAJOR as u32)
+    .wrapping_mul(10000000)
+    .wrapping_add((LZMA_VERSION_MINOR as u32).wrapping_mul(10000))
+    .wrapping_add((LZMA_VERSION_PATCH as u32).wrapping_mul(10))
+    .wrapping_add(LZMA_VERSION_STABILITY as u32);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_TIMED_OUT: c_uint = 101 as c_uint;
+pub const LZMA_TIMED_OUT: c_uint = 101;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_version_number() -> u32 {
     return LZMA_VERSION as u32;
@@ -251,20 +251,20 @@ pub unsafe extern "C" fn lzma_next_filter_init(
     mut allocator: *const lzma_allocator,
     mut filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0 as isize)).init)
+    if ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0)).init)
         != (*next).init
     {
         lzma_next_end(next, allocator);
     }
     (*next).init =
-        ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0 as isize)).init);
-    (*next).id = (*filters.offset(0 as isize)).id;
-    return (if (*filters.offset(0 as isize)).init.is_none() {
-        LZMA_OK as c_uint
+        ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0)).init);
+    (*next).id = (*filters.offset(0)).id;
+    return (if (*filters.offset(0)).init.is_none() {
+        LZMA_OK
     } else {
-        (*filters.offset(0 as isize))
+        (*filters.offset(0))
             .init
-            .expect("non-null function pointer")(next, allocator, filters) as c_uint
+            .expect("non-null function pointer")(next, allocator, filters)
     }) as lzma_ret;
 }
 #[no_mangle]
@@ -273,10 +273,10 @@ pub unsafe extern "C" fn lzma_next_filter_update(
     mut allocator: *const lzma_allocator,
     mut reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
-    if (*reversed_filters.offset(0 as isize)).id != (*next).id {
+    if (*reversed_filters.offset(0)).id != (*next).id {
         return LZMA_PROG_ERROR;
     }
-    if (*reversed_filters.offset(0 as isize)).id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*reversed_filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli {
         return LZMA_OK;
     }
     return (*next).update.expect("non-null function pointer")(
@@ -357,7 +357,7 @@ pub unsafe extern "C" fn lzma_code(
         || (*strm).next_out.is_null() && (*strm).avail_out != 0 as size_t
         || (*strm).internal.is_null()
         || (*(*strm).internal).next.code.is_none()
-        || action as c_uint > LZMA_FULL_BARRIER as c_uint
+        || action > LZMA_FULL_BARRIER
         || !(*(*strm).internal).supported_actions[action as usize]
     {
         return LZMA_PROG_ERROR;
@@ -369,13 +369,13 @@ pub unsafe extern "C" fn lzma_code(
         || (*strm).reserved_int2 != 0 as u64
         || (*strm).reserved_int3 != 0 as size_t
         || (*strm).reserved_int4 != 0 as size_t
-        || (*strm).reserved_enum1 as c_uint != LZMA_RESERVED_ENUM as c_uint
-        || (*strm).reserved_enum2 as c_uint != LZMA_RESERVED_ENUM as c_uint
+        || (*strm).reserved_enum1 != LZMA_RESERVED_ENUM
+        || (*strm).reserved_enum2 != LZMA_RESERVED_ENUM
     {
         return LZMA_OPTIONS_ERROR;
     }
-    match (*(*strm).internal).sequence as c_uint {
-        0 => match action as c_uint {
+    match (*(*strm).internal).sequence {
+        0 => match action {
             1 => {
                 (*(*strm).internal).sequence = ISEQ_SYNC_FLUSH;
             }
@@ -391,30 +391,22 @@ pub unsafe extern "C" fn lzma_code(
             0 | _ => {}
         },
         1 => {
-            if action as c_uint != LZMA_SYNC_FLUSH as c_uint
-                || (*(*strm).internal).avail_in != (*strm).avail_in
-            {
+            if action != LZMA_SYNC_FLUSH || (*(*strm).internal).avail_in != (*strm).avail_in {
                 return LZMA_PROG_ERROR;
             }
         }
         2 => {
-            if action as c_uint != LZMA_FULL_FLUSH as c_uint
-                || (*(*strm).internal).avail_in != (*strm).avail_in
-            {
+            if action != LZMA_FULL_FLUSH || (*(*strm).internal).avail_in != (*strm).avail_in {
                 return LZMA_PROG_ERROR;
             }
         }
         3 => {
-            if action as c_uint != LZMA_FINISH as c_uint
-                || (*(*strm).internal).avail_in != (*strm).avail_in
-            {
+            if action != LZMA_FINISH || (*(*strm).internal).avail_in != (*strm).avail_in {
                 return LZMA_PROG_ERROR;
             }
         }
         4 => {
-            if action as c_uint != LZMA_FULL_BARRIER as c_uint
-                || (*(*strm).internal).avail_in != (*strm).avail_in
-            {
+            if action != LZMA_FULL_BARRIER || (*(*strm).internal).avail_in != (*strm).avail_in {
                 return LZMA_PROG_ERROR;
             }
         }
@@ -449,7 +441,7 @@ pub unsafe extern "C" fn lzma_code(
     }
     (*(*strm).internal).avail_in = (*strm).avail_in;
     let mut current_block_49: u64;
-    match ret as c_uint {
+    match ret {
         0 => {
             if out_pos == 0 as size_t && in_pos == 0 as size_t {
                 if (*(*strm).internal).allow_buf_error {
@@ -469,15 +461,15 @@ pub unsafe extern "C" fn lzma_code(
         }
         12 => {
             (*(*strm).internal).allow_buf_error = false_0 != 0;
-            if (*(*strm).internal).sequence as c_uint == ISEQ_FINISH as c_uint {
+            if (*(*strm).internal).sequence == ISEQ_FINISH {
                 (*(*strm).internal).sequence = ISEQ_RUN;
             }
             current_block_49 = 12556861819962772176;
         }
         1 => {
-            if (*(*strm).internal).sequence as c_uint == ISEQ_SYNC_FLUSH as c_uint
-                || (*(*strm).internal).sequence as c_uint == ISEQ_FULL_FLUSH as c_uint
-                || (*(*strm).internal).sequence as c_uint == ISEQ_FULL_BARRIER as c_uint
+            if (*(*strm).internal).sequence == ISEQ_SYNC_FLUSH
+                || (*(*strm).internal).sequence == ISEQ_FULL_FLUSH
+                || (*(*strm).internal).sequence == ISEQ_FULL_BARRIER
             {
                 (*(*strm).internal).sequence = ISEQ_RUN;
             } else {
@@ -554,8 +546,7 @@ pub unsafe extern "C" fn lzma_memusage(mut strm: *const lzma_stream) -> u64 {
             &raw mut memusage,
             &raw mut old_memlimit,
             0 as u64,
-        ) as c_uint
-            != LZMA_OK as c_uint
+        ) != LZMA_OK
     {
         return 0 as u64;
     }
@@ -576,8 +567,7 @@ pub unsafe extern "C" fn lzma_memlimit_get(mut strm: *const lzma_stream) -> u64 
             &raw mut memusage,
             &raw mut old_memlimit,
             0 as u64,
-        ) as c_uint
-            != LZMA_OK as c_uint
+        ) != LZMA_OK
     {
         return 0 as u64;
     }
