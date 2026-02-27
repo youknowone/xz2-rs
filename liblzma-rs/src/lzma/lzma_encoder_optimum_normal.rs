@@ -189,7 +189,7 @@ unsafe extern "C" fn rc_bittree_price(
     mut symbol: u32,
 ) -> u32 {
     let mut price: u32 = 0 as u32;
-    symbol = (symbol as u32).wrapping_add(1u32 << bit_levels) as u32 as u32;
+    symbol = (symbol as u32).wrapping_add(1u32 << bit_levels) as u32;
     loop {
         let bit: u32 = symbol & 1 as u32;
         symbol >>= 1 as c_int;
@@ -324,7 +324,7 @@ unsafe extern "C" fn get_literal_price(
         price = rc_bittree_price(subcoder, 8 as u32, symbol);
     } else {
         let mut offset: u32 = 0x100 as u32;
-        symbol = (symbol as u32).wrapping_add(1u32 << 8) as u32 as u32;
+        symbol = (symbol as u32).wrapping_add(1u32 << 8) as u32;
         loop {
             match_byte <<= 1 as c_int;
             let match_bit: u32 = match_byte & offset;

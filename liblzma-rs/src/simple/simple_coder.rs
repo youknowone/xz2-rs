@@ -193,7 +193,7 @@ unsafe extern "C" fn call_filter(
         buffer,
         size,
     ) as size_t;
-    (*coder).now_pos = ((*coder).now_pos as size_t).wrapping_add(filtered) as u32 as u32;
+    (*coder).now_pos = ((*coder).now_pos as size_t).wrapping_add(filtered) as u32;
     return filtered;
 }
 unsafe extern "C" fn simple_code(

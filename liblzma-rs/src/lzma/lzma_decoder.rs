@@ -944,7 +944,7 @@ unsafe extern "C" fn lzma_decode(
                         - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
                         as probability;
                     symbol = (symbol << 1).wrapping_add(1 as u32);
-                    rep0 = (rep0 as u32).wrapping_add(1u32 << offset) as u32 as u32;
+                    rep0 = (rep0 as u32).wrapping_add(1u32 << offset) as u32;
                 }
                 offset = offset.wrapping_add(1);
                 if offset < limit {

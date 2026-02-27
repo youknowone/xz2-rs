@@ -354,7 +354,7 @@ unsafe extern "C" fn lz_encoder_prepare(
             .wrapping_add((*lz_options).after_size)
             .wrapping_div(2 as size_t)
             .wrapping_add((1u32 << 19) as size_t),
-    ) as u32 as u32;
+    ) as u32;
     let old_size: u32 = (*mf).size;
     (*mf).size = (*mf)
         .keep_size_before
