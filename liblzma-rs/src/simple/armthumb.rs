@@ -123,19 +123,19 @@ unsafe extern "C" fn armthumb_code(
         if *buffer.offset(i.wrapping_add(1) as isize) as c_int & 0xf8 as c_int == 0xf0 as c_int
             && *buffer.offset(i.wrapping_add(3) as isize) as c_int & 0xf8 as c_int == 0xf8 as c_int
         {
-            let mut src: u32 = (*buffer.offset(i.wrapping_add(1) as isize) as u32 & 7 as u32) << 19
+            let mut src: u32 = (*buffer.offset(i.wrapping_add(1) as isize) as u32 & 7) << 19
                 | (*buffer.offset(i.wrapping_add(0) as isize) as u32) << 11
-                | (*buffer.offset(i.wrapping_add(3) as isize) as u32 & 7 as u32) << 8
+                | (*buffer.offset(i.wrapping_add(3) as isize) as u32 & 7) << 8
                 | *buffer.offset(i.wrapping_add(2) as isize) as u32;
             src <<= 1 as c_int;
             let mut dest: u32 = 0;
             if is_encoder {
                 dest = now_pos
                     .wrapping_add(i as u32)
-                    .wrapping_add(4 as u32)
+                    .wrapping_add(4)
                     .wrapping_add(src);
             } else {
-                dest = src.wrapping_sub(now_pos.wrapping_add(i as u32).wrapping_add(4 as u32));
+                dest = src.wrapping_sub(now_pos.wrapping_add(i as u32).wrapping_add(4));
             }
             dest >>= 1 as c_int;
             *buffer.offset(i.wrapping_add(1) as isize) =
@@ -166,7 +166,7 @@ unsafe extern "C" fn armthumb_coder_init(
         ),
         0,
         4,
-        2 as u32,
+        2,
         is_encoder,
     );
 }

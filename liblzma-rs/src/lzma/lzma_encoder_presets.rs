@@ -49,7 +49,7 @@ pub unsafe extern "C" fn lzma_lzma_preset(
     let level: u32 = preset & LZMA_PRESET_LEVEL_MASK as u32;
     let flags: u32 = preset & !(LZMA_PRESET_LEVEL_MASK as u32);
     let supported_flags: u32 = LZMA_PRESET_EXTREME as u32;
-    if level > 9 as u32 || flags & !supported_flags != 0 {
+    if level > 9 || flags & !supported_flags != 0 {
         return true as lzma_bool;
     }
     (*options).preset_dict = ::core::ptr::null::<u8>();
@@ -57,12 +57,9 @@ pub unsafe extern "C" fn lzma_lzma_preset(
     (*options).lc = LZMA_LC_DEFAULT as u32;
     (*options).lp = LZMA_LP_DEFAULT as u32;
     (*options).pb = LZMA_PB_DEFAULT as u32;
-    static mut dict_pow2: [u8; 10] = [
-        18 as u8, 20 as u8, 21 as u8, 22 as u8, 22 as u8, 23 as u8, 23 as u8, 24 as u8, 25 as u8,
-        26 as u8,
-    ];
+    static mut dict_pow2: [u8; 10] = [18, 20, 21, 22, 22, 23, 23, 24, 25, 26];
     (*options).dict_size = (1u32 << dict_pow2[level as usize] as c_int) as u32;
-    if level <= 3 as u32 {
+    if level <= 3 {
         (*options).mode = LZMA_MODE_FAST;
         (*options).mf = (if level == 0 {
             LZMA_MF_HC3 as c_int
@@ -74,14 +71,14 @@ pub unsafe extern "C" fn lzma_lzma_preset(
         } else {
             273 as c_int
         }) as u32;
-        static mut depths: [u8; 4] = [4 as u8, 8 as u8, 24 as u8, 48 as u8];
+        static mut depths: [u8; 4] = [4, 8, 24, 48];
         (*options).depth = depths[level as usize] as u32;
     } else {
         (*options).mode = LZMA_MODE_NORMAL;
         (*options).mf = LZMA_MF_BT4;
-        (*options).nice_len = (if level == 4 as u32 {
+        (*options).nice_len = (if level == 4 {
             16 as c_int
-        } else if level == 5 as u32 {
+        } else if level == 5 {
             32 as c_int
         } else {
             64 as c_int
@@ -91,12 +88,12 @@ pub unsafe extern "C" fn lzma_lzma_preset(
     if flags & LZMA_PRESET_EXTREME as u32 != 0 {
         (*options).mode = LZMA_MODE_NORMAL;
         (*options).mf = LZMA_MF_BT4;
-        if level == 3 as u32 || level == 5 as u32 {
-            (*options).nice_len = 192 as u32;
+        if level == 3 || level == 5 {
+            (*options).nice_len = 192;
             (*options).depth = 0;
         } else {
-            (*options).nice_len = 273 as u32;
-            (*options).depth = 512 as u32;
+            (*options).nice_len = 273;
+            (*options).depth = 512;
         }
     }
     return false as lzma_bool;

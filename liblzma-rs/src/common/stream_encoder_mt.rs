@@ -615,10 +615,8 @@ unsafe extern "C" fn mythread_condtime_set(
     mut cond: *const mythread_cond,
     mut timeout_ms: u32,
 ) {
-    (*condtime).tv_sec = timeout_ms.wrapping_div(1000 as u32) as time_t as __darwin_time_t;
-    (*condtime).tv_nsec = timeout_ms
-        .wrapping_rem(1000 as u32)
-        .wrapping_mul(1000000 as u32) as c_long;
+    (*condtime).tv_sec = timeout_ms.wrapping_div(1000) as time_t as __darwin_time_t;
+    (*condtime).tv_nsec = timeout_ms.wrapping_rem(1000).wrapping_mul(1000000) as c_long;
     let mut now: timespec = timespec {
         tv_sec: 0,
         tv_nsec: 0,

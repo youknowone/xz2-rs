@@ -335,8 +335,8 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
 ) -> lzma_ret {
     let mut coder: *mut lzma_coder = (*next).coder as *mut lzma_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_coder>() as size_t, allocator)
-            as *mut lzma_coder;
+        coder =
+            lzma_alloc(core::mem::size_of::<lzma_coder>() as size_t, allocator) as *mut lzma_coder;
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

@@ -240,7 +240,7 @@ pub extern "C" fn lzma_block_buffer_bound64(mut uncompressed_size: u64) -> u64 {
     if lzma2_size == 0 {
         return 0;
     }
-    lzma2_size = lzma2_size.wrapping_add(3 as u64) & !(3 as u64);
+    lzma2_size = lzma2_size.wrapping_add(3) & !(3);
     return (HEADERS_BOUND as u64).wrapping_add(lzma2_size);
 }
 #[no_mangle]

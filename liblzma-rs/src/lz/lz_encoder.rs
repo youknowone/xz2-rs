@@ -212,7 +212,7 @@ pub const HASH_2_SIZE: c_uint = 1u32 << 10;
 pub const HASH_3_SIZE: c_uint = 1u32 << 16;
 pub const LZMA_MEMCMPLEN_EXTRA: c_int = 0;
 unsafe extern "C" fn move_window(mut mf: *mut lzma_mf) {
-    let move_offset: u32 = (*mf).read_pos.wrapping_sub((*mf).keep_size_before) & !(15 as u32);
+    let move_offset: u32 = (*mf).read_pos.wrapping_sub((*mf).keep_size_before) & !(15);
     let move_size: size_t = (*mf).write_pos.wrapping_sub(move_offset) as size_t;
     memmove(
         (*mf).buffer as *mut c_void,
@@ -341,7 +341,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         .wrapping_add((*lz_options).match_len_max) as u32;
     let mut reserve: u32 = (*lz_options).dict_size.wrapping_div(2) as u32;
     if reserve > (1) << 30 {
-        reserve = reserve.wrapping_div(2 as u32);
+        reserve = reserve.wrapping_div(2);
     }
     reserve = (reserve as size_t).wrapping_add(
         (*lz_options)
@@ -409,7 +409,7 @@ unsafe extern "C" fn lz_encoder_prepare(
     let hash_bytes: u32 = mf_get_hash_bytes((*lz_options).match_finder) as u32;
     let is_bt: bool = (*lz_options).match_finder & 0x10 != 0;
     let mut hs: u32 = 0;
-    if hash_bytes == 2 as u32 {
+    if hash_bytes == 2 {
         hs = 0xffff as u32;
     } else {
         hs = (*lz_options).dict_size.wrapping_sub(1) as u32;
@@ -420,7 +420,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         hs >>= 1 as c_int;
         hs |= 0xffff as u32;
         if hs > (1) << 24 {
-            if hash_bytes == 3 as u32 {
+            if hash_bytes == 3 {
                 hs = (1u32 << 24).wrapping_sub(1) as u32;
             } else {
                 hs >>= 1 as c_int;
@@ -429,10 +429,10 @@ unsafe extern "C" fn lz_encoder_prepare(
     }
     (*mf).hash_mask = hs;
     hs = hs.wrapping_add(1);
-    if hash_bytes > 2 as u32 {
+    if hash_bytes > 2 {
         hs = hs.wrapping_add(HASH_2_SIZE);
     }
-    if hash_bytes > 3 as u32 {
+    if hash_bytes > 3 {
         hs = hs.wrapping_add(HASH_3_SIZE);
     }
     let old_hash_count: u32 = (*mf).hash_count;
@@ -440,7 +440,7 @@ unsafe extern "C" fn lz_encoder_prepare(
     (*mf).hash_count = hs;
     (*mf).sons_count = (*mf).cyclic_size;
     if is_bt {
-        (*mf).sons_count = (*mf).sons_count.wrapping_mul(2 as u32);
+        (*mf).sons_count = (*mf).sons_count.wrapping_mul(2);
     }
     if old_hash_count != (*mf).hash_count || old_sons_count != (*mf).sons_count {
         lzma_free((*mf).hash as *mut c_void, allocator);
@@ -451,9 +451,9 @@ unsafe extern "C" fn lz_encoder_prepare(
     (*mf).depth = (*lz_options).depth;
     if (*mf).depth == 0 {
         if is_bt {
-            (*mf).depth = (16 as u32).wrapping_add((*mf).nice_len.wrapping_div(2 as u32));
+            (*mf).depth = (16u32).wrapping_add((*mf).nice_len.wrapping_div(2));
         } else {
-            (*mf).depth = (4 as u32).wrapping_add((*mf).nice_len.wrapping_div(4 as u32));
+            (*mf).depth = (4u32).wrapping_add((*mf).nice_len.wrapping_div(4));
         }
     }
     return false;
@@ -641,8 +641,8 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
 ) -> lzma_ret {
     let mut coder: *mut lzma_coder = (*next).coder as *mut lzma_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_coder>() as size_t, allocator)
-            as *mut lzma_coder;
+        coder =
+            lzma_alloc(core::mem::size_of::<lzma_coder>() as size_t, allocator) as *mut lzma_coder;
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

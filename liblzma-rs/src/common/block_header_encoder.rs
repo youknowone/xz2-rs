@@ -136,7 +136,7 @@ pub unsafe extern "C" fn lzma_block_header_size(mut block: *mut lzma_block) -> l
         size = size.wrapping_add(add_1);
         i = i.wrapping_add(1);
     }
-    (*block).header_size = size.wrapping_add(3 as u32) & !(3 as u32);
+    (*block).header_size = size.wrapping_add(3) & !(3);
     return LZMA_OK;
 }
 #[no_mangle]
@@ -150,7 +150,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
     {
         return LZMA_PROG_ERROR;
     }
-    let out_size: size_t = (*block).header_size.wrapping_sub(4 as u32) as size_t;
+    let out_size: size_t = (*block).header_size.wrapping_sub(4) as size_t;
     *out.offset(0) = out_size.wrapping_div(4) as u8;
     *out.offset(1) = 0;
     let mut out_pos: size_t = 2;

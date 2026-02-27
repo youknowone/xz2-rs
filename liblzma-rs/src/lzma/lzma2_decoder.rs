@@ -297,7 +297,7 @@ unsafe extern "C" fn lzma2_decode(
                         }
                     }
                 } else {
-                    if control > 2 as u32 {
+                    if control > 2 {
                         return LZMA_DATA_ERROR;
                     }
                     (*coder).sequence = SEQ_COMPRESSED_0;

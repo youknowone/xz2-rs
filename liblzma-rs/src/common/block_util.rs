@@ -109,7 +109,7 @@ pub unsafe extern "C" fn lzma_block_unpadded_size(mut block: *const lzma_block) 
         || (*block).version > 1
         || (*block).header_size < LZMA_BLOCK_HEADER_SIZE_MIN as u32
         || (*block).header_size > LZMA_BLOCK_HEADER_SIZE_MAX as u32
-        || (*block).header_size & 3 as u32 != 0
+        || (*block).header_size & 3 != 0
         || !((*block).compressed_size <= LZMA_VLI_MAX as lzma_vli
             || (*block).compressed_size == LZMA_VLI_UNKNOWN as lzma_vli)
         || (*block).compressed_size == 0 as lzma_vli

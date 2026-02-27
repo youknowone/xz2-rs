@@ -80,11 +80,11 @@ extern "C" fn lzma_outq_outbuf_memusage(mut buf_size: size_t) -> u64 {
 pub unsafe extern "C" fn lzma_outq_memusage(mut buf_size_max: u64, mut threads: u32) -> u64 {
     let limit: u64 = (UINT64_MAX as u64)
         .wrapping_div((2 as c_int * 16384 as c_int) as u64)
-        .wrapping_div(2 as u64);
+        .wrapping_div(2);
     if threads > LZMA_THREADS_MAX as u32 || buf_size_max > limit {
         return UINT64_MAX as u64;
     }
-    return ((2 as u32).wrapping_mul(threads) as u64)
+    return ((2u32).wrapping_mul(threads) as u64)
         .wrapping_mul(lzma_outq_outbuf_memusage(buf_size_max as size_t));
 }
 unsafe extern "C" fn move_head_to_cache(
@@ -152,7 +152,7 @@ pub unsafe extern "C" fn lzma_outq_init(
     if threads > LZMA_THREADS_MAX as u32 {
         return LZMA_OPTIONS_ERROR;
     }
-    let bufs_limit: u32 = (2 as u32).wrapping_mul(threads);
+    let bufs_limit: u32 = (2u32).wrapping_mul(threads);
     while !(*outq).head.is_null() {
         move_head_to_cache(outq, allocator);
     }

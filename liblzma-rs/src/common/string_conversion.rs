@@ -241,7 +241,7 @@ unsafe extern "C" fn str_append_u32(mut str: *mut lzma_str, mut v: u32, mut use_
         };
         let mut suf: size_t = 0;
         if use_byte_suffix {
-            while v & 1023 as u32 == 0
+            while v & 1023 == 0
                 && suf
                     < (core::mem::size_of::<[[c_char; 4]; 4]>() as usize)
                         .wrapping_div(core::mem::size_of::<[c_char; 4]>() as usize)
@@ -256,9 +256,8 @@ unsafe extern "C" fn str_append_u32(mut str: *mut lzma_str, mut v: u32, mut use_
         let mut pos: size_t = (core::mem::size_of::<[c_char; 16]>() as size_t).wrapping_sub(1);
         loop {
             pos = pos.wrapping_sub(1);
-            buf[pos as usize] =
-                ('0' as i32 as u32).wrapping_add(v.wrapping_rem(10 as u32)) as c_char;
-            v = v.wrapping_div(10 as u32);
+            buf[pos as usize] = ('0' as i32 as u32).wrapping_add(v.wrapping_rem(10)) as c_char;
+            v = v.wrapping_div(10);
             if !(v != 0) {
                 break;
             }
@@ -468,8 +467,8 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
                     ) -> *const c_char,
             ),
             optmap: &raw const lzma12_optmap as *const option_map,
-            strfy_encoder: 9 as u8,
-            strfy_decoder: 5 as u8,
+            strfy_encoder: 9,
+            strfy_decoder: 5,
             allow_null: false,
         },
         C2RustUnnamed {
@@ -485,8 +484,8 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
                     ) -> *const c_char,
             ),
             optmap: &raw const lzma12_optmap as *const option_map,
-            strfy_encoder: 9 as u8,
-            strfy_decoder: 2 as u8,
+            strfy_encoder: 9,
+            strfy_decoder: 2,
             allow_null: false,
         },
         C2RustUnnamed {
@@ -735,10 +734,10 @@ unsafe extern "C" fn parse_options(
                     let mut p: *const c_char = *str;
                     v = 0;
                     loop {
-                        if v > (UINT32_MAX as u32).wrapping_div(10 as u32) {
+                        if v > (UINT32_MAX as u32).wrapping_div(10) {
                             return b"Value out of range\0" as *const u8 as *const c_char;
                         }
-                        v = v.wrapping_mul(10 as u32);
+                        v = v.wrapping_mul(10);
                         let add: u32 = (*p as c_int - '0' as i32) as u32;
                         if (UINT32_MAX as u32).wrapping_sub(add) < v {
                             return b"Value out of range\0" as *const u8 as *const c_char;
@@ -764,13 +763,13 @@ unsafe extern "C" fn parse_options(
                         let mut shift: u32 = 0;
                         match *p as c_int {
                             107 | 75 => {
-                                shift = 10 as u32;
+                                shift = 10;
                             }
                             109 | 77 => {
-                                shift = 20 as u32;
+                                shift = 20;
                             }
                             103 | 71 => {
-                                shift = 30 as u32;
+                                shift = 30;
                             }
                             _ => {
                                 *str = multiplier_start;
@@ -1390,7 +1389,7 @@ unsafe extern "C" fn run_static_initializers() {
             u: C2RustUnnamed_0 {
                 range: C2RustUnnamed_1 {
                     min: LZMA_DICT_SIZE_MIN as u32,
-                    max: ((1) << 30).wrapping_add((1) << 29),
+                    max: (1u32 << 30).wrapping_add((1) << 29),
                 },
             },
         },
@@ -1445,10 +1444,7 @@ unsafe extern "C" fn run_static_initializers() {
             flags: 0,
             offset: 36,
             u: C2RustUnnamed_0 {
-                range: C2RustUnnamed_1 {
-                    min: 2 as u32,
-                    max: 273 as u32,
-                },
+                range: C2RustUnnamed_1 { min: 2, max: 273 },
             },
         },
         option_map {

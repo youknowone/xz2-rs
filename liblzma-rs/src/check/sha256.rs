@@ -627,7 +627,7 @@ pub unsafe extern "C" fn lzma_sha256_finish(mut check: *mut lzma_check_state) {
         pos = pos.wrapping_add(1);
         (*check).buffer.u8_0[fresh9 as usize] = 0;
     }
-    (*check).state.sha256.size = (*check).state.sha256.size.wrapping_mul(8 as u64);
+    (*check).state.sha256.size = (*check).state.sha256.size.wrapping_mul(8);
     (*check).buffer.u64_0[7] = ((*check).state.sha256.size & 0xff as u64) << 56
         | ((*check).state.sha256.size & 0xff00 as u64) << 40
         | ((*check).state.sha256.size & 0xff0000 as u64) << 24

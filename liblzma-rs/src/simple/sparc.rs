@@ -160,7 +160,7 @@ unsafe extern "C" fn sparc_coder_init(
         Some(sparc_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
         4,
-        4 as u32,
+        4,
         is_encoder,
     );
 }

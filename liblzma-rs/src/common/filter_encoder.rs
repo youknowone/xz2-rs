@@ -259,7 +259,7 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: Some(lzma_lzma_encoder_memusage as unsafe extern "C" fn(*const c_void) -> u64),
         block_size: None,
         props_size_get: None,
-        props_size_fixed: 5 as u32,
+        props_size_fixed: 5,
         props_encode: Some(
             lzma_lzma_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
@@ -277,7 +277,7 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: Some(lzma_lzma_encoder_memusage as unsafe extern "C" fn(*const c_void) -> u64),
         block_size: None,
         props_size_get: None,
-        props_size_fixed: 5 as u32,
+        props_size_fixed: 5,
         props_encode: Some(
             lzma_lzma_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),

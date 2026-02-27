@@ -177,7 +177,7 @@ unsafe extern "C" fn riscv_encode(
             inst |= (*buffer.offset(i.wrapping_add(3) as isize) as u32) << 24;
             if inst & 0xe80 as u32 != 0 {
                 let mut inst2: u32 = read32le(buffer.offset(i as isize).offset(4));
-                if (inst << 8 ^ inst2.wrapping_sub(3 as u32)) & 0xf8003 as u32 != 0 {
+                if (inst << 8 ^ inst2.wrapping_sub(3)) & 0xf8003 as u32 != 0 {
                     i = i.wrapping_add((6 as c_int - 2 as c_int) as size_t);
                     current_block_22 = 12517898123489920830;
                 } else {
@@ -230,7 +230,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
         ),
         0,
         8,
-        2 as u32,
+        2,
         true,
     );
 }
@@ -283,7 +283,7 @@ unsafe extern "C" fn riscv_decode(
             inst |= (*buffer.offset(i.wrapping_add(3) as isize) as u32) << 24;
             if inst & 0xe80 as u32 != 0 {
                 inst2 = read32le(buffer.offset(i as isize).offset(4));
-                if (inst << 8 ^ inst2.wrapping_sub(3 as u32)) & 0xf8003 as u32 != 0 {
+                if (inst << 8 ^ inst2.wrapping_sub(3)) & 0xf8003 as u32 != 0 {
                     i = i.wrapping_add((6 as c_int - 2 as c_int) as size_t);
                     current_block_23 = 12517898123489920830;
                 } else {
@@ -336,7 +336,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
         ),
         0,
         8,
-        2 as u32,
+        2,
         false,
     );
 }

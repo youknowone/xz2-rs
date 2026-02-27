@@ -205,7 +205,7 @@ pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
 #[inline]
 extern "C" fn bsr32(mut n: u32) -> u32 {
-    return n.leading_zeros() as i32 as u32 ^ 31 as u32;
+    return n.leading_zeros() as i32 as u32 ^ 31;
 }
 #[inline]
 extern "C" fn ctz32(mut n: u32) -> u32 {
@@ -278,7 +278,7 @@ unsafe extern "C" fn index_tree_append(mut tree: *mut index_tree, mut node: *mut
     (*tree).rightmost = node;
     let mut up: u32 = (*tree).count ^ (1) << bsr32((*tree).count);
     if up != 0 {
-        up = ctz32((*tree).count).wrapping_add(2 as u32);
+        up = ctz32((*tree).count).wrapping_add(2);
         loop {
             node = (*node).parent;
             up = up.wrapping_sub(1);
@@ -436,8 +436,8 @@ pub unsafe extern "C" fn lzma_index_memusage(mut streams: lzma_vli, mut blocks: 
         .wrapping_div(INDEX_GROUP_SIZE as lzma_vli);
     let streams_mem: u64 = (streams as u64).wrapping_mul(stream_base as u64);
     let groups_mem: u64 = (groups as u64).wrapping_mul(group_base as u64);
-    let index_base: u64 = (core::mem::size_of::<lzma_index>() as usize)
-        .wrapping_add(alloc_overhead as usize) as u64;
+    let index_base: u64 =
+        (core::mem::size_of::<lzma_index>() as usize).wrapping_add(alloc_overhead as usize) as u64;
     let limit: u64 = (UINT64_MAX as u64).wrapping_sub(index_base);
     if streams == 0 as lzma_vli
         || streams > UINT32_MAX as lzma_vli

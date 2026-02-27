@@ -126,10 +126,10 @@ unsafe extern "C" fn arm_code(
             if is_encoder {
                 dest = now_pos
                     .wrapping_add(i as u32)
-                    .wrapping_add(8 as u32)
+                    .wrapping_add(8)
                     .wrapping_add(src);
             } else {
-                dest = src.wrapping_sub(now_pos.wrapping_add(i as u32).wrapping_add(8 as u32));
+                dest = src.wrapping_sub(now_pos.wrapping_add(i as u32).wrapping_add(8));
             }
             dest >>= 2 as c_int;
             *buffer.offset(i.wrapping_add(2) as isize) = (dest >> 16) as u8;
@@ -153,7 +153,7 @@ unsafe extern "C" fn arm_coder_init(
         Some(arm_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
         4,
-        4 as u32,
+        4,
         is_encoder,
     );
 }

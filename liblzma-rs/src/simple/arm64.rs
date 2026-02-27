@@ -144,7 +144,7 @@ unsafe extern "C" fn arm64_code(
             instr |= src.wrapping_add(pc) & 0x3ffffff as u32;
             write32le(buffer.offset(i as isize), instr);
         } else if instr & 0x9f000000 as u32 == 0x90000000 as u32 {
-            let src_0: u32 = instr >> 29 & 3 as u32 | instr >> 3 & 0x1ffffc as u32;
+            let src_0: u32 = instr >> 29 & 3 | instr >> 3 & 0x1ffffc as u32;
             if !(src_0.wrapping_add(0x20000 as u32) & 0x1c0000 as u32 != 0) {
                 instr = (instr & 0x9000001f) as u32;
                 pc >>= 12 as c_int;
@@ -152,7 +152,7 @@ unsafe extern "C" fn arm64_code(
                     pc = 0u32.wrapping_sub(pc);
                 }
                 let dest: u32 = src_0.wrapping_add(pc);
-                instr |= (dest & 3 as u32) << 29;
+                instr |= (dest & 3) << 29;
                 instr |= (dest & 0x3fffc as u32) << 3;
                 instr =
                     (instr | (0u32.wrapping_sub(dest & 0x20000 as u32) & 0xe00000 as u32)) as u32;
@@ -176,7 +176,7 @@ unsafe extern "C" fn arm64_coder_init(
         Some(arm64_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
         4,
-        4 as u32,
+        4,
         is_encoder,
     );
 }

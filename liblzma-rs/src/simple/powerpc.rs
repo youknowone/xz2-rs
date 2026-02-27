@@ -120,10 +120,10 @@ unsafe extern "C" fn powerpc_code(
         if *buffer.offset(i as isize) as c_int >> 2 == 0x12 as c_int
             && *buffer.offset(i.wrapping_add(3) as isize) as c_int & 3 as c_int == 1 as c_int
         {
-            let src: u32 = (*buffer.offset(i.wrapping_add(0) as isize) as u32 & 3 as u32) << 24
+            let src: u32 = (*buffer.offset(i.wrapping_add(0) as isize) as u32 & 3) << 24
                 | (*buffer.offset(i.wrapping_add(1) as isize) as u32) << 16
                 | (*buffer.offset(i.wrapping_add(2) as isize) as u32) << 8
-                | *buffer.offset(i.wrapping_add(3) as isize) as u32 & !(3 as u32);
+                | *buffer.offset(i.wrapping_add(3) as isize) as u32 & !(3);
             let mut dest: u32 = 0;
             if is_encoder {
                 dest = now_pos.wrapping_add(i as u32).wrapping_add(src);
@@ -158,7 +158,7 @@ unsafe extern "C" fn powerpc_coder_init(
         ),
         0,
         4,
-        4 as u32,
+        4,
         is_encoder,
     );
 }

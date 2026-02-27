@@ -388,7 +388,7 @@ unsafe extern "C" fn stream_decode(
                         (*coder).block_options.header_size = (*in_0.offset(*in_pos as isize)
                             as u32)
                             .wrapping_add(1)
-                            .wrapping_mul(4 as u32);
+                            .wrapping_mul(4);
                         current_block_100 = 13242334135786603907;
                     }
                 } else {
@@ -700,11 +700,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
         };
         (*coder).index_hash = core::ptr::null_mut();
     }
-    (*coder).memlimit = if 1 > memlimit {
-        1
-    } else {
-        memlimit
-    };
+    (*coder).memlimit = if 1 > memlimit { 1 } else { memlimit };
     (*coder).memusage = LZMA_MEMUSAGE_BASE as u64;
     (*coder).tell_no_check = flags & LZMA_TELL_NO_CHECK as u32 != 0;
     (*coder).tell_unsupported_check = flags & LZMA_TELL_UNSUPPORTED_CHECK as u32 != 0;

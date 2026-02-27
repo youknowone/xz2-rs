@@ -373,11 +373,7 @@ unsafe extern "C" fn index_decoder_reset(
         return LZMA_MEM_ERROR;
     }
     (*coder).sequence = SEQ_INDICATOR;
-    (*coder).memlimit = if 1 > memlimit {
-        1
-    } else {
-        memlimit
-    };
+    (*coder).memlimit = if 1 > memlimit { 1 } else { memlimit };
     (*coder).count = 0 as lzma_vli;
     (*coder).pos = 0;
     (*coder).crc32 = 0;

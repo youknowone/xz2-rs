@@ -202,7 +202,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         (2 as c_int + (((1 as c_int) << 3) + ((1 as c_int) << 3) + ((1 as c_int) << 8))
             - 1 as c_int) as u32
     };
-    if buf_avail < 2 as u32 {
+    if buf_avail < 2 {
         *back_res = UINT32_MAX as u32;
         *len_res = 1;
         return;
@@ -215,7 +215,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         if !(*buf.offset(0) as c_int != *buf_back.offset(0) as c_int
             || *buf.offset(1) as c_int != *buf_back.offset(1) as c_int)
         {
-            let len: u32 = lzma_memcmplen(buf, buf_back, 2 as u32, buf_avail) as u32;
+            let len: u32 = lzma_memcmplen(buf, buf_back, 2, buf_avail) as u32;
             if len >= nice_len {
                 *back_res = i;
                 *len_res = len;
@@ -238,31 +238,29 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         return;
     }
     let mut back_main: u32 = 0;
-    if len_main >= 2 as u32 {
+    if len_main >= 2 {
         back_main = (*coder).matches[matches_count.wrapping_sub(1) as usize].dist;
         while matches_count > 1
             && len_main
-                == (*coder).matches[matches_count.wrapping_sub(2 as u32) as usize]
+                == (*coder).matches[matches_count.wrapping_sub(2) as usize]
                     .len
                     .wrapping_add(1)
         {
-            if !(back_main >> 7
-                > (*coder).matches[matches_count.wrapping_sub(2 as u32) as usize].dist)
-            {
+            if !(back_main >> 7 > (*coder).matches[matches_count.wrapping_sub(2) as usize].dist) {
                 break;
             }
             matches_count = matches_count.wrapping_sub(1);
             len_main = (*coder).matches[matches_count.wrapping_sub(1) as usize].len;
             back_main = (*coder).matches[matches_count.wrapping_sub(1) as usize].dist;
         }
-        if len_main == 2 as u32 && back_main >= 0x80 as u32 {
+        if len_main == 2 && back_main >= 0x80 as u32 {
             len_main = 1;
         }
     }
-    if rep_len >= 2 as u32 {
+    if rep_len >= 2 {
         if rep_len.wrapping_add(1) >= len_main
-            || rep_len.wrapping_add(2 as u32) >= len_main && back_main > (1) << 9
-            || rep_len.wrapping_add(3 as u32) >= len_main && back_main > (1) << 15
+            || rep_len.wrapping_add(2) >= len_main && back_main > (1) << 9
+            || rep_len.wrapping_add(3) >= len_main && back_main > (1) << 15
         {
             *back_res = rep_index;
             *len_res = rep_len;
@@ -270,7 +268,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
             return;
         }
     }
-    if len_main < 2 as u32 || buf_avail <= 2 as u32 {
+    if len_main < 2 || buf_avail <= 2 {
         *back_res = UINT32_MAX as u32;
         *len_res = 1;
         return;
@@ -280,15 +278,14 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         &raw mut (*coder).matches_count,
         &raw mut (*coder).matches as *mut lzma_match,
     );
-    if (*coder).longest_match_length >= 2 as u32 {
-        let new_dist: u32 =
-            (*coder).matches[(*coder).matches_count.wrapping_sub(1) as usize].dist;
+    if (*coder).longest_match_length >= 2 {
+        let new_dist: u32 = (*coder).matches[(*coder).matches_count.wrapping_sub(1) as usize].dist;
         if (*coder).longest_match_length >= len_main && new_dist < back_main
             || (*coder).longest_match_length == len_main.wrapping_add(1)
                 && !(new_dist >> 7 > back_main)
             || (*coder).longest_match_length > len_main.wrapping_add(1)
             || (*coder).longest_match_length.wrapping_add(1) >= len_main
-                && len_main >= 3 as u32
+                && len_main >= 3
                 && back_main >> 7 > new_dist
         {
             *back_res = UINT32_MAX as u32;
@@ -297,8 +294,8 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         }
     }
     buf = buf.offset(1);
-    let limit: u32 = if 2 as u32 > len_main.wrapping_sub(1) {
-        2 as u32
+    let limit: u32 = if 2 > len_main.wrapping_sub(1) {
+        2
     } else {
         len_main.wrapping_sub(1)
     };
@@ -319,5 +316,5 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
     }
     *back_res = back_main.wrapping_add(REPS as u32);
     *len_res = len_main;
-    mf_skip(mf, len_main.wrapping_sub(2 as u32));
+    mf_skip(mf, len_main.wrapping_sub(2));
 }

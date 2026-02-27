@@ -134,15 +134,15 @@ unsafe extern "C" fn x86_code(
     mut buffer: *mut u8,
     mut size: size_t,
 ) -> size_t {
-    static mut MASK_TO_BIT_NUMBER: [u32; 5] = [0, 1, 2 as u32, 2 as u32, 3 as u32];
+    static mut MASK_TO_BIT_NUMBER: [u32; 5] = [0, 1, 2, 2, 3];
     let mut simple: *mut lzma_simple_x86 = simple_ptr as *mut lzma_simple_x86;
     let mut prev_mask: u32 = (*simple).prev_mask;
     let mut prev_pos: u32 = (*simple).prev_pos;
     if size < 5 {
         return 0;
     }
-    if now_pos.wrapping_sub(prev_pos) > 5 as u32 {
-        prev_pos = now_pos.wrapping_sub(5 as u32);
+    if now_pos.wrapping_sub(prev_pos) > 5 {
+        prev_pos = now_pos.wrapping_sub(5);
     }
     let limit: size_t = size.wrapping_sub(5);
     let mut buffer_pos: size_t = 0;
@@ -155,7 +155,7 @@ unsafe extern "C" fn x86_code(
                 .wrapping_add(buffer_pos as u32)
                 .wrapping_sub(prev_pos);
             prev_pos = now_pos.wrapping_add(buffer_pos as u32);
-            if offset > 5 as u32 {
+            if offset > 5 {
                 prev_mask = 0;
             } else {
                 let mut i: u32 = 0;
@@ -167,8 +167,8 @@ unsafe extern "C" fn x86_code(
             }
             b = *buffer.offset(buffer_pos.wrapping_add(4) as isize);
             if (b as c_int == 0 as c_int || b as c_int == 0xff as c_int)
-                && prev_mask >> 1 <= 4 as u32
-                && prev_mask >> 1 != 3 as u32
+                && prev_mask >> 1 <= 4
+                && prev_mask >> 1 != 3
             {
                 let mut src: u32 = (b as u32) << 24
                     | (*buffer.offset(buffer_pos.wrapping_add(3) as isize) as u32) << 16
@@ -177,29 +177,22 @@ unsafe extern "C" fn x86_code(
                 let mut dest: u32 = 0;
                 loop {
                     if is_encoder {
-                        dest = src.wrapping_add(
-                            now_pos
-                                .wrapping_add(buffer_pos as u32)
-                                .wrapping_add(5 as u32),
-                        );
+                        dest = src
+                            .wrapping_add(now_pos.wrapping_add(buffer_pos as u32).wrapping_add(5));
                     } else {
-                        dest = src.wrapping_sub(
-                            now_pos
-                                .wrapping_add(buffer_pos as u32)
-                                .wrapping_add(5 as u32),
-                        );
+                        dest = src
+                            .wrapping_sub(now_pos.wrapping_add(buffer_pos as u32).wrapping_add(5));
                     }
                     if prev_mask == 0 {
                         break;
                     }
                     let i_0: u32 = MASK_TO_BIT_NUMBER[(prev_mask >> 1) as usize];
-                    b = (dest >> (24 as u32).wrapping_sub(i_0.wrapping_mul(8 as u32))) as u8;
+                    b = (dest >> (24u32).wrapping_sub(i_0.wrapping_mul(8))) as u8;
                     if !(b as c_int == 0 as c_int || b as c_int == 0xff as c_int) {
                         break;
                     }
-                    src = dest
-                        ^ ((1) << (32 as u32).wrapping_sub(i_0.wrapping_mul(8 as u32)))
-                            .wrapping_sub(1);
+                    src =
+                        dest ^ (1u32 << (32u32).wrapping_sub(i_0.wrapping_mul(8))).wrapping_sub(1);
                 }
                 *buffer.offset(buffer_pos.wrapping_add(4) as isize) =
                     !(dest >> 24 & 1).wrapping_sub(1) as u8;

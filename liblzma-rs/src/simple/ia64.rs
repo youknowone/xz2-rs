@@ -114,8 +114,8 @@ unsafe extern "C" fn ia64_code(
     mut size: size_t,
 ) -> size_t {
     static mut BRANCH_TABLE: [u32; 32] = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4 as u32, 4 as u32, 6 as u32, 6 as u32, 0,
-        0, 7 as u32, 7 as u32, 4 as u32, 4 as u32, 0, 0, 4 as u32, 4 as u32, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 6, 6, 0, 0, 7, 7, 4, 4, 0, 0, 4, 4,
+        0, 0,
     ];
     size &= !(15);
     let mut i: size_t = 0;
@@ -123,7 +123,7 @@ unsafe extern "C" fn ia64_code(
     while i < size {
         let instr_template: u32 = (*buffer.offset(i as isize) as c_int & 0x1f as c_int) as u32;
         let mask: u32 = BRANCH_TABLE[instr_template as usize];
-        let mut bit_pos: u32 = 5 as u32;
+        let mut bit_pos: u32 = 5;
         let mut slot: size_t = 0;
         while slot < 3 {
             if !(mask >> slot & 1 == 0) {
@@ -164,7 +164,7 @@ unsafe extern "C" fn ia64_code(
                 }
             }
             slot = slot.wrapping_add(1);
-            bit_pos = bit_pos.wrapping_add(41 as u32);
+            bit_pos = bit_pos.wrapping_add(41);
         }
         i = i.wrapping_add(16);
     }
@@ -183,7 +183,7 @@ unsafe extern "C" fn ia64_coder_init(
         Some(ia64_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
         16,
-        16 as u32,
+        16,
         is_encoder,
     );
 }

@@ -69,10 +69,7 @@ pub unsafe extern "C" fn lzma_check_size(mut type_0: lzma_check) -> u32 {
     if type_0 > LZMA_CHECK_ID_MAX {
         return UINT32_MAX as u32;
     }
-    static mut check_sizes: [u8; 16] = [
-        0, 4 as u8, 4 as u8, 4 as u8, 8 as u8, 8 as u8, 8 as u8, 16 as u8, 16 as u8, 16 as u8,
-        32 as u8, 32 as u8, 32 as u8, 64 as u8, 64 as u8, 64 as u8,
-    ];
+    static mut check_sizes: [u8; 16] = [0, 4, 4, 4, 8, 8, 8, 16, 16, 16, 32, 32, 32, 64, 64, 64];
     return check_sizes[type_0 as usize] as u32;
 }
 #[no_mangle]

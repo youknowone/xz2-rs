@@ -123,10 +123,7 @@ extern "C" fn vli_ceil4(mut vli: lzma_vli) -> lzma_vli {
     return vli.wrapping_add(3 as lzma_vli) & !(3 as lzma_vli);
 }
 #[inline]
-extern "C" fn index_size_unpadded(
-    mut count: lzma_vli,
-    mut index_list_size: lzma_vli,
-) -> lzma_vli {
+extern "C" fn index_size_unpadded(mut count: lzma_vli, mut index_list_size: lzma_vli) -> lzma_vli {
     return (1u32.wrapping_add(unsafe { lzma_vli_size(count) }) as lzma_vli)
         .wrapping_add(index_list_size)
         .wrapping_add(4 as lzma_vli);
@@ -152,10 +149,8 @@ pub unsafe extern "C" fn lzma_index_hash_init(
     mut allocator: *const lzma_allocator,
 ) -> *mut lzma_index_hash {
     if index_hash.is_null() {
-        index_hash = lzma_alloc(
-            core::mem::size_of::<lzma_index_hash>() as size_t,
-            allocator,
-        ) as *mut lzma_index_hash;
+        index_hash = lzma_alloc(core::mem::size_of::<lzma_index_hash>() as size_t, allocator)
+            as *mut lzma_index_hash;
         if index_hash.is_null() {
             return core::ptr::null_mut();
         }

@@ -604,10 +604,8 @@ unsafe extern "C" fn mythread_condtime_set(
     mut cond: *const mythread_cond,
     mut timeout_ms: u32,
 ) {
-    (*condtime).tv_sec = timeout_ms.wrapping_div(1000 as u32) as time_t as __darwin_time_t;
-    (*condtime).tv_nsec = timeout_ms
-        .wrapping_rem(1000 as u32)
-        .wrapping_mul(1000000 as u32) as c_long;
+    (*condtime).tv_sec = timeout_ms.wrapping_div(1000) as time_t as __darwin_time_t;
+    (*condtime).tv_nsec = timeout_ms.wrapping_rem(1000).wrapping_mul(1000000) as c_long;
     let mut now: timespec = timespec {
         tv_sec: 0,
         tv_nsec: 0,
@@ -1115,7 +1113,7 @@ unsafe extern "C" fn decode_block_header(
         }
         (*coder).block_options.header_size = (*in_0.offset(*in_pos as isize) as u32)
             .wrapping_add(1)
-            .wrapping_mul(4 as u32);
+            .wrapping_mul(4);
     }
     lzma_bufcpy(
         in_0,

@@ -356,11 +356,11 @@ unsafe extern "C" fn lzip_decode(
                 (*coder).member_size = (*coder).member_size.wrapping_add(1);
                 let b2log: u32 = ds & 0x1f as u32;
                 let fracnum: u32 = ds >> 5;
-                if b2log < 12 as u32 || b2log > 29 as u32 || b2log == 12 as u32 && fracnum > 0 {
+                if b2log < 12 || b2log > 29 || b2log == 12 && fracnum > 0 {
                     return LZMA_DATA_ERROR;
                 }
                 (*coder).options.dict_size =
-                    ((1) << b2log).wrapping_sub(fracnum << b2log.wrapping_sub(4 as u32));
+                    (1u32 << b2log).wrapping_sub(fracnum << b2log.wrapping_sub(4));
                 (*coder).options.preset_dict = ::core::ptr::null::<u8>();
                 (*coder).options.lc = LZIP_LC as u32;
                 (*coder).options.lp = LZIP_LP as u32;
@@ -561,10 +561,8 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     }
     let mut coder: *mut lzma_lzip_coder = (*next).coder as *mut lzma_lzip_coder;
     if coder.is_null() {
-        coder = lzma_alloc(
-            core::mem::size_of::<lzma_lzip_coder>() as size_t,
-            allocator,
-        ) as *mut lzma_lzip_coder;
+        coder = lzma_alloc(core::mem::size_of::<lzma_lzip_coder>() as size_t, allocator)
+            as *mut lzma_lzip_coder;
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -608,11 +606,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
         };
     }
     (*coder).sequence = SEQ_ID_STRING;
-    (*coder).memlimit = if 1 > memlimit {
-        1
-    } else {
-        memlimit
-    };
+    (*coder).memlimit = if 1 > memlimit { 1 } else { memlimit };
     (*coder).memusage = LZMA_MEMUSAGE_BASE as u64;
     (*coder).tell_any_check = flags & LZMA_TELL_ANY_CHECK as u32 != 0;
     (*coder).ignore_check = flags & LZMA_IGNORE_CHECK as u32 != 0;

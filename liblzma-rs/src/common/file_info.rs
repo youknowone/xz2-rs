@@ -382,7 +382,7 @@ unsafe extern "C" fn file_info_decode(
                 if ret_ != LZMA_OK {
                     return ret_;
                 }
-                if (*coder).file_size > LZMA_VLI_MAX as u64 || (*coder).file_size & 3 as u64 != 0 {
+                if (*coder).file_size > LZMA_VLI_MAX as u64 || (*coder).file_size & 3 != 0 {
                     return LZMA_DATA_ERROR;
                 }
                 (*coder).file_target_pos = (*coder).file_size;
