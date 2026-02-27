@@ -9,8 +9,10 @@
     unused_parens,
     unused_variables,
     unused_imports,
-    clippy::all,
+    clippy::all
 )]
+
+pub mod types;
 
 pub mod check;
 pub mod common;

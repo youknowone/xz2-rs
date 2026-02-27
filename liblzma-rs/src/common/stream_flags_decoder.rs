@@ -1,22 +1,12 @@
+use crate::types::*;
+use core::ffi::{c_int, c_uchar, c_uint, c_ulonglong, c_void};
 extern "C" {
-    fn memcmp(
-        __s1: *const ::core::ffi::c_void,
-        __s2: *const ::core::ffi::c_void,
-        __n: size_t,
-    ) -> ::core::ffi::c_int;
-    fn lzma_crc32(buf: *const uint8_t, size: size_t, crc: uint32_t) -> uint32_t;
-    static lzma_header_magic: [uint8_t; 6];
-    static lzma_footer_magic: [uint8_t; 2];
+    fn memcmp(__s1: *const c_void, __s2: *const c_void, __n: size_t) -> c_int;
+    fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
+    static lzma_header_magic: [u8; 6];
+    static lzma_footer_magic: [u8; 2];
 }
-pub type __darwin_size_t = usize;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type uint64_t = u64;
-pub type lzma_bool = ::core::ffi::c_uchar;
-pub type lzma_reserved_enum = ::core::ffi::c_uint;
 pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub type lzma_ret = ::core::ffi::c_uint;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -38,8 +28,6 @@ pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
 pub const LZMA_NO_CHECK: lzma_ret = 2;
 pub const LZMA_STREAM_END: lzma_ret = 1;
 pub const LZMA_OK: lzma_ret = 0;
-pub type lzma_vli = uint64_t;
-pub type lzma_check = ::core::ffi::c_uint;
 pub const LZMA_CHECK_SHA256: lzma_check = 10;
 pub const LZMA_CHECK_CRC64: lzma_check = 4;
 pub const LZMA_CHECK_CRC32: lzma_check = 1;
@@ -47,7 +35,7 @@ pub const LZMA_CHECK_NONE: lzma_check = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_flags {
-    pub version: uint32_t,
+    pub version: u32,
     pub backward_size: lzma_vli,
     pub check: lzma_check,
     pub reserved_enum1: lzma_reserved_enum,
@@ -62,67 +50,56 @@ pub struct lzma_stream_flags {
     pub reserved_bool6: lzma_bool,
     pub reserved_bool7: lzma_bool,
     pub reserved_bool8: lzma_bool,
-    pub reserved_int1: uint32_t,
-    pub reserved_int2: uint32_t,
+    pub reserved_int1: u32,
+    pub reserved_int2: u32,
 }
-pub const UINT64_MAX: ::core::ffi::c_ulonglong = 18446744073709551615
-    as ::core::ffi::c_ulonglong;
-pub const true_0: ::core::ffi::c_int = 1 as ::core::ffi::c_int;
-pub const false_0: ::core::ffi::c_int = 0 as ::core::ffi::c_int;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const true_0: c_int = 1 as c_int;
+pub const false_0: c_int = 0 as c_int;
 #[inline]
-unsafe extern "C" fn read32le(mut buf: *const uint8_t) -> uint32_t {
-    let mut num: uint32_t = *buf.offset(0 as ::core::ffi::c_int as isize) as uint32_t;
-    num
-        |= (*buf.offset(1 as ::core::ffi::c_int as isize) as uint32_t)
-            << 8 as ::core::ffi::c_int;
-    num
-        |= (*buf.offset(2 as ::core::ffi::c_int as isize) as uint32_t)
-            << 16 as ::core::ffi::c_int;
-    num
-        |= (*buf.offset(3 as ::core::ffi::c_int as isize) as uint32_t)
-            << 24 as ::core::ffi::c_int;
+unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
+    let mut num: u32 = *buf.offset(0 as isize) as u32;
+    num |= (*buf.offset(1 as isize) as u32) << 8 as c_int;
+    num |= (*buf.offset(2 as isize) as u32) << 16 as c_int;
+    num |= (*buf.offset(3 as isize) as u32) << 24 as c_int;
     return num;
 }
-pub const LZMA_VLI_UNKNOWN: ::core::ffi::c_ulonglong = UINT64_MAX;
-pub const LZMA_STREAM_FLAGS_SIZE: ::core::ffi::c_int = 2 as ::core::ffi::c_int;
+pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
+pub const LZMA_STREAM_FLAGS_SIZE: c_int = 2 as c_int;
 unsafe extern "C" fn stream_flags_decode(
     mut options: *mut lzma_stream_flags,
-    mut in_0: *const uint8_t,
+    mut in_0: *const u8,
 ) -> bool {
-    if *in_0.offset(0 as ::core::ffi::c_int as isize) as ::core::ffi::c_int
-        != 0 as ::core::ffi::c_int
-        || *in_0.offset(1 as ::core::ffi::c_int as isize) as ::core::ffi::c_int
-            & 0xf0 as ::core::ffi::c_int != 0
+    if *in_0.offset(0 as isize) as c_int != 0 as c_int
+        || *in_0.offset(1 as isize) as c_int & 0xf0 as c_int != 0
     {
         return true_0 != 0;
     }
-    (*options).version = 0 as uint32_t;
-    (*options).check = (*in_0.offset(1 as ::core::ffi::c_int as isize)
-        as ::core::ffi::c_int & 0xf as ::core::ffi::c_int) as lzma_check;
+    (*options).version = 0 as u32;
+    (*options).check = (*in_0.offset(1 as isize) as c_int & 0xf as c_int) as lzma_check;
     return false_0 != 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_header_decode(
     mut options: *mut lzma_stream_flags,
-    mut in_0: *const uint8_t,
+    mut in_0: *const u8,
 ) -> lzma_ret {
     if memcmp(
-        in_0 as *const ::core::ffi::c_void,
-        &raw const lzma_header_magic as *const uint8_t as *const ::core::ffi::c_void,
-        ::core::mem::size_of::<[uint8_t; 6]>() as size_t,
-    ) != 0 as ::core::ffi::c_int
+        in_0 as *const c_void,
+        &raw const lzma_header_magic as *const u8 as *const c_void,
+        ::core::mem::size_of::<[u8; 6]>() as size_t,
+    ) != 0 as c_int
     {
         return LZMA_FORMAT_ERROR;
     }
-    let crc: uint32_t = lzma_crc32(
-        in_0.offset(::core::mem::size_of::<[uint8_t; 6]>() as usize as isize),
+    let crc: u32 = lzma_crc32(
+        in_0.offset(::core::mem::size_of::<[u8; 6]>() as usize as isize),
         LZMA_STREAM_FLAGS_SIZE as size_t,
-        0 as uint32_t,
-    ) as uint32_t;
+        0 as u32,
+    ) as u32;
     if crc
         != read32le(
-            in_0
-                .offset(::core::mem::size_of::<[uint8_t; 6]>() as usize as isize)
+            in_0.offset(::core::mem::size_of::<[u8; 6]>() as usize as isize)
                 .offset(LZMA_STREAM_FLAGS_SIZE as isize),
         )
     {
@@ -130,7 +107,7 @@ pub unsafe extern "C" fn lzma_stream_header_decode(
     }
     if stream_flags_decode(
         options,
-        in_0.offset(::core::mem::size_of::<[uint8_t; 6]>() as usize as isize),
+        in_0.offset(::core::mem::size_of::<[u8; 6]>() as usize as isize),
     ) {
         return LZMA_OPTIONS_ERROR;
     }
@@ -140,43 +117,33 @@ pub unsafe extern "C" fn lzma_stream_header_decode(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_footer_decode(
     mut options: *mut lzma_stream_flags,
-    mut in_0: *const uint8_t,
+    mut in_0: *const u8,
 ) -> lzma_ret {
     if memcmp(
-        in_0
-            .offset(
-                (::core::mem::size_of::<uint32_t>() as usize).wrapping_mul(2 as usize)
-                    as isize,
-            )
-            .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *const ::core::ffi::c_void,
-        &raw const lzma_footer_magic as *const uint8_t as *const ::core::ffi::c_void,
-        ::core::mem::size_of::<[uint8_t; 2]>() as size_t,
-    ) != 0 as ::core::ffi::c_int
+        in_0.offset((::core::mem::size_of::<u32>() as usize).wrapping_mul(2 as usize) as isize)
+            .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *const c_void,
+        &raw const lzma_footer_magic as *const u8 as *const c_void,
+        ::core::mem::size_of::<[u8; 2]>() as size_t,
+    ) != 0 as c_int
     {
         return LZMA_FORMAT_ERROR;
     }
-    let crc: uint32_t = lzma_crc32(
-        in_0.offset(::core::mem::size_of::<uint32_t>() as usize as isize),
-        (::core::mem::size_of::<uint32_t>() as size_t)
-            .wrapping_add(LZMA_STREAM_FLAGS_SIZE as size_t),
-        0 as uint32_t,
-    ) as uint32_t;
+    let crc: u32 = lzma_crc32(
+        in_0.offset(::core::mem::size_of::<u32>() as usize as isize),
+        (::core::mem::size_of::<u32>() as size_t).wrapping_add(LZMA_STREAM_FLAGS_SIZE as size_t),
+        0 as u32,
+    ) as u32;
     if crc != read32le(in_0) {
         return LZMA_DATA_ERROR;
     }
     if stream_flags_decode(
         options,
-        in_0
-            .offset(
-                (::core::mem::size_of::<uint32_t>() as usize).wrapping_mul(2 as usize)
-                    as isize,
-            ),
+        in_0.offset((::core::mem::size_of::<u32>() as usize).wrapping_mul(2 as usize) as isize),
     ) {
         return LZMA_OPTIONS_ERROR;
     }
-    (*options).backward_size = read32le(
-        in_0.offset(::core::mem::size_of::<uint32_t>() as usize as isize),
-    ) as lzma_vli;
+    (*options).backward_size =
+        read32le(in_0.offset(::core::mem::size_of::<u32>() as usize as isize)) as lzma_vli;
     (*options).backward_size = (*options)
         .backward_size
         .wrapping_add(1 as lzma_vli)

@@ -1,24 +1,19 @@
+use crate::types::*;
+use core::ffi::{c_uint, c_void};
 extern "C" {
     fn lzma_stream_buffer_encode(
         filters: *mut lzma_filter,
         check: lzma_check,
         allocator: *const lzma_allocator,
-        in_0: *const uint8_t,
+        in_0: *const u8,
         in_size: size_t,
-        out: *mut uint8_t,
+        out: *mut u8,
         out_pos: *mut size_t,
         out_size: size_t,
     ) -> lzma_ret;
-    fn lzma_easy_preset(easy: *mut lzma_options_easy, preset: uint32_t) -> bool;
+    fn lzma_easy_preset(easy: *mut lzma_options_easy, preset: u32) -> bool;
 }
-pub type __darwin_size_t = usize;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type uint64_t = u64;
-pub type lzma_reserved_enum = ::core::ffi::c_uint;
 pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub type lzma_ret = ::core::ffi::c_uint;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -43,66 +38,54 @@ pub const LZMA_OK: lzma_ret = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_allocator {
-    pub alloc: Option<
-        unsafe extern "C" fn(
-            *mut ::core::ffi::c_void,
-            size_t,
-            size_t,
-        ) -> *mut ::core::ffi::c_void,
-    >,
-    pub free: Option<
-        unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut ::core::ffi::c_void) -> (),
-    >,
-    pub opaque: *mut ::core::ffi::c_void,
+    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
+    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
+    pub opaque: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_filter {
     pub id: lzma_vli,
-    pub options: *mut ::core::ffi::c_void,
+    pub options: *mut c_void,
 }
-pub type lzma_vli = uint64_t;
-pub type lzma_check = ::core::ffi::c_uint;
 pub const LZMA_CHECK_SHA256: lzma_check = 10;
 pub const LZMA_CHECK_CRC64: lzma_check = 4;
 pub const LZMA_CHECK_CRC32: lzma_check = 1;
 pub const LZMA_CHECK_NONE: lzma_check = 0;
-pub type lzma_match_finder = ::core::ffi::c_uint;
 pub const LZMA_MF_BT4: lzma_match_finder = 20;
 pub const LZMA_MF_BT3: lzma_match_finder = 19;
 pub const LZMA_MF_BT2: lzma_match_finder = 18;
 pub const LZMA_MF_HC4: lzma_match_finder = 4;
 pub const LZMA_MF_HC3: lzma_match_finder = 3;
-pub type lzma_mode = ::core::ffi::c_uint;
 pub const LZMA_MODE_NORMAL: lzma_mode = 2;
 pub const LZMA_MODE_FAST: lzma_mode = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_options_lzma {
-    pub dict_size: uint32_t,
-    pub preset_dict: *const uint8_t,
-    pub preset_dict_size: uint32_t,
-    pub lc: uint32_t,
-    pub lp: uint32_t,
-    pub pb: uint32_t,
+    pub dict_size: u32,
+    pub preset_dict: *const u8,
+    pub preset_dict_size: u32,
+    pub lc: u32,
+    pub lp: u32,
+    pub pb: u32,
     pub mode: lzma_mode,
-    pub nice_len: uint32_t,
+    pub nice_len: u32,
     pub mf: lzma_match_finder,
-    pub depth: uint32_t,
-    pub ext_flags: uint32_t,
-    pub ext_size_low: uint32_t,
-    pub ext_size_high: uint32_t,
-    pub reserved_int4: uint32_t,
-    pub reserved_int5: uint32_t,
-    pub reserved_int6: uint32_t,
-    pub reserved_int7: uint32_t,
-    pub reserved_int8: uint32_t,
+    pub depth: u32,
+    pub ext_flags: u32,
+    pub ext_size_low: u32,
+    pub ext_size_high: u32,
+    pub reserved_int4: u32,
+    pub reserved_int5: u32,
+    pub reserved_int6: u32,
+    pub reserved_int7: u32,
+    pub reserved_int8: u32,
     pub reserved_enum1: lzma_reserved_enum,
     pub reserved_enum2: lzma_reserved_enum,
     pub reserved_enum3: lzma_reserved_enum,
     pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut ::core::ffi::c_void,
-    pub reserved_ptr2: *mut ::core::ffi::c_void,
+    pub reserved_ptr1: *mut c_void,
+    pub reserved_ptr2: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -112,23 +95,23 @@ pub struct lzma_options_easy {
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_easy_buffer_encode(
-    mut preset: uint32_t,
+    mut preset: u32,
     mut check: lzma_check,
     mut allocator: *const lzma_allocator,
-    mut in_0: *const uint8_t,
+    mut in_0: *const u8,
     mut in_size: size_t,
-    mut out: *mut uint8_t,
+    mut out: *mut u8,
     mut out_pos: *mut size_t,
     mut out_size: size_t,
 ) -> lzma_ret {
     let mut opt_easy: lzma_options_easy = lzma_options_easy {
         filters: [lzma_filter {
             id: 0,
-            options: ::core::ptr::null_mut::<::core::ffi::c_void>(),
+            options: ::core::ptr::null_mut::<c_void>(),
         }; 5],
         opt_lzma: lzma_options_lzma {
             dict_size: 0,
-            preset_dict: ::core::ptr::null::<uint8_t>(),
+            preset_dict: ::core::ptr::null::<u8>(),
             preset_dict_size: 0,
             lc: 0,
             lp: 0,
@@ -149,8 +132,8 @@ pub unsafe extern "C" fn lzma_easy_buffer_encode(
             reserved_enum2: LZMA_RESERVED_ENUM,
             reserved_enum3: LZMA_RESERVED_ENUM,
             reserved_enum4: LZMA_RESERVED_ENUM,
-            reserved_ptr1: ::core::ptr::null_mut::<::core::ffi::c_void>(),
-            reserved_ptr2: ::core::ptr::null_mut::<::core::ffi::c_void>(),
+            reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
+            reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
         },
     };
     if lzma_easy_preset(&raw mut opt_easy, preset) {

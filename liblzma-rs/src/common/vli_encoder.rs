@@ -1,8 +1,5 @@
-pub type __darwin_size_t = usize;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = u8;
-pub type uint64_t = u64;
-pub type lzma_ret = ::core::ffi::c_uint;
+use crate::types::*;
+use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -24,21 +21,16 @@ pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
 pub const LZMA_NO_CHECK: lzma_ret = 2;
 pub const LZMA_STREAM_END: lzma_ret = 1;
 pub const LZMA_OK: lzma_ret = 0;
-pub type lzma_vli = uint64_t;
-pub const __DARWIN_NULL: *mut ::core::ffi::c_void = ::core::ptr::null_mut::<
-    ::core::ffi::c_void,
->();
-pub const NULL: *mut ::core::ffi::c_void = __DARWIN_NULL;
-pub const UINT64_MAX: ::core::ffi::c_ulonglong = 18446744073709551615
-    as ::core::ffi::c_ulonglong;
-pub const LZMA_VLI_MAX: ::core::ffi::c_ulonglong = UINT64_MAX
-    .wrapping_div(2 as ::core::ffi::c_ulonglong);
-pub const LZMA_VLI_BYTES_MAX: ::core::ffi::c_int = 9 as ::core::ffi::c_int;
+pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
+pub const NULL: *mut c_void = __DARWIN_NULL;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2 as c_ulonglong);
+pub const LZMA_VLI_BYTES_MAX: c_int = 9 as c_int;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_vli_encode(
     mut vli: lzma_vli,
     mut vli_pos: *mut size_t,
-    mut out: *mut uint8_t,
+    mut out: *mut u8,
     mut out_pos: *mut size_t,
     mut out_size: size_t,
 ) -> lzma_ret {
@@ -49,7 +41,7 @@ pub unsafe extern "C" fn lzma_vli_encode(
             return LZMA_PROG_ERROR;
         }
     } else if *out_pos >= out_size {
-        return LZMA_BUF_ERROR
+        return LZMA_BUF_ERROR;
     }
     if *vli_pos >= LZMA_VLI_BYTES_MAX as size_t || vli > LZMA_VLI_MAX as lzma_vli {
         return LZMA_PROG_ERROR;
@@ -57,24 +49,23 @@ pub unsafe extern "C" fn lzma_vli_encode(
     vli >>= (*vli_pos).wrapping_mul(7 as size_t);
     while vli >= 0x80 as lzma_vli {
         *vli_pos = (*vli_pos).wrapping_add(1);
-        *out.offset(*out_pos as isize) = (vli as uint8_t as ::core::ffi::c_int
-            | 0x80 as ::core::ffi::c_int) as uint8_t;
-        vli >>= 7 as ::core::ffi::c_int;
+        *out.offset(*out_pos as isize) = (vli as u8 as c_int | 0x80 as c_int) as u8;
+        vli >>= 7 as c_int;
         *out_pos = (*out_pos).wrapping_add(1);
         if *out_pos == out_size {
             return (if vli_pos == &raw mut vli_pos_internal {
-                LZMA_PROG_ERROR as ::core::ffi::c_int
+                LZMA_PROG_ERROR as c_int
             } else {
-                LZMA_OK as ::core::ffi::c_int
+                LZMA_OK as c_int
             }) as lzma_ret;
         }
     }
-    *out.offset(*out_pos as isize) = vli as uint8_t;
+    *out.offset(*out_pos as isize) = vli as u8;
     *out_pos = (*out_pos).wrapping_add(1);
     *vli_pos = (*vli_pos).wrapping_add(1);
     return (if vli_pos == &raw mut vli_pos_internal {
-        LZMA_OK as ::core::ffi::c_int
+        LZMA_OK as c_int
     } else {
-        LZMA_STREAM_END as ::core::ffi::c_int
+        LZMA_STREAM_END as c_int
     }) as lzma_ret;
 }

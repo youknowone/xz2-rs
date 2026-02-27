@@ -1,7 +1,8 @@
-pub type uint64_t = u64;
+use crate::types::*;
+use core::ffi::{c_int, c_void};
 
 #[no_mangle]
-pub unsafe extern "C" fn tuklib_physmem() -> uint64_t {
+pub unsafe extern "C" fn tuklib_physmem() -> u64 {
     #[cfg(target_os = "macos")]
     {
         let mut memsize: u64 = 0;
