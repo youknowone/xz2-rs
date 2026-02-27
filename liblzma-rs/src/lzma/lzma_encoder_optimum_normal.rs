@@ -224,7 +224,7 @@ unsafe extern "C" fn rc_bittree_reverse_price(
     return price;
 }
 #[inline]
-unsafe extern "C" fn rc_direct_price(bits: u32) -> u32 {
+extern "C" fn rc_direct_price(bits: u32) -> u32 {
     return bits << RC_BIT_PRICE_SHIFT_BITS;
 }
 pub const LIT_STATES: c_int = 7;

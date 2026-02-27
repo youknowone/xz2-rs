@@ -433,7 +433,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
     return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_lz_decoder_memusage(dictionary_size: size_t) -> u64 {
+pub extern "C" fn lzma_lz_decoder_memusage(dictionary_size: size_t) -> u64 {
     return (core::mem::size_of::<lzma_coder>() as u64)
         .wrapping_add(dictionary_size as u64)
         .wrapping_add((2 as c_int * LZ_DICT_REPEAT_MAX) as u64)

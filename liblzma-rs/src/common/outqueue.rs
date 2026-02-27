@@ -77,7 +77,7 @@ extern "C" fn lzma_outq_outbuf_memusage(buf_size: size_t) -> u64 {
     return (core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize) as u64;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64 {
+pub extern "C" fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64 {
     let limit: u64 = (UINT64_MAX as u64)
         .wrapping_div((2 as c_int * 16384 as c_int) as u64)
         .wrapping_div(2);

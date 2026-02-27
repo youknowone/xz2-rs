@@ -737,7 +737,7 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
     return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_mf_is_supported(mf: lzma_match_finder) -> lzma_bool {
+pub extern "C" fn lzma_mf_is_supported(mf: lzma_match_finder) -> lzma_bool {
     match mf {
         3 => return true as lzma_bool,
         4 => return true as lzma_bool,

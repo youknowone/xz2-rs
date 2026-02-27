@@ -1517,6 +1517,6 @@ pub unsafe extern "C" fn lzma_lzma_props_encode(options: *const c_void, out: *mu
     return LZMA_OK;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_mode_is_supported(mode: lzma_mode) -> lzma_bool {
+pub extern "C" fn lzma_mode_is_supported(mode: lzma_mode) -> lzma_bool {
     return (mode == LZMA_MODE_FAST || mode == LZMA_MODE_NORMAL) as lzma_bool;
 }

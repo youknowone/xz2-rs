@@ -547,8 +547,8 @@ unsafe extern "C" fn mythread_create(
     return ret;
 }
 #[inline]
-unsafe extern "C" fn mythread_join(thread: mythread) -> c_int {
-    return pthread_join(thread as pthread_t, core::ptr::null_mut());
+extern "C" fn mythread_join(thread: mythread) -> c_int {
+    return unsafe { pthread_join(thread as pthread_t, core::ptr::null_mut()) };
 }
 #[inline]
 unsafe extern "C" fn mythread_mutex_init(mutex: *mut mythread_mutex) -> c_int {

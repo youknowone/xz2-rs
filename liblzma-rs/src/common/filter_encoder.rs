@@ -245,7 +245,7 @@ pub const LZMA_FILTER_DELTA: c_ulonglong = 0x3;
 pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001;
 pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002;
 pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21;
-static mut encoders: [lzma_filter_encoder; 12] = [
+static encoders: [lzma_filter_encoder; 12] = [
     lzma_filter_encoder {
         id: LZMA_FILTER_LZMA1 as lzma_vli,
         init: Some(
@@ -479,14 +479,14 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         ),
     },
 ];
-unsafe extern "C" fn encoder_find(id: lzma_vli) -> *const lzma_filter_encoder {
+extern "C" fn encoder_find(id: lzma_vli) -> *const lzma_filter_encoder {
     let mut i: size_t = 0;
     while i
         < (core::mem::size_of::<[lzma_filter_encoder; 12]>() as usize)
             .wrapping_div(core::mem::size_of::<lzma_filter_encoder>() as usize)
     {
         if encoders[i as usize].id == id {
-            return (&raw const encoders as *const lzma_filter_encoder).offset(i as isize);
+            return encoders.as_ptr().wrapping_add(i as usize);
         }
         i = i.wrapping_add(1);
     }
@@ -496,7 +496,7 @@ unsafe extern "C" fn coder_find(id: lzma_vli) -> *const lzma_filter_coder {
     return encoder_find(id) as *const lzma_filter_coder;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_filter_encoder_is_supported(id: lzma_vli) -> lzma_bool {
+pub extern "C" fn lzma_filter_encoder_is_supported(id: lzma_vli) -> lzma_bool {
     return !encoder_find(id).is_null() as lzma_bool;
 }
 #[no_mangle]

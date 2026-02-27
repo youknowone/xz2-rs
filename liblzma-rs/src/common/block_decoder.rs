@@ -234,7 +234,7 @@ pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 #[inline]
-unsafe extern "C" fn is_size_valid(size: lzma_vli, reference: lzma_vli) -> bool {
+extern "C" fn is_size_valid(size: lzma_vli, reference: lzma_vli) -> bool {
     return reference == LZMA_VLI_UNKNOWN as lzma_vli || reference == size;
 }
 unsafe extern "C" fn block_decode(

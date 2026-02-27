@@ -412,7 +412,7 @@ pub unsafe extern "C" fn lzma_index_prealloc(i: *mut lzma_index, mut records: lz
     (*i).prealloc = records as size_t;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_index_memusage(streams: lzma_vli, blocks: lzma_vli) -> u64 {
+pub extern "C" fn lzma_index_memusage(streams: lzma_vli, blocks: lzma_vli) -> u64 {
     let alloc_overhead: size_t =
         (4 as size_t).wrapping_mul(core::mem::size_of::<*mut c_void>() as size_t);
     let stream_base: size_t = (core::mem::size_of::<index_stream>() as size_t)
