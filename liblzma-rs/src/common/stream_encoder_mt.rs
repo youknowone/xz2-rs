@@ -632,12 +632,12 @@ pub const LZMA_STREAM_HEADER_SIZE: c_int = 12;
 pub const LZMA_THREADS_MAX: c_int = 16384;
 pub const LZMA_MEMUSAGE_BASE: c_ulonglong = 1 << 15;
 #[inline]
-unsafe extern "C" fn lzma_outq_has_buf(outq: *const lzma_outq) -> bool {
-    return (*outq).bufs_in_use < (*outq).bufs_limit;
+extern "C" fn lzma_outq_has_buf(outq: *const lzma_outq) -> bool {
+    return unsafe { (*outq).bufs_in_use < (*outq).bufs_limit };
 }
 #[inline]
-unsafe extern "C" fn lzma_outq_is_empty(outq: *const lzma_outq) -> bool {
-    return (*outq).bufs_in_use == 0;
+extern "C" fn lzma_outq_is_empty(outq: *const lzma_outq) -> bool {
+    return unsafe { (*outq).bufs_in_use == 0 };
 }
 pub const BLOCK_SIZE_MAX: c_ulonglong = UINT64_MAX.wrapping_div(LZMA_THREADS_MAX as u64);
 unsafe extern "C" fn worker_error(thr: *mut worker_thread, ret: lzma_ret) {

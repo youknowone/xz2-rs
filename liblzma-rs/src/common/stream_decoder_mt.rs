@@ -637,12 +637,12 @@ extern "C" fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
     return vli.wrapping_add(3 as lzma_vli) & !(3 as lzma_vli);
 }
 #[inline]
-unsafe extern "C" fn lzma_outq_has_buf(outq: *const lzma_outq) -> bool {
-    return (*outq).bufs_in_use < (*outq).bufs_limit;
+extern "C" fn lzma_outq_has_buf(outq: *const lzma_outq) -> bool {
+    return unsafe { (*outq).bufs_in_use < (*outq).bufs_limit };
 }
 #[inline]
-unsafe extern "C" fn lzma_outq_is_empty(outq: *const lzma_outq) -> bool {
-    return (*outq).bufs_in_use == 0;
+extern "C" fn lzma_outq_is_empty(outq: *const lzma_outq) -> bool {
+    return unsafe { (*outq).bufs_in_use == 0 };
 }
 #[inline]
 extern "C" fn lzma_outq_outbuf_memusage(buf_size: size_t) -> u64 {
@@ -1134,10 +1134,12 @@ unsafe extern "C" fn decode_block_header(
     (*coder).block_options.ignore_check = (*coder).ignore_check as lzma_bool;
     return LZMA_STREAM_END;
 }
-unsafe extern "C" fn comp_blk_size(coder: *const lzma_stream_coder) -> size_t {
-    return vli_ceil4((*coder).block_options.compressed_size)
-        .wrapping_add(lzma_check_size((*coder).stream_flags.check) as lzma_vli)
-        as size_t;
+extern "C" fn comp_blk_size(coder: *const lzma_stream_coder) -> size_t {
+    return unsafe {
+        vli_ceil4((*coder).block_options.compressed_size)
+            .wrapping_add(lzma_check_size((*coder).stream_flags.check) as lzma_vli)
+            as size_t
+    };
 }
 extern "C" fn is_direct_mode_needed(size: lzma_vli) -> bool {
     return size == LZMA_VLI_UNKNOWN as lzma_vli
