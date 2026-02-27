@@ -143,7 +143,7 @@ pub struct lzma_length_encoder {
     pub counters: [u32; 16],
 }
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
@@ -178,7 +178,7 @@ unsafe extern "C" fn rc_bit_0_price(prob: probability) -> u32 {
 }
 #[inline]
 unsafe extern "C" fn rc_bit_1_price(prob: probability) -> u32 {
-    return lzma_rc_prices[((prob as c_uint ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1 as c_uint))
+    return lzma_rc_prices[((prob as c_uint ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1))
         >> RC_MOVE_REDUCING_BITS) as usize] as u32;
 }
 #[inline]
@@ -787,12 +787,12 @@ unsafe extern "C" fn helper2(
         } else {
             state = (*coder).opts[pos_prev as usize].state;
         }
-        state = (if state as c_uint <= STATE_SHORTREP_LIT_LIT as c_uint {
-            STATE_LIT_LIT as c_uint
-        } else if state as c_uint <= STATE_LIT_SHORTREP as c_uint {
-            (state as c_uint).wrapping_sub(3 as c_uint)
+        state = (if state <= STATE_SHORTREP_LIT_LIT {
+            STATE_LIT_LIT
+        } else if state <= STATE_LIT_SHORTREP {
+            (state as c_uint).wrapping_sub(3)
         } else {
-            (state as c_uint).wrapping_sub(6 as c_uint)
+            (state as c_uint).wrapping_sub(6)
         }) as lzma_lzma_state;
     } else {
         state = (*coder).opts[pos_prev as usize].state;
@@ -805,12 +805,12 @@ unsafe extern "C" fn helper2(
                 STATE_NONLIT_REP as c_int
             }) as lzma_lzma_state;
         } else {
-            state = (if state as c_uint <= STATE_SHORTREP_LIT_LIT as c_uint {
-                STATE_LIT_LIT as c_uint
-            } else if state as c_uint <= STATE_LIT_SHORTREP as c_uint {
-                (state as c_uint).wrapping_sub(3 as c_uint)
+            state = (if state <= STATE_SHORTREP_LIT_LIT {
+                STATE_LIT_LIT
+            } else if state <= STATE_LIT_SHORTREP {
+                (state as c_uint).wrapping_sub(3)
             } else {
-                (state as c_uint).wrapping_sub(6 as c_uint)
+                (state as c_uint).wrapping_sub(6)
             }) as lzma_lzma_state;
         }
     } else {
@@ -938,12 +938,12 @@ unsafe extern "C" fn helper2(
             (lzma_memcmplen(buf, buf_back, 1 as u32, limit) as u32).wrapping_sub(1 as u32);
         if len_test >= 2 as u32 {
             let mut state_2: lzma_lzma_state = state;
-            state_2 = (if state_2 as c_uint <= STATE_SHORTREP_LIT_LIT as c_uint {
-                STATE_LIT_LIT as c_uint
-            } else if state_2 as c_uint <= STATE_LIT_SHORTREP as c_uint {
-                (state_2 as c_uint).wrapping_sub(3 as c_uint)
+            state_2 = (if state_2 <= STATE_SHORTREP_LIT_LIT {
+                STATE_LIT_LIT
+            } else if state_2 <= STATE_LIT_SHORTREP {
+                (state_2 as c_uint).wrapping_sub(3)
             } else {
-                (state_2 as c_uint).wrapping_sub(6 as c_uint)
+                (state_2 as c_uint).wrapping_sub(6)
             }) as lzma_lzma_state;
             let pos_state_next: u32 = position.wrapping_add(1 as u32) & (*coder).pos_mask;
             let next_rep_match_price: u32 = cur_and_1_price
@@ -1049,12 +1049,12 @@ unsafe extern "C" fn helper2(
                         *buf_back_0.offset(len_test_0 as isize) as u32,
                         *buf.offset(len_test_0 as isize) as u32,
                     ) as u32);
-                state_2_0 = (if state_2_0 as c_uint <= STATE_SHORTREP_LIT_LIT as c_uint {
-                    STATE_LIT_LIT as c_uint
-                } else if state_2_0 as c_uint <= STATE_LIT_SHORTREP as c_uint {
-                    (state_2_0 as c_uint).wrapping_sub(3 as c_uint)
+                state_2_0 = (if state_2_0 <= STATE_SHORTREP_LIT_LIT {
+                    STATE_LIT_LIT
+                } else if state_2_0 <= STATE_LIT_SHORTREP {
+                    (state_2_0 as c_uint).wrapping_sub(3)
                 } else {
-                    (state_2_0 as c_uint).wrapping_sub(6 as c_uint)
+                    (state_2_0 as c_uint).wrapping_sub(6)
                 }) as lzma_lzma_state;
                 pos_state_next_0 =
                     position.wrapping_add(len_test_0).wrapping_add(1 as u32) & (*coder).pos_mask;
@@ -1160,12 +1160,12 @@ unsafe extern "C" fn helper2(
                             *buf_back_1.offset(len_test_1 as isize) as u32,
                             *buf.offset(len_test_1 as isize) as u32,
                         ) as u32);
-                    state_2_1 = (if state_2_1 as c_uint <= STATE_SHORTREP_LIT_LIT as c_uint {
-                        STATE_LIT_LIT as c_uint
-                    } else if state_2_1 as c_uint <= STATE_LIT_SHORTREP as c_uint {
-                        (state_2_1 as c_uint).wrapping_sub(3 as c_uint)
+                    state_2_1 = (if state_2_1 <= STATE_SHORTREP_LIT_LIT {
+                        STATE_LIT_LIT
+                    } else if state_2_1 <= STATE_LIT_SHORTREP {
+                        (state_2_1 as c_uint).wrapping_sub(3)
                     } else {
-                        (state_2_1 as c_uint).wrapping_sub(6 as c_uint)
+                        (state_2_1 as c_uint).wrapping_sub(6)
                     }) as lzma_lzma_state;
                     pos_state_next_1 = pos_state_next_1.wrapping_add(1 as u32) & (*coder).pos_mask;
                     let next_rep_match_price_1: u32 = cur_and_len_literal_price_0

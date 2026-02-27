@@ -264,11 +264,11 @@ pub const SEQ_LZMA_ENCODE: C2RustUnnamed = 1;
 pub const SEQ_INIT: C2RustUnnamed = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
-pub const LZMA_DICT_SIZE_MIN: c_uint = 4096 as c_uint;
+pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 pub const LZMA_LCLP_MAX: c_int = 4 as c_int;
 pub const LZMA_PB_MAX: c_int = 4 as c_int;
 #[inline]
@@ -395,15 +395,15 @@ unsafe extern "C" fn lzma2_encode(
     let mut coder: *mut lzma_lzma2_coder = coder_ptr as *mut lzma_lzma2_coder;
     while *out_pos < out_size {
         let mut current_block_45: u64;
-        match (*coder).sequence as c_uint {
+        match (*coder).sequence {
             0 => {
                 if mf_unencoded(mf) == 0 as u32 {
-                    if (*mf).action as c_uint == LZMA_FINISH as c_uint {
+                    if (*mf).action == LZMA_FINISH {
                         let fresh0 = *out_pos;
                         *out_pos = (*out_pos).wrapping_add(1);
                         *out.offset(fresh0 as isize) = 0 as u8;
                     }
-                    return (if (*mf).action as c_uint == LZMA_RUN as c_uint {
+                    return (if (*mf).action == LZMA_RUN {
                         LZMA_OK as c_int
                     } else {
                         LZMA_STREAM_END as c_int
@@ -414,7 +414,7 @@ unsafe extern "C" fn lzma2_encode(
                         (*coder).lzma as *mut lzma_lzma1_encoder,
                         &raw mut (*coder).opt_cur,
                     ) as lzma_ret;
-                    if ret_ as c_uint != LZMA_OK as c_uint {
+                    if ret_ != LZMA_OK {
                         return ret_;
                     }
                 }
@@ -495,7 +495,7 @@ unsafe extern "C" fn lzma2_encode(
                         .wrapping_sub((*mf).read_ahead)
                         .wrapping_sub(read_start) as size_t,
                 );
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     return LZMA_OK;
                 }
                 if (*coder).compressed_size >= (*coder).uncompressed_size {
@@ -548,7 +548,7 @@ unsafe extern "C" fn lzma2_encoder_options_update(
     mut filter: *const lzma_filter,
 ) -> lzma_ret {
     let mut coder: *mut lzma_lzma2_coder = coder_ptr as *mut lzma_lzma2_coder;
-    if (*filter).options.is_null() || (*coder).sequence as c_uint != SEQ_INIT as c_uint {
+    if (*filter).options.is_null() || (*coder).sequence != SEQ_INIT {
         return LZMA_PROG_ERROR;
     }
     let mut opt: *const lzma_options_lzma = (*filter).options as *const lzma_options_lzma;
@@ -634,7 +634,7 @@ unsafe extern "C" fn lzma2_encoder_init(
         &raw mut (*coder).opt_cur,
         lz_options,
     ) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     if (*lz_options)

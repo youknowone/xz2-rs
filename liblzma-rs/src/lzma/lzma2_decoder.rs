@@ -222,7 +222,7 @@ pub const SEQ_UNCOMPRESSED_1: sequence = 1;
 pub const SEQ_CONTROL: sequence = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 pub const LZ_DICT_REPEAT_MAX: c_int = 288 as c_int;
@@ -269,8 +269,8 @@ unsafe extern "C" fn lzma2_decode(
     mut in_size: size_t,
 ) -> lzma_ret {
     let mut coder: *mut lzma_lzma2_coder = coder_ptr as *mut lzma_lzma2_coder;
-    while *in_pos < in_size || (*coder).sequence as c_uint == SEQ_LZMA as c_uint {
-        match (*coder).sequence as c_uint {
+    while *in_pos < in_size || (*coder).sequence == SEQ_LZMA {
+        match (*coder).sequence {
             0 => {
                 let control: u32 = *in_0.offset(*in_pos as isize) as u32;
                 *in_pos = (*in_pos).wrapping_add(1);
@@ -325,7 +325,7 @@ unsafe extern "C" fn lzma2_decode(
                 let fresh1 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
                 (*coder).uncompressed_size = (*coder).uncompressed_size.wrapping_add(
-                    (*in_0.offset(fresh1 as isize) as c_uint).wrapping_add(1 as c_uint) as size_t,
+                    (*in_0.offset(fresh1 as isize) as c_uint).wrapping_add(1) as size_t,
                 );
                 (*coder).sequence = SEQ_COMPRESSED_0;
                 (*coder)
@@ -348,7 +348,7 @@ unsafe extern "C" fn lzma2_decode(
                 let fresh3 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
                 (*coder).compressed_size = (*coder).compressed_size.wrapping_add(
-                    (*in_0.offset(fresh3 as isize) as c_uint).wrapping_add(1 as c_uint) as size_t,
+                    (*in_0.offset(fresh3 as isize) as c_uint).wrapping_add(1) as size_t,
                 );
                 (*coder).sequence = (*coder).next_sequence as sequence;
             }
@@ -379,7 +379,7 @@ unsafe extern "C" fn lzma2_decode(
                     return LZMA_DATA_ERROR;
                 }
                 (*coder).compressed_size = (*coder).compressed_size.wrapping_sub(in_used);
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     return ret;
                 }
                 if (*coder).compressed_size != 0 as size_t {
@@ -515,10 +515,10 @@ pub unsafe extern "C" fn lzma_lzma2_props_decode(
     if *props.offset(0 as isize) as c_int == 40 as c_int {
         (*opt).dict_size = UINT32_MAX as u32;
     } else {
-        (*opt).dict_size = (2 as c_uint | *props.offset(0 as isize) as c_uint & 1 as c_uint) as u32;
+        (*opt).dict_size = (2 | *props.offset(0 as isize) as c_uint & 1) as u32;
         (*opt).dict_size <<= (*props.offset(0 as isize) as c_uint)
-            .wrapping_div(2 as c_uint)
-            .wrapping_add(11 as c_uint);
+            .wrapping_div(2)
+            .wrapping_add(11);
     }
     (*opt).preset_dict = ::core::ptr::null::<u8>();
     (*opt).preset_dict_size = 0 as u32;

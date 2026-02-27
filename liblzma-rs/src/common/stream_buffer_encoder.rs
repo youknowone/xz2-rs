@@ -171,7 +171,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
     mut out_size: size_t,
 ) -> lzma_ret {
     if filters.is_null()
-        || check as c_uint > LZMA_CHECK_ID_MAX as c_uint
+        || check > LZMA_CHECK_ID_MAX as c_uint
         || in_0.is_null() && in_size != 0 as size_t
         || out.is_null()
         || out_pos_ptr.is_null()
@@ -206,8 +206,8 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
         reserved_int1: 0,
         reserved_int2: 0,
     };
-    if lzma_stream_header_encode(&raw mut stream_flags, out.offset(out_pos as isize)) as c_uint
-        != LZMA_OK as c_uint
+    if lzma_stream_header_encode(&raw mut stream_flags, out.offset(out_pos as isize))
+        != LZMA_OK
     {
         return LZMA_PROG_ERROR;
     }
@@ -254,7 +254,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
             &raw mut out_pos,
             out_size,
         ) as lzma_ret;
-        if ret_ as c_uint != LZMA_OK as c_uint {
+        if ret_ != LZMA_OK {
             return ret_;
         }
     }
@@ -271,16 +271,16 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
             block.uncompressed_size,
         );
     }
-    if ret as c_uint == LZMA_OK as c_uint {
+    if ret == LZMA_OK {
         ret = lzma_index_buffer_encode(i, out, &raw mut out_pos, out_size);
         stream_flags.backward_size = lzma_index_size(i);
     }
     lzma_index_end(i, allocator);
-    if ret as c_uint != LZMA_OK as c_uint {
+    if ret != LZMA_OK {
         return ret;
     }
-    if lzma_stream_footer_encode(&raw mut stream_flags, out.offset(out_pos as isize)) as c_uint
-        != LZMA_OK as c_uint
+    if lzma_stream_footer_encode(&raw mut stream_flags, out.offset(out_pos as isize))
+        != LZMA_OK
     {
         return LZMA_PROG_ERROR;
     }

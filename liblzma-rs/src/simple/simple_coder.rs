@@ -159,7 +159,7 @@ unsafe extern "C" fn copy_or_code(
     if (*coder).next.code.is_none() {
         lzma_bufcpy(in_0, in_pos, in_size, out, out_pos, out_size);
         if (*coder).is_encoder as c_int != 0
-            && action as c_uint == LZMA_FINISH as c_uint
+            && action == LZMA_FINISH
             && *in_pos == in_size
         {
             (*coder).end_was_reached = true_0 != 0;
@@ -176,9 +176,9 @@ unsafe extern "C" fn copy_or_code(
             out_size,
             action,
         ) as lzma_ret;
-        if ret as c_uint == LZMA_STREAM_END as c_uint {
+        if ret == LZMA_STREAM_END {
             (*coder).end_was_reached = true_0 != 0;
-        } else if ret as c_uint != LZMA_OK as c_uint {
+        } else if ret != LZMA_OK {
             return ret;
         }
     }
@@ -211,7 +211,7 @@ unsafe extern "C" fn simple_code(
     mut action: lzma_action,
 ) -> lzma_ret {
     let mut coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
-    if action as c_uint == LZMA_SYNC_FLUSH as c_uint {
+    if action == LZMA_SYNC_FLUSH {
         return LZMA_OPTIONS_ERROR;
     }
     if (*coder).pos < (*coder).filtered {
@@ -247,7 +247,7 @@ unsafe extern "C" fn simple_code(
         let ret: lzma_ret = copy_or_code(
             coder, allocator, in_0, in_pos, in_size, out, out_pos, out_size, action,
         ) as lzma_ret;
-        if ret as c_uint != LZMA_OK as c_uint {
+        if ret != LZMA_OK {
             return ret;
         }
         let size: size_t = (*out_pos).wrapping_sub(out_start);
@@ -290,7 +290,7 @@ unsafe extern "C" fn simple_code(
             (*coder).allocated,
             action,
         ) as lzma_ret;
-        if ret_0 as c_uint != LZMA_OK as c_uint {
+        if ret_0 != LZMA_OK {
             return ret_0;
         }
         (*coder).filtered = call_filter(coder, &raw mut (*coder).buffer as *mut u8, (*coder).size);

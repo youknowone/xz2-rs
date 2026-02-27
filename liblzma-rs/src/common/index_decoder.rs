@@ -197,7 +197,7 @@ unsafe extern "C" fn index_decode(
     let in_start: size_t = *in_pos;
     let mut ret: lzma_ret = LZMA_OK;
     while *in_pos < in_size {
-        match (*coder).sequence as c_uint {
+        match (*coder).sequence {
             0 => {
                 let fresh0 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
@@ -215,7 +215,7 @@ unsafe extern "C" fn index_decode(
                     in_pos,
                     in_size,
                 );
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     break;
                 }
                 (*coder).pos = 0 as size_t;
@@ -227,18 +227,18 @@ unsafe extern "C" fn index_decode(
             }
             3 | 4 => {
                 let mut size: *mut lzma_vli =
-                    if (*coder).sequence as c_uint == SEQ_UNPADDED as c_uint {
+                    if (*coder).sequence == SEQ_UNPADDED {
                         &raw mut (*coder).unpadded_size
                     } else {
                         &raw mut (*coder).uncompressed_size
                     };
                 ret = lzma_vli_decode(size, &raw mut (*coder).pos, in_0, in_pos, in_size);
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     break;
                 }
                 ret = LZMA_OK;
                 (*coder).pos = 0 as size_t;
-                if (*coder).sequence as c_uint == SEQ_UNPADDED as c_uint {
+                if (*coder).sequence == SEQ_UNPADDED {
                     if (*coder).unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
                         || (*coder).unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
                     {
@@ -252,7 +252,7 @@ unsafe extern "C" fn index_decode(
                         (*coder).unpadded_size,
                         (*coder).uncompressed_size,
                     ) as lzma_ret;
-                    if ret_ as c_uint != LZMA_OK as c_uint {
+                    if ret_ != LZMA_OK {
                         return ret_;
                     }
                     (*coder).count = (*coder).count.wrapping_sub(1);
@@ -486,7 +486,7 @@ pub unsafe extern "C" fn lzma_index_decoder(
         *i = ::core::ptr::null_mut::<lzma_index>();
     }
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = lzma_index_decoder_init(
@@ -495,7 +495,7 @@ pub unsafe extern "C" fn lzma_index_decoder(
         i,
         memlimit,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }
@@ -531,7 +531,7 @@ pub unsafe extern "C" fn lzma_index_buffer_decode(
         crc32: 0,
     };
     let ret_: lzma_ret = index_decoder_reset(&raw mut coder, allocator, i, *memlimit) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let in_start: size_t = *in_pos;
@@ -546,14 +546,14 @@ pub unsafe extern "C" fn lzma_index_buffer_decode(
         0 as size_t,
         LZMA_RUN,
     );
-    if ret as c_uint == LZMA_STREAM_END as c_uint {
+    if ret == LZMA_STREAM_END {
         ret = LZMA_OK;
     } else {
         lzma_index_end(coder.index, allocator);
         *in_pos = in_start;
-        if ret as c_uint == LZMA_OK as c_uint {
+        if ret == LZMA_OK {
             ret = LZMA_DATA_ERROR;
-        } else if ret as c_uint == LZMA_MEMLIMIT_ERROR as c_uint {
+        } else if ret == LZMA_MEMLIMIT_ERROR {
             *memlimit = lzma_index_memusage(1 as lzma_vli, coder.count);
         }
     }

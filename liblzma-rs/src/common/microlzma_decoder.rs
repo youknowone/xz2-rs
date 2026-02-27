@@ -200,7 +200,7 @@ pub type lzma_init_function = Option<
 >;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
@@ -294,7 +294,7 @@ unsafe extern "C" fn microlzma_decode(
             allocator,
             &raw mut filters as *mut lzma_filter_info,
         ) as lzma_ret;
-        if ret_ as c_uint != LZMA_OK as c_uint {
+        if ret_ != LZMA_OK {
             return ret_;
         }
         let dummy_in: u8 = 0 as u8;
@@ -309,8 +309,8 @@ unsafe extern "C" fn microlzma_decode(
             out_pos,
             out_size,
             LZMA_RUN,
-        ) as c_uint
-            != LZMA_OK as c_uint
+        )
+            != LZMA_OK
         {
             return LZMA_PROG_ERROR;
         }
@@ -331,14 +331,14 @@ unsafe extern "C" fn microlzma_decode(
         .comp_size
         .wrapping_sub((*in_pos).wrapping_sub(in_start) as u64);
     if (*coder).uncomp_size_is_exact {
-        if ret as c_uint == LZMA_STREAM_END as c_uint && (*coder).comp_size != 0 as u64 {
+        if ret == LZMA_STREAM_END && (*coder).comp_size != 0 as u64 {
             ret = LZMA_DATA_ERROR;
         }
     } else {
         (*coder).uncomp_size = (*coder)
             .uncomp_size
             .wrapping_sub((*out_pos).wrapping_sub(out_start) as lzma_vli);
-        if ret as c_uint == LZMA_STREAM_END as c_uint {
+        if ret == LZMA_STREAM_END {
             ret = LZMA_DATA_ERROR;
         } else if (*coder).uncomp_size == 0 as lzma_vli {
             ret = LZMA_STREAM_END;
@@ -470,7 +470,7 @@ pub unsafe extern "C" fn lzma_microlzma_decoder(
     mut dict_size: u32,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = microlzma_decoder_init(
@@ -481,7 +481,7 @@ pub unsafe extern "C" fn lzma_microlzma_decoder(
         uncomp_size_is_exact != 0,
         dict_size,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

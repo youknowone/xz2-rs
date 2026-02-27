@@ -250,12 +250,12 @@ unsafe extern "C" fn read64le(mut buf: *const u8) -> u64 {
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
-pub const LZMA_TELL_NO_CHECK: c_uint = 0x1 as c_uint;
-pub const LZMA_TELL_UNSUPPORTED_CHECK: c_uint = 0x2 as c_uint;
-pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4 as c_uint;
-pub const LZMA_IGNORE_CHECK: c_uint = 0x10 as c_uint;
-pub const LZMA_CONCATENATED: c_uint = 0x8 as c_uint;
-pub const LZMA_FAIL_FAST: c_uint = 0x20 as c_uint;
+pub const LZMA_TELL_NO_CHECK: c_uint = 0x1;
+pub const LZMA_TELL_UNSUPPORTED_CHECK: c_uint = 0x2;
+pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4;
+pub const LZMA_IGNORE_CHECK: c_uint = 0x10;
+pub const LZMA_CONCATENATED: c_uint = 0x8;
+pub const LZMA_FAIL_FAST: c_uint = 0x20;
 pub const LZMA_MEMUSAGE_BASE: c_ulonglong = (1 as c_ulonglong) << 15 as c_int;
 pub const LZMA_SUPPORTED_FLAGS: c_uint = LZMA_TELL_NO_CHECK
     | LZMA_TELL_UNSUPPORTED_CHECK
@@ -282,13 +282,13 @@ unsafe extern "C" fn lzip_decode(
     let mut coder: *mut lzma_lzip_coder = coder_ptr as *mut lzma_lzip_coder;
     loop {
         let mut current_block_80: u64;
-        match (*coder).sequence as c_uint {
+        match (*coder).sequence {
             0 => {
                 let lzip_id_string: [u8; 4] = [0x4c as u8, 0x5a as u8, 0x49 as u8, 0x50 as u8];
                 while (*coder).pos < ::core::mem::size_of::<[u8; 4]>() as usize {
                     if *in_pos >= in_size {
                         return (if !(*coder).first_member
-                            && action as c_uint == LZMA_FINISH as c_uint
+                            && action == LZMA_FINISH
                         {
                             LZMA_STREAM_END as c_int
                         } else {
@@ -412,7 +412,7 @@ unsafe extern "C" fn lzip_decode(
                     allocator,
                     &raw const filters as *const lzma_filter_info,
                 ) as lzma_ret;
-                if ret_ as c_uint != LZMA_OK as c_uint {
+                if ret_ != LZMA_OK {
                     return ret_;
                 }
                 (*coder).crc32 = 0 as u32;
@@ -449,7 +449,7 @@ unsafe extern "C" fn lzip_decode(
                     (*coder).crc32 =
                         lzma_crc32(out.offset(out_start as isize), out_used, (*coder).crc32);
                 }
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     return ret;
                 }
                 (*coder).sequence = SEQ_MEMBER_FOOTER;
@@ -637,7 +637,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder(
     mut flags: u32,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = lzma_lzip_decoder_init(
@@ -646,7 +646,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder(
         memlimit,
         flags,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

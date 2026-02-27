@@ -272,7 +272,7 @@ pub struct lzma_length_decoder {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
@@ -288,7 +288,7 @@ pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002 as c_ulonglong;
 pub const LZMA_LCLP_MAX: c_int = 4 as c_int;
 pub const LZMA_PB_MAX: c_int = 4 as c_int;
-pub const LZMA_LZMA1EXT_ALLOW_EOPM: c_uint = 0x1 as c_uint;
+pub const LZMA_LZMA1EXT_ALLOW_EOPM: c_uint = 0x1;
 pub const LZ_DICT_REPEAT_MAX: c_int = 288 as c_int;
 pub const LZ_DICT_INIT_POS: c_int = 2 as c_int * LZ_DICT_REPEAT_MAX;
 #[inline]
@@ -394,7 +394,7 @@ unsafe extern "C" fn is_lclppb_valid(mut options: *const lzma_options_lzma) -> b
 }
 pub const STATES: c_int = 12 as c_int;
 pub const LIT_STATES: c_int = 7 as c_int;
-pub const LITERAL_CODER_SIZE: c_uint = 0x300 as c_uint;
+pub const LITERAL_CODER_SIZE: c_uint = 0x300;
 #[inline]
 unsafe extern "C" fn literal_init(mut probs: *mut probability, mut lc: u32, mut lp: u32) {
     let coders: size_t = (LITERAL_CODER_SIZE << lc.wrapping_add(lp)) as size_t;
@@ -452,7 +452,7 @@ unsafe extern "C" fn lzma_decode(
     let mut current_block: u64;
     let mut coder: *mut lzma_lzma1_decoder = coder_ptr as *mut lzma_lzma1_decoder;
     let ret: lzma_ret = rc_read_init(&raw mut (*coder).rc, in_0, in_pos, in_size) as lzma_ret;
-    if ret as c_uint != LZMA_STREAM_END as c_uint {
+    if ret != LZMA_STREAM_END {
         return ret;
     }
     let mut dict: lzma_dict = *dictptr;
@@ -490,7 +490,7 @@ unsafe extern "C" fn lzma_decode(
         dict.limit = dict.pos.wrapping_add((*coder).uncompressed_size as size_t);
         might_finish_without_eopm = true_0 != 0;
     }
-    match (*coder).sequence as c_uint {
+    match (*coder).sequence {
         0 | 1 => {
             current_block = 5979571030476392895;
         }
@@ -3796,15 +3796,15 @@ unsafe extern "C" fn lzma_decode(
             .uncompressed_size
             .wrapping_sub(dict.pos.wrapping_sub(dict_start) as lzma_vli);
         if (*coder).uncompressed_size == 0 as lzma_vli
-            && ret_0 as c_uint == LZMA_OK as c_uint
-            && ((*coder).sequence as c_uint == SEQ_LITERAL_WRITE as c_uint
-                || (*coder).sequence as c_uint == SEQ_SHORTREP as c_uint
-                || (*coder).sequence as c_uint == SEQ_COPY as c_uint)
+            && ret_0 == LZMA_OK
+            && ((*coder).sequence == SEQ_LITERAL_WRITE
+                || (*coder).sequence == SEQ_SHORTREP
+                || (*coder).sequence == SEQ_COPY)
         {
             ret_0 = LZMA_DATA_ERROR;
         }
     }
-    if ret_0 as c_uint == LZMA_STREAM_END as c_uint {
+    if ret_0 == LZMA_STREAM_END {
         (*coder).rc.range = UINT32_MAX as u32;
         (*coder).rc.code = 0 as u32;
         (*coder).rc.init_bytes_left = 5 as u32;
@@ -3824,7 +3824,7 @@ unsafe extern "C" fn lzma_decoder_uncompressed(
 unsafe extern "C" fn lzma_decoder_reset(mut coder_ptr: *mut c_void, mut opt: *const c_void) {
     let mut coder: *mut lzma_lzma1_decoder = coder_ptr as *mut lzma_lzma1_decoder;
     let mut options: *const lzma_options_lzma = opt as *const lzma_options_lzma;
-    (*coder).pos_mask = ((1 as c_uint) << (*options).pb).wrapping_sub(1 as c_uint) as u32;
+    (*coder).pos_mask = ((1 as c_uint) << (*options).pb).wrapping_sub(1) as u32;
     literal_init(
         &raw mut (*coder).literal as *mut probability,
         (*options).lc,
@@ -3832,13 +3832,13 @@ unsafe extern "C" fn lzma_decoder_reset(mut coder_ptr: *mut c_void, mut opt: *co
     );
     (*coder).literal_context_bits = (*options).lc;
     (*coder).literal_mask =
-        ((0x100 as c_uint) << (*options).lp).wrapping_sub(0x100 as c_uint >> (*options).lc) as u32;
+        ((0x100 as c_uint) << (*options).lp).wrapping_sub(0x100 >> (*options).lc) as u32;
     (*coder).state = STATE_LIT_LIT;
     (*coder).rep0 = 0 as u32;
     (*coder).rep1 = 0 as u32;
     (*coder).rep2 = 0 as u32;
     (*coder).rep3 = 0 as u32;
-    (*coder).pos_mask = ((1 as c_uint) << (*options).pb).wrapping_sub(1 as c_uint) as u32;
+    (*coder).pos_mask = ((1 as c_uint) << (*options).pb).wrapping_sub(1) as u32;
     (*coder).rc.range = UINT32_MAX as u32;
     (*coder).rc.code = 0 as u32;
     (*coder).rc.init_bytes_left = 5 as u32;
@@ -4006,7 +4006,7 @@ unsafe extern "C" fn lzma_decoder_init(
         options as *const lzma_options_lzma,
         lz_options,
     ) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     lzma_decoder_reset((*lz).coder, options);

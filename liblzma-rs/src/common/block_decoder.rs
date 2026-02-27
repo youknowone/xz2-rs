@@ -255,7 +255,7 @@ unsafe extern "C" fn block_decode(
     let mut coder: *mut lzma_block_coder = coder_ptr as *mut lzma_block_coder;
     's_177: {
         let mut current_block_40: u64;
-        match (*coder).sequence as c_uint {
+        match (*coder).sequence {
             0 => {
                 let in_start: size_t = *in_pos;
                 let out_start: size_t = *out_pos;
@@ -303,7 +303,7 @@ unsafe extern "C" fn block_decode(
                 (*coder).uncompressed_size = (*coder)
                     .uncompressed_size
                     .wrapping_add(out_used as lzma_vli);
-                if ret as c_uint == LZMA_OK as c_uint {
+                if ret == LZMA_OK {
                     let comp_done: bool =
                         (*coder).compressed_size == (*(*coder).block).compressed_size;
                     let uncomp_done: bool =
@@ -326,7 +326,7 @@ unsafe extern "C" fn block_decode(
                         out_used,
                     );
                 }
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     return ret;
                 }
                 if !is_size_valid((*coder).compressed_size, (*(*coder).block).compressed_size)
@@ -365,7 +365,7 @@ unsafe extern "C" fn block_decode(
                         return LZMA_DATA_ERROR;
                     }
                 }
-                if (*(*coder).block).check as c_uint == LZMA_CHECK_NONE as c_uint {
+                if (*(*coder).block).check == LZMA_CHECK_NONE {
                     return LZMA_STREAM_END;
                 }
                 if !(*coder).ignore_check {
@@ -529,13 +529,13 @@ pub unsafe extern "C" fn lzma_block_decoder(
     mut block: *mut lzma_block,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret =
         lzma_block_decoder_init(&raw mut (*(*strm).internal).next, (*strm).allocator, block)
             as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

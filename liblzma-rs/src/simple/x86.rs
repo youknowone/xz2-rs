@@ -243,7 +243,7 @@ unsafe extern "C" fn x86_coder_init(
         1 as u32,
         is_encoder,
     ) as lzma_ret;
-    if ret as c_uint == LZMA_OK as c_uint {
+    if ret == LZMA_OK {
         let mut coder: *mut lzma_simple_coder = (*next).coder as *mut lzma_simple_coder;
         let mut simple: *mut lzma_simple_x86 = (*coder).simple as *mut lzma_simple_x86;
         (*simple).prev_mask = 0 as u32;

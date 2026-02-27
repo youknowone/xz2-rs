@@ -124,7 +124,7 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
         set_out_limit: None,
     };
     let ret_: lzma_ret = lzma_raw_decoder_init(&raw mut next, allocator, filters) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let in_start: size_t = *in_pos;
@@ -140,10 +140,10 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
         out_size,
         LZMA_FINISH,
     );
-    if ret as c_uint == LZMA_STREAM_END as c_uint {
+    if ret == LZMA_STREAM_END {
         ret = LZMA_OK;
     } else {
-        if ret as c_uint == LZMA_OK as c_uint {
+        if ret == LZMA_OK {
             if *in_pos != in_size {
                 ret = LZMA_BUF_ERROR;
             } else if *out_pos != out_size {

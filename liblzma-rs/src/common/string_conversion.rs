@@ -153,19 +153,19 @@ pub type C2RustUnnamed_2 = c_uint;
 pub const OPTMAP_TYPE_UINT32: C2RustUnnamed_2 = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 pub const INT_MAX: c_int = 2147483647 as c_int;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTERS_MAX: c_int = 4 as c_int;
-pub const LZMA_STR_ALL_FILTERS: c_uint = 0x1 as c_uint;
-pub const LZMA_STR_NO_VALIDATION: c_uint = 0x2 as c_uint;
-pub const LZMA_STR_ENCODER: c_uint = 0x10 as c_uint;
-pub const LZMA_STR_DECODER: c_uint = 0x20 as c_uint;
-pub const LZMA_STR_GETOPT_LONG: c_uint = 0x40 as c_uint;
-pub const LZMA_STR_NO_SPACES: c_uint = 0x80 as c_uint;
+pub const LZMA_STR_ALL_FILTERS: c_uint = 0x1;
+pub const LZMA_STR_NO_VALIDATION: c_uint = 0x2;
+pub const LZMA_STR_ENCODER: c_uint = 0x10;
+pub const LZMA_STR_DECODER: c_uint = 0x20;
+pub const LZMA_STR_GETOPT_LONG: c_uint = 0x40;
+pub const LZMA_STR_NO_SPACES: c_uint = 0x80;
 pub const LZMA_FILTER_X86: c_ulonglong = 0x4 as c_ulonglong;
 pub const LZMA_FILTER_POWERPC: c_ulonglong = 0x5 as c_ulonglong;
 pub const LZMA_FILTER_IA64: c_ulonglong = 0x6 as c_ulonglong;
@@ -179,13 +179,13 @@ pub const LZMA_DELTA_DIST_MIN: c_int = 1 as c_int;
 pub const LZMA_DELTA_DIST_MAX: c_int = 256 as c_int;
 pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
 pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21 as c_ulonglong;
-pub const LZMA_DICT_SIZE_MIN: c_uint = 4096 as c_uint;
+pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 pub const LZMA_DICT_SIZE_DEFAULT: c_uint = (1 as c_uint) << 23 as c_int;
 pub const LZMA_LCLP_MIN: c_int = 0 as c_int;
 pub const LZMA_LCLP_MAX: c_int = 4 as c_int;
 pub const LZMA_PB_MIN: c_int = 0 as c_int;
 pub const LZMA_PB_MAX: c_int = 4 as c_int;
-pub const LZMA_PRESET_DEFAULT: c_uint = 6 as c_uint;
+pub const LZMA_PRESET_DEFAULT: c_uint = 6;
 pub const LZMA_PRESET_EXTREME: c_uint = (1 as c_uint) << 31 as c_int;
 pub const LZMA_FILTER_RESERVED_START: c_ulonglong = (1 as c_ulonglong) << 62 as c_int;
 pub const STR_ALLOC_SIZE: c_int = 800 as c_int;
@@ -357,7 +357,7 @@ unsafe extern "C" fn parse_lzma12_preset(
         }
         match **str as c_int {
             101 => {
-                *preset = (*preset as c_uint | LZMA_PRESET_EXTREME) as u32;
+                *preset = (*preset | LZMA_PRESET_EXTREME) as u32;
             }
             _ => {
                 return b"Unsupported flag in the preset\0" as *const u8 as *const c_char;
@@ -1016,7 +1016,7 @@ unsafe extern "C" fn str_to_filters(
                 let ret: lzma_ret =
                     lzma_validate_chain(&raw mut temp_filters as *mut lzma_filter, &raw mut dummy)
                         as lzma_ret;
-                if ret as c_uint != LZMA_OK as c_uint {
+                if ret != LZMA_OK {
                     errmsg = b"Invalid filter chain ('lzma2' missing at the end?)\0" as *const u8
                         as *const c_char;
                     current_block = 6100283484465977373;
@@ -1175,7 +1175,7 @@ pub unsafe extern "C" fn lzma_str_from_filters(
         pos: 0,
     };
     let ret_: lzma_ret = str_init(&raw mut dest, allocator) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let show_opts: bool = flags & (LZMA_STR_ENCODER as u32 | LZMA_STR_DECODER as u32) != 0;
@@ -1268,7 +1268,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
         pos: 0,
     };
     let ret_: lzma_ret = str_init(&raw mut dest, allocator) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let show_opts: bool = flags & (LZMA_STR_ENCODER as u32 | LZMA_STR_DECODER as u32) != 0;

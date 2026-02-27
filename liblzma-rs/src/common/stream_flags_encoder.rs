@@ -76,7 +76,7 @@ unsafe extern "C" fn stream_flags_encode(
     mut options: *const lzma_stream_flags,
     mut out: *mut u8,
 ) -> bool {
-    if (*options).check as c_uint > LZMA_CHECK_ID_MAX as c_uint {
+    if (*options).check > LZMA_CHECK_ID_MAX as c_uint {
         return true_0 != 0;
     }
     *out.offset(0 as isize) = 0 as u8;

@@ -562,7 +562,7 @@ pub unsafe extern "C" fn lzma_raw_decoder(
     mut options: *const lzma_filter,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = lzma_raw_decoder_init(
@@ -570,7 +570,7 @@ pub unsafe extern "C" fn lzma_raw_decoder(
         (*strm).allocator,
         options,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

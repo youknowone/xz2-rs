@@ -222,8 +222,8 @@ unsafe extern "C" fn microlzma_encode(
         (*coder).lzma.coder,
         &raw mut uncomp_size,
         out_size.wrapping_sub(*out_pos) as u64,
-    ) as c_uint
-        != LZMA_OK as c_uint
+    )
+        != LZMA_OK
     {
         return LZMA_PROG_ERROR;
     }
@@ -238,8 +238,8 @@ unsafe extern "C" fn microlzma_encode(
         out_size,
         action,
     ) as lzma_ret;
-    if ret as c_uint != LZMA_STREAM_END as c_uint {
-        if ret as c_uint == LZMA_OK as c_uint {
+    if ret != LZMA_STREAM_END {
+        if ret == LZMA_OK {
             return LZMA_PROG_ERROR;
         }
         return ret;
@@ -372,7 +372,7 @@ pub unsafe extern "C" fn lzma_microlzma_encoder(
     mut options: *const lzma_options_lzma,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = microlzma_encoder_init(
@@ -380,7 +380,7 @@ pub unsafe extern "C" fn lzma_microlzma_encoder(
         (*strm).allocator,
         options,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

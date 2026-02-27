@@ -68,7 +68,7 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
         in_pos,
         in_size,
     ) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     if (*filter).id >= LZMA_FILTER_RESERVED_START as lzma_vli {
@@ -82,7 +82,7 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
         in_pos,
         in_size,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         return ret__0;
     }
     if (in_size.wrapping_sub(*in_pos) as lzma_vli) < props_size {

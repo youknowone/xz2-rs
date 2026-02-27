@@ -219,7 +219,7 @@ pub unsafe extern "C" fn lzma_index_hash_append(
     mut uncompressed_size: lzma_vli,
 ) -> lzma_ret {
     if index_hash.is_null()
-        || (*index_hash).sequence as c_uint != SEQ_BLOCK as c_uint
+        || (*index_hash).sequence != SEQ_BLOCK
         || unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
         || unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
         || uncompressed_size > LZMA_VLI_MAX as lzma_vli
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
     let in_start: size_t = *in_pos;
     let mut ret: lzma_ret = LZMA_OK;
     while *in_pos < in_size {
-        match (*index_hash).sequence as c_uint {
+        match (*index_hash).sequence {
             0 => {
                 let fresh0 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
@@ -279,7 +279,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                     in_pos,
                     in_size,
                 );
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     break;
                 }
                 if (*index_hash).remaining != (*index_hash).blocks.count {
@@ -296,18 +296,18 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
             }
             2 | 3 => {
                 let mut size: *mut lzma_vli =
-                    if (*index_hash).sequence as c_uint == SEQ_UNPADDED as c_uint {
+                    if (*index_hash).sequence == SEQ_UNPADDED {
                         &raw mut (*index_hash).unpadded_size
                     } else {
                         &raw mut (*index_hash).uncompressed_size
                     };
                 ret = lzma_vli_decode(size, &raw mut (*index_hash).pos, in_0, in_pos, in_size);
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     break;
                 }
                 ret = LZMA_OK;
                 (*index_hash).pos = 0 as size_t;
-                if (*index_hash).sequence as c_uint == SEQ_UNPADDED as c_uint {
+                if (*index_hash).sequence == SEQ_UNPADDED {
                     if (*index_hash).unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
                         || (*index_hash).unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
                     {

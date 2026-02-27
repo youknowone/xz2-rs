@@ -262,7 +262,7 @@ unsafe extern "C" fn index_encode(
     let out_start: size_t = *out_pos;
     let mut ret: lzma_ret = LZMA_OK;
     while *out_pos < out_size {
-        match (*coder).sequence as c_uint {
+        match (*coder).sequence {
             0 => {
                 *out.offset(*out_pos as isize) = INDEX_INDICATOR as u8;
                 *out_pos = (*out_pos).wrapping_add(1);
@@ -272,7 +272,7 @@ unsafe extern "C" fn index_encode(
             1 => {
                 let count: lzma_vli = lzma_index_block_count((*coder).index) as lzma_vli;
                 ret = lzma_vli_encode(count, &raw mut (*coder).pos, out, out_pos, out_size);
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     break;
                 }
                 ret = LZMA_OK;
@@ -317,13 +317,13 @@ unsafe extern "C" fn index_encode(
         }
         match current_block {
             10048703153582371463 => {
-                let size: lzma_vli = if (*coder).sequence as c_uint == SEQ_UNPADDED as c_uint {
+                let size: lzma_vli = if (*coder).sequence == SEQ_UNPADDED {
                     (*coder).iter.block.unpadded_size
                 } else {
                     (*coder).iter.block.uncompressed_size
                 };
                 ret = lzma_vli_encode(size, &raw mut (*coder).pos, out, out_pos, out_size);
-                if ret as c_uint != LZMA_STREAM_END as c_uint {
+                if ret != LZMA_STREAM_END {
                     break;
                 }
                 ret = LZMA_OK;
@@ -451,13 +451,13 @@ pub unsafe extern "C" fn lzma_index_encoder(
     mut i: *const lzma_index,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret =
         lzma_index_encoder_init(&raw mut (*(*strm).internal).next, (*strm).allocator, i)
             as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }
@@ -538,7 +538,7 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
         out_size,
         LZMA_RUN,
     );
-    if ret as c_uint == LZMA_STREAM_END as c_uint {
+    if ret == LZMA_STREAM_END {
         ret = LZMA_OK;
     } else {
         *out_pos = out_start;

@@ -72,12 +72,12 @@ pub unsafe extern "C" fn lzma_stream_flags_compare(
     if (*a).version != 0 as u32 || (*b).version != 0 as u32 {
         return LZMA_OPTIONS_ERROR;
     }
-    if (*a).check as c_uint > LZMA_CHECK_ID_MAX as c_uint
-        || (*b).check as c_uint > LZMA_CHECK_ID_MAX as c_uint
+    if (*a).check > LZMA_CHECK_ID_MAX as c_uint
+        || (*b).check > LZMA_CHECK_ID_MAX as c_uint
     {
         return LZMA_PROG_ERROR;
     }
-    if (*a).check as c_uint != (*b).check as c_uint {
+    if (*a).check != (*b).check {
         return LZMA_DATA_ERROR;
     }
     if (*a).backward_size != LZMA_VLI_UNKNOWN as lzma_vli

@@ -236,10 +236,10 @@ unsafe extern "C" fn decode_buffer(
         *out_pos = (*out_pos).wrapping_add(copy_size);
         if (*coder).dict.need_reset {
             lz_decoder_reset(coder);
-            if ret as c_uint != LZMA_OK as c_uint || *out_pos == out_size {
+            if ret != LZMA_OK || *out_pos == out_size {
                 return ret;
             }
-        } else if ret as c_uint != LZMA_OK as c_uint
+        } else if ret != LZMA_OK
             || *out_pos == out_size
             || (*coder).dict.pos < (*coder).dict.size
         {
@@ -277,9 +277,9 @@ unsafe extern "C" fn lz_decode(
                 LZMA_BUFFER_SIZE as size_t,
                 action,
             ) as lzma_ret;
-            if ret as c_uint == LZMA_STREAM_END as c_uint {
+            if ret == LZMA_STREAM_END {
                 (*coder).next_finished = true_0 != 0;
-            } else if ret as c_uint != LZMA_OK as c_uint || (*coder).temp.size == 0 as size_t {
+            } else if ret != LZMA_OK || (*coder).temp.size == 0 as size_t {
                 return ret;
             }
         }
@@ -301,9 +301,9 @@ unsafe extern "C" fn lz_decode(
             out_pos,
             out_size,
         ) as lzma_ret;
-        if ret_0 as c_uint == LZMA_STREAM_END as c_uint {
+        if ret_0 == LZMA_STREAM_END {
             (*coder).this_finished = true_0 != 0;
-        } else if ret_0 as c_uint != LZMA_OK as c_uint {
+        } else if ret_0 != LZMA_OK {
             return ret_0;
         } else if (*coder).next_finished as c_int != 0 && *out_pos < out_size {
             return LZMA_DATA_ERROR;
@@ -393,7 +393,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
         (*filters.offset(0 as isize)).options,
         &raw mut lz_options,
     ) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     if lz_options.dict_size < 4096 as size_t {

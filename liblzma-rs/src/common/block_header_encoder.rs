@@ -132,7 +132,7 @@ pub unsafe extern "C" fn lzma_block_header_size(mut block: *mut lzma_block) -> l
         let mut add_1: u32 = 0;
         let ret_: lzma_ret =
             lzma_filter_flags_size(&raw mut add_1, (*block).filters.offset(i as isize)) as lzma_ret;
-        if ret_ as c_uint != LZMA_OK as c_uint {
+        if ret_ != LZMA_OK {
             return ret_;
         }
         size = size.wrapping_add(add_1);
@@ -164,7 +164,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             &raw mut out_pos,
             out_size,
         ) as lzma_ret;
-        if ret_ as c_uint != LZMA_OK as c_uint {
+        if ret_ != LZMA_OK {
             return ret_;
         }
         let ref mut fresh0 = *out.offset(1 as isize);
@@ -178,7 +178,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             &raw mut out_pos,
             out_size,
         ) as lzma_ret;
-        if ret__0 as c_uint != LZMA_OK as c_uint {
+        if ret__0 != LZMA_OK {
             return ret__0;
         }
         let ref mut fresh1 = *out.offset(1 as isize);
@@ -200,7 +200,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             &raw mut out_pos,
             out_size,
         ) as lzma_ret;
-        if ret__1 as c_uint != LZMA_OK as c_uint {
+        if ret__1 != LZMA_OK {
             return ret__1;
         }
         filter_count = filter_count.wrapping_add(1);

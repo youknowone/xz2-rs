@@ -201,7 +201,7 @@ pub type C2RustUnnamed_2 = c_uint;
 pub type C2RustUnnamed_3 = c_uint;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 pub const UINTPTR_MAX: c_ulong = 18446744073709551615 as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
@@ -538,7 +538,7 @@ pub unsafe extern "C" fn lzma_index_checks(mut i: *const lzma_index) -> u32 {
     let mut checks: u32 = (*i).checks;
     let mut s: *const index_stream = (*i).streams.rightmost as *const index_stream;
     if (*s).stream_flags.version != UINT32_MAX as u32 {
-        checks = (checks as c_uint | (1 as c_uint) << (*s).stream_flags.check as c_uint) as u32;
+        checks = (checks | (1 as c_uint) << (*s).stream_flags.check) as u32;
     }
     return checks;
 }
@@ -557,7 +557,7 @@ pub unsafe extern "C" fn lzma_index_stream_flags(
         return LZMA_PROG_ERROR;
     }
     let ret_: lzma_ret = lzma_stream_flags_compare(stream_flags, stream_flags) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let mut s: *mut index_stream = (*i).streams.rightmost as *mut index_stream;
@@ -982,7 +982,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
     mut iter: *mut lzma_index_iter,
     mut mode: lzma_index_iter_mode,
 ) -> lzma_bool {
-    if mode as c_uint > LZMA_INDEX_ITER_NONEMPTY_BLOCK as c_uint {
+    if mode > LZMA_INDEX_ITER_NONEMPTY_BLOCK {
         return true_0 as lzma_bool;
     }
     let mut i: *const lzma_index = (*iter).internal[ITER_INDEX as usize].p as *const lzma_index;
@@ -990,7 +990,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
         (*iter).internal[ITER_STREAM as usize].p as *const index_stream;
     let mut group: *const index_group = ::core::ptr::null::<index_group>();
     let mut record: size_t = (*iter).internal[ITER_RECORD as usize].s;
-    if mode as c_uint != LZMA_INDEX_ITER_STREAM as c_uint {
+    if mode != LZMA_INDEX_ITER_STREAM {
         match (*iter).internal[ITER_METHOD as usize].s {
             0 => {
                 group = (*iter).internal[ITER_GROUP as usize].p as *const index_group;
@@ -1009,7 +1009,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
     loop {
         if stream.is_null() {
             stream = (*i).streams.leftmost as *const index_stream;
-            if mode as c_uint >= LZMA_INDEX_ITER_BLOCK as c_uint {
+            if mode >= LZMA_INDEX_ITER_BLOCK {
                 while (*stream).groups.leftmost.is_null() {
                     stream = index_tree_next(&raw const (*stream).node) as *const index_stream;
                     if stream.is_null() {
@@ -1032,7 +1032,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
                     if stream.is_null() {
                         return true_0 as lzma_bool;
                     }
-                    if !(mode as c_uint >= LZMA_INDEX_ITER_BLOCK as c_uint
+                    if !(mode >= LZMA_INDEX_ITER_BLOCK
                         && (*stream).groups.leftmost.is_null())
                     {
                         break;
@@ -1041,7 +1041,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
                 group = (*stream).groups.leftmost as *const index_group;
             }
         }
-        if !(mode as c_uint == LZMA_INDEX_ITER_NONEMPTY_BLOCK as c_uint) {
+        if !(mode == LZMA_INDEX_ITER_NONEMPTY_BLOCK) {
             break;
         }
         if record == 0 as size_t {

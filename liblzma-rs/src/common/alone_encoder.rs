@@ -210,7 +210,7 @@ pub const SEQ_CODE: C2RustUnnamed_0 = 1;
 pub const SEQ_HEADER: C2RustUnnamed_0 = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const UINT32_MAX: c_uint = 4294967295 as c_uint;
+pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 pub const true_0: c_int = 1 as c_int;
 #[inline]
@@ -222,7 +222,7 @@ unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
-pub const LZMA_DICT_SIZE_MIN: c_uint = 4096 as c_uint;
+pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 pub const ALONE_HEADER_SIZE: c_int = 1 as c_int + 4 as c_int + 8 as c_int;
 unsafe extern "C" fn alone_encode(
     mut coder_ptr: *mut c_void,
@@ -237,7 +237,7 @@ unsafe extern "C" fn alone_encode(
 ) -> lzma_ret {
     let mut coder: *mut lzma_alone_coder = coder_ptr as *mut lzma_alone_coder;
     while *out_pos < out_size {
-        match (*coder).sequence as c_uint {
+        match (*coder).sequence {
             0 => {
                 lzma_bufcpy(
                     &raw mut (*coder).header as *mut u8,
@@ -416,7 +416,7 @@ pub unsafe extern "C" fn lzma_alone_encoder(
     mut options: *const lzma_options_lzma,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret = alone_encoder_init(
@@ -424,7 +424,7 @@ pub unsafe extern "C" fn lzma_alone_encoder(
         (*strm).allocator,
         options,
     ) as lzma_ret;
-    if ret__0 as c_uint != LZMA_OK as c_uint {
+    if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
     }

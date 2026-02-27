@@ -437,7 +437,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
 ) -> lzma_ret {
     let mut count: size_t = 0;
     let ret_: lzma_ret = lzma_validate_chain(options, &raw mut count) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     let mut filters: [lzma_filter_info; 5] = [lzma_filter_info_s {
@@ -480,7 +480,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
     let ret: lzma_ret =
         lzma_next_filter_init(next, allocator, &raw mut filters as *mut lzma_filter_info)
             as lzma_ret;
-    if ret as c_uint != LZMA_OK as c_uint {
+    if ret != LZMA_OK {
         lzma_next_end(next, allocator);
     }
     return ret;
@@ -491,7 +491,7 @@ pub unsafe extern "C" fn lzma_raw_coder_memusage(
     mut filters: *const lzma_filter,
 ) -> u64 {
     let mut tmp: size_t = 0;
-    if lzma_validate_chain(filters, &raw mut tmp) as c_uint != LZMA_OK as c_uint {
+    if lzma_validate_chain(filters, &raw mut tmp) != LZMA_OK {
         return UINT64_MAX as u64;
     }
     let mut total: u64 = 0 as u64;

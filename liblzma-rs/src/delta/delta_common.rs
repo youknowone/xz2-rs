@@ -194,7 +194,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
 pub unsafe extern "C" fn lzma_delta_coder_memusage(mut options: *const c_void) -> u64 {
     let mut opt: *const lzma_options_delta = options as *const lzma_options_delta;
     if opt.is_null()
-        || (*opt).type_0 as c_uint != LZMA_DELTA_TYPE_BYTE as c_uint
+        || (*opt).type_0 != LZMA_DELTA_TYPE_BYTE
         || (*opt).dist < LZMA_DELTA_DIST_MIN as u32
         || (*opt).dist > LZMA_DELTA_DIST_MAX as u32
     {

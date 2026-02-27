@@ -199,7 +199,7 @@ unsafe extern "C" fn delta_encode(
         }
         *in_pos = (*in_pos).wrapping_add(size);
         *out_pos = (*out_pos).wrapping_add(size);
-        ret = (if action as c_uint != LZMA_RUN as c_uint && *in_pos == in_size {
+        ret = (if action != LZMA_RUN && *in_pos == in_size {
             LZMA_STREAM_END as c_int
         } else {
             LZMA_OK as c_int

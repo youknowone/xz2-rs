@@ -207,7 +207,7 @@ pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_DICT_SIZE_MIN: c_uint = 4096 as c_uint;
+pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 #[inline]
 unsafe extern "C" fn mf_get_hash_bytes(mut match_finder: lzma_match_finder) -> u32 {
     return match_finder as u32 & 0xf as u32;
@@ -250,7 +250,7 @@ unsafe extern "C" fn fill_window(
             &raw mut write_pos,
             (*coder).mf.size as size_t,
         );
-        ret = (if action as c_uint != LZMA_RUN as c_uint && *in_pos == in_size {
+        ret = (if action != LZMA_RUN && *in_pos == in_size {
             LZMA_STREAM_END as c_int
         } else {
             LZMA_OK as c_int
@@ -274,7 +274,7 @@ unsafe extern "C" fn fill_window(
         0 as c_int,
         0 as size_t,
     );
-    if ret as c_uint == LZMA_STREAM_END as c_uint {
+    if ret == LZMA_STREAM_END {
         ret = LZMA_OK;
         (*coder).mf.action = action;
         (*coder).mf.read_limit = (*coder).mf.write_pos;
@@ -304,13 +304,13 @@ unsafe extern "C" fn lz_encode(
     mut action: lzma_action,
 ) -> lzma_ret {
     let mut coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
-    while *out_pos < out_size && (*in_pos < in_size || action as c_uint != LZMA_RUN as c_uint) {
-        if (*coder).mf.action as c_uint == LZMA_RUN as c_uint
+    while *out_pos < out_size && (*in_pos < in_size || action != LZMA_RUN) {
+        if (*coder).mf.action == LZMA_RUN
             && (*coder).mf.read_pos >= (*coder).mf.read_limit
         {
             let ret_: lzma_ret =
                 fill_window(coder, allocator, in_0, in_pos, in_size, action) as lzma_ret;
-            if ret_ as c_uint != LZMA_OK as c_uint {
+            if ret_ != LZMA_OK {
                 return ret_;
             }
         }
@@ -321,7 +321,7 @@ unsafe extern "C" fn lz_encode(
             out_pos,
             out_size,
         ) as lzma_ret;
-        if ret as c_uint != LZMA_OK as c_uint {
+        if ret != LZMA_OK {
             (*coder).mf.action = LZMA_RUN;
             return ret;
         }
@@ -370,7 +370,7 @@ unsafe extern "C" fn lz_encoder_prepare(
     (*mf).match_len_max = (*lz_options).match_len_max as u32;
     (*mf).nice_len = (*lz_options).nice_len as u32;
     (*mf).cyclic_size = (*lz_options).dict_size.wrapping_add(1 as size_t) as u32;
-    match (*lz_options).match_finder as c_uint {
+    match (*lz_options).match_finder {
         3 => {
             (*mf).find = Some(
                 lzma_mf_hc3_find as unsafe extern "C" fn(*mut lzma_mf, *mut lzma_match) -> u32,
@@ -414,7 +414,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         _ => return true_0 != 0,
     }
     let hash_bytes: u32 = mf_get_hash_bytes((*lz_options).match_finder) as u32;
-    let is_bt: bool = (*lz_options).match_finder as c_uint & 0x10 as c_uint != 0 as c_uint;
+    let is_bt: bool = (*lz_options).match_finder & 0x10 != 0;
     let mut hs: u32 = 0;
     if hash_bytes == 2 as u32 {
         hs = 0xffff as u32;
@@ -428,7 +428,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         hs |= 0xffff as u32;
         if hs > (1 as u32) << 24 as c_int {
             if hash_bytes == 3 as u32 {
-                hs = ((1 as c_uint) << 24 as c_int).wrapping_sub(1 as c_uint) as u32;
+                hs = ((1 as c_uint) << 24 as c_int).wrapping_sub(1) as u32;
             } else {
                 hs >>= 1 as c_int;
             }
@@ -606,7 +606,7 @@ unsafe extern "C" fn lz_encoder_update(
         .expect("non-null function pointer")(
         (*coder).lz.coder, reversed_filters
     ) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     return lzma_next_filter_update(
@@ -735,7 +735,7 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
         (*filters.offset(0 as isize)).options,
         &raw mut lz_options,
     ) as lzma_ret;
-    if ret_ as c_uint != LZMA_OK as c_uint {
+    if ret_ != LZMA_OK {
         return ret_;
     }
     if lz_encoder_prepare(&raw mut (*coder).mf, allocator, &raw mut lz_options) {
@@ -752,7 +752,7 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_is_supported(mut mf: lzma_match_finder) -> lzma_bool {
-    match mf as c_uint {
+    match mf {
         3 => return true_0 as lzma_bool,
         4 => return true_0 as lzma_bool,
         18 => return true_0 as lzma_bool,
