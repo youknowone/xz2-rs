@@ -141,7 +141,6 @@ pub const INDEX_BOUND: c_int =
     1 as c_int + 1 as c_int + 2 as c_int * LZMA_VLI_BYTES_MAX + 4 as c_int + 3 as c_int
         & !(3 as c_int);
 pub const HEADERS_BOUND: c_int = 2 as c_int * LZMA_STREAM_HEADER_SIZE + INDEX_BOUND;
-pub const LZMA_VLI_MAX: lzma_vli = u64::MAX / 2;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_buffer_bound(mut uncompressed_size: size_t) -> size_t {
     let block_bound: size_t = lzma_block_buffer_bound(uncompressed_size) as size_t;

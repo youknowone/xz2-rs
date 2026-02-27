@@ -155,7 +155,7 @@ pub struct lzma_coder {
 pub struct C2RustUnnamed {
     pub pos: size_t,
     pub size: size_t,
-    pub buffer: [u8; 4096],
+    pub buffer: [u8; LZMA_BUFFER_SIZE as usize],
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;

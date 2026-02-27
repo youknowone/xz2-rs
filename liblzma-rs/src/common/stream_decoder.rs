@@ -193,8 +193,9 @@ pub struct lzma_stream_coder {
     pub concatenated: bool,
     pub first_stream: bool,
     pub pos: size_t,
-    pub buffer: [u8; 1024],
+    pub buffer: [u8; LZMA_BLOCK_HEADER_SIZE_MAX as usize],
 }
+pub const LZMA_BLOCK_HEADER_SIZE_MAX: c_int = 1024 as c_int;
 pub type lzma_index_hash = lzma_index_hash_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
