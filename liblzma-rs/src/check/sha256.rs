@@ -55,1768 +55,518 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
         | (*data.offset(0) & 0xff00) << 8
         | (*data.offset(0) & 0xff0000) >> 8
         | (*data.offset(0) & 0xff000000) >> 24;
-    T[(7 as c_int - 0 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 0 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 0 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 0 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 0 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 0 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 0 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 0 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 0 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(0 as c_int + 0 as c_int) as usize])
+    T[7] = T[7].wrapping_add(
+        rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 14), 5), 6)
+            .wrapping_add(T[6] ^ T[4] & (T[5] ^ T[6]))
+            .wrapping_add(SHA256_K[0])
             .wrapping_add(W[0]),
-        );
-    T[(3 as c_int - 0 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 0 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 0 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 0 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 0 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 0 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 0 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 0 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 0 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 0 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 0 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 0 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 0 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[3] = T[3].wrapping_add(T[7]);
+    T[7] = T[7].wrapping_add(
+        rotr_32(T[0] ^ rotr_32(T[0] ^ rotr_32(T[0], 9), 11), 2)
+            .wrapping_add((T[0] & (T[1] ^ T[2])).wrapping_add(T[1] & T[2])),
+    );
     W[1] = (*data.offset(1) & 0xff) << 24
         | (*data.offset(1) & 0xff00) << 8
         | (*data.offset(1) & 0xff0000) >> 8
         | (*data.offset(1) & 0xff000000) >> 24;
-    T[(7 as c_int - 1 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 1 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 1 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 1 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 1 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 1 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 1 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 1 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 1 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(1 as c_int + 0 as c_int) as usize])
+    T[6] = T[6].wrapping_add(
+        rotr_32(T[3] ^ rotr_32(T[3] ^ rotr_32(T[3], 14), 5), 6)
+            .wrapping_add(T[5] ^ T[3] & (T[4] ^ T[5]))
+            .wrapping_add(SHA256_K[1])
             .wrapping_add(W[1]),
-        );
-    T[(3 as c_int - 1 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 1 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 1 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 1 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 1 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 1 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 1 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 1 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 1 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 1 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 1 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 1 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 1 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[2] = T[2].wrapping_add(T[6]);
+    T[6] = T[6].wrapping_add(
+        rotr_32(T[7] ^ rotr_32(T[7] ^ rotr_32(T[7], 9), 11), 2)
+            .wrapping_add((T[7] & (T[0] ^ T[1])).wrapping_add(T[0] & T[1])),
+    );
     W[2] = (*data.offset(2) & 0xff) << 24
         | (*data.offset(2) & 0xff00) << 8
         | (*data.offset(2) & 0xff0000) >> 8
         | (*data.offset(2) & 0xff000000) >> 24;
-    T[(7 as c_int - 2 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 2 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 2 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 2 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 2 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 2 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 2 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 2 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 2 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(2 as c_int + 0 as c_int) as usize])
+    T[5] = T[5].wrapping_add(
+        rotr_32(T[2] ^ rotr_32(T[2] ^ rotr_32(T[2], 14), 5), 6)
+            .wrapping_add(T[4] ^ T[2] & (T[3] ^ T[4]))
+            .wrapping_add(SHA256_K[2])
             .wrapping_add(W[2]),
-        );
-    T[(3 as c_int - 2 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 2 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 2 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 2 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 2 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 2 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 2 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 2 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 2 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 2 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 2 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 2 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 2 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[1] = T[1].wrapping_add(T[5]);
+    T[5] = T[5].wrapping_add(
+        rotr_32(T[6] ^ rotr_32(T[6] ^ rotr_32(T[6], 9), 11), 2)
+            .wrapping_add((T[6] & (T[7] ^ T[0])).wrapping_add(T[7] & T[0])),
+    );
     W[3] = (*data.offset(3) & 0xff) << 24
         | (*data.offset(3) & 0xff00) << 8
         | (*data.offset(3) & 0xff0000) >> 8
         | (*data.offset(3) & 0xff000000) >> 24;
-    T[(7 as c_int - 3 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 3 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 3 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 3 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 3 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 3 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 3 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 3 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 3 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(3 as c_int + 0 as c_int) as usize])
+    T[4] = T[4].wrapping_add(
+        rotr_32(T[1] ^ rotr_32(T[1] ^ rotr_32(T[1], 14), 5), 6)
+            .wrapping_add(T[3] ^ T[1] & (T[2] ^ T[3]))
+            .wrapping_add(SHA256_K[3])
             .wrapping_add(W[3]),
-        );
-    T[(3 as c_int - 3 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 3 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 3 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 3 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 3 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 3 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 3 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 3 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 3 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 3 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 3 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 3 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 3 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[0] = T[0].wrapping_add(T[4]);
+    T[4] = T[4].wrapping_add(
+        rotr_32(T[5] ^ rotr_32(T[5] ^ rotr_32(T[5], 9), 11), 2)
+            .wrapping_add((T[5] & (T[6] ^ T[7])).wrapping_add(T[6] & T[7])),
+    );
     W[4] = (*data.offset(4) & 0xff) << 24
         | (*data.offset(4) & 0xff00) << 8
         | (*data.offset(4) & 0xff0000) >> 8
         | (*data.offset(4) & 0xff000000) >> 24;
-    T[(7 as c_int - 4 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 4 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 4 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 4 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 4 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 4 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 4 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 4 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 4 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(4 as c_int + 0 as c_int) as usize])
+    T[3] = T[3].wrapping_add(
+        rotr_32(T[0] ^ rotr_32(T[0] ^ rotr_32(T[0], 14), 5), 6)
+            .wrapping_add(T[2] ^ T[0] & (T[1] ^ T[2]))
+            .wrapping_add(SHA256_K[4])
             .wrapping_add(W[4]),
-        );
-    T[(3 as c_int - 4 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 4 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 4 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 4 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 4 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 4 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 4 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 4 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 4 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 4 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 4 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 4 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 4 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[7] = T[7].wrapping_add(T[3]);
+    T[3] = T[3].wrapping_add(
+        rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 9), 11), 2)
+            .wrapping_add((T[4] & (T[5] ^ T[6])).wrapping_add(T[5] & T[6])),
+    );
     W[5] = (*data.offset(5) & 0xff) << 24
         | (*data.offset(5) & 0xff00) << 8
         | (*data.offset(5) & 0xff0000) >> 8
         | (*data.offset(5) & 0xff000000) >> 24;
-    T[(7 as c_int - 5 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 5 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 5 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 5 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 5 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 5 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 5 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 5 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 5 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(5 as c_int + 0 as c_int) as usize])
+    T[2] = T[2].wrapping_add(
+        rotr_32(T[7] ^ rotr_32(T[7] ^ rotr_32(T[7], 14), 5), 6)
+            .wrapping_add(T[1] ^ T[7] & (T[0] ^ T[1]))
+            .wrapping_add(SHA256_K[5])
             .wrapping_add(W[5]),
-        );
-    T[(3 as c_int - 5 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 5 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 5 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 5 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 5 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 5 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 5 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 5 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 5 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 5 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 5 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 5 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 5 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[6] = T[6].wrapping_add(T[2]);
+    T[2] = T[2].wrapping_add(
+        rotr_32(T[3] ^ rotr_32(T[3] ^ rotr_32(T[3], 9), 11), 2)
+            .wrapping_add((T[3] & (T[4] ^ T[5])).wrapping_add(T[4] & T[5])),
+    );
     W[6] = (*data.offset(6) & 0xff) << 24
         | (*data.offset(6) & 0xff00) << 8
         | (*data.offset(6) & 0xff0000) >> 8
         | (*data.offset(6) & 0xff000000) >> 24;
-    T[(7 as c_int - 6 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 6 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 6 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 6 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 6 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 6 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 6 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 6 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 6 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(6 as c_int + 0 as c_int) as usize])
+    T[1] = T[1].wrapping_add(
+        rotr_32(T[6] ^ rotr_32(T[6] ^ rotr_32(T[6], 14), 5), 6)
+            .wrapping_add(T[0] ^ T[6] & (T[7] ^ T[0]))
+            .wrapping_add(SHA256_K[6])
             .wrapping_add(W[6]),
-        );
-    T[(3 as c_int - 6 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 6 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 6 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 6 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 6 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 6 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 6 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 6 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 6 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 6 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 6 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 6 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 6 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[5] = T[5].wrapping_add(T[1]);
+    T[1] = T[1].wrapping_add(
+        rotr_32(T[2] ^ rotr_32(T[2] ^ rotr_32(T[2], 9), 11), 2)
+            .wrapping_add((T[2] & (T[3] ^ T[4])).wrapping_add(T[3] & T[4])),
+    );
     W[7] = (*data.offset(7) & 0xff) << 24
         | (*data.offset(7) & 0xff00) << 8
         | (*data.offset(7) & 0xff0000) >> 8
         | (*data.offset(7) & 0xff000000) >> 24;
-    T[(7 as c_int - 7 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 7 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 7 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 7 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 7 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 7 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 7 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 7 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 7 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(7 as c_int + 0 as c_int) as usize])
+    T[0] = T[0].wrapping_add(
+        rotr_32(T[5] ^ rotr_32(T[5] ^ rotr_32(T[5], 14), 5), 6)
+            .wrapping_add(T[7] ^ T[5] & (T[6] ^ T[7]))
+            .wrapping_add(SHA256_K[7])
             .wrapping_add(W[7]),
-        );
-    T[(3 as c_int - 7 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 7 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 7 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 7 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 7 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 7 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 7 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 7 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 7 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 7 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 7 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 7 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 7 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[4] = T[4].wrapping_add(T[0]);
+    T[0] = T[0].wrapping_add(
+        rotr_32(T[1] ^ rotr_32(T[1] ^ rotr_32(T[1], 9), 11), 2)
+            .wrapping_add((T[1] & (T[2] ^ T[3])).wrapping_add(T[2] & T[3])),
+    );
     W[8] = (*data.offset(8) & 0xff) << 24
         | (*data.offset(8) & 0xff00) << 8
         | (*data.offset(8) & 0xff0000) >> 8
         | (*data.offset(8) & 0xff000000) >> 24;
-    T[(7 as c_int - 8 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 8 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 8 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 8 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 8 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 8 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 8 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 8 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 8 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(8 as c_int + 0 as c_int) as usize])
+    T[7] = T[7].wrapping_add(
+        rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 14), 5), 6)
+            .wrapping_add(T[6] ^ T[4] & (T[5] ^ T[6]))
+            .wrapping_add(SHA256_K[8])
             .wrapping_add(W[8]),
-        );
-    T[(3 as c_int - 8 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 8 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 8 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 8 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 8 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 8 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 8 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 8 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 8 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 8 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 8 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 8 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 8 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[3] = T[3].wrapping_add(T[7]);
+    T[7] = T[7].wrapping_add(
+        rotr_32(T[0] ^ rotr_32(T[0] ^ rotr_32(T[0], 9), 11), 2)
+            .wrapping_add((T[0] & (T[1] ^ T[2])).wrapping_add(T[1] & T[2])),
+    );
     W[9] = (*data.offset(9) & 0xff) << 24
         | (*data.offset(9) & 0xff00) << 8
         | (*data.offset(9) & 0xff0000) >> 8
         | (*data.offset(9) & 0xff000000) >> 24;
-    T[(7 as c_int - 9 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 9 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 9 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 9 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 9 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 9 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 9 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 9 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 9 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(9 as c_int + 0 as c_int) as usize])
+    T[6] = T[6].wrapping_add(
+        rotr_32(T[3] ^ rotr_32(T[3] ^ rotr_32(T[3], 14), 5), 6)
+            .wrapping_add(T[5] ^ T[3] & (T[4] ^ T[5]))
+            .wrapping_add(SHA256_K[9])
             .wrapping_add(W[9]),
-        );
-    T[(3 as c_int - 9 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 9 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 9 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 9 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 9 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 9 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 9 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 9 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 9 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 9 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 9 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 9 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 9 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[2] = T[2].wrapping_add(T[6]);
+    T[6] = T[6].wrapping_add(
+        rotr_32(T[7] ^ rotr_32(T[7] ^ rotr_32(T[7], 9), 11), 2)
+            .wrapping_add((T[7] & (T[0] ^ T[1])).wrapping_add(T[0] & T[1])),
+    );
     W[10] = (*data.offset(10) & 0xff) << 24
         | (*data.offset(10) & 0xff00) << 8
         | (*data.offset(10) & 0xff0000) >> 8
         | (*data.offset(10) & 0xff000000) >> 24;
-    T[(7 as c_int - 10 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 10 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 10 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 10 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 10 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 10 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 10 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 10 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 10 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(10 as c_int + 0 as c_int) as usize])
+    T[5] = T[5].wrapping_add(
+        rotr_32(T[2] ^ rotr_32(T[2] ^ rotr_32(T[2], 14), 5), 6)
+            .wrapping_add(T[4] ^ T[2] & (T[3] ^ T[4]))
+            .wrapping_add(SHA256_K[10])
             .wrapping_add(W[10]),
-        );
-    T[(3 as c_int - 10 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 10 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 10 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 10 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 10 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 10 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 10 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 10 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 10 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 10 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 10 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 10 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 10 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[1] = T[1].wrapping_add(T[5]);
+    T[5] = T[5].wrapping_add(
+        rotr_32(T[6] ^ rotr_32(T[6] ^ rotr_32(T[6], 9), 11), 2)
+            .wrapping_add((T[6] & (T[7] ^ T[0])).wrapping_add(T[7] & T[0])),
+    );
     W[11] = (*data.offset(11) & 0xff) << 24
         | (*data.offset(11) & 0xff00) << 8
         | (*data.offset(11) & 0xff0000) >> 8
         | (*data.offset(11) & 0xff000000) >> 24;
-    T[(7 as c_int - 11 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 11 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 11 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 11 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 11 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 11 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 11 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 11 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 11 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(11 as c_int + 0 as c_int) as usize])
+    T[4] = T[4].wrapping_add(
+        rotr_32(T[1] ^ rotr_32(T[1] ^ rotr_32(T[1], 14), 5), 6)
+            .wrapping_add(T[3] ^ T[1] & (T[2] ^ T[3]))
+            .wrapping_add(SHA256_K[11])
             .wrapping_add(W[11]),
-        );
-    T[(3 as c_int - 11 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 11 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 11 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 11 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 11 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 11 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 11 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 11 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 11 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 11 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 11 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 11 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 11 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[0] = T[0].wrapping_add(T[4]);
+    T[4] = T[4].wrapping_add(
+        rotr_32(T[5] ^ rotr_32(T[5] ^ rotr_32(T[5], 9), 11), 2)
+            .wrapping_add((T[5] & (T[6] ^ T[7])).wrapping_add(T[6] & T[7])),
+    );
     W[12] = (*data.offset(12) & 0xff) << 24
         | (*data.offset(12) & 0xff00) << 8
         | (*data.offset(12) & 0xff0000) >> 8
         | (*data.offset(12) & 0xff000000) >> 24;
-    T[(7 as c_int - 12 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 12 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 12 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 12 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 12 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 12 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 12 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 12 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 12 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(12 as c_int + 0 as c_int) as usize])
+    T[3] = T[3].wrapping_add(
+        rotr_32(T[0] ^ rotr_32(T[0] ^ rotr_32(T[0], 14), 5), 6)
+            .wrapping_add(T[2] ^ T[0] & (T[1] ^ T[2]))
+            .wrapping_add(SHA256_K[12])
             .wrapping_add(W[12]),
-        );
-    T[(3 as c_int - 12 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 12 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 12 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 12 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 12 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 12 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 12 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 12 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 12 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 12 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 12 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 12 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 12 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[7] = T[7].wrapping_add(T[3]);
+    T[3] = T[3].wrapping_add(
+        rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 9), 11), 2)
+            .wrapping_add((T[4] & (T[5] ^ T[6])).wrapping_add(T[5] & T[6])),
+    );
     W[13] = (*data.offset(13) & 0xff) << 24
         | (*data.offset(13) & 0xff00) << 8
         | (*data.offset(13) & 0xff0000) >> 8
         | (*data.offset(13) & 0xff000000) >> 24;
-    T[(7 as c_int - 13 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 13 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 13 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 13 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 13 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 13 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 13 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 13 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 13 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(13 as c_int + 0 as c_int) as usize])
+    T[2] = T[2].wrapping_add(
+        rotr_32(T[7] ^ rotr_32(T[7] ^ rotr_32(T[7], 14), 5), 6)
+            .wrapping_add(T[1] ^ T[7] & (T[0] ^ T[1]))
+            .wrapping_add(SHA256_K[13])
             .wrapping_add(W[13]),
-        );
-    T[(3 as c_int - 13 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 13 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 13 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 13 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 13 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 13 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 13 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 13 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 13 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 13 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 13 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 13 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 13 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[6] = T[6].wrapping_add(T[2]);
+    T[2] = T[2].wrapping_add(
+        rotr_32(T[3] ^ rotr_32(T[3] ^ rotr_32(T[3], 9), 11), 2)
+            .wrapping_add((T[3] & (T[4] ^ T[5])).wrapping_add(T[4] & T[5])),
+    );
     W[14] = (*data.offset(14) & 0xff) << 24
         | (*data.offset(14) & 0xff00) << 8
         | (*data.offset(14) & 0xff0000) >> 8
         | (*data.offset(14) & 0xff000000) >> 24;
-    T[(7 as c_int - 14 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 14 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 14 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 14 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 14 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 14 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 14 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 14 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 14 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(14 as c_int + 0 as c_int) as usize])
+    T[1] = T[1].wrapping_add(
+        rotr_32(T[6] ^ rotr_32(T[6] ^ rotr_32(T[6], 14), 5), 6)
+            .wrapping_add(T[0] ^ T[6] & (T[7] ^ T[0]))
+            .wrapping_add(SHA256_K[14])
             .wrapping_add(W[14]),
-        );
-    T[(3 as c_int - 14 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 14 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 14 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 14 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 14 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 14 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 14 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 14 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 14 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 14 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 14 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 14 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 14 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[5] = T[5].wrapping_add(T[1]);
+    T[1] = T[1].wrapping_add(
+        rotr_32(T[2] ^ rotr_32(T[2] ^ rotr_32(T[2], 9), 11), 2)
+            .wrapping_add((T[2] & (T[3] ^ T[4])).wrapping_add(T[3] & T[4])),
+    );
     W[15] = (*data.offset(15) & 0xff) << 24
         | (*data.offset(15) & 0xff00) << 8
         | (*data.offset(15) & 0xff0000) >> 8
         | (*data.offset(15) & 0xff000000) >> 24;
-    T[(7 as c_int - 15 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 15 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(4 as c_int - 15 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(4 as c_int - 15 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(4 as c_int - 15 as c_int & 7 as c_int) as usize], 14),
-                        5,
-                    ),
-                6,
-            )
-            .wrapping_add(
-                T[(6 as c_int - 15 as c_int & 7 as c_int) as usize]
-                    ^ T[(4 as c_int - 15 as c_int & 7 as c_int) as usize]
-                        & (T[(5 as c_int - 15 as c_int & 7 as c_int) as usize]
-                            ^ T[(6 as c_int - 15 as c_int & 7 as c_int) as usize]),
-            )
-            .wrapping_add(SHA256_K[(15 as c_int + 0 as c_int) as usize])
+    T[0] = T[0].wrapping_add(
+        rotr_32(T[5] ^ rotr_32(T[5] ^ rotr_32(T[5], 14), 5), 6)
+            .wrapping_add(T[7] ^ T[5] & (T[6] ^ T[7]))
+            .wrapping_add(SHA256_K[15])
             .wrapping_add(W[15]),
-        );
-    T[(3 as c_int - 15 as c_int & 7 as c_int) as usize] = T
-        [(3 as c_int - 15 as c_int & 7 as c_int) as usize]
-        .wrapping_add(T[(7 as c_int - 15 as c_int & 7 as c_int) as usize]);
-    T[(7 as c_int - 15 as c_int & 7 as c_int) as usize] =
-        T[(7 as c_int - 15 as c_int & 7 as c_int) as usize].wrapping_add(
-            rotr_32(
-                T[(0 as c_int - 15 as c_int & 7 as c_int) as usize]
-                    ^ rotr_32(
-                        T[(0 as c_int - 15 as c_int & 7 as c_int) as usize]
-                            ^ rotr_32(T[(0 as c_int - 15 as c_int & 7 as c_int) as usize], 9),
-                        11,
-                    ),
-                2,
-            )
-            .wrapping_add(
-                (T[(0 as c_int - 15 as c_int & 7 as c_int) as usize]
-                    & (T[(1 as c_int - 15 as c_int & 7 as c_int) as usize]
-                        ^ T[(2 as c_int - 15 as c_int & 7 as c_int) as usize]))
-                    .wrapping_add(
-                        T[(1 as c_int - 15 as c_int & 7 as c_int) as usize]
-                            & T[(2 as c_int - 15 as c_int & 7 as c_int) as usize],
-                    ),
-            ),
-        );
+    );
+    T[4] = T[4].wrapping_add(T[0]);
+    T[0] = T[0].wrapping_add(
+        rotr_32(T[1] ^ rotr_32(T[1] ^ rotr_32(T[1], 9), 11), 2)
+            .wrapping_add((T[1] & (T[2] ^ T[3])).wrapping_add(T[2] & T[3])),
+    );
     let mut j: c_uint = 16;
     while j < 64 {
-        W[(0 as c_int & 15 as c_int) as usize] = W[(0 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(0 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(0 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(0 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(0 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(0 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(0 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(0 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 0 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 0 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 0 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 0 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 0 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 0 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 0 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 0 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 0 as c_int & 7 as c_int) as usize]),
-                )
+        W[0] = W[0].wrapping_add(
+            (rotr_32(W[14] ^ rotr_32(W[14], 2), 17) ^ W[14] >> 10)
+                .wrapping_add(W[9])
+                .wrapping_add(rotr_32(W[1] ^ rotr_32(W[1], 11), 7) ^ W[1] >> 3),
+        );
+        T[7] = T[7].wrapping_add(
+            rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 14), 5), 6)
+                .wrapping_add(T[6] ^ T[4] & (T[5] ^ T[6]))
                 .wrapping_add(SHA256_K[0u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(0 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 0 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 0 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 0 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 0 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 0 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 0 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 0 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 0 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 0 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 0 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 0 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 0 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 0 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(1 as c_int & 15 as c_int) as usize] = W[(1 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(1 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(1 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(1 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(1 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(1 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(1 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(1 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 1 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 1 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 1 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 1 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 1 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 1 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 1 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 1 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 1 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[0]),
+        );
+        T[3] = T[3].wrapping_add(T[7]);
+        T[7] = T[7].wrapping_add(
+            rotr_32(T[0] ^ rotr_32(T[0] ^ rotr_32(T[0], 9), 11), 2)
+                .wrapping_add((T[0] & (T[1] ^ T[2])).wrapping_add(T[1] & T[2])),
+        );
+        W[1] = W[1].wrapping_add(
+            (rotr_32(W[15] ^ rotr_32(W[15], 2), 17) ^ W[15] >> 10)
+                .wrapping_add(W[10])
+                .wrapping_add(rotr_32(W[2] ^ rotr_32(W[2], 11), 7) ^ W[2] >> 3),
+        );
+        T[6] = T[6].wrapping_add(
+            rotr_32(T[3] ^ rotr_32(T[3] ^ rotr_32(T[3], 14), 5), 6)
+                .wrapping_add(T[5] ^ T[3] & (T[4] ^ T[5]))
                 .wrapping_add(SHA256_K[1u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(1 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 1 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 1 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 1 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 1 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 1 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 1 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 1 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 1 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 1 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 1 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 1 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 1 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 1 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(2 as c_int & 15 as c_int) as usize] = W[(2 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(2 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(2 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(2 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(2 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(2 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(2 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(2 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 2 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 2 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 2 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 2 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 2 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 2 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 2 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 2 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 2 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[1]),
+        );
+        T[2] = T[2].wrapping_add(T[6]);
+        T[6] = T[6].wrapping_add(
+            rotr_32(T[7] ^ rotr_32(T[7] ^ rotr_32(T[7], 9), 11), 2)
+                .wrapping_add((T[7] & (T[0] ^ T[1])).wrapping_add(T[0] & T[1])),
+        );
+        W[2] = W[2].wrapping_add(
+            (rotr_32(W[0] ^ rotr_32(W[0], 2), 17) ^ W[0] >> 10)
+                .wrapping_add(W[11])
+                .wrapping_add(rotr_32(W[3] ^ rotr_32(W[3], 11), 7) ^ W[3] >> 3),
+        );
+        T[5] = T[5].wrapping_add(
+            rotr_32(T[2] ^ rotr_32(T[2] ^ rotr_32(T[2], 14), 5), 6)
+                .wrapping_add(T[4] ^ T[2] & (T[3] ^ T[4]))
                 .wrapping_add(SHA256_K[2u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(2 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 2 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 2 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 2 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 2 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 2 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 2 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 2 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 2 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 2 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 2 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 2 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 2 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 2 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(3 as c_int & 15 as c_int) as usize] = W[(3 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(3 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(3 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(3 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(3 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(3 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(3 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(3 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 3 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 3 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 3 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 3 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 3 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 3 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 3 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 3 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 3 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[2]),
+        );
+        T[1] = T[1].wrapping_add(T[5]);
+        T[5] = T[5].wrapping_add(
+            rotr_32(T[6] ^ rotr_32(T[6] ^ rotr_32(T[6], 9), 11), 2)
+                .wrapping_add((T[6] & (T[7] ^ T[0])).wrapping_add(T[7] & T[0])),
+        );
+        W[3] = W[3].wrapping_add(
+            (rotr_32(W[1] ^ rotr_32(W[1], 2), 17) ^ W[1] >> 10)
+                .wrapping_add(W[12])
+                .wrapping_add(rotr_32(W[4] ^ rotr_32(W[4], 11), 7) ^ W[4] >> 3),
+        );
+        T[4] = T[4].wrapping_add(
+            rotr_32(T[1] ^ rotr_32(T[1] ^ rotr_32(T[1], 14), 5), 6)
+                .wrapping_add(T[3] ^ T[1] & (T[2] ^ T[3]))
                 .wrapping_add(SHA256_K[3u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(3 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 3 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 3 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 3 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 3 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 3 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 3 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 3 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 3 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 3 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 3 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 3 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 3 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 3 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(4 as c_int & 15 as c_int) as usize] = W[(4 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(4 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(4 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(4 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(4 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(4 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(4 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(4 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 4 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 4 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 4 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 4 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 4 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 4 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 4 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 4 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 4 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[3]),
+        );
+        T[0] = T[0].wrapping_add(T[4]);
+        T[4] = T[4].wrapping_add(
+            rotr_32(T[5] ^ rotr_32(T[5] ^ rotr_32(T[5], 9), 11), 2)
+                .wrapping_add((T[5] & (T[6] ^ T[7])).wrapping_add(T[6] & T[7])),
+        );
+        W[4] = W[4].wrapping_add(
+            (rotr_32(W[2] ^ rotr_32(W[2], 2), 17) ^ W[2] >> 10)
+                .wrapping_add(W[13])
+                .wrapping_add(rotr_32(W[5] ^ rotr_32(W[5], 11), 7) ^ W[5] >> 3),
+        );
+        T[3] = T[3].wrapping_add(
+            rotr_32(T[0] ^ rotr_32(T[0] ^ rotr_32(T[0], 14), 5), 6)
+                .wrapping_add(T[2] ^ T[0] & (T[1] ^ T[2]))
                 .wrapping_add(SHA256_K[4u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(4 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 4 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 4 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 4 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 4 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 4 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 4 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 4 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 4 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 4 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 4 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 4 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 4 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 4 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(5 as c_int & 15 as c_int) as usize] = W[(5 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(5 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(5 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(5 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(5 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(5 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(5 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(5 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 5 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 5 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 5 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 5 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 5 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 5 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 5 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 5 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 5 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[4]),
+        );
+        T[7] = T[7].wrapping_add(T[3]);
+        T[3] = T[3].wrapping_add(
+            rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 9), 11), 2)
+                .wrapping_add((T[4] & (T[5] ^ T[6])).wrapping_add(T[5] & T[6])),
+        );
+        W[5] = W[5].wrapping_add(
+            (rotr_32(W[3] ^ rotr_32(W[3], 2), 17) ^ W[3] >> 10)
+                .wrapping_add(W[14])
+                .wrapping_add(rotr_32(W[6] ^ rotr_32(W[6], 11), 7) ^ W[6] >> 3),
+        );
+        T[2] = T[2].wrapping_add(
+            rotr_32(T[7] ^ rotr_32(T[7] ^ rotr_32(T[7], 14), 5), 6)
+                .wrapping_add(T[1] ^ T[7] & (T[0] ^ T[1]))
                 .wrapping_add(SHA256_K[5u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(5 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 5 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 5 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 5 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 5 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 5 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 5 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 5 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 5 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 5 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 5 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 5 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 5 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 5 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(6 as c_int & 15 as c_int) as usize] = W[(6 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(6 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(6 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(6 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(6 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(6 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(6 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(6 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 6 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 6 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 6 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 6 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 6 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 6 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 6 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 6 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 6 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[5]),
+        );
+        T[6] = T[6].wrapping_add(T[2]);
+        T[2] = T[2].wrapping_add(
+            rotr_32(T[3] ^ rotr_32(T[3] ^ rotr_32(T[3], 9), 11), 2)
+                .wrapping_add((T[3] & (T[4] ^ T[5])).wrapping_add(T[4] & T[5])),
+        );
+        W[6] = W[6].wrapping_add(
+            (rotr_32(W[4] ^ rotr_32(W[4], 2), 17) ^ W[4] >> 10)
+                .wrapping_add(W[15])
+                .wrapping_add(rotr_32(W[7] ^ rotr_32(W[7], 11), 7) ^ W[7] >> 3),
+        );
+        T[1] = T[1].wrapping_add(
+            rotr_32(T[6] ^ rotr_32(T[6] ^ rotr_32(T[6], 14), 5), 6)
+                .wrapping_add(T[0] ^ T[6] & (T[7] ^ T[0]))
                 .wrapping_add(SHA256_K[6u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(6 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 6 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 6 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 6 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 6 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 6 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 6 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 6 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 6 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 6 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 6 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 6 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 6 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 6 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(7 as c_int & 15 as c_int) as usize] = W[(7 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(7 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(7 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(7 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(7 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(7 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(7 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(7 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 7 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 7 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 7 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 7 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 7 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 7 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 7 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 7 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 7 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[6]),
+        );
+        T[5] = T[5].wrapping_add(T[1]);
+        T[1] = T[1].wrapping_add(
+            rotr_32(T[2] ^ rotr_32(T[2] ^ rotr_32(T[2], 9), 11), 2)
+                .wrapping_add((T[2] & (T[3] ^ T[4])).wrapping_add(T[3] & T[4])),
+        );
+        W[7] = W[7].wrapping_add(
+            (rotr_32(W[5] ^ rotr_32(W[5], 2), 17) ^ W[5] >> 10)
+                .wrapping_add(W[0])
+                .wrapping_add(rotr_32(W[8] ^ rotr_32(W[8], 11), 7) ^ W[8] >> 3),
+        );
+        T[0] = T[0].wrapping_add(
+            rotr_32(T[5] ^ rotr_32(T[5] ^ rotr_32(T[5], 14), 5), 6)
+                .wrapping_add(T[7] ^ T[5] & (T[6] ^ T[7]))
                 .wrapping_add(SHA256_K[7u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(7 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 7 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 7 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 7 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 7 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 7 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 7 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 7 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 7 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 7 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 7 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 7 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 7 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 7 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(8 as c_int & 15 as c_int) as usize] = W[(8 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(8 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(8 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(8 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(8 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(8 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(8 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(8 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 8 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 8 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 8 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 8 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 8 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 8 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 8 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 8 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 8 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[7]),
+        );
+        T[4] = T[4].wrapping_add(T[0]);
+        T[0] = T[0].wrapping_add(
+            rotr_32(T[1] ^ rotr_32(T[1] ^ rotr_32(T[1], 9), 11), 2)
+                .wrapping_add((T[1] & (T[2] ^ T[3])).wrapping_add(T[2] & T[3])),
+        );
+        W[8] = W[8].wrapping_add(
+            (rotr_32(W[6] ^ rotr_32(W[6], 2), 17) ^ W[6] >> 10)
+                .wrapping_add(W[1])
+                .wrapping_add(rotr_32(W[9] ^ rotr_32(W[9], 11), 7) ^ W[9] >> 3),
+        );
+        T[7] = T[7].wrapping_add(
+            rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 14), 5), 6)
+                .wrapping_add(T[6] ^ T[4] & (T[5] ^ T[6]))
                 .wrapping_add(SHA256_K[8u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(8 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 8 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 8 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 8 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 8 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 8 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 8 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 8 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 8 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 8 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 8 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 8 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 8 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 8 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(9 as c_int & 15 as c_int) as usize] = W[(9 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(9 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(9 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(9 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(9 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(9 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(W[(9 as c_int - 15 as c_int & 15 as c_int) as usize], 11),
-                            7,
-                        ) ^ W[(9 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 9 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 9 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 9 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 9 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 9 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 9 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 9 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 9 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 9 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[8]),
+        );
+        T[3] = T[3].wrapping_add(T[7]);
+        T[7] = T[7].wrapping_add(
+            rotr_32(T[0] ^ rotr_32(T[0] ^ rotr_32(T[0], 9), 11), 2)
+                .wrapping_add((T[0] & (T[1] ^ T[2])).wrapping_add(T[1] & T[2])),
+        );
+        W[9] = W[9].wrapping_add(
+            (rotr_32(W[7] ^ rotr_32(W[7], 2), 17) ^ W[7] >> 10)
+                .wrapping_add(W[2])
+                .wrapping_add(rotr_32(W[10] ^ rotr_32(W[10], 11), 7) ^ W[10] >> 3),
+        );
+        T[6] = T[6].wrapping_add(
+            rotr_32(T[3] ^ rotr_32(T[3] ^ rotr_32(T[3], 14), 5), 6)
+                .wrapping_add(T[5] ^ T[3] & (T[4] ^ T[5]))
                 .wrapping_add(SHA256_K[9u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(9 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 9 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 9 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 9 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 9 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 9 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 9 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 9 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 9 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 9 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 9 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 9 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 9 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 9 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(10 as c_int & 15 as c_int) as usize] = W[(10 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(10 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(10 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(10 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(10 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(10 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(
-                                    W[(10 as c_int - 15 as c_int & 15 as c_int) as usize],
-                                    11,
-                                ),
-                            7,
-                        ) ^ W[(10 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 10 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 10 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 10 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 10 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 10 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 10 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 10 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 10 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 10 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[9]),
+        );
+        T[2] = T[2].wrapping_add(T[6]);
+        T[6] = T[6].wrapping_add(
+            rotr_32(T[7] ^ rotr_32(T[7] ^ rotr_32(T[7], 9), 11), 2)
+                .wrapping_add((T[7] & (T[0] ^ T[1])).wrapping_add(T[0] & T[1])),
+        );
+        W[10] = W[10].wrapping_add(
+            (rotr_32(W[8] ^ rotr_32(W[8], 2), 17) ^ W[8] >> 10)
+                .wrapping_add(W[3])
+                .wrapping_add(rotr_32(W[11] ^ rotr_32(W[11], 11), 7) ^ W[11] >> 3),
+        );
+        T[5] = T[5].wrapping_add(
+            rotr_32(T[2] ^ rotr_32(T[2] ^ rotr_32(T[2], 14), 5), 6)
+                .wrapping_add(T[4] ^ T[2] & (T[3] ^ T[4]))
                 .wrapping_add(SHA256_K[10u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(10 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 10 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 10 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 10 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 10 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 10 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 10 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 10 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 10 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 10 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 10 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 10 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 10 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 10 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(11 as c_int & 15 as c_int) as usize] = W[(11 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(11 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(11 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(11 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(11 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(11 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(
-                                    W[(11 as c_int - 15 as c_int & 15 as c_int) as usize],
-                                    11,
-                                ),
-                            7,
-                        ) ^ W[(11 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 11 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 11 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 11 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 11 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 11 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 11 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 11 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 11 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 11 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[10]),
+        );
+        T[1] = T[1].wrapping_add(T[5]);
+        T[5] = T[5].wrapping_add(
+            rotr_32(T[6] ^ rotr_32(T[6] ^ rotr_32(T[6], 9), 11), 2)
+                .wrapping_add((T[6] & (T[7] ^ T[0])).wrapping_add(T[7] & T[0])),
+        );
+        W[11] = W[11].wrapping_add(
+            (rotr_32(W[9] ^ rotr_32(W[9], 2), 17) ^ W[9] >> 10)
+                .wrapping_add(W[4])
+                .wrapping_add(rotr_32(W[12] ^ rotr_32(W[12], 11), 7) ^ W[12] >> 3),
+        );
+        T[4] = T[4].wrapping_add(
+            rotr_32(T[1] ^ rotr_32(T[1] ^ rotr_32(T[1], 14), 5), 6)
+                .wrapping_add(T[3] ^ T[1] & (T[2] ^ T[3]))
                 .wrapping_add(SHA256_K[11u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(11 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 11 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 11 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 11 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 11 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 11 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 11 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 11 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 11 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 11 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 11 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 11 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 11 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 11 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(12 as c_int & 15 as c_int) as usize] = W[(12 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(12 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(12 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(12 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(12 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(12 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(
-                                    W[(12 as c_int - 15 as c_int & 15 as c_int) as usize],
-                                    11,
-                                ),
-                            7,
-                        ) ^ W[(12 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 12 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 12 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 12 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 12 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 12 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 12 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 12 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 12 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 12 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[11]),
+        );
+        T[0] = T[0].wrapping_add(T[4]);
+        T[4] = T[4].wrapping_add(
+            rotr_32(T[5] ^ rotr_32(T[5] ^ rotr_32(T[5], 9), 11), 2)
+                .wrapping_add((T[5] & (T[6] ^ T[7])).wrapping_add(T[6] & T[7])),
+        );
+        W[12] = W[12].wrapping_add(
+            (rotr_32(W[10] ^ rotr_32(W[10], 2), 17) ^ W[10] >> 10)
+                .wrapping_add(W[5])
+                .wrapping_add(rotr_32(W[13] ^ rotr_32(W[13], 11), 7) ^ W[13] >> 3),
+        );
+        T[3] = T[3].wrapping_add(
+            rotr_32(T[0] ^ rotr_32(T[0] ^ rotr_32(T[0], 14), 5), 6)
+                .wrapping_add(T[2] ^ T[0] & (T[1] ^ T[2]))
                 .wrapping_add(SHA256_K[12u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(12 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 12 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 12 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 12 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 12 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 12 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 12 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 12 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 12 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 12 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 12 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 12 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 12 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 12 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(13 as c_int & 15 as c_int) as usize] = W[(13 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(13 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(13 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(13 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(13 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(13 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(
-                                    W[(13 as c_int - 15 as c_int & 15 as c_int) as usize],
-                                    11,
-                                ),
-                            7,
-                        ) ^ W[(13 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 13 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 13 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 13 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 13 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 13 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 13 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 13 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 13 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 13 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[12]),
+        );
+        T[7] = T[7].wrapping_add(T[3]);
+        T[3] = T[3].wrapping_add(
+            rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 9), 11), 2)
+                .wrapping_add((T[4] & (T[5] ^ T[6])).wrapping_add(T[5] & T[6])),
+        );
+        W[13] = W[13].wrapping_add(
+            (rotr_32(W[11] ^ rotr_32(W[11], 2), 17) ^ W[11] >> 10)
+                .wrapping_add(W[6])
+                .wrapping_add(rotr_32(W[14] ^ rotr_32(W[14], 11), 7) ^ W[14] >> 3),
+        );
+        T[2] = T[2].wrapping_add(
+            rotr_32(T[7] ^ rotr_32(T[7] ^ rotr_32(T[7], 14), 5), 6)
+                .wrapping_add(T[1] ^ T[7] & (T[0] ^ T[1]))
                 .wrapping_add(SHA256_K[13u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(13 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 13 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 13 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 13 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 13 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 13 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 13 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 13 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 13 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 13 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 13 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 13 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 13 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 13 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(14 as c_int & 15 as c_int) as usize] = W[(14 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(14 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(14 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(14 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(14 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(14 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(
-                                    W[(14 as c_int - 15 as c_int & 15 as c_int) as usize],
-                                    11,
-                                ),
-                            7,
-                        ) ^ W[(14 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 14 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 14 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 14 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 14 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 14 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 14 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 14 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 14 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 14 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[13]),
+        );
+        T[6] = T[6].wrapping_add(T[2]);
+        T[2] = T[2].wrapping_add(
+            rotr_32(T[3] ^ rotr_32(T[3] ^ rotr_32(T[3], 9), 11), 2)
+                .wrapping_add((T[3] & (T[4] ^ T[5])).wrapping_add(T[4] & T[5])),
+        );
+        W[14] = W[14].wrapping_add(
+            (rotr_32(W[12] ^ rotr_32(W[12], 2), 17) ^ W[12] >> 10)
+                .wrapping_add(W[7])
+                .wrapping_add(rotr_32(W[15] ^ rotr_32(W[15], 11), 7) ^ W[15] >> 3),
+        );
+        T[1] = T[1].wrapping_add(
+            rotr_32(T[6] ^ rotr_32(T[6] ^ rotr_32(T[6], 14), 5), 6)
+                .wrapping_add(T[0] ^ T[6] & (T[7] ^ T[0]))
                 .wrapping_add(SHA256_K[14u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(14 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 14 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 14 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 14 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 14 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 14 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 14 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 14 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 14 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 14 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 14 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 14 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 14 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 14 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
-        W[(15 as c_int & 15 as c_int) as usize] = W[(15 as c_int & 15 as c_int) as usize]
-            .wrapping_add(
-                (rotr_32(
-                    W[(15 as c_int - 2 as c_int & 15 as c_int) as usize]
-                        ^ rotr_32(W[(15 as c_int - 2 as c_int & 15 as c_int) as usize], 2),
-                    17,
-                ) ^ W[(15 as c_int - 2 as c_int & 15 as c_int) as usize] >> 10)
-                    .wrapping_add(W[(15 as c_int - 7 as c_int & 15 as c_int) as usize])
-                    .wrapping_add(
-                        rotr_32(
-                            W[(15 as c_int - 15 as c_int & 15 as c_int) as usize]
-                                ^ rotr_32(
-                                    W[(15 as c_int - 15 as c_int & 15 as c_int) as usize],
-                                    11,
-                                ),
-                            7,
-                        ) ^ W[(15 as c_int - 15 as c_int & 15 as c_int) as usize] >> 3,
-                    ),
-            );
-        T[(7 as c_int - 15 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 15 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(4 as c_int - 15 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(4 as c_int - 15 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(4 as c_int - 15 as c_int & 7 as c_int) as usize], 14),
-                            5,
-                        ),
-                    6,
-                )
-                .wrapping_add(
-                    T[(6 as c_int - 15 as c_int & 7 as c_int) as usize]
-                        ^ T[(4 as c_int - 15 as c_int & 7 as c_int) as usize]
-                            & (T[(5 as c_int - 15 as c_int & 7 as c_int) as usize]
-                                ^ T[(6 as c_int - 15 as c_int & 7 as c_int) as usize]),
-                )
+                .wrapping_add(W[14]),
+        );
+        T[5] = T[5].wrapping_add(T[1]);
+        T[1] = T[1].wrapping_add(
+            rotr_32(T[2] ^ rotr_32(T[2] ^ rotr_32(T[2], 9), 11), 2)
+                .wrapping_add((T[2] & (T[3] ^ T[4])).wrapping_add(T[3] & T[4])),
+        );
+        W[15] = W[15].wrapping_add(
+            (rotr_32(W[13] ^ rotr_32(W[13], 2), 17) ^ W[13] >> 10)
+                .wrapping_add(W[8])
+                .wrapping_add(rotr_32(W[0] ^ rotr_32(W[0], 11), 7) ^ W[0] >> 3),
+        );
+        T[0] = T[0].wrapping_add(
+            rotr_32(T[5] ^ rotr_32(T[5] ^ rotr_32(T[5], 14), 5), 6)
+                .wrapping_add(T[7] ^ T[5] & (T[6] ^ T[7]))
                 .wrapping_add(SHA256_K[15u32.wrapping_add(j) as usize])
-                .wrapping_add(W[(15 as c_int & 15 as c_int) as usize]),
-            );
-        T[(3 as c_int - 15 as c_int & 7 as c_int) as usize] = T
-            [(3 as c_int - 15 as c_int & 7 as c_int) as usize]
-            .wrapping_add(T[(7 as c_int - 15 as c_int & 7 as c_int) as usize]);
-        T[(7 as c_int - 15 as c_int & 7 as c_int) as usize] =
-            T[(7 as c_int - 15 as c_int & 7 as c_int) as usize].wrapping_add(
-                rotr_32(
-                    T[(0 as c_int - 15 as c_int & 7 as c_int) as usize]
-                        ^ rotr_32(
-                            T[(0 as c_int - 15 as c_int & 7 as c_int) as usize]
-                                ^ rotr_32(T[(0 as c_int - 15 as c_int & 7 as c_int) as usize], 9),
-                            11,
-                        ),
-                    2,
-                )
-                .wrapping_add(
-                    (T[(0 as c_int - 15 as c_int & 7 as c_int) as usize]
-                        & (T[(1 as c_int - 15 as c_int & 7 as c_int) as usize]
-                            ^ T[(2 as c_int - 15 as c_int & 7 as c_int) as usize]))
-                        .wrapping_add(
-                            T[(1 as c_int - 15 as c_int & 7 as c_int) as usize]
-                                & T[(2 as c_int - 15 as c_int & 7 as c_int) as usize],
-                        ),
-                ),
-            );
+                .wrapping_add(W[15]),
+        );
+        T[4] = T[4].wrapping_add(T[0]);
+        T[0] = T[0].wrapping_add(
+            rotr_32(T[1] ^ rotr_32(T[1] ^ rotr_32(T[1], 9), 11), 2)
+                .wrapping_add((T[1] & (T[2] ^ T[3])).wrapping_add(T[2] & T[3])),
+        );
         j = j.wrapping_add(16);
     }
     let ref mut fresh0 = *state.offset(0);
-    *fresh0 = (*fresh0).wrapping_add(T[(0 as c_int - 0 as c_int & 7 as c_int) as usize]);
+    *fresh0 = (*fresh0).wrapping_add(T[0]);
     let ref mut fresh1 = *state.offset(1);
-    *fresh1 = (*fresh1).wrapping_add(T[(1 as c_int - 0 as c_int & 7 as c_int) as usize]);
+    *fresh1 = (*fresh1).wrapping_add(T[1]);
     let ref mut fresh2 = *state.offset(2);
-    *fresh2 = (*fresh2).wrapping_add(T[(2 as c_int - 0 as c_int & 7 as c_int) as usize]);
+    *fresh2 = (*fresh2).wrapping_add(T[2]);
     let ref mut fresh3 = *state.offset(3);
-    *fresh3 = (*fresh3).wrapping_add(T[(3 as c_int - 0 as c_int & 7 as c_int) as usize]);
+    *fresh3 = (*fresh3).wrapping_add(T[3]);
     let ref mut fresh4 = *state.offset(4);
-    *fresh4 = (*fresh4).wrapping_add(T[(4 as c_int - 0 as c_int & 7 as c_int) as usize]);
+    *fresh4 = (*fresh4).wrapping_add(T[4]);
     let ref mut fresh5 = *state.offset(5);
-    *fresh5 = (*fresh5).wrapping_add(T[(5 as c_int - 0 as c_int & 7 as c_int) as usize]);
+    *fresh5 = (*fresh5).wrapping_add(T[5]);
     let ref mut fresh6 = *state.offset(6);
-    *fresh6 = (*fresh6).wrapping_add(T[(6 as c_int - 0 as c_int & 7 as c_int) as usize]);
+    *fresh6 = (*fresh6).wrapping_add(T[6]);
     let ref mut fresh7 = *state.offset(7);
-    *fresh7 = (*fresh7).wrapping_add(T[(7 as c_int - 0 as c_int & 7 as c_int) as usize]);
+    *fresh7 = (*fresh7).wrapping_add(T[7]);
 }
 unsafe extern "C" fn process(mut check: *mut lzma_check_state) {
     transform(
@@ -1878,7 +628,7 @@ pub unsafe extern "C" fn lzma_sha256_finish(mut check: *mut lzma_check_state) {
         (*check).buffer.u8_0[fresh9 as usize] = 0 as u8;
     }
     (*check).state.sha256.size = (*check).state.sha256.size.wrapping_mul(8 as u64);
-    (*check).buffer.u64_0[((64 as c_int - 8 as c_int) / 8 as c_int) as usize] =
+    (*check).buffer.u64_0[7] =
         ((*check).state.sha256.size & 0xff as u64) << 56
             | ((*check).state.sha256.size & 0xff00 as u64) << 40
             | ((*check).state.sha256.size & 0xff0000 as u64) << 24
