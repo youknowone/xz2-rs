@@ -179,7 +179,7 @@ unsafe extern "C" fn rc_bit_0_price(prob: probability) -> u32 {
 #[inline]
 unsafe extern "C" fn rc_bit_1_price(prob: probability) -> u32 {
     return lzma_rc_prices
-        [((prob as c_uint ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1)) >> RC_MOVE_REDUCING_BITS) as usize]
+        [((prob as u32 ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1)) >> RC_MOVE_REDUCING_BITS) as usize]
         as u32;
 }
 #[inline]
@@ -189,7 +189,7 @@ unsafe extern "C" fn rc_bittree_price(
     mut symbol: u32,
 ) -> u32 {
     let mut price: u32 = 0 as u32;
-    symbol = (symbol as c_uint).wrapping_add(1u32 << bit_levels) as u32 as u32;
+    symbol = (symbol as u32).wrapping_add(1u32 << bit_levels) as u32 as u32;
     loop {
         let bit: u32 = symbol & 1 as u32;
         symbol >>= 1 as c_int;
@@ -324,7 +324,7 @@ unsafe extern "C" fn get_literal_price(
         price = rc_bittree_price(subcoder, 8 as u32, symbol);
     } else {
         let mut offset: u32 = 0x100 as u32;
-        symbol = (symbol as c_uint).wrapping_add(1u32 << 8) as u32 as u32;
+        symbol = (symbol as u32).wrapping_add(1u32 << 8) as u32 as u32;
         loop {
             match_byte <<= 1 as c_int;
             let match_bit: u32 = match_byte & offset;
@@ -629,7 +629,7 @@ unsafe extern "C" fn helper1(
                 coder,
                 position,
                 *buf.offset(-(1 as c_int) as isize) as u32,
-                !(((*coder).state as c_uint) < LIT_STATES as c_uint),
+                !(((*coder).state as u32) < LIT_STATES as u32),
                 match_byte as u32,
                 current_byte as u32,
             ));
@@ -756,13 +756,13 @@ unsafe extern "C" fn helper2(
         if (*coder).opts[cur as usize].prev_2 {
             state = (*coder).opts[(*coder).opts[cur as usize].pos_prev_2 as usize].state;
             if (*coder).opts[cur as usize].back_prev_2 < REPS as u32 {
-                state = (if (state as c_uint) < LIT_STATES as c_uint {
+                state = (if (state as u32) < LIT_STATES as u32 {
                     STATE_LIT_LONGREP as c_int
                 } else {
                     STATE_NONLIT_REP as c_int
                 }) as lzma_lzma_state;
             } else {
-                state = (if (state as c_uint) < LIT_STATES as c_uint {
+                state = (if (state as u32) < LIT_STATES as u32 {
                     STATE_LIT_MATCH as c_int
                 } else {
                     STATE_NONLIT_MATCH as c_int
@@ -774,16 +774,16 @@ unsafe extern "C" fn helper2(
         state = (if state <= STATE_SHORTREP_LIT_LIT {
             STATE_LIT_LIT
         } else if state <= STATE_LIT_SHORTREP {
-            (state as c_uint).wrapping_sub(3)
+            (state as u32).wrapping_sub(3)
         } else {
-            (state as c_uint).wrapping_sub(6)
+            (state as u32).wrapping_sub(6)
         }) as lzma_lzma_state;
     } else {
         state = (*coder).opts[pos_prev as usize].state;
     }
     if pos_prev == cur.wrapping_sub(1 as u32) {
         if (*coder).opts[cur as usize].back_prev == 0 as u32 {
-            state = (if (state as c_uint) < LIT_STATES as c_uint {
+            state = (if (state as u32) < LIT_STATES as u32 {
                 STATE_LIT_SHORTREP as c_int
             } else {
                 STATE_NONLIT_REP as c_int
@@ -792,9 +792,9 @@ unsafe extern "C" fn helper2(
             state = (if state <= STATE_SHORTREP_LIT_LIT {
                 STATE_LIT_LIT
             } else if state <= STATE_LIT_SHORTREP {
-                (state as c_uint).wrapping_sub(3)
+                (state as u32).wrapping_sub(3)
             } else {
-                (state as c_uint).wrapping_sub(6)
+                (state as u32).wrapping_sub(6)
             }) as lzma_lzma_state;
         }
     } else {
@@ -804,7 +804,7 @@ unsafe extern "C" fn helper2(
         {
             pos_prev = (*coder).opts[cur as usize].pos_prev_2;
             pos = (*coder).opts[cur as usize].back_prev_2;
-            state = (if (state as c_uint) < LIT_STATES as c_uint {
+            state = (if (state as u32) < LIT_STATES as u32 {
                 STATE_LIT_LONGREP as c_int
             } else {
                 STATE_NONLIT_REP as c_int
@@ -812,13 +812,13 @@ unsafe extern "C" fn helper2(
         } else {
             pos = (*coder).opts[cur as usize].back_prev;
             if pos < REPS as u32 {
-                state = (if (state as c_uint) < LIT_STATES as c_uint {
+                state = (if (state as u32) < LIT_STATES as u32 {
                     STATE_LIT_LONGREP as c_int
                 } else {
                     STATE_NONLIT_REP as c_int
                 }) as lzma_lzma_state;
             } else {
-                state = (if (state as c_uint) < LIT_STATES as c_uint {
+                state = (if (state as u32) < LIT_STATES as u32 {
                     STATE_LIT_MATCH as c_int
                 } else {
                     STATE_NONLIT_MATCH as c_int
@@ -864,7 +864,7 @@ unsafe extern "C" fn helper2(
             coder,
             position,
             *buf.offset(-(1 as c_int) as isize) as u32,
-            !((state as c_uint) < LIT_STATES as c_uint),
+            !((state as u32) < LIT_STATES as u32),
             match_byte as u32,
             current_byte as u32,
         ) as u32);
@@ -921,9 +921,9 @@ unsafe extern "C" fn helper2(
             state_2 = (if state_2 <= STATE_SHORTREP_LIT_LIT {
                 STATE_LIT_LIT
             } else if state_2 <= STATE_LIT_SHORTREP {
-                (state_2 as c_uint).wrapping_sub(3)
+                (state_2 as u32).wrapping_sub(3)
             } else {
-                (state_2 as c_uint).wrapping_sub(6)
+                (state_2 as u32).wrapping_sub(6)
             }) as lzma_lzma_state;
             let pos_state_next: u32 = position.wrapping_add(1 as u32) & (*coder).pos_mask;
             let next_rep_match_price: u32 = cur_and_1_price
@@ -1005,7 +1005,7 @@ unsafe extern "C" fn helper2(
             len_test_2 = len_test_2.wrapping_sub(len_test_0.wrapping_add(1 as u32));
             if len_test_2 >= 2 as u32 {
                 let mut state_2_0: lzma_lzma_state = state;
-                state_2_0 = (if (state_2_0 as c_uint) < LIT_STATES as c_uint {
+                state_2_0 = (if (state_2_0 as u32) < LIT_STATES as u32 {
                     STATE_LIT_LONGREP as c_int
                 } else {
                     STATE_NONLIT_REP as c_int
@@ -1032,9 +1032,9 @@ unsafe extern "C" fn helper2(
                 state_2_0 = (if state_2_0 <= STATE_SHORTREP_LIT_LIT {
                     STATE_LIT_LIT
                 } else if state_2_0 <= STATE_LIT_SHORTREP {
-                    (state_2_0 as c_uint).wrapping_sub(3)
+                    (state_2_0 as u32).wrapping_sub(3)
                 } else {
-                    (state_2_0 as c_uint).wrapping_sub(6)
+                    (state_2_0 as u32).wrapping_sub(6)
                 }) as lzma_lzma_state;
                 pos_state_next_0 =
                     position.wrapping_add(len_test_0).wrapping_add(1 as u32) & (*coder).pos_mask;
@@ -1121,7 +1121,7 @@ unsafe extern "C" fn helper2(
                 len_test_2_0 = len_test_2_0.wrapping_sub(len_test_1.wrapping_add(1 as u32));
                 if len_test_2_0 >= 2 as u32 {
                     let mut state_2_1: lzma_lzma_state = state;
-                    state_2_1 = (if (state_2_1 as c_uint) < LIT_STATES as c_uint {
+                    state_2_1 = (if (state_2_1 as u32) < LIT_STATES as u32 {
                         STATE_LIT_MATCH as c_int
                     } else {
                         STATE_NONLIT_MATCH as c_int
@@ -1143,9 +1143,9 @@ unsafe extern "C" fn helper2(
                     state_2_1 = (if state_2_1 <= STATE_SHORTREP_LIT_LIT {
                         STATE_LIT_LIT
                     } else if state_2_1 <= STATE_LIT_SHORTREP {
-                        (state_2_1 as c_uint).wrapping_sub(3)
+                        (state_2_1 as u32).wrapping_sub(3)
                     } else {
-                        (state_2_1 as c_uint).wrapping_sub(6)
+                        (state_2_1 as u32).wrapping_sub(6)
                     }) as lzma_lzma_state;
                     pos_state_next_1 = pos_state_next_1.wrapping_add(1 as u32) & (*coder).pos_mask;
                     let next_rep_match_price_1: u32 = cur_and_len_literal_price_0

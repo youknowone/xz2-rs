@@ -152,11 +152,11 @@ pub const LZMA_VERSION_MINOR: c_int = 8 as c_int;
 pub const LZMA_VERSION_PATCH: c_int = 2 as c_int;
 pub const LZMA_VERSION_STABILITY: c_int = LZMA_VERSION_STABILITY_STABLE;
 pub const LZMA_VERSION_STABILITY_STABLE: c_int = 2 as c_int;
-pub const LZMA_VERSION: c_uint = (LZMA_VERSION_MAJOR as c_uint)
+pub const LZMA_VERSION: c_uint = (LZMA_VERSION_MAJOR as u32)
     .wrapping_mul(10000000)
-    .wrapping_add((LZMA_VERSION_MINOR as c_uint).wrapping_mul(10000))
-    .wrapping_add((LZMA_VERSION_PATCH as c_uint).wrapping_mul(10))
-    .wrapping_add(LZMA_VERSION_STABILITY as c_uint);
+    .wrapping_add((LZMA_VERSION_MINOR as u32).wrapping_mul(10000))
+    .wrapping_add((LZMA_VERSION_PATCH as u32).wrapping_mul(10))
+    .wrapping_add(LZMA_VERSION_STABILITY as u32);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_TIMED_OUT: c_uint = 101;
 #[no_mangle]
