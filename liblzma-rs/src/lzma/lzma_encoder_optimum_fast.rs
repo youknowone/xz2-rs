@@ -213,8 +213,8 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         let buf_back: *const u8 = buf
             .offset(-((*coder).reps[i as usize] as isize))
             .offset(-(1 as isize));
-        if !(*buf.offset(0 as isize) as c_int != *buf_back.offset(0 as isize) as c_int
-            || *buf.offset(1 as isize) as c_int != *buf_back.offset(1 as isize) as c_int)
+        if !(*buf.offset(0) as c_int != *buf_back.offset(0) as c_int
+            || *buf.offset(1) as c_int != *buf_back.offset(1) as c_int)
         {
             let len: u32 = lzma_memcmplen(buf, buf_back, 2 as u32, buf_avail) as u32;
             if len >= nice_len {

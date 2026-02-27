@@ -230,22 +230,22 @@ pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0 as isize) as u32;
-    num |= (*buf.offset(1 as isize) as u32) << 8;
-    num |= (*buf.offset(2 as isize) as u32) << 16;
-    num |= (*buf.offset(3 as isize) as u32) << 24;
+    let mut num: u32 = *buf.offset(0) as u32;
+    num |= (*buf.offset(1) as u32) << 8;
+    num |= (*buf.offset(2) as u32) << 16;
+    num |= (*buf.offset(3) as u32) << 24;
     return num;
 }
 #[inline]
 unsafe extern "C" fn read64le(mut buf: *const u8) -> u64 {
-    let mut num: u64 = *buf.offset(0 as isize) as u64;
-    num |= (*buf.offset(1 as isize) as u64) << 8;
-    num |= (*buf.offset(2 as isize) as u64) << 16;
-    num |= (*buf.offset(3 as isize) as u64) << 24;
-    num |= (*buf.offset(4 as isize) as u64) << 32;
-    num |= (*buf.offset(5 as isize) as u64) << 40;
-    num |= (*buf.offset(6 as isize) as u64) << 48;
-    num |= (*buf.offset(7 as isize) as u64) << 56;
+    let mut num: u64 = *buf.offset(0) as u64;
+    num |= (*buf.offset(1) as u64) << 8;
+    num |= (*buf.offset(2) as u64) << 16;
+    num |= (*buf.offset(3) as u64) << 24;
+    num |= (*buf.offset(4) as u64) << 32;
+    num |= (*buf.offset(5) as u64) << 40;
+    num |= (*buf.offset(6) as u64) << 48;
+    num |= (*buf.offset(7) as u64) << 56;
     return num;
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
@@ -474,18 +474,18 @@ unsafe extern "C" fn lzip_decode(
         (*coder).member_size = (*coder).member_size.wrapping_add(footer_size as u64);
         if !(*coder).ignore_check
             && (*coder).crc32
-                != read32le((&raw mut (*coder).buffer as *mut u8).offset(0 as isize) as *mut u8)
+                != read32le((&raw mut (*coder).buffer as *mut u8).offset(0) as *mut u8)
         {
             return LZMA_DATA_ERROR;
         }
         if (*coder).uncompressed_size
-            != read64le((&raw mut (*coder).buffer as *mut u8).offset(4 as isize) as *mut u8)
+            != read64le((&raw mut (*coder).buffer as *mut u8).offset(4) as *mut u8)
         {
             return LZMA_DATA_ERROR;
         }
         if (*coder).version > 0 as u32 {
             if (*coder).member_size
-                != read64le((&raw mut (*coder).buffer as *mut u8).offset(12 as isize) as *mut u8)
+                != read64le((&raw mut (*coder).buffer as *mut u8).offset(12) as *mut u8)
             {
                 return LZMA_DATA_ERROR;
             }

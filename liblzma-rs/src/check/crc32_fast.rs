@@ -332,13 +332,13 @@ unsafe extern "C" fn lzma_crc32_generic(mut buf: *const u8, mut size: size_t, mu
         size &= 7 as size_t;
         while buf < limit {
             crc ^= aligned_read32ne(buf);
-            buf = buf.offset(4 as isize);
+            buf = buf.offset(4);
             crc = lzma_crc32_table[7][(crc & 0xff) as usize]
                 ^ lzma_crc32_table[6][(crc >> 8 & 0xff) as usize]
                 ^ lzma_crc32_table[5][(crc >> 16 & 0xff) as usize]
                 ^ lzma_crc32_table[4][(crc >> 24) as usize];
             let tmp: u32 = aligned_read32ne(buf) as u32;
-            buf = buf.offset(4 as isize);
+            buf = buf.offset(4);
             crc = lzma_crc32_table[3][(tmp & 0xff) as usize]
                 ^ lzma_crc32_table[2][(tmp >> 8 & 0xff) as usize]
                 ^ crc

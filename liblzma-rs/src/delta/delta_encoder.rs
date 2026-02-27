@@ -234,7 +234,7 @@ unsafe extern "C" fn delta_encoder_update(
     return lzma_next_filter_update(
         &raw mut (*coder).next,
         allocator,
-        reversed_filters.offset(1 as isize),
+        reversed_filters.offset(1),
     );
 }
 #[no_mangle]
@@ -285,6 +285,6 @@ pub unsafe extern "C" fn lzma_delta_props_encode(
         return LZMA_PROG_ERROR;
     }
     let mut opt: *const lzma_options_delta = options as *const lzma_options_delta;
-    *out.offset(0 as isize) = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN as u32) as u8;
+    *out.offset(0) = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN as u32) as u8;
     return LZMA_OK;
 }

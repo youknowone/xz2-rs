@@ -327,10 +327,10 @@ pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
-    *buf.offset(0 as isize) = num as u8;
-    *buf.offset(1 as isize) = (num >> 8) as u8;
-    *buf.offset(2 as isize) = (num >> 16) as u8;
-    *buf.offset(3 as isize) = (num >> 24) as u8;
+    *buf.offset(0) = num as u8;
+    *buf.offset(1) = (num >> 8) as u8;
+    *buf.offset(2) = (num >> 16) as u8;
+    *buf.offset(3) = (num >> 24) as u8;
 }
 pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
 pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002 as c_ulonglong;
@@ -1092,16 +1092,16 @@ unsafe extern "C" fn encode_init(mut coder: *mut lzma_lzma1_encoder, mut mf: *mu
         (*mf).read_ahead = 0 as u32;
         rc_bit(
             &raw mut (*coder).rc,
-            (&raw mut *(&raw mut (*coder).is_match as *mut [probability; 16]).offset(0 as isize)
+            (&raw mut *(&raw mut (*coder).is_match as *mut [probability; 16]).offset(0)
                 as *mut probability)
-                .offset(0 as isize) as *mut probability,
+                .offset(0) as *mut probability,
             0 as u32,
         );
         rc_bittree(
             &raw mut (*coder).rc,
-            (&raw mut (*coder).literal as *mut probability).offset(0 as isize),
+            (&raw mut (*coder).literal as *mut probability).offset(0),
             8 as u32,
-            *(*mf).buffer.offset(0 as isize) as u32,
+            *(*mf).buffer.offset(0) as u32,
         );
         (*coder).uncomp_size = (*coder).uncomp_size.wrapping_add(1);
     }
@@ -1540,7 +1540,7 @@ pub unsafe extern "C" fn lzma_lzma_props_encode(
     if lzma_lzma_lclppb_encode(opt, out) {
         return LZMA_PROG_ERROR;
     }
-    write32le(out.offset(1 as isize), (*opt).dict_size);
+    write32le(out.offset(1), (*opt).dict_size);
     return LZMA_OK;
 }
 #[no_mangle]

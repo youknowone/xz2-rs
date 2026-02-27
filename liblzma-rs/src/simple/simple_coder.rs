@@ -327,7 +327,7 @@ unsafe extern "C" fn simple_coder_update(
     return lzma_next_filter_update(
         &raw mut (*coder).next,
         allocator,
-        reversed_filters.offset(1 as isize),
+        reversed_filters.offset(1),
     );
 }
 #[no_mangle]
@@ -409,9 +409,9 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
             (*coder).simple = NULL;
         }
     }
-    if !(*filters.offset(0 as isize)).options.is_null() {
+    if !(*filters.offset(0)).options.is_null() {
         let mut simple: *const lzma_options_bcj =
-            (*filters.offset(0 as isize)).options as *const lzma_options_bcj;
+            (*filters.offset(0)).options as *const lzma_options_bcj;
         (*coder).now_pos = (*simple).start_offset;
         if (*coder).now_pos & alignment.wrapping_sub(1 as u32) != 0 {
             return LZMA_OPTIONS_ERROR;
@@ -424,9 +424,5 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
     (*coder).pos = 0 as size_t;
     (*coder).filtered = 0 as size_t;
     (*coder).size = 0 as size_t;
-    return lzma_next_filter_init(
-        &raw mut (*coder).next,
-        allocator,
-        filters.offset(1 as isize),
-    );
+    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }

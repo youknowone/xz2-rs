@@ -58,10 +58,10 @@ pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0 as isize) as u32;
-    num |= (*buf.offset(1 as isize) as u32) << 8;
-    num |= (*buf.offset(2 as isize) as u32) << 16;
-    num |= (*buf.offset(3 as isize) as u32) << 24;
+    let mut num: u32 = *buf.offset(0) as u32;
+    num |= (*buf.offset(1) as u32) << 8;
+    num |= (*buf.offset(2) as u32) << 16;
+    num |= (*buf.offset(3) as u32) << 24;
     return num;
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
@@ -70,13 +70,11 @@ unsafe extern "C" fn stream_flags_decode(
     mut options: *mut lzma_stream_flags,
     mut in_0: *const u8,
 ) -> bool {
-    if *in_0.offset(0 as isize) as c_int != 0 as c_int
-        || *in_0.offset(1 as isize) as c_int & 0xf0 as c_int != 0
-    {
+    if *in_0.offset(0) as c_int != 0 as c_int || *in_0.offset(1) as c_int & 0xf0 as c_int != 0 {
         return true_0 != 0;
     }
     (*options).version = 0 as u32;
-    (*options).check = (*in_0.offset(1 as isize) as c_int & 0xf as c_int) as lzma_check;
+    (*options).check = (*in_0.offset(1) as c_int & 0xf as c_int) as lzma_check;
     return false_0 != 0;
 }
 #[no_mangle]

@@ -694,10 +694,9 @@ pub unsafe extern "C" fn lzma_lzma2_props_encode(
     d |= d >> 8;
     d |= d >> 16;
     if d == UINT32_MAX as u32 {
-        *out.offset(0 as isize) = 40 as u8;
+        *out.offset(0) = 40 as u8;
     } else {
-        *out.offset(0 as isize) =
-            get_dist_slot(d.wrapping_add(1 as u32)).wrapping_sub(24 as u32) as u8;
+        *out.offset(0) = get_dist_slot(d.wrapping_add(1 as u32)).wrapping_sub(24 as u32) as u8;
     }
     return LZMA_OK;
 }

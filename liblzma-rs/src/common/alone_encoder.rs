@@ -215,10 +215,10 @@ pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 pub const true_0: c_int = 1 as c_int;
 #[inline]
 unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
-    *buf.offset(0 as isize) = num as u8;
-    *buf.offset(1 as isize) = (num >> 8) as u8;
-    *buf.offset(2 as isize) = (num >> 16) as u8;
-    *buf.offset(3 as isize) = (num >> 24) as u8;
+    *buf.offset(0) = num as u8;
+    *buf.offset(1) = (num >> 8) as u8;
+    *buf.offset(2) = (num >> 16) as u8;
+    *buf.offset(3) = (num >> 24) as u8;
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
@@ -377,11 +377,9 @@ unsafe extern "C" fn alone_encoder_init(
     if d != UINT32_MAX as u32 {
         d = d.wrapping_add(1);
     }
-    write32le((&raw mut (*coder).header as *mut u8).offset(1 as isize), d);
+    write32le((&raw mut (*coder).header as *mut u8).offset(1), d);
     memset(
-        (&raw mut (*coder).header as *mut u8)
-            .offset(1 as isize)
-            .offset(4 as isize) as *mut c_void,
+        (&raw mut (*coder).header as *mut u8).offset(1).offset(4) as *mut c_void,
         0xff as c_int,
         8 as size_t,
     );

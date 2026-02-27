@@ -251,18 +251,18 @@ pub unsafe extern "C" fn lzma_next_filter_init(
     mut allocator: *const lzma_allocator,
     mut filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0 as isize)).init)
+    if ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0)).init)
         != (*next).init
     {
         lzma_next_end(next, allocator);
     }
     (*next).init =
-        ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0 as isize)).init);
-    (*next).id = (*filters.offset(0 as isize)).id;
-    return (if (*filters.offset(0 as isize)).init.is_none() {
+        ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0)).init);
+    (*next).id = (*filters.offset(0)).id;
+    return (if (*filters.offset(0)).init.is_none() {
         LZMA_OK
     } else {
-        (*filters.offset(0 as isize))
+        (*filters.offset(0))
             .init
             .expect("non-null function pointer")(next, allocator, filters)
     }) as lzma_ret;
@@ -273,10 +273,10 @@ pub unsafe extern "C" fn lzma_next_filter_update(
     mut allocator: *const lzma_allocator,
     mut reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
-    if (*reversed_filters.offset(0 as isize)).id != (*next).id {
+    if (*reversed_filters.offset(0)).id != (*next).id {
         return LZMA_PROG_ERROR;
     }
-    if (*reversed_filters.offset(0 as isize)).id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*reversed_filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli {
         return LZMA_OK;
     }
     return (*next).update.expect("non-null function pointer")(

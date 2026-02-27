@@ -112,18 +112,18 @@ pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0 as isize) as u32;
-    num |= (*buf.offset(1 as isize) as u32) << 8;
-    num |= (*buf.offset(2 as isize) as u32) << 16;
-    num |= (*buf.offset(3 as isize) as u32) << 24;
+    let mut num: u32 = *buf.offset(0) as u32;
+    num |= (*buf.offset(1) as u32) << 8;
+    num |= (*buf.offset(2) as u32) << 16;
+    num |= (*buf.offset(3) as u32) << 24;
     return num;
 }
 #[inline]
 unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
-    *buf.offset(0 as isize) = num as u8;
-    *buf.offset(1 as isize) = (num >> 8) as u8;
-    *buf.offset(2 as isize) = (num >> 16) as u8;
-    *buf.offset(3 as isize) = (num >> 24) as u8;
+    *buf.offset(0) = num as u8;
+    *buf.offset(1) = (num >> 8) as u8;
+    *buf.offset(2) = (num >> 16) as u8;
+    *buf.offset(3) = (num >> 24) as u8;
 }
 unsafe extern "C" fn arm64_code(
     mut simple: *mut c_void,

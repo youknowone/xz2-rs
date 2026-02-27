@@ -695,7 +695,7 @@ unsafe extern "C" fn parse_options(
                 }
                 i = i.wrapping_add(1);
             }
-            *str = equals_sign.offset(1 as isize);
+            *str = equals_sign.offset(1);
             let value_len: size_t = name_eq_value_end.offset_from(*str) as c_long as size_t;
             if value_len == 0 as size_t {
                 return b"Option value cannot be empty\0" as *const u8 as *const c_char;
@@ -840,7 +840,7 @@ unsafe extern "C" fn parse_filter(
     while p < str_end {
         if *p as c_int == ':' as i32 || *p as c_int == '=' as i32 {
             name_end = p;
-            opts_start = p.offset(1 as isize);
+            opts_start = p.offset(1);
             break;
         } else {
             p = p.offset(1);
@@ -908,8 +908,8 @@ unsafe extern "C" fn str_to_filters(
     }
     if **str as c_int >= '0' as i32 && **str as c_int <= '9' as i32
         || **str as c_int == '-' as i32
-            && (*(*str).offset(1 as isize) as c_int >= '0' as i32
-                && *(*str).offset(1 as isize) as c_int <= '9' as i32)
+            && (*(*str).offset(1) as c_int >= '0' as i32
+                && *(*str).offset(1) as c_int <= '9' as i32)
     {
         if **str as c_int == '-' as i32 {
             *str = (*str).offset(1);
@@ -944,11 +944,11 @@ unsafe extern "C" fn str_to_filters(
             lzma_free(opts as *mut c_void, allocator);
             return b"Unsupported preset\0" as *const u8 as *const c_char;
         }
-        (*filters.offset(0 as isize)).id = LZMA_FILTER_LZMA2 as lzma_vli;
-        let ref mut fresh0 = (*filters.offset(0 as isize)).options;
+        (*filters.offset(0)).id = LZMA_FILTER_LZMA2 as lzma_vli;
+        let ref mut fresh0 = (*filters.offset(0)).options;
         *fresh0 = opts as *mut c_void;
-        (*filters.offset(1 as isize)).id = LZMA_VLI_UNKNOWN as lzma_vli;
-        let ref mut fresh1 = (*filters.offset(1 as isize)).options;
+        (*filters.offset(1)).id = LZMA_VLI_UNKNOWN as lzma_vli;
+        let ref mut fresh1 = (*filters.offset(1)).options;
         *fresh1 = NULL;
         return ::core::ptr::null::<c_char>();
     }
@@ -964,16 +964,15 @@ unsafe extern "C" fn str_to_filters(
             current_block = 6100283484465977373;
             break;
         } else {
-            if *(*str).offset(0 as isize) as c_int == '-' as i32
-                && *(*str).offset(1 as isize) as c_int == '-' as i32
+            if *(*str).offset(0) as c_int == '-' as i32 && *(*str).offset(1) as c_int == '-' as i32
             {
-                *str = (*str).offset(2 as isize);
+                *str = (*str).offset(2);
             }
             let mut filter_end: *const c_char = *str;
-            while *filter_end.offset(0 as isize) as c_int != '\0' as i32 {
-                if *filter_end.offset(0 as isize) as c_int == '-' as i32
-                    && *filter_end.offset(1 as isize) as c_int == '-' as i32
-                    || *filter_end.offset(0 as isize) as c_int == ' ' as i32
+            while *filter_end.offset(0) as c_int != '\0' as i32 {
+                if *filter_end.offset(0) as c_int == '-' as i32
+                    && *filter_end.offset(1) as c_int == '-' as i32
+                    || *filter_end.offset(0) as c_int == ' ' as i32
                 {
                     break;
                 }
@@ -1167,7 +1166,7 @@ pub unsafe extern "C" fn lzma_str_from_filters(
     if flags & !supported_flags != 0 {
         return LZMA_OPTIONS_ERROR;
     }
-    if (*filters.offset(0 as isize)).id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli {
         return LZMA_OPTIONS_ERROR;
     }
     let mut dest: lzma_str = lzma_str {

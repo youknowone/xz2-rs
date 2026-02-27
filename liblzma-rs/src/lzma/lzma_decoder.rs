@@ -278,10 +278,10 @@ pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0 as isize) as u32;
-    num |= (*buf.offset(1 as isize) as u32) << 8;
-    num |= (*buf.offset(2 as isize) as u32) << 16;
-    num |= (*buf.offset(3 as isize) as u32) << 24;
+    let mut num: u32 = *buf.offset(0) as u32;
+    num |= (*buf.offset(1) as u32) << 8;
+    num |= (*buf.offset(2) as u32) << 16;
+    num |= (*buf.offset(3) as u32) << 24;
     return num;
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
@@ -4069,11 +4069,11 @@ pub unsafe extern "C" fn lzma_lzma_props_decode(
     if opt.is_null() {
         return LZMA_MEM_ERROR;
     }
-    if lzma_lzma_lclppb_decode(opt, *props.offset(0 as isize)) {
+    if lzma_lzma_lclppb_decode(opt, *props.offset(0)) {
         lzma_free(opt as *mut c_void, allocator);
         return LZMA_OPTIONS_ERROR;
     } else {
-        (*opt).dict_size = read32le(props.offset(1 as isize));
+        (*opt).dict_size = read32le(props.offset(1));
         (*opt).preset_dict = ::core::ptr::null::<u8>();
         (*opt).preset_dict_size = 0 as u32;
         *options = opt as *mut c_void;

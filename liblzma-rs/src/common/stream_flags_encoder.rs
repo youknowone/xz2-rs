@@ -57,10 +57,10 @@ pub const true_0: c_int = 1 as c_int;
 pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
-    *buf.offset(0 as isize) = num as u8;
-    *buf.offset(1 as isize) = (num >> 8) as u8;
-    *buf.offset(2 as isize) = (num >> 16) as u8;
-    *buf.offset(3 as isize) = (num >> 24) as u8;
+    *buf.offset(0) = num as u8;
+    *buf.offset(1) = (num >> 8) as u8;
+    *buf.offset(2) = (num >> 16) as u8;
+    *buf.offset(3) = (num >> 24) as u8;
 }
 pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 pub const LZMA_BACKWARD_SIZE_MIN: c_int = 4 as c_int;
@@ -79,8 +79,8 @@ unsafe extern "C" fn stream_flags_encode(
     if (*options).check > LZMA_CHECK_ID_MAX {
         return true_0 != 0;
     }
-    *out.offset(0 as isize) = 0 as u8;
-    *out.offset(1 as isize) = (*options).check as u8;
+    *out.offset(0) = 0 as u8;
+    *out.offset(1) = (*options).check as u8;
     return false_0 != 0;
 }
 #[no_mangle]
@@ -126,7 +126,7 @@ pub unsafe extern "C" fn lzma_stream_footer_encode(
         return LZMA_PROG_ERROR;
     }
     write32le(
-        out.offset(4 as isize),
+        out.offset(4),
         (*options)
             .backward_size
             .wrapping_div(4 as lzma_vli)
@@ -136,7 +136,7 @@ pub unsafe extern "C" fn lzma_stream_footer_encode(
         return LZMA_PROG_ERROR;
     }
     let crc: u32 = lzma_crc32(
-        out.offset(4 as isize),
+        out.offset(4),
         (4 as c_int + LZMA_STREAM_FLAGS_SIZE) as size_t,
         0 as u32,
     ) as u32;

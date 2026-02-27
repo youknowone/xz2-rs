@@ -172,11 +172,11 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
             set_out_limit: None,
         };
     }
-    if lzma_delta_coder_memusage((*filters.offset(0 as isize)).options) == UINT64_MAX as u64 {
+    if lzma_delta_coder_memusage((*filters.offset(0)).options) == UINT64_MAX as u64 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut opt: *const lzma_options_delta =
-        (*filters.offset(0 as isize)).options as *const lzma_options_delta;
+        (*filters.offset(0)).options as *const lzma_options_delta;
     (*coder).distance = (*opt).dist as size_t;
     (*coder).pos = 0 as u8;
     memset(
@@ -184,11 +184,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
         0 as c_int,
         256 as size_t,
     );
-    return lzma_next_filter_init(
-        &raw mut (*coder).next,
-        allocator,
-        filters.offset(1 as isize),
-    );
+    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_coder_memusage(mut options: *const c_void) -> u64 {

@@ -609,7 +609,7 @@ unsafe extern "C" fn lz_encoder_update(
     return lzma_next_filter_update(
         &raw mut (*coder).next,
         allocator,
-        reversed_filters.offset(1 as isize),
+        reversed_filters.offset(1),
     );
 }
 unsafe extern "C" fn lz_encoder_set_out_limit(
@@ -728,8 +728,8 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
     let ret_: lzma_ret = lz_init.expect("non-null function pointer")(
         &raw mut (*coder).lz,
         allocator,
-        (*filters.offset(0 as isize)).id,
-        (*filters.offset(0 as isize)).options,
+        (*filters.offset(0)).id,
+        (*filters.offset(0)).options,
         &raw mut lz_options,
     ) as lzma_ret;
     if ret_ != LZMA_OK {
@@ -741,11 +741,7 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
     if lz_encoder_init(&raw mut (*coder).mf, allocator, &raw mut lz_options) {
         return LZMA_MEM_ERROR;
     }
-    return lzma_next_filter_init(
-        &raw mut (*coder).next,
-        allocator,
-        filters.offset(1 as isize),
-    );
+    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_is_supported(mut mf: lzma_match_finder) -> lzma_bool {

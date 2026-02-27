@@ -91,10 +91,10 @@ pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
 #[inline]
 unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
-    *buf.offset(0 as isize) = num as u8;
-    *buf.offset(1 as isize) = (num >> 8) as u8;
-    *buf.offset(2 as isize) = (num >> 16) as u8;
-    *buf.offset(3 as isize) = (num >> 24) as u8;
+    *buf.offset(0) = num as u8;
+    *buf.offset(1) = (num >> 8) as u8;
+    *buf.offset(2) = (num >> 16) as u8;
+    *buf.offset(3) = (num >> 24) as u8;
 }
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2 as c_ulonglong);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
@@ -120,7 +120,7 @@ pub unsafe extern "C" fn lzma_block_header_size(mut block: *mut lzma_block) -> l
         size = size.wrapping_add(add_0);
     }
     if (*block).filters.is_null()
-        || (*(*block).filters.offset(0 as isize)).id == LZMA_VLI_UNKNOWN as lzma_vli
+        || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli
     {
         return LZMA_PROG_ERROR;
     }
@@ -153,8 +153,8 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         return LZMA_PROG_ERROR;
     }
     let out_size: size_t = (*block).header_size.wrapping_sub(4 as u32) as size_t;
-    *out.offset(0 as isize) = out_size.wrapping_div(4 as size_t) as u8;
-    *out.offset(1 as isize) = 0 as u8;
+    *out.offset(0) = out_size.wrapping_div(4 as size_t) as u8;
+    *out.offset(1) = 0 as u8;
     let mut out_pos: size_t = 2 as size_t;
     if (*block).compressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
         let ret_: lzma_ret = lzma_vli_encode(
@@ -167,7 +167,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         if ret_ != LZMA_OK {
             return ret_;
         }
-        let ref mut fresh0 = *out.offset(1 as isize);
+        let ref mut fresh0 = *out.offset(1);
         *fresh0 = (*fresh0 as c_int | 0x40 as c_int) as u8;
     }
     if (*block).uncompressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
@@ -181,11 +181,11 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         if ret__0 != LZMA_OK {
             return ret__0;
         }
-        let ref mut fresh1 = *out.offset(1 as isize);
+        let ref mut fresh1 = *out.offset(1);
         *fresh1 = (*fresh1 as c_int | 0x80 as c_int) as u8;
     }
     if (*block).filters.is_null()
-        || (*(*block).filters.offset(0 as isize)).id == LZMA_VLI_UNKNOWN as lzma_vli
+        || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli
     {
         return LZMA_PROG_ERROR;
     }
@@ -208,7 +208,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             break;
         }
     }
-    let ref mut fresh2 = *out.offset(1 as isize);
+    let ref mut fresh2 = *out.offset(1);
     *fresh2 = (*fresh2 as size_t | filter_count.wrapping_sub(1 as size_t)) as u8;
     memset(
         out.offset(out_pos as isize) as *mut c_void,

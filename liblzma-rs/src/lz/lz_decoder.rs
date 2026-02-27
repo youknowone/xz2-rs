@@ -386,8 +386,8 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
     let ret_: lzma_ret = lz_init.expect("non-null function pointer")(
         &raw mut (*coder).lz,
         allocator,
-        (*filters.offset(0 as isize)).id,
-        (*filters.offset(0 as isize)).options,
+        (*filters.offset(0)).id,
+        (*filters.offset(0)).options,
         &raw mut lz_options,
     ) as lzma_ret;
     if ret_ != LZMA_OK {
@@ -437,11 +437,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
     (*coder).this_finished = false_0 != 0;
     (*coder).temp.pos = 0 as size_t;
     (*coder).temp.size = 0 as size_t;
-    return lzma_next_filter_init(
-        &raw mut (*coder).next,
-        allocator,
-        filters.offset(1 as isize),
-    );
+    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lz_decoder_memusage(mut dictionary_size: size_t) -> u64 {

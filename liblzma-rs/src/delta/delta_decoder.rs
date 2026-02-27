@@ -214,7 +214,7 @@ pub unsafe extern "C" fn lzma_delta_props_decode(
         return LZMA_MEM_ERROR;
     }
     (*opt).type_0 = LZMA_DELTA_TYPE_BYTE;
-    (*opt).dist = u32::from(*props.offset(0 as isize)).wrapping_add(1);
+    (*opt).dist = u32::from(*props.offset(0)).wrapping_add(1);
     *options = opt as *mut c_void;
     return LZMA_OK;
 }
