@@ -1,3 +1,5 @@
+use crate::types::*;
+use core::ffi::{c_int, c_uchar, c_uint, c_ulonglong, c_void};
 extern "C" {
     fn lzma_end(strm: *mut lzma_stream);
     fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
@@ -8,25 +10,22 @@ extern "C" {
         coder_find_0: lzma_filter_find,
         is_encoder: bool,
     ) -> lzma_ret;
-    fn lzma_raw_coder_memusage(
-        coder_find_0: lzma_filter_find,
-        filters: *const lzma_filter,
-    ) -> uint64_t;
+    fn lzma_raw_coder_memusage(coder_find_0: lzma_filter_find, filters: *const lzma_filter) -> u64;
     fn lzma_lzma_encoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
         filters: *const lzma_filter_info,
     ) -> lzma_ret;
-    fn lzma_lzma_encoder_memusage(options: *const ::core::ffi::c_void) -> uint64_t;
-    fn lzma_lzma_props_encode(options: *const ::core::ffi::c_void, out: *mut uint8_t) -> lzma_ret;
+    fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64;
+    fn lzma_lzma_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
     fn lzma_lzma2_encoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
         filters: *const lzma_filter_info,
     ) -> lzma_ret;
-    fn lzma_lzma2_encoder_memusage(options: *const ::core::ffi::c_void) -> uint64_t;
-    fn lzma_lzma2_props_encode(options: *const ::core::ffi::c_void, out: *mut uint8_t) -> lzma_ret;
-    fn lzma_lzma2_block_size(options: *const ::core::ffi::c_void) -> uint64_t;
+    fn lzma_lzma2_encoder_memusage(options: *const c_void) -> u64;
+    fn lzma_lzma2_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
+    fn lzma_lzma2_block_size(options: *const c_void) -> u64;
     fn lzma_simple_x86_encoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
@@ -67,28 +66,17 @@ extern "C" {
         allocator: *const lzma_allocator,
         filters: *const lzma_filter_info,
     ) -> lzma_ret;
-    fn lzma_simple_props_size(size: *mut uint32_t, options: *const ::core::ffi::c_void)
-        -> lzma_ret;
-    fn lzma_simple_props_encode(options: *const ::core::ffi::c_void, out: *mut uint8_t)
-        -> lzma_ret;
-    fn lzma_delta_coder_memusage(options: *const ::core::ffi::c_void) -> uint64_t;
+    fn lzma_simple_props_size(size: *mut u32, options: *const c_void) -> lzma_ret;
+    fn lzma_simple_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
+    fn lzma_delta_coder_memusage(options: *const c_void) -> u64;
     fn lzma_delta_encoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
         filters: *const lzma_filter_info,
     ) -> lzma_ret;
-    fn lzma_delta_props_encode(options: *const ::core::ffi::c_void, out: *mut uint8_t) -> lzma_ret;
+    fn lzma_delta_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
 }
-pub type __darwin_size_t = usize;
-pub type uintptr_t = usize;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type uint64_t = u64;
-pub type lzma_bool = ::core::ffi::c_uchar;
-pub type lzma_reserved_enum = ::core::ffi::c_uint;
 pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub type lzma_ret = ::core::ffi::c_uint;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -110,7 +98,6 @@ pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
 pub const LZMA_NO_CHECK: lzma_ret = 2;
 pub const LZMA_STREAM_END: lzma_ret = 1;
 pub const LZMA_OK: lzma_ret = 0;
-pub type lzma_action = ::core::ffi::c_uint;
 pub const LZMA_FINISH: lzma_action = 3;
 pub const LZMA_FULL_BARRIER: lzma_action = 4;
 pub const LZMA_FULL_FLUSH: lzma_action = 2;
@@ -119,12 +106,9 @@ pub const LZMA_RUN: lzma_action = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_allocator {
-    pub alloc: Option<
-        unsafe extern "C" fn(*mut ::core::ffi::c_void, size_t, size_t) -> *mut ::core::ffi::c_void,
-    >,
-    pub free:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut ::core::ffi::c_void) -> ()>,
-    pub opaque: *mut ::core::ffi::c_void,
+    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
+    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
+    pub opaque: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -135,7 +119,7 @@ pub struct lzma_internal_s {
     pub supported_actions: [bool; 5],
     pub allow_buf_error: bool,
 }
-pub type C2RustUnnamed = ::core::ffi::c_uint;
+pub type C2RustUnnamed = c_uint;
 pub const ISEQ_ERROR: C2RustUnnamed = 6;
 pub const ISEQ_END: C2RustUnnamed = 5;
 pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
@@ -147,55 +131,43 @@ pub type lzma_next_coder = lzma_next_coder_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_next_coder_s {
-    pub coder: *mut ::core::ffi::c_void,
+    pub coder: *mut c_void,
     pub id: lzma_vli,
     pub init: uintptr_t,
     pub code: lzma_code_function,
     pub end: lzma_end_function,
-    pub get_progress:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut uint64_t, *mut uint64_t) -> ()>,
-    pub get_check: Option<unsafe extern "C" fn(*const ::core::ffi::c_void) -> lzma_check>,
-    pub memconfig: Option<
-        unsafe extern "C" fn(
-            *mut ::core::ffi::c_void,
-            *mut uint64_t,
-            *mut uint64_t,
-            uint64_t,
-        ) -> lzma_ret,
-    >,
+    pub get_progress: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>,
+    pub get_check: Option<unsafe extern "C" fn(*const c_void) -> lzma_check>,
+    pub memconfig: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>,
     pub update: Option<
         unsafe extern "C" fn(
-            *mut ::core::ffi::c_void,
+            *mut c_void,
             *const lzma_allocator,
             *const lzma_filter,
             *const lzma_filter,
         ) -> lzma_ret,
     >,
-    pub set_out_limit:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut uint64_t, uint64_t) -> lzma_ret>,
+    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_filter {
     pub id: lzma_vli,
-    pub options: *mut ::core::ffi::c_void,
+    pub options: *mut c_void,
 }
-pub type lzma_vli = uint64_t;
-pub type lzma_check = ::core::ffi::c_uint;
 pub const LZMA_CHECK_SHA256: lzma_check = 10;
 pub const LZMA_CHECK_CRC64: lzma_check = 4;
 pub const LZMA_CHECK_CRC32: lzma_check = 1;
 pub const LZMA_CHECK_NONE: lzma_check = 0;
-pub type lzma_end_function =
-    Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *const lzma_allocator) -> ()>;
+pub type lzma_end_function = Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>;
 pub type lzma_code_function = Option<
     unsafe extern "C" fn(
-        *mut ::core::ffi::c_void,
+        *mut c_void,
         *const lzma_allocator,
-        *const uint8_t,
+        *const u8,
         *mut size_t,
         size_t,
-        *mut uint8_t,
+        *mut u8,
         *mut size_t,
         size_t,
         lzma_action,
@@ -205,20 +177,20 @@ pub type lzma_internal = lzma_internal_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream {
-    pub next_in: *const uint8_t,
+    pub next_in: *const u8,
     pub avail_in: size_t,
-    pub total_in: uint64_t,
-    pub next_out: *mut uint8_t,
+    pub total_in: u64,
+    pub next_out: *mut u8,
     pub avail_out: size_t,
-    pub total_out: uint64_t,
+    pub total_out: u64,
     pub allocator: *const lzma_allocator,
     pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut ::core::ffi::c_void,
-    pub reserved_ptr2: *mut ::core::ffi::c_void,
-    pub reserved_ptr3: *mut ::core::ffi::c_void,
-    pub reserved_ptr4: *mut ::core::ffi::c_void,
-    pub seek_pos: uint64_t,
-    pub reserved_int2: uint64_t,
+    pub reserved_ptr1: *mut c_void,
+    pub reserved_ptr2: *mut c_void,
+    pub reserved_ptr3: *mut c_void,
+    pub reserved_ptr4: *mut c_void,
+    pub seek_pos: u64,
+    pub reserved_int2: u64,
     pub reserved_int3: size_t,
     pub reserved_int4: size_t,
     pub reserved_enum1: lzma_reserved_enum,
@@ -229,13 +201,11 @@ pub struct lzma_stream {
 pub struct lzma_filter_encoder {
     pub id: lzma_vli,
     pub init: lzma_init_function,
-    pub memusage: Option<unsafe extern "C" fn(*const ::core::ffi::c_void) -> uint64_t>,
-    pub block_size: Option<unsafe extern "C" fn(*const ::core::ffi::c_void) -> uint64_t>,
-    pub props_size_get:
-        Option<unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret>,
-    pub props_size_fixed: uint32_t,
-    pub props_encode:
-        Option<unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret>,
+    pub memusage: Option<unsafe extern "C" fn(*const c_void) -> u64>,
+    pub block_size: Option<unsafe extern "C" fn(*const c_void) -> u64>,
+    pub props_size_get: Option<unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret>,
+    pub props_size_fixed: u32,
+    pub props_encode: Option<unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret>,
 }
 pub type lzma_init_function = Option<
     unsafe extern "C" fn(
@@ -250,37 +220,34 @@ pub type lzma_filter_info = lzma_filter_info_s;
 pub struct lzma_filter_info_s {
     pub id: lzma_vli,
     pub init: lzma_init_function,
-    pub options: *mut ::core::ffi::c_void,
+    pub options: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_filter_coder {
     pub id: lzma_vli,
     pub init: lzma_init_function,
-    pub memusage: Option<unsafe extern "C" fn(*const ::core::ffi::c_void) -> uint64_t>,
+    pub memusage: Option<unsafe extern "C" fn(*const c_void) -> u64>,
 }
 pub type lzma_filter_find = Option<unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder>;
-pub const __DARWIN_NULL: *mut ::core::ffi::c_void = ::core::ptr::null_mut::<::core::ffi::c_void>();
-pub const NULL: *mut ::core::ffi::c_void = __DARWIN_NULL;
-pub const UINT64_MAX: ::core::ffi::c_ulonglong = 18446744073709551615 as ::core::ffi::c_ulonglong;
-pub const true_0: ::core::ffi::c_int = 1 as ::core::ffi::c_int;
-pub const LZMA_VLI_MAX: ::core::ffi::c_ulonglong =
-    UINT64_MAX.wrapping_div(2 as ::core::ffi::c_ulonglong);
-pub const LZMA_VLI_UNKNOWN: ::core::ffi::c_ulonglong = UINT64_MAX;
-pub const LZMA_FILTER_X86: ::core::ffi::c_ulonglong = 0x4 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_POWERPC: ::core::ffi::c_ulonglong = 0x5 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_IA64: ::core::ffi::c_ulonglong = 0x6 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_ARM: ::core::ffi::c_ulonglong = 0x7 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_ARMTHUMB: ::core::ffi::c_ulonglong = 0x8 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_SPARC: ::core::ffi::c_ulonglong = 0x9 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_ARM64: ::core::ffi::c_ulonglong = 0xa as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_RISCV: ::core::ffi::c_ulonglong = 0xb as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_DELTA: ::core::ffi::c_ulonglong = 0x3 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_LZMA1: ::core::ffi::c_ulonglong =
-    0x4000000000000001 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_LZMA1EXT: ::core::ffi::c_ulonglong =
-    0x4000000000000002 as ::core::ffi::c_ulonglong;
-pub const LZMA_FILTER_LZMA2: ::core::ffi::c_ulonglong = 0x21 as ::core::ffi::c_ulonglong;
+pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
+pub const NULL: *mut c_void = __DARWIN_NULL;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const true_0: c_int = 1 as c_int;
+pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2 as c_ulonglong);
+pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
+pub const LZMA_FILTER_X86: c_ulonglong = 0x4 as c_ulonglong;
+pub const LZMA_FILTER_POWERPC: c_ulonglong = 0x5 as c_ulonglong;
+pub const LZMA_FILTER_IA64: c_ulonglong = 0x6 as c_ulonglong;
+pub const LZMA_FILTER_ARM: c_ulonglong = 0x7 as c_ulonglong;
+pub const LZMA_FILTER_ARMTHUMB: c_ulonglong = 0x8 as c_ulonglong;
+pub const LZMA_FILTER_SPARC: c_ulonglong = 0x9 as c_ulonglong;
+pub const LZMA_FILTER_ARM64: c_ulonglong = 0xa as c_ulonglong;
+pub const LZMA_FILTER_RISCV: c_ulonglong = 0xb as c_ulonglong;
+pub const LZMA_FILTER_DELTA: c_ulonglong = 0x3 as c_ulonglong;
+pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001 as c_ulonglong;
+pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002 as c_ulonglong;
+pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21 as c_ulonglong;
 static mut encoders: [lzma_filter_encoder; 12] = [
     lzma_filter_encoder {
         id: LZMA_FILTER_LZMA1 as lzma_vli,
@@ -292,16 +259,12 @@ static mut encoders: [lzma_filter_encoder; 12] = [
                     *const lzma_filter_info,
                 ) -> lzma_ret,
         ),
-        memusage: Some(
-            lzma_lzma_encoder_memusage
-                as unsafe extern "C" fn(*const ::core::ffi::c_void) -> uint64_t,
-        ),
+        memusage: Some(lzma_lzma_encoder_memusage as unsafe extern "C" fn(*const c_void) -> u64),
         block_size: None,
         props_size_get: None,
-        props_size_fixed: 5 as uint32_t,
+        props_size_fixed: 5 as u32,
         props_encode: Some(
-            lzma_lzma_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_lzma_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -314,16 +277,12 @@ static mut encoders: [lzma_filter_encoder; 12] = [
                     *const lzma_filter_info,
                 ) -> lzma_ret,
         ),
-        memusage: Some(
-            lzma_lzma_encoder_memusage
-                as unsafe extern "C" fn(*const ::core::ffi::c_void) -> uint64_t,
-        ),
+        memusage: Some(lzma_lzma_encoder_memusage as unsafe extern "C" fn(*const c_void) -> u64),
         block_size: None,
         props_size_get: None,
-        props_size_fixed: 5 as uint32_t,
+        props_size_fixed: 5 as u32,
         props_encode: Some(
-            lzma_lzma_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_lzma_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -336,18 +295,12 @@ static mut encoders: [lzma_filter_encoder; 12] = [
                     *const lzma_filter_info,
                 ) -> lzma_ret,
         ),
-        memusage: Some(
-            lzma_lzma2_encoder_memusage
-                as unsafe extern "C" fn(*const ::core::ffi::c_void) -> uint64_t,
-        ),
-        block_size: Some(
-            lzma_lzma2_block_size as unsafe extern "C" fn(*const ::core::ffi::c_void) -> uint64_t,
-        ),
+        memusage: Some(lzma_lzma2_encoder_memusage as unsafe extern "C" fn(*const c_void) -> u64),
+        block_size: Some(lzma_lzma2_block_size as unsafe extern "C" fn(*const c_void) -> u64),
         props_size_get: None,
-        props_size_fixed: 1 as uint32_t,
+        props_size_fixed: 1 as u32,
         props_encode: Some(
-            lzma_lzma2_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_lzma2_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -363,13 +316,11 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: None,
         block_size: None,
         props_size_get: Some(
-            lzma_simple_props_size
-                as unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret,
+            lzma_simple_props_size as unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret,
         ),
         props_size_fixed: 0,
         props_encode: Some(
-            lzma_simple_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_simple_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -385,13 +336,11 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: None,
         block_size: None,
         props_size_get: Some(
-            lzma_simple_props_size
-                as unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret,
+            lzma_simple_props_size as unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret,
         ),
         props_size_fixed: 0,
         props_encode: Some(
-            lzma_simple_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_simple_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -407,13 +356,11 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: None,
         block_size: None,
         props_size_get: Some(
-            lzma_simple_props_size
-                as unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret,
+            lzma_simple_props_size as unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret,
         ),
         props_size_fixed: 0,
         props_encode: Some(
-            lzma_simple_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_simple_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -429,13 +376,11 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: None,
         block_size: None,
         props_size_get: Some(
-            lzma_simple_props_size
-                as unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret,
+            lzma_simple_props_size as unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret,
         ),
         props_size_fixed: 0,
         props_encode: Some(
-            lzma_simple_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_simple_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -451,13 +396,11 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: None,
         block_size: None,
         props_size_get: Some(
-            lzma_simple_props_size
-                as unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret,
+            lzma_simple_props_size as unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret,
         ),
         props_size_fixed: 0,
         props_encode: Some(
-            lzma_simple_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_simple_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -473,13 +416,11 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: None,
         block_size: None,
         props_size_get: Some(
-            lzma_simple_props_size
-                as unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret,
+            lzma_simple_props_size as unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret,
         ),
         props_size_fixed: 0,
         props_encode: Some(
-            lzma_simple_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_simple_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -495,13 +436,11 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: None,
         block_size: None,
         props_size_get: Some(
-            lzma_simple_props_size
-                as unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret,
+            lzma_simple_props_size as unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret,
         ),
         props_size_fixed: 0,
         props_encode: Some(
-            lzma_simple_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_simple_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -517,13 +456,11 @@ static mut encoders: [lzma_filter_encoder; 12] = [
         memusage: None,
         block_size: None,
         props_size_get: Some(
-            lzma_simple_props_size
-                as unsafe extern "C" fn(*mut uint32_t, *const ::core::ffi::c_void) -> lzma_ret,
+            lzma_simple_props_size as unsafe extern "C" fn(*mut u32, *const c_void) -> lzma_ret,
         ),
         props_size_fixed: 0,
         props_encode: Some(
-            lzma_simple_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_simple_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
     lzma_filter_encoder {
@@ -536,16 +473,12 @@ static mut encoders: [lzma_filter_encoder; 12] = [
                     *const lzma_filter_info,
                 ) -> lzma_ret,
         ),
-        memusage: Some(
-            lzma_delta_coder_memusage
-                as unsafe extern "C" fn(*const ::core::ffi::c_void) -> uint64_t,
-        ),
+        memusage: Some(lzma_delta_coder_memusage as unsafe extern "C" fn(*const c_void) -> u64),
         block_size: None,
         props_size_get: None,
-        props_size_fixed: 1 as uint32_t,
+        props_size_fixed: 1 as u32,
         props_encode: Some(
-            lzma_delta_props_encode
-                as unsafe extern "C" fn(*const ::core::ffi::c_void, *mut uint8_t) -> lzma_ret,
+            lzma_delta_props_encode as unsafe extern "C" fn(*const c_void, *mut u8) -> lzma_ret,
         ),
     },
 ];
@@ -567,8 +500,7 @@ unsafe extern "C" fn coder_find(mut id: lzma_vli) -> *const lzma_filter_coder {
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_filter_encoder_is_supported(mut id: lzma_vli) -> lzma_bool {
-    return (encoder_find(id) != NULL as *const lzma_filter_encoder) as ::core::ffi::c_int
-        as lzma_bool;
+    return (encoder_find(id) != NULL as *const lzma_filter_encoder) as c_int as lzma_bool;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_filters_update(
@@ -578,7 +510,7 @@ pub unsafe extern "C" fn lzma_filters_update(
     if (*(*strm).internal).next.update.is_none() {
         return LZMA_PROG_ERROR;
     }
-    if lzma_raw_encoder_memusage(filters) == UINT64_MAX as uint64_t {
+    if lzma_raw_encoder_memusage(filters) == UINT64_MAX as u64 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut count: size_t = 1 as size_t;
@@ -587,7 +519,7 @@ pub unsafe extern "C" fn lzma_filters_update(
     }
     let mut reversed_filters: [lzma_filter; 5] = [lzma_filter {
         id: 0,
-        options: ::core::ptr::null_mut::<::core::ffi::c_void>(),
+        options: ::core::ptr::null_mut::<c_void>(),
     }; 5];
     let mut i: size_t = 0 as size_t;
     while i < count {
@@ -626,7 +558,7 @@ pub unsafe extern "C" fn lzma_raw_encoder(
     mut filters: *const lzma_filter,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as ::core::ffi::c_uint != LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint {
+    if ret_ as c_uint != LZMA_OK as c_uint {
         return ret_;
     }
     let ret__0: lzma_ret = lzma_raw_coder_init(
@@ -634,65 +566,64 @@ pub unsafe extern "C" fn lzma_raw_encoder(
         (*strm).allocator,
         filters,
         Some(coder_find as unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder),
-        1 as ::core::ffi::c_int != 0,
+        1 as c_int != 0,
     ) as lzma_ret;
-    if ret__0 as ::core::ffi::c_uint != LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint {
+    if ret__0 as c_uint != LZMA_OK as c_uint {
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as ::core::ffi::c_int as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as ::core::ffi::c_int as usize] =
-        true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as ::core::ffi::c_int as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
     return LZMA_OK;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_raw_encoder_memusage(mut filters: *const lzma_filter) -> uint64_t {
+pub unsafe extern "C" fn lzma_raw_encoder_memusage(mut filters: *const lzma_filter) -> u64 {
     return lzma_raw_coder_memusage(
         Some(coder_find as unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder),
         filters,
     );
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_mt_block_size(mut filters: *const lzma_filter) -> uint64_t {
+pub unsafe extern "C" fn lzma_mt_block_size(mut filters: *const lzma_filter) -> u64 {
     if filters.is_null() {
-        return UINT64_MAX as uint64_t;
+        return UINT64_MAX as u64;
     }
-    let mut max: uint64_t = 0 as uint64_t;
+    let mut max: u64 = 0 as u64;
     let mut i: size_t = 0 as size_t;
     while (*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli {
         let fe: *const lzma_filter_encoder =
             encoder_find((*filters.offset(i as isize)).id) as *const lzma_filter_encoder;
         if fe.is_null() {
-            return UINT64_MAX as uint64_t;
+            return UINT64_MAX as u64;
         }
         if (*fe).block_size.is_some() {
-            let size: uint64_t = (*fe).block_size.expect("non-null function pointer")(
+            let size: u64 = (*fe).block_size.expect("non-null function pointer")(
                 (*filters.offset(i as isize)).options,
-            ) as uint64_t;
+            ) as u64;
             if size > max {
                 max = size;
             }
         }
         i = i.wrapping_add(1);
     }
-    return if max == 0 as uint64_t {
-        UINT64_MAX as uint64_t
+    return if max == 0 as u64 {
+        UINT64_MAX as u64
     } else {
         max
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_properties_size(
-    mut size: *mut uint32_t,
+    mut size: *mut u32,
     mut filter: *const lzma_filter,
 ) -> lzma_ret {
     let fe: *const lzma_filter_encoder = encoder_find((*filter).id) as *const lzma_filter_encoder;
     if fe.is_null() {
         return (if (*filter).id <= LZMA_VLI_MAX as lzma_vli {
-            LZMA_OPTIONS_ERROR as ::core::ffi::c_int
+            LZMA_OPTIONS_ERROR as c_int
         } else {
-            LZMA_PROG_ERROR as ::core::ffi::c_int
+            LZMA_PROG_ERROR as c_int
         }) as lzma_ret;
     }
     if (*fe).props_size_get.is_none() {
@@ -704,7 +635,7 @@ pub unsafe extern "C" fn lzma_properties_size(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_properties_encode(
     mut filter: *const lzma_filter,
-    mut props: *mut uint8_t,
+    mut props: *mut u8,
 ) -> lzma_ret {
     let fe: *const lzma_filter_encoder = encoder_find((*filter).id) as *const lzma_filter_encoder;
     if fe.is_null() {

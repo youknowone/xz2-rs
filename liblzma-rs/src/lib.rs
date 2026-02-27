@@ -12,6 +12,8 @@
     clippy::all
 )]
 
+pub mod types;
+
 pub mod check;
 pub mod common;
 pub mod delta;

@@ -1,6 +1,5 @@
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type lzma_ret = ::core::ffi::c_uint;
+use crate::types::*;
+use core::ffi::{c_int, c_uint, c_void};
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -25,37 +24,37 @@ pub const LZMA_OK: lzma_ret = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_options_bcj {
-    pub start_offset: uint32_t,
+    pub start_offset: u32,
 }
-pub const __DARWIN_NULL: *mut ::core::ffi::c_void = ::core::ptr::null_mut::<::core::ffi::c_void>();
-pub const NULL: *mut ::core::ffi::c_void = __DARWIN_NULL;
+pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
+pub const NULL: *mut c_void = __DARWIN_NULL;
 #[inline]
-unsafe extern "C" fn write32le(mut buf: *mut uint8_t, mut num: uint32_t) {
-    *buf.offset(0 as ::core::ffi::c_int as isize) = num as uint8_t;
-    *buf.offset(1 as ::core::ffi::c_int as isize) = (num >> 8 as ::core::ffi::c_int) as uint8_t;
-    *buf.offset(2 as ::core::ffi::c_int as isize) = (num >> 16 as ::core::ffi::c_int) as uint8_t;
-    *buf.offset(3 as ::core::ffi::c_int as isize) = (num >> 24 as ::core::ffi::c_int) as uint8_t;
+unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
+    *buf.offset(0 as isize) = num as u8;
+    *buf.offset(1 as isize) = (num >> 8 as c_int) as u8;
+    *buf.offset(2 as isize) = (num >> 16 as c_int) as u8;
+    *buf.offset(3 as isize) = (num >> 24 as c_int) as u8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_size(
-    mut size: *mut uint32_t,
-    mut options: *const ::core::ffi::c_void,
+    mut size: *mut u32,
+    mut options: *const c_void,
 ) -> lzma_ret {
     let opt: *const lzma_options_bcj = options as *const lzma_options_bcj;
-    *size = (if opt.is_null() || (*opt).start_offset == 0 as uint32_t {
-        0 as ::core::ffi::c_int
+    *size = (if opt.is_null() || (*opt).start_offset == 0 as u32 {
+        0 as c_int
     } else {
-        4 as ::core::ffi::c_int
-    }) as uint32_t;
+        4 as c_int
+    }) as u32;
     return LZMA_OK;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_encode(
-    mut options: *const ::core::ffi::c_void,
-    mut out: *mut uint8_t,
+    mut options: *const c_void,
+    mut out: *mut u8,
 ) -> lzma_ret {
     let opt: *const lzma_options_bcj = options as *const lzma_options_bcj;
-    if opt.is_null() || (*opt).start_offset == 0 as uint32_t {
+    if opt.is_null() || (*opt).start_offset == 0 as u32 {
         return LZMA_OK;
     }
     write32le(out, (*opt).start_offset);

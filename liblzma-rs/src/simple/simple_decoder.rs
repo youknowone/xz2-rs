@@ -1,12 +1,9 @@
+use crate::types::*;
+use core::ffi::{c_int, c_uint, c_void};
 extern "C" {
-    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut ::core::ffi::c_void;
-    fn lzma_free(ptr: *mut ::core::ffi::c_void, allocator: *const lzma_allocator);
+    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
+    fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
 }
-pub type __darwin_size_t = usize;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type lzma_ret = ::core::ffi::c_uint;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -31,33 +28,30 @@ pub const LZMA_OK: lzma_ret = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_allocator {
-    pub alloc: Option<
-        unsafe extern "C" fn(*mut ::core::ffi::c_void, size_t, size_t) -> *mut ::core::ffi::c_void,
-    >,
-    pub free:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut ::core::ffi::c_void) -> ()>,
-    pub opaque: *mut ::core::ffi::c_void,
+    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
+    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
+    pub opaque: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_options_bcj {
-    pub start_offset: uint32_t,
+    pub start_offset: u32,
 }
-pub const __DARWIN_NULL: *mut ::core::ffi::c_void = ::core::ptr::null_mut::<::core::ffi::c_void>();
-pub const NULL: *mut ::core::ffi::c_void = __DARWIN_NULL;
+pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
+pub const NULL: *mut c_void = __DARWIN_NULL;
 #[inline]
-unsafe extern "C" fn read32le(mut buf: *const uint8_t) -> uint32_t {
-    let mut num: uint32_t = *buf.offset(0 as ::core::ffi::c_int as isize) as uint32_t;
-    num |= (*buf.offset(1 as ::core::ffi::c_int as isize) as uint32_t) << 8 as ::core::ffi::c_int;
-    num |= (*buf.offset(2 as ::core::ffi::c_int as isize) as uint32_t) << 16 as ::core::ffi::c_int;
-    num |= (*buf.offset(3 as ::core::ffi::c_int as isize) as uint32_t) << 24 as ::core::ffi::c_int;
+unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
+    let mut num: u32 = *buf.offset(0 as isize) as u32;
+    num |= (*buf.offset(1 as isize) as u32) << 8 as c_int;
+    num |= (*buf.offset(2 as isize) as u32) << 16 as c_int;
+    num |= (*buf.offset(3 as isize) as u32) << 24 as c_int;
     return num;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_decode(
-    mut options: *mut *mut ::core::ffi::c_void,
+    mut options: *mut *mut c_void,
     mut allocator: *const lzma_allocator,
-    mut props: *const uint8_t,
+    mut props: *const u8,
     mut props_size: size_t,
 ) -> lzma_ret {
     if props_size == 0 as size_t {
@@ -74,10 +68,10 @@ pub unsafe extern "C" fn lzma_simple_props_decode(
         return LZMA_MEM_ERROR;
     }
     (*opt).start_offset = read32le(props);
-    if (*opt).start_offset == 0 as uint32_t {
-        lzma_free(opt as *mut ::core::ffi::c_void, allocator);
+    if (*opt).start_offset == 0 as u32 {
+        lzma_free(opt as *mut c_void, allocator);
     } else {
-        *options = opt as *mut ::core::ffi::c_void;
+        *options = opt as *mut c_void;
     }
     return LZMA_OK;
 }

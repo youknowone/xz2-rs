@@ -1,10 +1,6 @@
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type uint64_t = u64;
-pub type lzma_bool = ::core::ffi::c_uchar;
-pub type lzma_reserved_enum = ::core::ffi::c_uint;
+use crate::types::*;
+use core::ffi::{c_int, c_uchar, c_uint, c_ulonglong};
 pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub type lzma_ret = ::core::ffi::c_uint;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -26,8 +22,6 @@ pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
 pub const LZMA_NO_CHECK: lzma_ret = 2;
 pub const LZMA_STREAM_END: lzma_ret = 1;
 pub const LZMA_OK: lzma_ret = 0;
-pub type lzma_vli = uint64_t;
-pub type lzma_check = ::core::ffi::c_uint;
 pub const LZMA_CHECK_SHA256: lzma_check = 10;
 pub const LZMA_CHECK_CRC64: lzma_check = 4;
 pub const LZMA_CHECK_CRC32: lzma_check = 1;
@@ -35,7 +29,7 @@ pub const LZMA_CHECK_NONE: lzma_check = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_flags {
-    pub version: uint32_t,
+    pub version: u32,
     pub backward_size: lzma_vli,
     pub check: lzma_check,
     pub reserved_enum1: lzma_reserved_enum,
@@ -50,15 +44,14 @@ pub struct lzma_stream_flags {
     pub reserved_bool6: lzma_bool,
     pub reserved_bool7: lzma_bool,
     pub reserved_bool8: lzma_bool,
-    pub reserved_int1: uint32_t,
-    pub reserved_int2: uint32_t,
+    pub reserved_int1: u32,
+    pub reserved_int2: u32,
 }
-pub const UINT64_MAX: ::core::ffi::c_ulonglong = 18446744073709551615 as ::core::ffi::c_ulonglong;
-pub const LZMA_VLI_UNKNOWN: ::core::ffi::c_ulonglong = UINT64_MAX;
-pub const LZMA_CHECK_ID_MAX: ::core::ffi::c_int = 15 as ::core::ffi::c_int;
-pub const LZMA_BACKWARD_SIZE_MIN: ::core::ffi::c_int = 4 as ::core::ffi::c_int;
-pub const LZMA_BACKWARD_SIZE_MAX: ::core::ffi::c_ulonglong =
-    (1 as ::core::ffi::c_ulonglong) << 34 as ::core::ffi::c_int;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
+pub const LZMA_CHECK_ID_MAX: c_int = 15 as c_int;
+pub const LZMA_BACKWARD_SIZE_MIN: c_int = 4 as c_int;
+pub const LZMA_BACKWARD_SIZE_MAX: c_ulonglong = (1 as c_ulonglong) << 34 as c_int;
 #[inline]
 unsafe extern "C" fn is_backward_size_valid(mut options: *const lzma_stream_flags) -> bool {
     return (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
@@ -66,33 +59,25 @@ unsafe extern "C" fn is_backward_size_valid(mut options: *const lzma_stream_flag
         && (*options).backward_size & 3 as lzma_vli == 0 as lzma_vli;
 }
 #[no_mangle]
-pub static mut lzma_header_magic: [uint8_t; 6] = [
-    0xfd as ::core::ffi::c_int as uint8_t,
-    0x37 as ::core::ffi::c_int as uint8_t,
-    0x7a as ::core::ffi::c_int as uint8_t,
-    0x58 as ::core::ffi::c_int as uint8_t,
-    0x5a as ::core::ffi::c_int as uint8_t,
-    0 as ::core::ffi::c_int as uint8_t,
+pub static mut lzma_header_magic: [u8; 6] = [
+    0xfd as u8, 0x37 as u8, 0x7a as u8, 0x58 as u8, 0x5a as u8, 0 as u8,
 ];
 #[no_mangle]
-pub static mut lzma_footer_magic: [uint8_t; 2] = [
-    0x59 as ::core::ffi::c_int as uint8_t,
-    0x5a as ::core::ffi::c_int as uint8_t,
-];
+pub static mut lzma_footer_magic: [u8; 2] = [0x59 as u8, 0x5a as u8];
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_flags_compare(
     mut a: *const lzma_stream_flags,
     mut b: *const lzma_stream_flags,
 ) -> lzma_ret {
-    if (*a).version != 0 as uint32_t || (*b).version != 0 as uint32_t {
+    if (*a).version != 0 as u32 || (*b).version != 0 as u32 {
         return LZMA_OPTIONS_ERROR;
     }
-    if (*a).check as ::core::ffi::c_uint > LZMA_CHECK_ID_MAX as ::core::ffi::c_uint
-        || (*b).check as ::core::ffi::c_uint > LZMA_CHECK_ID_MAX as ::core::ffi::c_uint
+    if (*a).check as c_uint > LZMA_CHECK_ID_MAX as c_uint
+        || (*b).check as c_uint > LZMA_CHECK_ID_MAX as c_uint
     {
         return LZMA_PROG_ERROR;
     }
-    if (*a).check as ::core::ffi::c_uint != (*b).check as ::core::ffi::c_uint {
+    if (*a).check as c_uint != (*b).check as c_uint {
         return LZMA_DATA_ERROR;
     }
     if (*a).backward_size != LZMA_VLI_UNKNOWN as lzma_vli

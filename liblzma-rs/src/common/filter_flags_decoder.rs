@@ -1,23 +1,20 @@
+use crate::types::*;
+use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
 extern "C" {
     fn lzma_vli_decode(
         vli: *mut lzma_vli,
         vli_pos: *mut size_t,
-        in_0: *const uint8_t,
+        in_0: *const u8,
         in_pos: *mut size_t,
         in_size: size_t,
     ) -> lzma_ret;
     fn lzma_properties_decode(
         filter: *mut lzma_filter,
         allocator: *const lzma_allocator,
-        props: *const uint8_t,
+        props: *const u8,
         props_size: size_t,
     ) -> lzma_ret;
 }
-pub type __darwin_size_t = usize;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = u8;
-pub type uint64_t = u64;
-pub type lzma_ret = ::core::ffi::c_uint;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -42,29 +39,24 @@ pub const LZMA_OK: lzma_ret = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_allocator {
-    pub alloc: Option<
-        unsafe extern "C" fn(*mut ::core::ffi::c_void, size_t, size_t) -> *mut ::core::ffi::c_void,
-    >,
-    pub free:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut ::core::ffi::c_void) -> ()>,
-    pub opaque: *mut ::core::ffi::c_void,
+    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
+    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
+    pub opaque: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_filter {
     pub id: lzma_vli,
-    pub options: *mut ::core::ffi::c_void,
+    pub options: *mut c_void,
 }
-pub type lzma_vli = uint64_t;
-pub const __DARWIN_NULL: *mut ::core::ffi::c_void = ::core::ptr::null_mut::<::core::ffi::c_void>();
-pub const NULL: *mut ::core::ffi::c_void = __DARWIN_NULL;
-pub const LZMA_FILTER_RESERVED_START: ::core::ffi::c_ulonglong =
-    (1 as ::core::ffi::c_ulonglong) << 62 as ::core::ffi::c_int;
+pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
+pub const NULL: *mut c_void = __DARWIN_NULL;
+pub const LZMA_FILTER_RESERVED_START: c_ulonglong = (1 as c_ulonglong) << 62 as c_int;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_filter_flags_decode(
     mut filter: *mut lzma_filter,
     mut allocator: *const lzma_allocator,
-    mut in_0: *const uint8_t,
+    mut in_0: *const u8,
     mut in_pos: *mut size_t,
     mut in_size: size_t,
 ) -> lzma_ret {
@@ -76,7 +68,7 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
         in_pos,
         in_size,
     ) as lzma_ret;
-    if ret_ as ::core::ffi::c_uint != LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint {
+    if ret_ as c_uint != LZMA_OK as c_uint {
         return ret_;
     }
     if (*filter).id >= LZMA_FILTER_RESERVED_START as lzma_vli {
@@ -90,7 +82,7 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
         in_pos,
         in_size,
     ) as lzma_ret;
-    if ret__0 as ::core::ffi::c_uint != LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint {
+    if ret__0 as c_uint != LZMA_OK as c_uint {
         return ret__0;
     }
     if (in_size.wrapping_sub(*in_pos) as lzma_vli) < props_size {

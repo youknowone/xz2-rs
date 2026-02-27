@@ -1,31 +1,25 @@
+use crate::types::*;
+use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
 extern "C" {
     fn lzma_end(strm: *mut lzma_stream);
-    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut ::core::ffi::c_void;
-    fn lzma_free(ptr: *mut ::core::ffi::c_void, allocator: *const lzma_allocator);
+    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
+    fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
     fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
     fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
     fn lzma_stream_decoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
-        memlimit: uint64_t,
-        flags: uint32_t,
+        memlimit: u64,
+        flags: u32,
     ) -> lzma_ret;
     fn lzma_alone_decoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
-        memlimit: uint64_t,
+        memlimit: u64,
         picky: bool,
     ) -> lzma_ret;
 }
-pub type __darwin_size_t = usize;
-pub type uintptr_t = usize;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type uint64_t = u64;
-pub type lzma_reserved_enum = ::core::ffi::c_uint;
 pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub type lzma_ret = ::core::ffi::c_uint;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -47,7 +41,6 @@ pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
 pub const LZMA_NO_CHECK: lzma_ret = 2;
 pub const LZMA_STREAM_END: lzma_ret = 1;
 pub const LZMA_OK: lzma_ret = 0;
-pub type lzma_action = ::core::ffi::c_uint;
 pub const LZMA_FINISH: lzma_action = 3;
 pub const LZMA_FULL_BARRIER: lzma_action = 4;
 pub const LZMA_FULL_FLUSH: lzma_action = 2;
@@ -56,12 +49,9 @@ pub const LZMA_RUN: lzma_action = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_allocator {
-    pub alloc: Option<
-        unsafe extern "C" fn(*mut ::core::ffi::c_void, size_t, size_t) -> *mut ::core::ffi::c_void,
-    >,
-    pub free:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut ::core::ffi::c_void) -> ()>,
-    pub opaque: *mut ::core::ffi::c_void,
+    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
+    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
+    pub opaque: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -72,7 +62,7 @@ pub struct lzma_internal_s {
     pub supported_actions: [bool; 5],
     pub allow_buf_error: bool,
 }
-pub type C2RustUnnamed = ::core::ffi::c_uint;
+pub type C2RustUnnamed = c_uint;
 pub const ISEQ_ERROR: C2RustUnnamed = 6;
 pub const ISEQ_END: C2RustUnnamed = 5;
 pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
@@ -84,55 +74,43 @@ pub type lzma_next_coder = lzma_next_coder_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_next_coder_s {
-    pub coder: *mut ::core::ffi::c_void,
+    pub coder: *mut c_void,
     pub id: lzma_vli,
     pub init: uintptr_t,
     pub code: lzma_code_function,
     pub end: lzma_end_function,
-    pub get_progress:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut uint64_t, *mut uint64_t) -> ()>,
-    pub get_check: Option<unsafe extern "C" fn(*const ::core::ffi::c_void) -> lzma_check>,
-    pub memconfig: Option<
-        unsafe extern "C" fn(
-            *mut ::core::ffi::c_void,
-            *mut uint64_t,
-            *mut uint64_t,
-            uint64_t,
-        ) -> lzma_ret,
-    >,
+    pub get_progress: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>,
+    pub get_check: Option<unsafe extern "C" fn(*const c_void) -> lzma_check>,
+    pub memconfig: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>,
     pub update: Option<
         unsafe extern "C" fn(
-            *mut ::core::ffi::c_void,
+            *mut c_void,
             *const lzma_allocator,
             *const lzma_filter,
             *const lzma_filter,
         ) -> lzma_ret,
     >,
-    pub set_out_limit:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut uint64_t, uint64_t) -> lzma_ret>,
+    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_filter {
     pub id: lzma_vli,
-    pub options: *mut ::core::ffi::c_void,
+    pub options: *mut c_void,
 }
-pub type lzma_vli = uint64_t;
-pub type lzma_check = ::core::ffi::c_uint;
 pub const LZMA_CHECK_SHA256: lzma_check = 10;
 pub const LZMA_CHECK_CRC64: lzma_check = 4;
 pub const LZMA_CHECK_CRC32: lzma_check = 1;
 pub const LZMA_CHECK_NONE: lzma_check = 0;
-pub type lzma_end_function =
-    Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *const lzma_allocator) -> ()>;
+pub type lzma_end_function = Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>;
 pub type lzma_code_function = Option<
     unsafe extern "C" fn(
-        *mut ::core::ffi::c_void,
+        *mut c_void,
         *const lzma_allocator,
-        *const uint8_t,
+        *const u8,
         *mut size_t,
         size_t,
-        *mut uint8_t,
+        *mut u8,
         *mut size_t,
         size_t,
         lzma_action,
@@ -142,26 +120,26 @@ pub type lzma_internal = lzma_internal_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream {
-    pub next_in: *const uint8_t,
+    pub next_in: *const u8,
     pub avail_in: size_t,
-    pub total_in: uint64_t,
-    pub next_out: *mut uint8_t,
+    pub total_in: u64,
+    pub next_out: *mut u8,
     pub avail_out: size_t,
-    pub total_out: uint64_t,
+    pub total_out: u64,
     pub allocator: *const lzma_allocator,
     pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut ::core::ffi::c_void,
-    pub reserved_ptr2: *mut ::core::ffi::c_void,
-    pub reserved_ptr3: *mut ::core::ffi::c_void,
-    pub reserved_ptr4: *mut ::core::ffi::c_void,
-    pub seek_pos: uint64_t,
-    pub reserved_int2: uint64_t,
+    pub reserved_ptr1: *mut c_void,
+    pub reserved_ptr2: *mut c_void,
+    pub reserved_ptr3: *mut c_void,
+    pub reserved_ptr4: *mut c_void,
+    pub seek_pos: u64,
+    pub reserved_int2: u64,
     pub reserved_int3: size_t,
     pub reserved_int4: size_t,
     pub reserved_enum1: lzma_reserved_enum,
     pub reserved_enum2: lzma_reserved_enum,
 }
-pub type C2RustUnnamed_0 = ::core::ffi::c_uint;
+pub type C2RustUnnamed_0 = c_uint;
 pub const SEQ_FINISH: C2RustUnnamed_0 = 2;
 pub const SEQ_CODE: C2RustUnnamed_0 = 1;
 pub const SEQ_INIT: C2RustUnnamed_0 = 0;
@@ -169,58 +147,55 @@ pub const SEQ_INIT: C2RustUnnamed_0 = 0;
 #[repr(C)]
 pub struct lzma_auto_coder {
     pub next: lzma_next_coder,
-    pub memlimit: uint64_t,
-    pub flags: uint32_t,
+    pub memlimit: u64,
+    pub flags: u32,
     pub sequence: C2RustUnnamed_0,
 }
-pub const __DARWIN_NULL: *mut ::core::ffi::c_void = ::core::ptr::null_mut::<::core::ffi::c_void>();
-pub const NULL: *mut ::core::ffi::c_void = __DARWIN_NULL;
-pub const UINT64_MAX: ::core::ffi::c_ulonglong = 18446744073709551615 as ::core::ffi::c_ulonglong;
-pub const true_0: ::core::ffi::c_int = 1 as ::core::ffi::c_int;
-pub const LZMA_VLI_UNKNOWN: ::core::ffi::c_ulonglong = UINT64_MAX;
-pub const LZMA_TELL_NO_CHECK: ::core::ffi::c_uint = 0x1 as ::core::ffi::c_uint;
-pub const LZMA_TELL_UNSUPPORTED_CHECK: ::core::ffi::c_uint = 0x2 as ::core::ffi::c_uint;
-pub const LZMA_TELL_ANY_CHECK: ::core::ffi::c_uint = 0x4 as ::core::ffi::c_uint;
-pub const LZMA_IGNORE_CHECK: ::core::ffi::c_uint = 0x10 as ::core::ffi::c_uint;
-pub const LZMA_CONCATENATED: ::core::ffi::c_uint = 0x8 as ::core::ffi::c_uint;
-pub const LZMA_FAIL_FAST: ::core::ffi::c_uint = 0x20 as ::core::ffi::c_uint;
-pub const LZMA_MEMUSAGE_BASE: ::core::ffi::c_ulonglong =
-    (1 as ::core::ffi::c_ulonglong) << 15 as ::core::ffi::c_int;
-pub const LZMA_SUPPORTED_FLAGS: ::core::ffi::c_uint = LZMA_TELL_NO_CHECK
+pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
+pub const NULL: *mut c_void = __DARWIN_NULL;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const true_0: c_int = 1 as c_int;
+pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
+pub const LZMA_TELL_NO_CHECK: c_uint = 0x1 as c_uint;
+pub const LZMA_TELL_UNSUPPORTED_CHECK: c_uint = 0x2 as c_uint;
+pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4 as c_uint;
+pub const LZMA_IGNORE_CHECK: c_uint = 0x10 as c_uint;
+pub const LZMA_CONCATENATED: c_uint = 0x8 as c_uint;
+pub const LZMA_FAIL_FAST: c_uint = 0x20 as c_uint;
+pub const LZMA_MEMUSAGE_BASE: c_ulonglong = (1 as c_ulonglong) << 15 as c_int;
+pub const LZMA_SUPPORTED_FLAGS: c_uint = LZMA_TELL_NO_CHECK
     | LZMA_TELL_UNSUPPORTED_CHECK
     | LZMA_TELL_ANY_CHECK
     | LZMA_IGNORE_CHECK
     | LZMA_CONCATENATED
     | LZMA_FAIL_FAST;
 unsafe extern "C" fn auto_decode(
-    mut coder_ptr: *mut ::core::ffi::c_void,
+    mut coder_ptr: *mut c_void,
     mut allocator: *const lzma_allocator,
-    mut in_0: *const uint8_t,
+    mut in_0: *const u8,
     mut in_pos: *mut size_t,
     mut in_size: size_t,
-    mut out: *mut uint8_t,
+    mut out: *mut u8,
     mut out_pos: *mut size_t,
     mut out_size: size_t,
     mut action: lzma_action,
 ) -> lzma_ret {
     let mut coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
     let mut current_block_28: u64;
-    match (*coder).sequence as ::core::ffi::c_uint {
+    match (*coder).sequence as c_uint {
         0 => {
             if *in_pos >= in_size {
                 return LZMA_OK;
             }
             (*coder).sequence = SEQ_CODE;
-            if *in_0.offset(*in_pos as isize) as ::core::ffi::c_int == 0xfd as ::core::ffi::c_int {
+            if *in_0.offset(*in_pos as isize) as c_int == 0xfd as c_int {
                 let ret_: lzma_ret = lzma_stream_decoder_init(
                     &raw mut (*coder).next,
                     allocator,
                     (*coder).memlimit,
                     (*coder).flags,
                 ) as lzma_ret;
-                if ret_ as ::core::ffi::c_uint
-                    != LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint
-                {
+                if ret_ as c_uint != LZMA_OK as c_uint {
                     return ret_;
                 }
             } else {
@@ -228,17 +203,15 @@ unsafe extern "C" fn auto_decode(
                     &raw mut (*coder).next,
                     allocator,
                     (*coder).memlimit,
-                    1 as ::core::ffi::c_int != 0,
+                    1 as c_int != 0,
                 ) as lzma_ret;
-                if ret__0 as ::core::ffi::c_uint
-                    != LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint
-                {
+                if ret__0 as c_uint != LZMA_OK as c_uint {
                     return ret__0;
                 }
-                if (*coder).flags & LZMA_TELL_NO_CHECK as uint32_t != 0 {
+                if (*coder).flags & LZMA_TELL_NO_CHECK as u32 != 0 {
                     return LZMA_NO_CHECK;
                 }
-                if (*coder).flags & LZMA_TELL_ANY_CHECK as uint32_t != 0 {
+                if (*coder).flags & LZMA_TELL_ANY_CHECK as u32 != 0 {
                     return LZMA_GET_CHECK;
                 }
             }
@@ -265,9 +238,8 @@ unsafe extern "C" fn auto_decode(
                 out_size,
                 action,
             ) as lzma_ret;
-            if ret as ::core::ffi::c_uint
-                != LZMA_STREAM_END as ::core::ffi::c_int as ::core::ffi::c_uint
-                || (*coder).flags & LZMA_CONCATENATED as uint32_t == 0 as uint32_t
+            if ret as c_uint != LZMA_STREAM_END as c_uint
+                || (*coder).flags & LZMA_CONCATENATED as u32 == 0 as u32
             {
                 return ret;
             }
@@ -278,38 +250,33 @@ unsafe extern "C" fn auto_decode(
     if *in_pos < in_size {
         return LZMA_DATA_ERROR;
     }
-    return (if action as ::core::ffi::c_uint
-        == LZMA_FINISH as ::core::ffi::c_int as ::core::ffi::c_uint
-    {
-        LZMA_STREAM_END as ::core::ffi::c_int
+    return (if action as c_uint == LZMA_FINISH as c_uint {
+        LZMA_STREAM_END as c_int
     } else {
-        LZMA_OK as ::core::ffi::c_int
+        LZMA_OK as c_int
     }) as lzma_ret;
 }
 unsafe extern "C" fn auto_decoder_end(
-    mut coder_ptr: *mut ::core::ffi::c_void,
+    mut coder_ptr: *mut c_void,
     mut allocator: *const lzma_allocator,
 ) {
     let mut coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
     lzma_next_end(&raw mut (*coder).next, allocator);
-    lzma_free(coder as *mut ::core::ffi::c_void, allocator);
+    lzma_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn auto_decoder_get_check(
-    mut coder_ptr: *const ::core::ffi::c_void,
-) -> lzma_check {
+unsafe extern "C" fn auto_decoder_get_check(mut coder_ptr: *const c_void) -> lzma_check {
     let mut coder: *const lzma_auto_coder = coder_ptr as *const lzma_auto_coder;
     return (if (*coder).next.get_check.is_none() {
-        LZMA_CHECK_NONE as ::core::ffi::c_int as ::core::ffi::c_uint
+        LZMA_CHECK_NONE as c_uint
     } else {
-        (*coder).next.get_check.expect("non-null function pointer")((*coder).next.coder)
-            as ::core::ffi::c_uint
+        (*coder).next.get_check.expect("non-null function pointer")((*coder).next.coder) as c_uint
     }) as lzma_check;
 }
 unsafe extern "C" fn auto_decoder_memconfig(
-    mut coder_ptr: *mut ::core::ffi::c_void,
-    mut memusage: *mut uint64_t,
-    mut old_memlimit: *mut uint64_t,
-    mut new_memlimit: uint64_t,
+    mut coder_ptr: *mut c_void,
+    mut memusage: *mut u64,
+    mut old_memlimit: *mut u64,
+    mut new_memlimit: u64,
 ) -> lzma_ret {
     let mut coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
     let mut ret: lzma_ret = LZMA_OK;
@@ -321,16 +288,14 @@ unsafe extern "C" fn auto_decoder_memconfig(
             new_memlimit,
         );
     } else {
-        *memusage = LZMA_MEMUSAGE_BASE as uint64_t;
+        *memusage = LZMA_MEMUSAGE_BASE as u64;
         *old_memlimit = (*coder).memlimit;
         ret = LZMA_OK;
-        if new_memlimit != 0 as uint64_t && new_memlimit < *memusage {
+        if new_memlimit != 0 as u64 && new_memlimit < *memusage {
             ret = LZMA_MEMLIMIT_ERROR;
         }
     }
-    if ret as ::core::ffi::c_uint == LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint
-        && new_memlimit != 0 as uint64_t
-    {
+    if ret as c_uint == LZMA_OK as c_uint && new_memlimit != 0 as u64 {
         (*coder).memlimit = new_memlimit;
     }
     return ret;
@@ -338,17 +303,12 @@ unsafe extern "C" fn auto_decoder_memconfig(
 unsafe extern "C" fn auto_decoder_init(
     mut next: *mut lzma_next_coder,
     mut allocator: *const lzma_allocator,
-    mut memlimit: uint64_t,
-    mut flags: uint32_t,
+    mut memlimit: u64,
+    mut flags: u32,
 ) -> lzma_ret {
     if ::core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                uint64_t,
-                uint32_t,
-            ) -> lzma_ret,
+            unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
         >,
         uintptr_t,
     >(Some(
@@ -356,8 +316,8 @@ unsafe extern "C" fn auto_decoder_init(
             as unsafe extern "C" fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
-                uint64_t,
-                uint32_t,
+                u64,
+                u32,
             ) -> lzma_ret,
     )) != (*next).init
     {
@@ -365,12 +325,7 @@ unsafe extern "C" fn auto_decoder_init(
     }
     (*next).init = ::core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                uint64_t,
-                uint32_t,
-            ) -> lzma_ret,
+            unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
         >,
         uintptr_t,
     >(Some(
@@ -378,11 +333,11 @@ unsafe extern "C" fn auto_decoder_init(
             as unsafe extern "C" fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
-                uint64_t,
-                uint32_t,
+                u64,
+                u32,
             ) -> lzma_ret,
     ));
-    if flags & !(LZMA_SUPPORTED_FLAGS as uint32_t) != 0 {
+    if flags & !(LZMA_SUPPORTED_FLAGS as u32) != 0 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut coder: *mut lzma_auto_coder = (*next).coder as *mut lzma_auto_coder;
@@ -394,51 +349,36 @@ unsafe extern "C" fn auto_decoder_init(
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }
-        (*next).coder = coder as *mut ::core::ffi::c_void;
+        (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             auto_decode
                 as unsafe extern "C" fn(
-                    *mut ::core::ffi::c_void,
+                    *mut c_void,
                     *const lzma_allocator,
-                    *const uint8_t,
+                    *const u8,
                     *mut size_t,
                     size_t,
-                    *mut uint8_t,
+                    *mut u8,
                     *mut size_t,
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
         ) as lzma_code_function;
         (*next).end = Some(
-            auto_decoder_end
-                as unsafe extern "C" fn(*mut ::core::ffi::c_void, *const lzma_allocator) -> (),
+            auto_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
         ) as lzma_end_function;
-        (*next).get_check = Some(
-            auto_decoder_get_check
-                as unsafe extern "C" fn(*const ::core::ffi::c_void) -> lzma_check,
-        )
-            as Option<unsafe extern "C" fn(*const ::core::ffi::c_void) -> lzma_check>;
+        (*next).get_check =
+            Some(auto_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check)
+                as Option<unsafe extern "C" fn(*const c_void) -> lzma_check>;
         (*next).memconfig = Some(
             auto_decoder_memconfig
-                as unsafe extern "C" fn(
-                    *mut ::core::ffi::c_void,
-                    *mut uint64_t,
-                    *mut uint64_t,
-                    uint64_t,
-                ) -> lzma_ret,
+                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         )
-            as Option<
-                unsafe extern "C" fn(
-                    *mut ::core::ffi::c_void,
-                    *mut uint64_t,
-                    *mut uint64_t,
-                    uint64_t,
-                ) -> lzma_ret,
-            >;
+            as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>;
         (*coder).next = lzma_next_coder_s {
             coder: NULL,
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<::core::ffi::c_void>() as uintptr_t,
+            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
             code: None,
             end: None,
             get_progress: None,
@@ -448,8 +388,8 @@ unsafe extern "C" fn auto_decoder_init(
             set_out_limit: None,
         };
     }
-    (*coder).memlimit = if 1 as uint64_t > memlimit {
-        1 as uint64_t
+    (*coder).memlimit = if 1 as u64 > memlimit {
+        1 as u64
     } else {
         memlimit
     };
@@ -460,11 +400,11 @@ unsafe extern "C" fn auto_decoder_init(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_auto_decoder(
     mut strm: *mut lzma_stream,
-    mut memlimit: uint64_t,
-    mut flags: uint32_t,
+    mut memlimit: u64,
+    mut flags: u32,
 ) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
-    if ret_ as ::core::ffi::c_uint != LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint {
+    if ret_ as c_uint != LZMA_OK as c_uint {
         return ret_;
     }
     let ret__0: lzma_ret = auto_decoder_init(
@@ -473,11 +413,11 @@ pub unsafe extern "C" fn lzma_auto_decoder(
         memlimit,
         flags,
     ) as lzma_ret;
-    if ret__0 as ::core::ffi::c_uint != LZMA_OK as ::core::ffi::c_int as ::core::ffi::c_uint {
+    if ret__0 as c_uint != LZMA_OK as c_uint {
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as ::core::ffi::c_int as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as ::core::ffi::c_int as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
     return LZMA_OK;
 }

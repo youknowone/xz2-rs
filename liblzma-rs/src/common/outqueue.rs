@@ -1,21 +1,17 @@
+use crate::types::*;
+use core::ffi::{c_int, c_uint, c_ulong, c_ulonglong, c_void};
 extern "C" {
-    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut ::core::ffi::c_void;
-    fn lzma_free(ptr: *mut ::core::ffi::c_void, allocator: *const lzma_allocator);
+    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
+    fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
     fn lzma_bufcpy(
-        in_0: *const uint8_t,
+        in_0: *const u8,
         in_pos: *mut size_t,
         in_size: size_t,
-        out: *mut uint8_t,
+        out: *mut u8,
         out_pos: *mut size_t,
         out_size: size_t,
     ) -> size_t;
 }
-pub type __darwin_size_t = usize;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type uint64_t = u64;
-pub type lzma_ret = ::core::ffi::c_uint;
 pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
 pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
 pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
@@ -40,19 +36,15 @@ pub const LZMA_OK: lzma_ret = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_allocator {
-    pub alloc: Option<
-        unsafe extern "C" fn(*mut ::core::ffi::c_void, size_t, size_t) -> *mut ::core::ffi::c_void,
-    >,
-    pub free:
-        Option<unsafe extern "C" fn(*mut ::core::ffi::c_void, *mut ::core::ffi::c_void) -> ()>,
-    pub opaque: *mut ::core::ffi::c_void,
+    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
+    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
+    pub opaque: *mut c_void,
 }
-pub type lzma_vli = uint64_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_outbuf_s {
     pub next: *mut lzma_outbuf,
-    pub worker: *mut ::core::ffi::c_void,
+    pub worker: *mut c_void,
     pub allocated: size_t,
     pub pos: size_t,
     pub decoder_in_pos: size_t,
@@ -60,7 +52,7 @@ pub struct lzma_outbuf_s {
     pub finish_ret: lzma_ret,
     pub unpadded_size: lzma_vli,
     pub uncompressed_size: lzma_vli,
-    pub buf: [uint8_t; 0],
+    pub buf: [u8; 0],
 }
 pub type lzma_outbuf = lzma_outbuf_s;
 #[derive(Copy, Clone)]
@@ -70,36 +62,32 @@ pub struct lzma_outq {
     pub tail: *mut lzma_outbuf,
     pub read_pos: size_t,
     pub cache: *mut lzma_outbuf,
-    pub mem_allocated: uint64_t,
-    pub mem_in_use: uint64_t,
-    pub bufs_in_use: uint32_t,
-    pub bufs_allocated: uint32_t,
-    pub bufs_limit: uint32_t,
+    pub mem_allocated: u64,
+    pub mem_in_use: u64,
+    pub bufs_in_use: u32,
+    pub bufs_allocated: u32,
+    pub bufs_limit: u32,
 }
-pub const __DARWIN_NULL: *mut ::core::ffi::c_void = ::core::ptr::null_mut::<::core::ffi::c_void>();
-pub const NULL: *mut ::core::ffi::c_void = __DARWIN_NULL;
-pub const UINT64_MAX: ::core::ffi::c_ulonglong = 18446744073709551615 as ::core::ffi::c_ulonglong;
-pub const UINTPTR_MAX: ::core::ffi::c_ulong = 18446744073709551615 as ::core::ffi::c_ulong;
-pub const SIZE_MAX: ::core::ffi::c_ulong = UINTPTR_MAX;
-pub const false_0: ::core::ffi::c_int = 0 as ::core::ffi::c_int;
-pub const LZMA_THREADS_MAX: ::core::ffi::c_int = 16384 as ::core::ffi::c_int;
+pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
+pub const NULL: *mut c_void = __DARWIN_NULL;
+pub const UINT64_MAX: c_ulonglong = 18446744073709551615 as c_ulonglong;
+pub const UINTPTR_MAX: c_ulong = 18446744073709551615 as c_ulong;
+pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
+pub const false_0: c_int = 0 as c_int;
+pub const LZMA_THREADS_MAX: c_int = 16384 as c_int;
 #[inline]
-unsafe extern "C" fn lzma_outq_outbuf_memusage(mut buf_size: size_t) -> uint64_t {
-    return (::core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize)
-        as uint64_t;
+unsafe extern "C" fn lzma_outq_outbuf_memusage(mut buf_size: size_t) -> u64 {
+    return (::core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize) as u64;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_outq_memusage(
-    mut buf_size_max: uint64_t,
-    mut threads: uint32_t,
-) -> uint64_t {
-    let limit: uint64_t = (UINT64_MAX as uint64_t)
-        .wrapping_div((2 as ::core::ffi::c_int * 16384 as ::core::ffi::c_int) as uint64_t)
-        .wrapping_div(2 as uint64_t);
-    if threads > LZMA_THREADS_MAX as uint32_t || buf_size_max > limit {
-        return UINT64_MAX as uint64_t;
+pub unsafe extern "C" fn lzma_outq_memusage(mut buf_size_max: u64, mut threads: u32) -> u64 {
+    let limit: u64 = (UINT64_MAX as u64)
+        .wrapping_div((2 as c_int * 16384 as c_int) as u64)
+        .wrapping_div(2 as u64);
+    if threads > LZMA_THREADS_MAX as u32 || buf_size_max > limit {
+        return UINT64_MAX as u64;
     }
-    return ((2 as uint32_t).wrapping_mul(threads) as uint64_t)
+    return ((2 as u32).wrapping_mul(threads) as u64)
         .wrapping_mul(lzma_outq_outbuf_memusage(buf_size_max as size_t));
 }
 unsafe extern "C" fn move_head_to_cache(
@@ -131,7 +119,7 @@ unsafe extern "C" fn free_one_cached_buffer(
     (*outq).mem_allocated = (*outq)
         .mem_allocated
         .wrapping_sub(lzma_outq_outbuf_memusage((*buf).allocated));
-    lzma_free(buf as *mut ::core::ffi::c_void, allocator);
+    lzma_free(buf as *mut c_void, allocator);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_clear_cache(
@@ -162,12 +150,12 @@ pub unsafe extern "C" fn lzma_outq_clear_cache2(
 pub unsafe extern "C" fn lzma_outq_init(
     mut outq: *mut lzma_outq,
     mut allocator: *const lzma_allocator,
-    mut threads: uint32_t,
+    mut threads: u32,
 ) -> lzma_ret {
-    if threads > LZMA_THREADS_MAX as uint32_t {
+    if threads > LZMA_THREADS_MAX as u32 {
         return LZMA_OPTIONS_ERROR;
     }
-    let bufs_limit: uint32_t = (2 as uint32_t).wrapping_mul(threads);
+    let bufs_limit: u32 = (2 as u32).wrapping_mul(threads);
     while !(*outq).head.is_null() {
         move_head_to_cache(outq, allocator);
     }
@@ -209,13 +197,13 @@ pub unsafe extern "C" fn lzma_outq_prealloc_buf(
     (*(*outq).cache).next = ::core::ptr::null_mut::<lzma_outbuf>();
     (*(*outq).cache).allocated = size;
     (*outq).bufs_allocated = (*outq).bufs_allocated.wrapping_add(1);
-    (*outq).mem_allocated = (*outq).mem_allocated.wrapping_add(alloc_size as uint64_t);
+    (*outq).mem_allocated = (*outq).mem_allocated.wrapping_add(alloc_size as u64);
     return LZMA_OK;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_get_buf(
     mut outq: *mut lzma_outq,
-    mut worker: *mut ::core::ffi::c_void,
+    mut worker: *mut c_void,
 ) -> *mut lzma_outbuf {
     let mut buf: *mut lzma_outbuf = (*outq).cache;
     (*outq).cache = (*buf).next;
@@ -244,25 +232,24 @@ pub unsafe extern "C" fn lzma_outq_is_readable(mut outq: *const lzma_outq) -> bo
     if (*outq).head.is_null() {
         return false_0 != 0;
     }
-    return (*outq).read_pos < (*(*outq).head).pos
-        || (*(*outq).head).finished as ::core::ffi::c_int != 0;
+    return (*outq).read_pos < (*(*outq).head).pos || (*(*outq).head).finished as c_int != 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_read(
     mut outq: *mut lzma_outq,
     mut allocator: *const lzma_allocator,
-    mut out: *mut uint8_t,
+    mut out: *mut u8,
     mut out_pos: *mut size_t,
     mut out_size: size_t,
     mut unpadded_size: *mut lzma_vli,
     mut uncompressed_size: *mut lzma_vli,
 ) -> lzma_ret {
-    if (*outq).bufs_in_use == 0 as uint32_t {
+    if (*outq).bufs_in_use == 0 as u32 {
         return LZMA_OK;
     }
     let mut buf: *mut lzma_outbuf = (*outq).head;
     lzma_bufcpy(
-        &raw mut (*buf).buf as *mut uint8_t,
+        &raw mut (*buf).buf as *mut u8,
         &raw mut (*outq).read_pos,
         (*buf).pos,
         out,
@@ -286,7 +273,7 @@ pub unsafe extern "C" fn lzma_outq_read(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_enable_partial_output(
     mut outq: *mut lzma_outq,
-    mut enable_partial_output: Option<unsafe extern "C" fn(*mut ::core::ffi::c_void) -> ()>,
+    mut enable_partial_output: Option<unsafe extern "C" fn(*mut c_void) -> ()>,
 ) {
     if !(*outq).head.is_null() && !(*(*outq).head).finished && !(*(*outq).head).worker.is_null() {
         enable_partial_output.expect("non-null function pointer")((*(*outq).head).worker);

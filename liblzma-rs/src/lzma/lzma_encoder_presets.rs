@@ -1,125 +1,106 @@
-pub type uint8_t = u8;
-pub type uint32_t = u32;
-pub type lzma_bool = ::core::ffi::c_uchar;
-pub type lzma_reserved_enum = ::core::ffi::c_uint;
+use crate::types::*;
+use core::ffi::{c_int, c_uchar, c_uint, c_void};
 pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub type lzma_match_finder = ::core::ffi::c_uint;
 pub const LZMA_MF_BT4: lzma_match_finder = 20;
 pub const LZMA_MF_BT3: lzma_match_finder = 19;
 pub const LZMA_MF_BT2: lzma_match_finder = 18;
 pub const LZMA_MF_HC4: lzma_match_finder = 4;
 pub const LZMA_MF_HC3: lzma_match_finder = 3;
-pub type lzma_mode = ::core::ffi::c_uint;
 pub const LZMA_MODE_NORMAL: lzma_mode = 2;
 pub const LZMA_MODE_FAST: lzma_mode = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_options_lzma {
-    pub dict_size: uint32_t,
-    pub preset_dict: *const uint8_t,
-    pub preset_dict_size: uint32_t,
-    pub lc: uint32_t,
-    pub lp: uint32_t,
-    pub pb: uint32_t,
+    pub dict_size: u32,
+    pub preset_dict: *const u8,
+    pub preset_dict_size: u32,
+    pub lc: u32,
+    pub lp: u32,
+    pub pb: u32,
     pub mode: lzma_mode,
-    pub nice_len: uint32_t,
+    pub nice_len: u32,
     pub mf: lzma_match_finder,
-    pub depth: uint32_t,
-    pub ext_flags: uint32_t,
-    pub ext_size_low: uint32_t,
-    pub ext_size_high: uint32_t,
-    pub reserved_int4: uint32_t,
-    pub reserved_int5: uint32_t,
-    pub reserved_int6: uint32_t,
-    pub reserved_int7: uint32_t,
-    pub reserved_int8: uint32_t,
+    pub depth: u32,
+    pub ext_flags: u32,
+    pub ext_size_low: u32,
+    pub ext_size_high: u32,
+    pub reserved_int4: u32,
+    pub reserved_int5: u32,
+    pub reserved_int6: u32,
+    pub reserved_int7: u32,
+    pub reserved_int8: u32,
     pub reserved_enum1: lzma_reserved_enum,
     pub reserved_enum2: lzma_reserved_enum,
     pub reserved_enum3: lzma_reserved_enum,
     pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut ::core::ffi::c_void,
-    pub reserved_ptr2: *mut ::core::ffi::c_void,
+    pub reserved_ptr1: *mut c_void,
+    pub reserved_ptr2: *mut c_void,
 }
-pub const __DARWIN_NULL: *mut ::core::ffi::c_void = ::core::ptr::null_mut::<::core::ffi::c_void>();
-pub const NULL: *mut ::core::ffi::c_void = __DARWIN_NULL;
-pub const true_0: ::core::ffi::c_int = 1 as ::core::ffi::c_int;
-pub const false_0: ::core::ffi::c_int = 0 as ::core::ffi::c_int;
-pub const LZMA_LC_DEFAULT: ::core::ffi::c_int = 3 as ::core::ffi::c_int;
-pub const LZMA_LP_DEFAULT: ::core::ffi::c_int = 0 as ::core::ffi::c_int;
-pub const LZMA_PB_DEFAULT: ::core::ffi::c_int = 2 as ::core::ffi::c_int;
-pub const LZMA_PRESET_LEVEL_MASK: ::core::ffi::c_uint = 0x1f as ::core::ffi::c_uint;
-pub const LZMA_PRESET_EXTREME: ::core::ffi::c_uint =
-    (1 as ::core::ffi::c_uint) << 31 as ::core::ffi::c_int;
+pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
+pub const NULL: *mut c_void = __DARWIN_NULL;
+pub const true_0: c_int = 1 as c_int;
+pub const false_0: c_int = 0 as c_int;
+pub const LZMA_LC_DEFAULT: c_int = 3 as c_int;
+pub const LZMA_LP_DEFAULT: c_int = 0 as c_int;
+pub const LZMA_PB_DEFAULT: c_int = 2 as c_int;
+pub const LZMA_PRESET_LEVEL_MASK: c_uint = 0x1f as c_uint;
+pub const LZMA_PRESET_EXTREME: c_uint = (1 as c_uint) << 31 as c_int;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_preset(
     mut options: *mut lzma_options_lzma,
-    mut preset: uint32_t,
+    mut preset: u32,
 ) -> lzma_bool {
-    let level: uint32_t = preset & LZMA_PRESET_LEVEL_MASK as uint32_t;
-    let flags: uint32_t = preset & !(LZMA_PRESET_LEVEL_MASK as uint32_t);
-    let supported_flags: uint32_t = LZMA_PRESET_EXTREME as uint32_t;
-    if level > 9 as uint32_t || flags & !supported_flags != 0 {
+    let level: u32 = preset & LZMA_PRESET_LEVEL_MASK as u32;
+    let flags: u32 = preset & !(LZMA_PRESET_LEVEL_MASK as u32);
+    let supported_flags: u32 = LZMA_PRESET_EXTREME as u32;
+    if level > 9 as u32 || flags & !supported_flags != 0 {
         return true_0 as lzma_bool;
     }
-    (*options).preset_dict = ::core::ptr::null::<uint8_t>();
-    (*options).preset_dict_size = 0 as uint32_t;
-    (*options).lc = LZMA_LC_DEFAULT as uint32_t;
-    (*options).lp = LZMA_LP_DEFAULT as uint32_t;
-    (*options).pb = LZMA_PB_DEFAULT as uint32_t;
-    static mut dict_pow2: [uint8_t; 10] = [
-        18 as ::core::ffi::c_int as uint8_t,
-        20 as ::core::ffi::c_int as uint8_t,
-        21 as ::core::ffi::c_int as uint8_t,
-        22 as ::core::ffi::c_int as uint8_t,
-        22 as ::core::ffi::c_int as uint8_t,
-        23 as ::core::ffi::c_int as uint8_t,
-        23 as ::core::ffi::c_int as uint8_t,
-        24 as ::core::ffi::c_int as uint8_t,
-        25 as ::core::ffi::c_int as uint8_t,
-        26 as ::core::ffi::c_int as uint8_t,
+    (*options).preset_dict = ::core::ptr::null::<u8>();
+    (*options).preset_dict_size = 0 as u32;
+    (*options).lc = LZMA_LC_DEFAULT as u32;
+    (*options).lp = LZMA_LP_DEFAULT as u32;
+    (*options).pb = LZMA_PB_DEFAULT as u32;
+    static mut dict_pow2: [u8; 10] = [
+        18 as u8, 20 as u8, 21 as u8, 22 as u8, 22 as u8, 23 as u8, 23 as u8, 24 as u8, 25 as u8,
+        26 as u8,
     ];
-    (*options).dict_size =
-        ((1 as ::core::ffi::c_uint) << dict_pow2[level as usize] as ::core::ffi::c_int) as uint32_t;
-    if level <= 3 as uint32_t {
+    (*options).dict_size = ((1 as c_uint) << dict_pow2[level as usize] as c_int) as u32;
+    if level <= 3 as u32 {
         (*options).mode = LZMA_MODE_FAST;
-        (*options).mf = (if level == 0 as uint32_t {
-            LZMA_MF_HC3 as ::core::ffi::c_int
+        (*options).mf = (if level == 0 as u32 {
+            LZMA_MF_HC3 as c_int
         } else {
-            LZMA_MF_HC4 as ::core::ffi::c_int
+            LZMA_MF_HC4 as c_int
         }) as lzma_match_finder;
-        (*options).nice_len = (if level <= 1 as uint32_t {
-            128 as ::core::ffi::c_int
+        (*options).nice_len = (if level <= 1 as u32 {
+            128 as c_int
         } else {
-            273 as ::core::ffi::c_int
-        }) as uint32_t;
-        static mut depths: [uint8_t; 4] = [
-            4 as ::core::ffi::c_int as uint8_t,
-            8 as ::core::ffi::c_int as uint8_t,
-            24 as ::core::ffi::c_int as uint8_t,
-            48 as ::core::ffi::c_int as uint8_t,
-        ];
-        (*options).depth = depths[level as usize] as uint32_t;
+            273 as c_int
+        }) as u32;
+        static mut depths: [u8; 4] = [4 as u8, 8 as u8, 24 as u8, 48 as u8];
+        (*options).depth = depths[level as usize] as u32;
     } else {
         (*options).mode = LZMA_MODE_NORMAL;
         (*options).mf = LZMA_MF_BT4;
-        (*options).nice_len = (if level == 4 as uint32_t {
-            16 as ::core::ffi::c_int
-        } else if level == 5 as uint32_t {
-            32 as ::core::ffi::c_int
+        (*options).nice_len = (if level == 4 as u32 {
+            16 as c_int
+        } else if level == 5 as u32 {
+            32 as c_int
         } else {
-            64 as ::core::ffi::c_int
-        }) as uint32_t;
-        (*options).depth = 0 as uint32_t;
+            64 as c_int
+        }) as u32;
+        (*options).depth = 0 as u32;
     }
-    if flags & LZMA_PRESET_EXTREME as uint32_t != 0 {
+    if flags & LZMA_PRESET_EXTREME as u32 != 0 {
         (*options).mode = LZMA_MODE_NORMAL;
         (*options).mf = LZMA_MF_BT4;
-        if level == 3 as uint32_t || level == 5 as uint32_t {
-            (*options).nice_len = 192 as uint32_t;
-            (*options).depth = 0 as uint32_t;
+        if level == 3 as u32 || level == 5 as u32 {
+            (*options).nice_len = 192 as u32;
+            (*options).depth = 0 as u32;
         } else {
-            (*options).nice_len = 273 as uint32_t;
-            (*options).depth = 512 as uint32_t;
+            (*options).nice_len = 273 as u32;
+            (*options).depth = 512 as u32;
         }
     }
     return false_0 as lzma_bool;

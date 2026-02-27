@@ -1,9 +1,9 @@
-pub type uint32_t = u32;
+use crate::types::*;
 
 #[no_mangle]
-pub unsafe extern "C" fn tuklib_cpucores() -> uint32_t {
+pub unsafe extern "C" fn tuklib_cpucores() -> u32 {
     match std::thread::available_parallelism() {
-        Ok(n) => n.get() as uint32_t,
+        Ok(n) => n.get() as u32,
         Err(_) => 0,
     }
 }
