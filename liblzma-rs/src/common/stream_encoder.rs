@@ -382,7 +382,7 @@ unsafe extern "C" fn stream_encode(
                     (*coder).index_encoder.coder,
                     allocator,
                     ::core::ptr::null::<u8>(),
-                    ::core::ptr::null_mut::<size_t>(),
+                    core::ptr::null_mut(),
                     0 as size_t,
                     out,
                     out_pos,
@@ -448,7 +448,7 @@ unsafe extern "C" fn stream_encoder_update(
     let mut ret: lzma_ret = LZMA_OK;
     let mut temp: [lzma_filter; 5] = [lzma_filter {
         id: 0,
-        options: ::core::ptr::null_mut::<c_void>(),
+        options: core::ptr::null_mut(),
     }; 5];
     let ret_: lzma_ret =
         lzma_filters_copy(filters, &raw mut temp as *mut lzma_filter, allocator) as lzma_ret;
@@ -599,7 +599,7 @@ unsafe extern "C" fn stream_encoder_init(
         (*coder).block_encoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,
@@ -611,7 +611,7 @@ unsafe extern "C" fn stream_encoder_init(
         (*coder).index_encoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,
@@ -620,7 +620,7 @@ unsafe extern "C" fn stream_encoder_init(
             update: None,
             set_out_limit: None,
         };
-        (*coder).index = ::core::ptr::null_mut::<lzma_index>();
+        (*coder).index = core::ptr::null_mut();
     }
     (*coder).sequence = SEQ_STREAM_HEADER;
     (*coder).block_options.version = 0 as u32;

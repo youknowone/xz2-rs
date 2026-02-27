@@ -61,7 +61,7 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
     (*filter).options = core::ptr::null_mut();
     let ret_: lzma_ret = lzma_vli_decode(
         &raw mut (*filter).id,
-        ::core::ptr::null_mut::<size_t>(),
+        core::ptr::null_mut(),
         in_0,
         in_pos,
         in_size,
@@ -75,7 +75,7 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
     let mut props_size: lzma_vli = 0;
     let ret__0: lzma_ret = lzma_vli_decode(
         &raw mut props_size,
-        ::core::ptr::null_mut::<size_t>(),
+        core::ptr::null_mut(),
         in_0,
         in_pos,
         in_size,

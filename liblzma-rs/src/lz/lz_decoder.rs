@@ -358,13 +358,13 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
         (*next).end =
             Some(lz_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ())
                 as lzma_end_function;
-        (*coder).dict.buf = ::core::ptr::null_mut::<u8>();
+        (*coder).dict.buf = core::ptr::null_mut();
         (*coder).dict.size = 0 as size_t;
         (*coder).lz = LZMA_LZ_DECODER_INIT;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,

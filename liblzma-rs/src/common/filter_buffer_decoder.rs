@@ -112,7 +112,7 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
     let mut next: lzma_next_coder = lzma_next_coder_s {
         coder: core::ptr::null_mut(),
         id: LZMA_VLI_UNKNOWN as lzma_vli,
-        init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+        init: 0 as uintptr_t,
         code: None,
         end: None,
         get_progress: None,

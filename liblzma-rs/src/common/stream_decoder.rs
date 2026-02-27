@@ -508,7 +508,7 @@ unsafe extern "C" fn stream_decode(
                 (*coder).block_options.version = 1 as u32;
                 let mut filters: [lzma_filter; 5] = [lzma_filter {
                     id: 0,
-                    options: ::core::ptr::null_mut::<c_void>(),
+                    options: core::ptr::null_mut(),
                 }; 5];
                 (*coder).block_options.filters = &raw mut filters as *mut lzma_filter;
                 let ret_: lzma_ret = lzma_block_header_decode(
@@ -538,7 +538,7 @@ unsafe extern "C" fn stream_decode(
                     }
                 }
                 lzma_filters_free(&raw mut filters as *mut lzma_filter, allocator);
-                (*coder).block_options.filters = ::core::ptr::null_mut::<lzma_filter>();
+                (*coder).block_options.filters = core::ptr::null_mut();
                 if ret_0 != LZMA_OK {
                     return ret_0;
                 }
@@ -689,7 +689,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
         (*coder).block_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,
@@ -698,7 +698,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
             update: None,
             set_out_limit: None,
         };
-        (*coder).index_hash = ::core::ptr::null_mut::<lzma_index_hash>();
+        (*coder).index_hash = core::ptr::null_mut();
     }
     (*coder).memlimit = if 1 as u64 > memlimit {
         1 as u64

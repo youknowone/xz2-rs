@@ -398,7 +398,7 @@ unsafe extern "C" fn lzip_decode(
                     lzma_filter_info_s {
                         id: 0,
                         init: None,
-                        options: ::core::ptr::null_mut::<c_void>(),
+                        options: core::ptr::null_mut(),
                     },
                 ];
                 let ret_: lzma_ret = lzma_next_filter_init(
@@ -600,7 +600,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
         (*coder).lzma_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,

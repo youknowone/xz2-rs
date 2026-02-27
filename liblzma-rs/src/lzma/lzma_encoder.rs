@@ -1410,7 +1410,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
         !(*options).preset_dict.is_null() && (*options).preset_dict_size > 0 as u32;
     (*coder).is_flushed = false;
     (*coder).uncomp_size = 0 as u64;
-    (*coder).uncomp_size_ptr = ::core::ptr::null_mut::<u64>();
+    (*coder).uncomp_size_ptr = core::ptr::null_mut();
     (*coder).out_limit = 0 as u64;
     (*coder).use_eopm = id == LZMA_FILTER_LZMA1 as lzma_vli;
     if id == LZMA_FILTER_LZMA1EXT as lzma_vli {

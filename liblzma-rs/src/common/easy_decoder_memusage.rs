@@ -58,7 +58,7 @@ pub unsafe extern "C" fn lzma_easy_decoder_memusage(mut preset: u32) -> u64 {
     let mut opt_easy: lzma_options_easy = lzma_options_easy {
         filters: [lzma_filter {
             id: 0,
-            options: ::core::ptr::null_mut::<c_void>(),
+            options: core::ptr::null_mut(),
         }; 5],
         opt_lzma: lzma_options_lzma {
             dict_size: 0,
@@ -83,8 +83,8 @@ pub unsafe extern "C" fn lzma_easy_decoder_memusage(mut preset: u32) -> u64 {
             reserved_enum2: LZMA_RESERVED_ENUM,
             reserved_enum3: LZMA_RESERVED_ENUM,
             reserved_enum4: LZMA_RESERVED_ENUM,
-            reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
-            reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
+            reserved_ptr1: core::ptr::null_mut(),
+            reserved_ptr2: core::ptr::null_mut(),
         },
     };
     if lzma_easy_preset(&raw mut opt_easy, preset) {

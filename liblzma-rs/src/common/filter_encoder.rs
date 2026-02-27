@@ -516,7 +516,7 @@ pub unsafe extern "C" fn lzma_filters_update(
     }
     let mut reversed_filters: [lzma_filter; 5] = [lzma_filter {
         id: 0,
-        options: ::core::ptr::null_mut::<c_void>(),
+        options: core::ptr::null_mut(),
     }; 5];
     let mut i: size_t = 0 as size_t;
     while i < count {

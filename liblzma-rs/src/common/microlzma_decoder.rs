@@ -252,8 +252,8 @@ unsafe extern "C" fn microlzma_decode(
             reserved_enum2: LZMA_RESERVED_ENUM,
             reserved_enum3: LZMA_RESERVED_ENUM,
             reserved_enum4: LZMA_RESERVED_ENUM,
-            reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
-            reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
+            reserved_ptr1: core::ptr::null_mut(),
+            reserved_ptr2: core::ptr::null_mut(),
         };
         if (*coder).uncomp_size_is_exact {
             options.ext_size_low = (*coder).uncomp_size as u32;
@@ -282,7 +282,7 @@ unsafe extern "C" fn microlzma_decode(
             lzma_filter_info_s {
                 id: 0,
                 init: None,
-                options: ::core::ptr::null_mut::<c_void>(),
+                options: core::ptr::null_mut(),
             },
         ];
         let ret_: lzma_ret = lzma_next_filter_init(
@@ -436,7 +436,7 @@ unsafe extern "C" fn microlzma_decoder_init(
         (*coder).lzma = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,

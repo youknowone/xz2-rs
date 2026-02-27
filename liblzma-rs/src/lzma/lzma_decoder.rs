@@ -3880,7 +3880,7 @@ unsafe extern "C" fn lzma_decoder_reset(mut coder_ptr: *mut c_void, mut opt: *co
         bt_i_6 = bt_i_6.wrapping_add(1);
     }
     (*coder).sequence = SEQ_IS_MATCH;
-    (*coder).probs = ::core::ptr::null_mut::<probability>();
+    (*coder).probs = core::ptr::null_mut();
     (*coder).symbol = 0 as u32;
     (*coder).limit = 0 as u32;
     (*coder).offset = 0 as u32;

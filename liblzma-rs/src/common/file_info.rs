@@ -331,8 +331,8 @@ unsafe extern "C" fn decode_index(
         in_0,
         in_pos,
         in_size,
-        ::core::ptr::null_mut::<u8>(),
-        ::core::ptr::null_mut::<size_t>(),
+        core::ptr::null_mut(),
+        core::ptr::null_mut(),
         0 as size_t,
         LZMA_RUN,
     ) as lzma_ret;
@@ -650,10 +650,10 @@ unsafe extern "C" fn file_info_decode(
                     }
                 }
                 (*coder).combined_index = (*coder).this_index;
-                (*coder).this_index = ::core::ptr::null_mut::<lzma_index>();
+                (*coder).this_index = core::ptr::null_mut();
                 if (*coder).file_target_pos == 0 as u64 {
                     *(*coder).dest_index = (*coder).combined_index;
-                    (*coder).combined_index = ::core::ptr::null_mut::<lzma_index>();
+                    (*coder).combined_index = core::ptr::null_mut();
                     *in_pos = in_size;
                     return LZMA_STREAM_END;
                 }
@@ -831,7 +831,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
         (*coder).index_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,
@@ -840,17 +840,17 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
             update: None,
             set_out_limit: None,
         };
-        (*coder).this_index = ::core::ptr::null_mut::<lzma_index>();
-        (*coder).combined_index = ::core::ptr::null_mut::<lzma_index>();
+        (*coder).this_index = core::ptr::null_mut();
+        (*coder).combined_index = core::ptr::null_mut();
     }
     (*coder).sequence = SEQ_MAGIC_BYTES;
     (*coder).file_cur_pos = 0 as u64;
     (*coder).file_target_pos = 0 as u64;
     (*coder).file_size = file_size;
     lzma_index_end((*coder).this_index, allocator);
-    (*coder).this_index = ::core::ptr::null_mut::<lzma_index>();
+    (*coder).this_index = core::ptr::null_mut();
     lzma_index_end((*coder).combined_index, allocator);
-    (*coder).combined_index = ::core::ptr::null_mut::<lzma_index>();
+    (*coder).combined_index = core::ptr::null_mut();
     (*coder).stream_padding = 0 as lzma_vli;
     (*coder).dest_index = dest_index;
     (*coder).external_seek_pos = seek_pos;

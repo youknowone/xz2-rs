@@ -171,7 +171,7 @@ pub unsafe extern "C" fn lzma_alloc(
     if size == 0 as size_t {
         size = 1 as size_t;
     }
-    let mut ptr: *mut c_void = ::core::ptr::null_mut::<c_void>();
+    let mut ptr: *mut c_void = core::ptr::null_mut();
     if !allocator.is_null() && (*allocator).alloc.is_some() {
         ptr = (*allocator).alloc.expect("non-null function pointer")(
             (*allocator).opaque,
@@ -191,7 +191,7 @@ pub unsafe extern "C" fn lzma_alloc_zero(
     if size == 0 as size_t {
         size = 1 as size_t;
     }
-    let mut ptr: *mut c_void = ::core::ptr::null_mut::<c_void>();
+    let mut ptr: *mut c_void = core::ptr::null_mut();
     if !allocator.is_null() && (*allocator).alloc.is_some() {
         ptr = (*allocator).alloc.expect("non-null function pointer")(
             (*allocator).opaque,
@@ -287,7 +287,7 @@ pub unsafe extern "C" fn lzma_next_end(
     mut next: *mut lzma_next_coder,
     mut allocator: *const lzma_allocator,
 ) {
-    if (*next).init != ::core::ptr::null_mut::<c_void>() as uintptr_t {
+    if (*next).init != 0 as uintptr_t {
         if (*next).end.is_some() {
             (*next).end.expect("non-null function pointer")((*next).coder, allocator);
         } else {
@@ -296,7 +296,7 @@ pub unsafe extern "C" fn lzma_next_end(
         *next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,
@@ -323,7 +323,7 @@ pub unsafe extern "C" fn lzma_strm_init(mut strm: *mut lzma_stream) -> lzma_ret 
         (*(*strm).internal).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,
@@ -494,7 +494,7 @@ pub unsafe extern "C" fn lzma_end(mut strm: *mut lzma_stream) {
     if !strm.is_null() && !(*strm).internal.is_null() {
         lzma_next_end(&raw mut (*(*strm).internal).next, (*strm).allocator);
         lzma_free((*strm).internal as *mut c_void, (*strm).allocator);
-        (*strm).internal = ::core::ptr::null_mut::<lzma_internal>();
+        (*strm).internal = core::ptr::null_mut();
     }
 }
 #[no_mangle]

@@ -358,7 +358,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         .wrapping_add((*mf).keep_size_after);
     if !(*mf).buffer.is_null() && old_size != (*mf).size {
         lzma_free((*mf).buffer as *mut c_void, allocator);
-        (*mf).buffer = ::core::ptr::null_mut::<u8>();
+        (*mf).buffer = core::ptr::null_mut();
     }
     (*mf).match_len_max = (*lz_options).match_len_max as u32;
     (*mf).nice_len = (*lz_options).nice_len as u32;
@@ -444,9 +444,9 @@ unsafe extern "C" fn lz_encoder_prepare(
     }
     if old_hash_count != (*mf).hash_count || old_sons_count != (*mf).sons_count {
         lzma_free((*mf).hash as *mut c_void, allocator);
-        (*mf).hash = ::core::ptr::null_mut::<u32>();
+        (*mf).hash = core::ptr::null_mut();
         lzma_free((*mf).son as *mut c_void, allocator);
-        (*mf).son = ::core::ptr::null_mut::<u32>();
+        (*mf).son = core::ptr::null_mut();
     }
     (*mf).depth = (*lz_options).depth;
     if (*mf).depth == 0 as u32 {
@@ -494,9 +494,9 @@ unsafe extern "C" fn lz_encoder_init(
         ) as *mut u32;
         if (*mf).hash.is_null() || (*mf).son.is_null() {
             lzma_free((*mf).hash as *mut c_void, allocator);
-            (*mf).hash = ::core::ptr::null_mut::<u32>();
+            (*mf).hash = core::ptr::null_mut();
             lzma_free((*mf).son as *mut c_void, allocator);
-            (*mf).son = ::core::ptr::null_mut::<u32>();
+            (*mf).son = core::ptr::null_mut();
             return true;
         }
     } else {
@@ -530,7 +530,7 @@ unsafe extern "C" fn lz_encoder_init(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lz_encoder_memusage(mut lz_options: *const lzma_lz_options) -> u64 {
     let mut mf: lzma_mf = lzma_mf_s {
-        buffer: ::core::ptr::null_mut::<u8>(),
+        buffer: core::ptr::null_mut(),
         size: 0,
         keep_size_before: 0,
         keep_size_after: 0,
@@ -542,8 +542,8 @@ pub unsafe extern "C" fn lzma_lz_encoder_memusage(mut lz_options: *const lzma_lz
         pending: 0,
         find: None,
         skip: None,
-        hash: ::core::ptr::null_mut::<u32>(),
-        son: ::core::ptr::null_mut::<u32>(),
+        hash: core::ptr::null_mut(),
+        son: core::ptr::null_mut(),
         cyclic_pos: 0,
         cyclic_size: 0,
         hash_mask: 0,
@@ -691,16 +691,16 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
         (*coder).lz.end = None;
         (*coder).lz.options_update = None;
         (*coder).lz.set_out_limit = None;
-        (*coder).mf.buffer = ::core::ptr::null_mut::<u8>();
+        (*coder).mf.buffer = core::ptr::null_mut();
         (*coder).mf.size = 0 as u32;
-        (*coder).mf.hash = ::core::ptr::null_mut::<u32>();
-        (*coder).mf.son = ::core::ptr::null_mut::<u32>();
+        (*coder).mf.hash = core::ptr::null_mut();
+        (*coder).mf.son = core::ptr::null_mut();
         (*coder).mf.hash_count = 0 as u32;
         (*coder).mf.sons_count = 0 as u32;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,

@@ -94,7 +94,7 @@ unsafe extern "C" fn move_head_to_cache(
     let mut buf: *mut lzma_outbuf = (*outq).head;
     (*outq).head = (*buf).next;
     if (*outq).head.is_null() {
-        (*outq).tail = ::core::ptr::null_mut::<lzma_outbuf>();
+        (*outq).tail = core::ptr::null_mut();
     }
     if !(*outq).cache.is_null() && (*(*outq).cache).allocated != (*buf).allocated {
         lzma_outq_clear_cache(outq, allocator);
@@ -191,7 +191,7 @@ pub unsafe extern "C" fn lzma_outq_prealloc_buf(
     if (*outq).cache.is_null() {
         return LZMA_MEM_ERROR;
     }
-    (*(*outq).cache).next = ::core::ptr::null_mut::<lzma_outbuf>();
+    (*(*outq).cache).next = core::ptr::null_mut();
     (*(*outq).cache).allocated = size;
     (*outq).bufs_allocated = (*outq).bufs_allocated.wrapping_add(1);
     (*outq).mem_allocated = (*outq).mem_allocated.wrapping_add(alloc_size as u64);
@@ -204,7 +204,7 @@ pub unsafe extern "C" fn lzma_outq_get_buf(
 ) -> *mut lzma_outbuf {
     let mut buf: *mut lzma_outbuf = (*outq).cache;
     (*outq).cache = (*buf).next;
-    (*buf).next = ::core::ptr::null_mut::<lzma_outbuf>();
+    (*buf).next = core::ptr::null_mut();
     if !(*outq).tail.is_null() {
         (*(*outq).tail).next = buf;
     } else {

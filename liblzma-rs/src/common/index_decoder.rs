@@ -326,7 +326,7 @@ unsafe extern "C" fn index_decode(
             }
         }
         *(*coder).index_ptr = (*coder).index;
-        (*coder).index = ::core::ptr::null_mut::<lzma_index>();
+        (*coder).index = core::ptr::null_mut();
         return LZMA_STREAM_END;
     }
     let in_used: size_t = (*in_pos).wrapping_sub(in_start);
@@ -367,7 +367,7 @@ unsafe extern "C" fn index_decoder_reset(
     mut memlimit: u64,
 ) -> lzma_ret {
     (*coder).index_ptr = i;
-    *i = ::core::ptr::null_mut::<lzma_index>();
+    *i = core::ptr::null_mut();
     (*coder).index = lzma_index_init(allocator);
     if (*coder).index.is_null() {
         return LZMA_MEM_ERROR;
@@ -466,7 +466,7 @@ pub unsafe extern "C" fn lzma_index_decoder_init(
                 as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         )
             as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>;
-        (*coder).index = ::core::ptr::null_mut::<lzma_index>();
+        (*coder).index = core::ptr::null_mut();
     } else {
         lzma_index_end((*coder).index, allocator);
     }
@@ -479,7 +479,7 @@ pub unsafe extern "C" fn lzma_index_decoder(
     mut memlimit: u64,
 ) -> lzma_ret {
     if !i.is_null() {
-        *i = ::core::ptr::null_mut::<lzma_index>();
+        *i = core::ptr::null_mut();
     }
     let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
     if ret_ != LZMA_OK {
@@ -509,7 +509,7 @@ pub unsafe extern "C" fn lzma_index_buffer_decode(
     mut in_size: size_t,
 ) -> lzma_ret {
     if !i.is_null() {
-        *i = ::core::ptr::null_mut::<lzma_index>();
+        *i = core::ptr::null_mut();
     }
     if i.is_null() || memlimit.is_null() || in_0.is_null() || in_pos.is_null() || *in_pos > in_size
     {
@@ -518,8 +518,8 @@ pub unsafe extern "C" fn lzma_index_buffer_decode(
     let mut coder: lzma_index_coder = lzma_index_coder {
         sequence: SEQ_INDICATOR,
         memlimit: 0,
-        index: ::core::ptr::null_mut::<lzma_index>(),
-        index_ptr: ::core::ptr::null_mut::<*mut lzma_index>(),
+        index: core::ptr::null_mut(),
+        index_ptr: core::ptr::null_mut(),
         count: 0,
         unpadded_size: 0,
         uncompressed_size: 0,
@@ -537,8 +537,8 @@ pub unsafe extern "C" fn lzma_index_buffer_decode(
         in_0,
         in_pos,
         in_size,
-        ::core::ptr::null_mut::<u8>(),
-        ::core::ptr::null_mut::<size_t>(),
+        core::ptr::null_mut(),
+        core::ptr::null_mut(),
         0 as size_t,
         LZMA_RUN,
     );

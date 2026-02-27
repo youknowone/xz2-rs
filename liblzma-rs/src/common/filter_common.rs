@@ -297,7 +297,7 @@ pub unsafe extern "C" fn lzma_filters_copy(
     }
     let mut dest: [lzma_filter; 5] = [lzma_filter {
         id: 0,
-        options: ::core::ptr::null_mut::<c_void>(),
+        options: core::ptr::null_mut(),
     }; 5];
     let mut ret: lzma_ret = LZMA_OK;
     let mut i: size_t = 0;
@@ -439,7 +439,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
     let mut filters: [lzma_filter_info; 5] = [lzma_filter_info_s {
         id: 0,
         init: None,
-        options: ::core::ptr::null_mut::<c_void>(),
+        options: core::ptr::null_mut(),
     }; 5];
     if is_encoder {
         let mut i: size_t = 0 as size_t;

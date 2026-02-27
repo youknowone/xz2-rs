@@ -66,13 +66,8 @@ pub unsafe extern "C" fn lzma_filter_flags_encode(
     if (*filter).id >= LZMA_FILTER_RESERVED_START as lzma_vli {
         return LZMA_PROG_ERROR;
     }
-    let ret_: lzma_ret = lzma_vli_encode(
-        (*filter).id,
-        ::core::ptr::null_mut::<size_t>(),
-        out,
-        out_pos,
-        out_size,
-    ) as lzma_ret;
+    let ret_: lzma_ret =
+        lzma_vli_encode((*filter).id, core::ptr::null_mut(), out, out_pos, out_size) as lzma_ret;
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -83,7 +78,7 @@ pub unsafe extern "C" fn lzma_filter_flags_encode(
     }
     let ret__1: lzma_ret = lzma_vli_encode(
         props_size as lzma_vli,
-        ::core::ptr::null_mut::<size_t>(),
+        core::ptr::null_mut(),
         out,
         out_pos,
         out_size,

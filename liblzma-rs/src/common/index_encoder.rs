@@ -528,7 +528,7 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
         &raw mut coder as *mut c_void,
         ::core::ptr::null::<lzma_allocator>(),
         ::core::ptr::null::<u8>(),
-        ::core::ptr::null_mut::<size_t>(),
+        core::ptr::null_mut(),
         0 as size_t,
         out,
         out_pos,

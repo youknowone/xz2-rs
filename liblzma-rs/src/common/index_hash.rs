@@ -157,7 +157,7 @@ pub unsafe extern "C" fn lzma_index_hash_init(
             allocator,
         ) as *mut lzma_index_hash;
         if index_hash.is_null() {
-            return ::core::ptr::null_mut::<lzma_index_hash>();
+            return core::ptr::null_mut();
         }
     }
     (*index_hash).sequence = SEQ_BLOCK;

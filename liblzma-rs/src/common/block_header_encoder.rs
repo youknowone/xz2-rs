@@ -157,7 +157,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
     if (*block).compressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
         let ret_: lzma_ret = lzma_vli_encode(
             (*block).compressed_size,
-            ::core::ptr::null_mut::<size_t>(),
+            core::ptr::null_mut(),
             out,
             &raw mut out_pos,
             out_size,
@@ -171,7 +171,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
     if (*block).uncompressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
         let ret__0: lzma_ret = lzma_vli_encode(
             (*block).uncompressed_size,
-            ::core::ptr::null_mut::<size_t>(),
+            core::ptr::null_mut(),
             out,
             &raw mut out_pos,
             out_size,

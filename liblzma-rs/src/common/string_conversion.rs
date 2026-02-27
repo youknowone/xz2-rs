@@ -209,7 +209,7 @@ unsafe extern "C" fn str_finish(
 ) -> lzma_ret {
     if str_is_full(str) {
         lzma_free((*str).buf as *mut c_void, allocator);
-        *dest = ::core::ptr::null_mut::<c_char>();
+        *dest = core::ptr::null_mut();
         return LZMA_PROG_ERROR;
     }
     *(*str).buf.offset((*str).pos as isize) = '\0' as i32 as c_char;
@@ -951,7 +951,7 @@ unsafe extern "C" fn str_to_filters(
     let only_xz: bool = flags & LZMA_STR_ALL_FILTERS as u32 == 0 as u32;
     let mut temp_filters: [lzma_filter; 5] = [lzma_filter {
         id: 0,
-        options: ::core::ptr::null_mut::<c_void>(),
+        options: core::ptr::null_mut(),
     }; 5];
     let mut i_0: size_t = 0 as size_t;
     loop {
@@ -1151,7 +1151,7 @@ pub unsafe extern "C" fn lzma_str_from_filters(
     if output_str.is_null() {
         return LZMA_PROG_ERROR;
     }
-    *output_str = ::core::ptr::null_mut::<c_char>();
+    *output_str = core::ptr::null_mut();
     if filters.is_null() {
         return LZMA_PROG_ERROR;
     }
@@ -1166,7 +1166,7 @@ pub unsafe extern "C" fn lzma_str_from_filters(
         return LZMA_OPTIONS_ERROR;
     }
     let mut dest: lzma_str = lzma_str {
-        buf: ::core::ptr::null_mut::<c_char>(),
+        buf: core::ptr::null_mut(),
         pos: 0,
     };
     let ret_: lzma_ret = str_init(&raw mut dest, allocator) as lzma_ret;
@@ -1250,7 +1250,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
     if output_str.is_null() {
         return LZMA_PROG_ERROR;
     }
-    *output_str = ::core::ptr::null_mut::<c_char>();
+    *output_str = core::ptr::null_mut();
     let supported_flags: u32 = LZMA_STR_ALL_FILTERS as u32
         | LZMA_STR_ENCODER as u32
         | LZMA_STR_DECODER as u32
@@ -1259,7 +1259,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
         return LZMA_OPTIONS_ERROR;
     }
     let mut dest: lzma_str = lzma_str {
-        buf: ::core::ptr::null_mut::<c_char>(),
+        buf: core::ptr::null_mut(),
         pos: 0,
     };
     let ret_: lzma_ret = str_init(&raw mut dest, allocator) as lzma_ret;

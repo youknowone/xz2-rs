@@ -279,12 +279,12 @@ unsafe extern "C" fn block_encode_uncompressed(
         reserved_enum2: LZMA_RESERVED_ENUM,
         reserved_enum3: LZMA_RESERVED_ENUM,
         reserved_enum4: LZMA_RESERVED_ENUM,
-        reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
-        reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
+        reserved_ptr1: core::ptr::null_mut(),
+        reserved_ptr2: core::ptr::null_mut(),
     };
     let mut filters: [lzma_filter; 2] = [lzma_filter {
         id: 0,
-        options: ::core::ptr::null_mut::<c_void>(),
+        options: core::ptr::null_mut(),
     }; 2];
     filters[0].id = LZMA_FILTER_LZMA2 as lzma_vli;
     filters[0].options = &raw mut lzma2 as *mut c_void;
@@ -362,7 +362,7 @@ unsafe extern "C" fn block_encode_normal(
     let mut raw_encoder: lzma_next_coder = lzma_next_coder_s {
         coder: core::ptr::null_mut(),
         id: LZMA_VLI_UNKNOWN as lzma_vli,
-        init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+        init: 0 as uintptr_t,
         code: None,
         end: None,
         get_progress: None,

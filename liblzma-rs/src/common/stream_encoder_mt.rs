@@ -547,16 +547,12 @@ unsafe extern "C" fn mythread_create(
         func as Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
         arg as *mut c_void,
     ) as c_int;
-    mythread_sigmask(
-        SIG_SETMASK,
-        &raw mut old,
-        ::core::ptr::null_mut::<sigset_t>(),
-    );
+    mythread_sigmask(SIG_SETMASK, &raw mut old, core::ptr::null_mut());
     return ret;
 }
 #[inline]
 unsafe extern "C" fn mythread_join(mut thread: mythread) -> c_int {
-    return pthread_join(thread as pthread_t, ::core::ptr::null_mut::<*mut c_void>());
+    return pthread_join(thread as pthread_t, core::ptr::null_mut());
 }
 #[inline]
 unsafe extern "C" fn mythread_mutex_init(mut mutex: *mut mythread_mutex) -> c_int {
@@ -683,9 +679,9 @@ unsafe extern "C" fn worker_encode(
         uncompressed_size: (*(*thr).coder).block_size as lzma_vli,
         filters: &raw mut (*thr).filters as *mut lzma_filter,
         raw_check: [0; 64],
-        reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
-        reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
-        reserved_ptr3: ::core::ptr::null_mut::<c_void>(),
+        reserved_ptr1: core::ptr::null_mut(),
+        reserved_ptr2: core::ptr::null_mut(),
+        reserved_ptr3: core::ptr::null_mut(),
         reserved_int1: 0,
         reserved_int2: 0,
         reserved_int3: 0,
@@ -1039,7 +1035,7 @@ unsafe extern "C" fn initialize_new_thread(
             (*thr).block_encoder = lzma_next_coder_s {
                 coder: core::ptr::null_mut(),
                 id: LZMA_VLI_UNKNOWN as lzma_vli,
-                init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+                init: 0 as uintptr_t,
                 code: None,
                 end: None,
                 get_progress: None,
@@ -1224,7 +1220,7 @@ unsafe extern "C" fn stream_encode_in(
             return ret_0;
         }
         if finish {
-            (*coder).thr = ::core::ptr::null_mut::<worker_thread>();
+            (*coder).thr = core::ptr::null_mut();
         }
     }
     return LZMA_OK;
@@ -1436,7 +1432,7 @@ unsafe extern "C" fn stream_encode_mt(
                     (*coder).index_encoder.coder,
                     allocator,
                     ::core::ptr::null::<u8>(),
-                    ::core::ptr::null_mut::<size_t>(),
+                    core::ptr::null_mut(),
                     0 as size_t,
                     out,
                     out_pos,
@@ -1510,7 +1506,7 @@ unsafe extern "C" fn stream_encoder_mt_update(
     }
     let mut temp: [lzma_filter; 5] = [lzma_filter {
         id: 0,
-        options: ::core::ptr::null_mut::<c_void>(),
+        options: core::ptr::null_mut(),
     }; 5];
     let ret_: lzma_ret =
         lzma_filters_copy(filters, &raw mut temp as *mut lzma_filter, allocator) as lzma_ret;
@@ -1659,7 +1655,7 @@ unsafe extern "C" fn stream_encoder_mt_init(
     let mut easy: lzma_options_easy = lzma_options_easy {
         filters: [lzma_filter {
             id: 0,
-            options: ::core::ptr::null_mut::<c_void>(),
+            options: core::ptr::null_mut(),
         }; 5],
         opt_lzma: lzma_options_lzma {
             dict_size: 0,
@@ -1684,8 +1680,8 @@ unsafe extern "C" fn stream_encoder_mt_init(
             reserved_enum2: LZMA_RESERVED_ENUM,
             reserved_enum3: LZMA_RESERVED_ENUM,
             reserved_enum4: LZMA_RESERVED_ENUM,
-            reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
-            reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
+            reserved_ptr1: core::ptr::null_mut(),
+            reserved_ptr2: core::ptr::null_mut(),
         },
     };
     let mut filters: *const lzma_filter = ::core::ptr::null::<lzma_filter>();
@@ -1773,7 +1769,7 @@ unsafe extern "C" fn stream_encoder_mt_init(
         (*coder).index_encoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN as lzma_vli,
-            init: ::core::ptr::null_mut::<c_void>() as uintptr_t,
+            init: 0 as uintptr_t,
             code: None,
             end: None,
             get_progress: None,
@@ -1782,13 +1778,13 @@ unsafe extern "C" fn stream_encoder_mt_init(
             update: None,
             set_out_limit: None,
         };
-        (*coder).index = ::core::ptr::null_mut::<lzma_index>();
+        (*coder).index = core::ptr::null_mut();
         memset(
             &raw mut (*coder).outq as *mut c_void,
             0 as c_int,
             ::core::mem::size_of::<lzma_outq>() as size_t,
         );
-        (*coder).threads = ::core::ptr::null_mut::<worker_thread>();
+        (*coder).threads = core::ptr::null_mut();
         (*coder).threads_max = 0 as u32;
         (*coder).threads_initialized = 0 as u32;
     }
@@ -1796,13 +1792,13 @@ unsafe extern "C" fn stream_encoder_mt_init(
     (*coder).block_size = block_size as size_t;
     (*coder).outbuf_alloc_size = outbuf_size_max as size_t;
     (*coder).thread_error = LZMA_OK;
-    (*coder).thr = ::core::ptr::null_mut::<worker_thread>();
+    (*coder).thr = core::ptr::null_mut();
     if (*coder).threads_max != (*options).threads {
         threads_end(coder, allocator);
-        (*coder).threads = ::core::ptr::null_mut::<worker_thread>();
+        (*coder).threads = core::ptr::null_mut();
         (*coder).threads_max = 0 as u32;
         (*coder).threads_initialized = 0 as u32;
-        (*coder).threads_free = ::core::ptr::null_mut::<worker_thread>();
+        (*coder).threads_free = core::ptr::null_mut();
         (*coder).threads = lzma_alloc(
             ((*options).threads as size_t)
                 .wrapping_mul(::core::mem::size_of::<worker_thread>() as size_t),
@@ -1882,7 +1878,7 @@ pub unsafe extern "C" fn lzma_stream_encoder_mt_memusage(mut options: *const lzm
     let mut easy: lzma_options_easy = lzma_options_easy {
         filters: [lzma_filter {
             id: 0,
-            options: ::core::ptr::null_mut::<c_void>(),
+            options: core::ptr::null_mut(),
         }; 5],
         opt_lzma: lzma_options_lzma {
             dict_size: 0,
@@ -1907,8 +1903,8 @@ pub unsafe extern "C" fn lzma_stream_encoder_mt_memusage(mut options: *const lzm
             reserved_enum2: LZMA_RESERVED_ENUM,
             reserved_enum3: LZMA_RESERVED_ENUM,
             reserved_enum4: LZMA_RESERVED_ENUM,
-            reserved_ptr1: ::core::ptr::null_mut::<c_void>(),
-            reserved_ptr2: ::core::ptr::null_mut::<c_void>(),
+            reserved_ptr1: core::ptr::null_mut(),
+            reserved_ptr2: core::ptr::null_mut(),
         },
     };
     let mut filters: *const lzma_filter = ::core::ptr::null::<lzma_filter>();

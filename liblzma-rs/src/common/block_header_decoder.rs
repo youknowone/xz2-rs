@@ -143,7 +143,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     if *in_0.offset(1) as c_int & 0x40 as c_int != 0 {
         let ret_: lzma_ret = lzma_vli_decode(
             &raw mut (*block).compressed_size,
-            ::core::ptr::null_mut::<size_t>(),
+            core::ptr::null_mut(),
             in_0,
             &raw mut in_pos,
             in_size,
@@ -160,7 +160,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     if *in_0.offset(1) as c_int & 0x80 as c_int != 0 {
         let ret__0: lzma_ret = lzma_vli_decode(
             &raw mut (*block).uncompressed_size,
-            ::core::ptr::null_mut::<size_t>(),
+            core::ptr::null_mut(),
             in_0,
             &raw mut in_pos,
             in_size,
