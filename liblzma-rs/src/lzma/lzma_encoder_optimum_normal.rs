@@ -353,14 +353,16 @@ unsafe extern "C" fn get_len_price(
     return (*lencoder).prices[pos_state as usize][len.wrapping_sub(MATCH_LEN_MIN as u32) as usize];
 }
 #[inline]
-unsafe extern "C" fn get_short_rep_price(
+extern "C" fn get_short_rep_price(
     coder: *const lzma_lzma1_encoder,
     state: lzma_lzma_state,
     pos_state: u32,
 ) -> u32 {
-    return rc_bit_0_price((*coder).is_rep0[state as usize]).wrapping_add(rc_bit_0_price(
-        (*coder).is_rep0_long[state as usize][pos_state as usize],
-    ));
+    return unsafe {
+        rc_bit_0_price((*coder).is_rep0[state as usize]).wrapping_add(rc_bit_0_price(
+            (*coder).is_rep0_long[state as usize][pos_state as usize],
+        ))
+    };
 }
 #[inline]
 unsafe extern "C" fn get_pure_rep_price(
@@ -390,15 +392,17 @@ unsafe extern "C" fn get_pure_rep_price(
     return price;
 }
 #[inline]
-unsafe extern "C" fn get_rep_price(
+extern "C" fn get_rep_price(
     coder: *const lzma_lzma1_encoder,
     rep_index: u32,
     len: u32,
     state: lzma_lzma_state,
     pos_state: u32,
 ) -> u32 {
-    return get_len_price(&raw const (*coder).rep_len_encoder, len, pos_state)
-        .wrapping_add(get_pure_rep_price(coder, rep_index, state, pos_state));
+    return unsafe {
+        get_len_price(&raw const (*coder).rep_len_encoder, len, pos_state)
+            .wrapping_add(get_pure_rep_price(coder, rep_index, state, pos_state))
+    };
 }
 #[inline]
 unsafe extern "C" fn get_dist_len_price(
