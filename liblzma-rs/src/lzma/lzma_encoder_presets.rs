@@ -38,8 +38,6 @@ pub struct lzma_options_lzma {
 }
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_LC_DEFAULT: c_int = 3 as c_int;
 pub const LZMA_LP_DEFAULT: c_int = 0 as c_int;
 pub const LZMA_PB_DEFAULT: c_int = 2 as c_int;
@@ -54,7 +52,7 @@ pub unsafe extern "C" fn lzma_lzma_preset(
     let flags: u32 = preset & !(LZMA_PRESET_LEVEL_MASK as u32);
     let supported_flags: u32 = LZMA_PRESET_EXTREME as u32;
     if level > 9 as u32 || flags & !supported_flags != 0 {
-        return true_0 as lzma_bool;
+        return true as lzma_bool;
     }
     (*options).preset_dict = ::core::ptr::null::<u8>();
     (*options).preset_dict_size = 0 as u32;
@@ -103,5 +101,5 @@ pub unsafe extern "C" fn lzma_lzma_preset(
             (*options).depth = 512 as u32;
         }
     }
-    return false_0 as lzma_bool;
+    return false as lzma_bool;
 }

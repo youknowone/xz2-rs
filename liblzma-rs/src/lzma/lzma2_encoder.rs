@@ -266,8 +266,6 @@ pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 pub const LZMA_LCLP_MAX: c_int = 4 as c_int;
 pub const LZMA_PB_MAX: c_int = 4 as c_int;
@@ -363,9 +361,9 @@ unsafe extern "C" fn lzma2_header_lzma(mut coder: *mut lzma_lzma2_coder) {
             (&raw mut (*coder).buf as *mut u8).offset(pos as isize),
         );
     }
-    (*coder).need_properties = false_0 != 0;
-    (*coder).need_state_reset = false_0 != 0;
-    (*coder).need_dictionary_reset = false_0 != 0;
+    (*coder).need_properties = false;
+    (*coder).need_state_reset = false;
+    (*coder).need_dictionary_reset = false;
     (*coder).compressed_size = (*coder)
         .compressed_size
         .wrapping_add(LZMA2_HEADER_MAX as size_t);
@@ -376,7 +374,7 @@ unsafe extern "C" fn lzma2_header_uncompressed(mut coder: *mut lzma_lzma2_coder)
     } else {
         (*coder).buf[0] = 2 as u8;
     }
-    (*coder).need_dictionary_reset = false_0 != 0;
+    (*coder).need_dictionary_reset = false;
     (*coder).buf[1] = ((*coder).uncompressed_size.wrapping_sub(1 as size_t) >> 8) as u8;
     (*coder).buf[2] = ((*coder).uncompressed_size.wrapping_sub(1 as size_t) & 0xff as size_t) as u8;
     (*coder).buf_pos = 0 as size_t;
@@ -500,7 +498,7 @@ unsafe extern "C" fn lzma2_encode(
                         .wrapping_add((*mf).read_ahead as size_t);
                     (*mf).read_ahead = 0 as u32;
                     lzma2_header_uncompressed(coder);
-                    (*coder).need_state_reset = true_0 != 0;
+                    (*coder).need_state_reset = true;
                     (*coder).sequence = SEQ_UNCOMPRESSED_HEADER;
                     current_block_45 = 11743904203796629665;
                 } else {
@@ -562,8 +560,8 @@ unsafe extern "C" fn lzma2_encoder_options_update(
         (*coder).opt_cur.lc = (*opt).lc;
         (*coder).opt_cur.lp = (*opt).lp;
         (*coder).opt_cur.pb = (*opt).pb;
-        (*coder).need_properties = true_0 != 0;
-        (*coder).need_state_reset = true_0 != 0;
+        (*coder).need_properties = true;
+        (*coder).need_state_reset = true;
     }
     return LZMA_OK;
 }
@@ -619,8 +617,8 @@ unsafe extern "C" fn lzma2_encoder_init(
     }
     (*coder).opt_cur = *(options as *const lzma_options_lzma);
     (*coder).sequence = SEQ_INIT;
-    (*coder).need_properties = true_0 != 0;
-    (*coder).need_state_reset = false_0 != 0;
+    (*coder).need_properties = true;
+    (*coder).need_state_reset = false;
     (*coder).need_dictionary_reset =
         (*coder).opt_cur.preset_dict.is_null() || (*coder).opt_cur.preset_dict_size == 0 as u32;
     let ret_: lzma_ret = lzma_lzma_encoder_create(

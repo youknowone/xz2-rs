@@ -162,8 +162,6 @@ pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_BUFFER_SIZE: c_int = 4096 as c_int;
 pub const LZ_DICT_EXTRA: c_int = 0 as c_int;
@@ -183,8 +181,8 @@ unsafe extern "C" fn lz_decoder_reset(mut coder: *mut lzma_coder) {
         .dict
         .buf
         .offset((LZ_DICT_INIT_POS - 1 as c_int) as isize) = '\0' as i32 as u8;
-    (*coder).dict.has_wrapped = false_0 != 0;
-    (*coder).dict.need_reset = false_0 != 0;
+    (*coder).dict.has_wrapped = false;
+    (*coder).dict.need_reset = false;
 }
 unsafe extern "C" fn decode_buffer(
     mut coder: *mut lzma_coder,
@@ -198,7 +196,7 @@ unsafe extern "C" fn decode_buffer(
     loop {
         if (*coder).dict.pos == (*coder).dict.size {
             (*coder).dict.pos = LZ_DICT_REPEAT_MAX as size_t;
-            (*coder).dict.has_wrapped = true_0 != 0;
+            (*coder).dict.has_wrapped = true;
             memcpy(
                 (*coder).dict.buf as *mut c_void,
                 (*coder)
@@ -275,7 +273,7 @@ unsafe extern "C" fn lz_decode(
                 action,
             ) as lzma_ret;
             if ret == LZMA_STREAM_END {
-                (*coder).next_finished = true_0 != 0;
+                (*coder).next_finished = true;
             } else if ret != LZMA_OK || (*coder).temp.size == 0 as size_t {
                 return ret;
             }
@@ -299,7 +297,7 @@ unsafe extern "C" fn lz_decode(
             out_size,
         ) as lzma_ret;
         if ret_0 == LZMA_STREAM_END {
-            (*coder).this_finished = true_0 != 0;
+            (*coder).this_finished = true;
         } else if ret_0 != LZMA_OK {
             return ret_0;
         } else if (*coder).next_finished as c_int != 0 && *out_pos < out_size {
@@ -433,8 +431,8 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
         (*coder).dict.pos = (*coder).dict.pos.wrapping_add(copy_size);
         (*coder).dict.full = copy_size;
     }
-    (*coder).next_finished = false_0 != 0;
-    (*coder).this_finished = false_0 != 0;
+    (*coder).next_finished = false;
+    (*coder).this_finished = false;
     (*coder).temp.pos = 0 as size_t;
     (*coder).temp.size = 0 as size_t;
     return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));

@@ -127,8 +127,6 @@ pub struct lzma_simple_coder {
     pub size: size_t,
     pub buffer: [u8; 0],
 }
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 unsafe extern "C" fn x86_code(
     mut simple_ptr: *mut c_void,
     mut now_pos: u32,
@@ -253,7 +251,7 @@ pub unsafe extern "C" fn lzma_simple_x86_encoder_init(
     mut allocator: *const lzma_allocator,
     mut filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return x86_coder_init(next, allocator, filters, true_0 != 0);
+    return x86_coder_init(next, allocator, filters, true);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_x86_encode(
@@ -268,7 +266,7 @@ pub unsafe extern "C" fn lzma_bcj_x86_encode(
     return x86_code(
         &raw mut simple as *mut c_void,
         start_offset,
-        true_0 != 0,
+        true,
         buf,
         size,
     );
@@ -279,7 +277,7 @@ pub unsafe extern "C" fn lzma_simple_x86_decoder_init(
     mut allocator: *const lzma_allocator,
     mut filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return x86_coder_init(next, allocator, filters, false_0 != 0);
+    return x86_coder_init(next, allocator, filters, false);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_x86_decode(
@@ -294,7 +292,7 @@ pub unsafe extern "C" fn lzma_bcj_x86_decode(
     return x86_code(
         &raw mut simple as *mut c_void,
         start_offset,
-        false_0 != 0,
+        false,
         buf,
         size,
     );

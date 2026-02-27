@@ -145,8 +145,6 @@ pub type lzma_filter_info = lzma_filter_info_s;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VERSION_MAJOR: c_int = 5 as c_int;
 pub const LZMA_VERSION_MINOR: c_int = 8 as c_int;
 pub const LZMA_VERSION_PATCH: c_int = 2 as c_int;
@@ -343,7 +341,7 @@ pub unsafe extern "C" fn lzma_strm_init(mut strm: *mut lzma_stream) -> lzma_ret 
         ::core::mem::size_of::<[bool; 5]>() as size_t,
     );
     (*(*strm).internal).sequence = ISEQ_RUN;
-    (*(*strm).internal).allow_buf_error = false_0 != 0;
+    (*(*strm).internal).allow_buf_error = false;
     (*strm).total_in = 0 as u64;
     (*strm).total_out = 0 as u64;
     return LZMA_OK;
@@ -447,20 +445,20 @@ pub unsafe extern "C" fn lzma_code(
                 if (*(*strm).internal).allow_buf_error {
                     ret = LZMA_BUF_ERROR;
                 } else {
-                    (*(*strm).internal).allow_buf_error = true_0 != 0;
+                    (*(*strm).internal).allow_buf_error = true;
                 }
             } else {
-                (*(*strm).internal).allow_buf_error = false_0 != 0;
+                (*(*strm).internal).allow_buf_error = false;
             }
             current_block_49 = 12556861819962772176;
         }
         101 => {
-            (*(*strm).internal).allow_buf_error = false_0 != 0;
+            (*(*strm).internal).allow_buf_error = false;
             ret = LZMA_OK;
             current_block_49 = 12556861819962772176;
         }
         12 => {
-            (*(*strm).internal).allow_buf_error = false_0 != 0;
+            (*(*strm).internal).allow_buf_error = false;
             if (*(*strm).internal).sequence == ISEQ_FINISH {
                 (*(*strm).internal).sequence = ISEQ_RUN;
             }
@@ -487,7 +485,7 @@ pub unsafe extern "C" fn lzma_code(
     }
     match current_block_49 {
         16143107162343188004 => {
-            (*(*strm).internal).allow_buf_error = false_0 != 0;
+            (*(*strm).internal).allow_buf_error = false;
         }
         _ => {}
     }

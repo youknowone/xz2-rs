@@ -179,8 +179,6 @@ pub type lzma_filter_find = Option<unsafe extern "C" fn(lzma_vli) -> *const lzma
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTERS_MAX: c_int = 4 as c_int;
 pub const LZMA_FILTER_X86: c_ulonglong = 0x4;
@@ -200,86 +198,86 @@ static mut features: [C2RustUnnamed; 13] = [
     C2RustUnnamed {
         id: LZMA_FILTER_LZMA1 as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_lzma>() as size_t,
-        non_last_ok: false_0 != 0,
-        last_ok: true_0 != 0,
-        changes_size: true_0 != 0,
+        non_last_ok: false,
+        last_ok: true,
+        changes_size: true,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_LZMA1EXT as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_lzma>() as size_t,
-        non_last_ok: false_0 != 0,
-        last_ok: true_0 != 0,
-        changes_size: true_0 != 0,
+        non_last_ok: false,
+        last_ok: true,
+        changes_size: true,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_LZMA2 as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_lzma>() as size_t,
-        non_last_ok: false_0 != 0,
-        last_ok: true_0 != 0,
-        changes_size: true_0 != 0,
+        non_last_ok: false,
+        last_ok: true,
+        changes_size: true,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_X86 as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_bcj>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_POWERPC as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_bcj>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_IA64 as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_bcj>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_ARM as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_bcj>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_ARMTHUMB as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_bcj>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_ARM64 as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_bcj>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_SPARC as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_bcj>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_RISCV as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_bcj>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_FILTER_DELTA as lzma_vli,
         options_size: ::core::mem::size_of::<lzma_options_delta>() as size_t,
-        non_last_ok: true_0 != 0,
-        last_ok: false_0 != 0,
-        changes_size: false_0 != 0,
+        non_last_ok: true,
+        last_ok: false,
+        changes_size: false,
     },
     C2RustUnnamed {
         id: LZMA_VLI_UNKNOWN as lzma_vli,
@@ -397,8 +395,8 @@ pub unsafe extern "C" fn lzma_validate_chain(
         return LZMA_PROG_ERROR;
     }
     let mut changes_size_count: size_t = 0 as size_t;
-    let mut non_last_ok: bool = true_0 != 0;
-    let mut last_ok: bool = false_0 != 0;
+    let mut non_last_ok: bool = true;
+    let mut last_ok: bool = false;
     let mut i: size_t = 0 as size_t;
     loop {
         let mut j: size_t = 0;

@@ -226,8 +226,6 @@ pub type lzma_init_function = Option<
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
     let mut num: u32 = *buf.offset(0) as u32;
@@ -493,7 +491,7 @@ unsafe extern "C" fn lzip_decode(
         if !(*coder).concatenated {
             return LZMA_STREAM_END;
         }
-        (*coder).first_member = false_0 != 0;
+        (*coder).first_member = false;
         (*coder).sequence = SEQ_ID_STRING;
     }
 }
@@ -624,7 +622,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     (*coder).tell_any_check = flags & LZMA_TELL_ANY_CHECK as u32 != 0 as u32;
     (*coder).ignore_check = flags & LZMA_IGNORE_CHECK as u32 != 0 as u32;
     (*coder).concatenated = flags & LZMA_CONCATENATED as u32 != 0 as u32;
-    (*coder).first_member = true_0 != 0;
+    (*coder).first_member = true;
     (*coder).pos = 0 as size_t;
     return LZMA_OK;
 }
@@ -648,7 +646,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

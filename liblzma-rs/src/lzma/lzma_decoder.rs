@@ -274,8 +274,6 @@ pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
     let mut num: u32 = *buf.offset(0) as u32;
@@ -374,10 +372,10 @@ unsafe extern "C" fn dict_put(mut dict: *mut lzma_dict, mut byte: u8) {
 #[inline]
 unsafe extern "C" fn dict_put_safe(mut dict: *mut lzma_dict, mut byte: u8) -> bool {
     if ((*dict).pos == (*dict).limit) as c_long != 0 {
-        return true_0 != 0;
+        return true;
     }
     dict_put(dict, byte);
-    return false_0 != 0;
+    return false;
 }
 pub const RC_SHIFT_BITS: c_int = 8 as c_int;
 pub const RC_TOP_BITS: c_int = 24 as c_int;
@@ -483,12 +481,12 @@ unsafe extern "C" fn lzma_decode(
     let mut pos_state: u32 = (dict.pos & pos_mask as size_t) as u32;
     let mut ret_0: lzma_ret = LZMA_OK;
     let mut eopm_is_valid: bool = (*coder).uncompressed_size == LZMA_VLI_UNKNOWN as lzma_vli;
-    let mut might_finish_without_eopm: bool = false_0 != 0;
+    let mut might_finish_without_eopm: bool = false;
     if (*coder).uncompressed_size != LZMA_VLI_UNKNOWN as lzma_vli
         && (*coder).uncompressed_size <= dict.limit.wrapping_sub(dict.pos) as lzma_vli
     {
         dict.limit = dict.pos.wrapping_add((*coder).uncompressed_size as size_t);
-        might_finish_without_eopm = true_0 != 0;
+        might_finish_without_eopm = true;
     }
     match (*coder).sequence {
         0 | 1 => {
@@ -1221,7 +1219,7 @@ unsafe extern "C" fn lzma_decode(
                         current_block = 4609795085482299213;
                         continue;
                     } else {
-                        eopm_is_valid = true_0 != 0;
+                        eopm_is_valid = true;
                     }
                 }
                 if rc.range < RC_TOP_VALUE as u32 {
@@ -3948,7 +3946,7 @@ unsafe extern "C" fn lzma_decoder_init(
         return LZMA_PROG_ERROR;
     }
     let mut uncomp_size: lzma_vli = LZMA_VLI_UNKNOWN as lzma_vli;
-    let mut allow_eopm: bool = true_0 != 0;
+    let mut allow_eopm: bool = true;
     if id == LZMA_FILTER_LZMA1EXT as lzma_vli {
         let mut opt: *const lzma_options_lzma = options as *const lzma_options_lzma;
         if (*opt).ext_flags & !(LZMA_LZMA1EXT_ALLOW_EOPM as u32) != 0 {
@@ -4000,7 +3998,7 @@ pub unsafe extern "C" fn lzma_lzma_lclppb_decode(
     mut byte: u8,
 ) -> bool {
     if byte as c_int > (4 as c_int * 5 as c_int + 4 as c_int) * 9 as c_int + 8 as c_int {
-        return true_0 != 0;
+        return true;
     }
     (*options).pb = (byte as c_int / (9 as c_int * 5 as c_int)) as u32;
     byte = (byte as u32).wrapping_sub((*options).pb.wrapping_mul(9 as u32).wrapping_mul(5 as u32))

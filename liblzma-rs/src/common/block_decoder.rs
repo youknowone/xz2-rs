@@ -233,8 +233,6 @@ pub const SEQ_CODE: C2RustUnnamed_2 = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 #[inline]
@@ -517,10 +515,10 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     (*coder).check_pos = 0 as size_t;
     lzma_check_init(&raw mut (*coder).check, (*block).check);
     (*coder).ignore_check = if (*block).version >= 1 as u32 {
-        (*block).ignore_check as c_int
+        (*block).ignore_check as c_int != 0
     } else {
-        false_0
-    } != 0;
+        false
+    };
     return lzma_raw_decoder_init(&raw mut (*coder).next, allocator, (*block).filters);
 }
 #[no_mangle]
@@ -539,7 +537,7 @@ pub unsafe extern "C" fn lzma_block_decoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

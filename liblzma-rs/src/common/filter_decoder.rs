@@ -254,8 +254,6 @@ pub struct lzma_filter_coder {
 pub type lzma_filter_find = Option<unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder>;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_FILTER_X86: c_ulonglong = 0x4;
 pub const LZMA_FILTER_POWERPC: c_ulonglong = 0x5;
 pub const LZMA_FILTER_IA64: c_ulonglong = 0x6;
@@ -553,7 +551,7 @@ pub unsafe extern "C" fn lzma_raw_decoder_init(
         allocator,
         options,
         Some(coder_find as unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder),
-        false_0 != 0,
+        false,
     );
 }
 #[no_mangle]
@@ -574,8 +572,8 @@ pub unsafe extern "C" fn lzma_raw_decoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }
 #[no_mangle]

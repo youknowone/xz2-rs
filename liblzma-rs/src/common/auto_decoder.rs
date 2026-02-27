@@ -154,7 +154,6 @@ pub struct lzma_auto_coder {
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_TELL_NO_CHECK: c_uint = 0x1;
 pub const LZMA_TELL_UNSUPPORTED_CHECK: c_uint = 0x2;
@@ -415,7 +414,7 @@ pub unsafe extern "C" fn lzma_auto_decoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

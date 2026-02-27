@@ -202,8 +202,6 @@ pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002;
@@ -313,7 +311,7 @@ unsafe extern "C" fn microlzma_decode(
         {
             return LZMA_PROG_ERROR;
         }
-        (*coder).props_decoded = true_0 != 0;
+        (*coder).props_decoded = true;
     }
     let mut ret: lzma_ret = (*coder).lzma.code.expect("non-null function pointer")(
         (*coder).lzma.coder,
@@ -457,7 +455,7 @@ unsafe extern "C" fn microlzma_decoder_init(
     (*coder).uncomp_size = uncomp_size as lzma_vli;
     (*coder).uncomp_size_is_exact = uncomp_size_is_exact;
     (*coder).dict_size = dict_size;
-    (*coder).props_decoded = false_0 != 0;
+    (*coder).props_decoded = false;
     return LZMA_OK;
 }
 #[no_mangle]
@@ -484,7 +482,7 @@ pub unsafe extern "C" fn lzma_microlzma_decoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

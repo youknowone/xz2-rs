@@ -54,8 +54,6 @@ pub struct lzma_stream_flags {
     pub reserved_int2: u32,
 }
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
     let mut num: u32 = *buf.offset(0) as u32;
@@ -71,11 +69,11 @@ unsafe extern "C" fn stream_flags_decode(
     mut in_0: *const u8,
 ) -> bool {
     if *in_0.offset(0) as c_int != 0 as c_int || *in_0.offset(1) as c_int & 0xf0 as c_int != 0 {
-        return true_0 != 0;
+        return true;
     }
     (*options).version = 0 as u32;
     (*options).check = (*in_0.offset(1) as c_int & 0xf as c_int) as lzma_check;
-    return false_0 != 0;
+    return false;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_header_decode(

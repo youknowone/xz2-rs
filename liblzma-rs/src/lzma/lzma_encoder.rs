@@ -323,8 +323,6 @@ pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
     *buf.offset(0) = num as u8;
@@ -496,7 +494,7 @@ unsafe extern "C" fn rc_shift_low(
     if ((*rc).low as u32) < 0xff000000 as u32 || ((*rc).low >> 32) as u32 != 0 as u32 {
         loop {
             if *out_pos == out_size {
-                return true_0 != 0;
+                return true;
             }
             *out.offset(*out_pos as isize) =
                 ((*rc).cache as c_int + ((*rc).low >> 32) as u8 as c_int) as u8;
@@ -512,7 +510,7 @@ unsafe extern "C" fn rc_shift_low(
     }
     (*rc).cache_size = (*rc).cache_size.wrapping_add(1);
     (*rc).low = ((*rc).low & 0xffffff as u64) << RC_SHIFT_BITS;
-    return false_0 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn rc_shift_low_dummy(
@@ -525,7 +523,7 @@ unsafe extern "C" fn rc_shift_low_dummy(
     if (*low as u32) < 0xff000000 as u32 || (*low >> 32) as u32 != 0 as u32 {
         loop {
             if *out_pos == out_size {
-                return true_0 != 0;
+                return true;
             }
             *out_pos = (*out_pos).wrapping_add(1);
             *cache = 0xff as u8;
@@ -538,7 +536,7 @@ unsafe extern "C" fn rc_shift_low_dummy(
     }
     *cache_size = (*cache_size).wrapping_add(1);
     *low = (*low & 0xffffff as u64) << RC_SHIFT_BITS;
-    return false_0 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn rc_encode(
@@ -550,7 +548,7 @@ unsafe extern "C" fn rc_encode(
     while (*rc).pos < (*rc).count {
         if (*rc).range < RC_TOP_VALUE as u32 {
             if rc_shift_low(rc, out, out_pos, out_size) {
-                return true_0 != 0;
+                return true;
             }
             (*rc).range <<= RC_SHIFT_BITS;
         }
@@ -583,7 +581,7 @@ unsafe extern "C" fn rc_encode(
                 (*rc).range = UINT32_MAX as u32;
                 loop {
                     if rc_shift_low(rc, out, out_pos, out_size) {
-                        return true_0 != 0;
+                        return true;
                     }
                     (*rc).pos = (*rc).pos.wrapping_add(1);
                     if !((*rc).pos < (*rc).count) {
@@ -591,7 +589,7 @@ unsafe extern "C" fn rc_encode(
                     }
                 }
                 rc_reset(rc);
-                return false_0 != 0;
+                return false;
             }
             _ => {}
         }
@@ -599,7 +597,7 @@ unsafe extern "C" fn rc_encode(
     }
     (*rc).count = 0 as size_t;
     (*rc).pos = 0 as size_t;
-    return false_0 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn rc_encode_dummy(
@@ -621,7 +619,7 @@ unsafe extern "C" fn rc_encode_dummy(
                 &raw mut out_pos,
                 out_limit,
             ) {
-                return true_0 != 0;
+                return true;
             }
             range <<= RC_SHIFT_BITS;
         }
@@ -659,11 +657,11 @@ unsafe extern "C" fn rc_encode_dummy(
             &raw mut out_pos,
             out_limit,
         ) {
-            return true_0 != 0;
+            return true;
         }
         pos = pos.wrapping_add(1);
     }
-    return false_0 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn rc_pending(mut rc: *const lzma_range_encoder) -> u64 {
@@ -1085,7 +1083,7 @@ unsafe extern "C" fn encode_symbol(
 unsafe extern "C" fn encode_init(mut coder: *mut lzma_lzma1_encoder, mut mf: *mut lzma_mf) -> bool {
     if (*mf).read_pos == (*mf).read_limit {
         if (*mf).action == LZMA_RUN {
-            return false_0 != 0;
+            return false;
         }
     } else {
         mf_skip(mf, 1 as u32);
@@ -1105,8 +1103,8 @@ unsafe extern "C" fn encode_init(mut coder: *mut lzma_lzma1_encoder, mut mf: *mu
         );
         (*coder).uncomp_size = (*coder).uncomp_size.wrapping_add(1);
     }
-    (*coder).is_initialized = true_0 != 0;
-    return true_0 != 0;
+    (*coder).is_initialized = true;
+    return true;
 }
 unsafe extern "C" fn encode_eopm(mut coder: *mut lzma_lzma1_encoder, mut position: u32) {
     let pos_state: u32 = position & (*coder).pos_mask;
@@ -1191,7 +1189,7 @@ pub unsafe extern "C" fn lzma_lzma_encode(
     }
     rc_flush(&raw mut (*coder).rc);
     if rc_encode(&raw mut (*coder).rc, out, out_pos, out_size) {
-        (*coder).is_flushed = true_0 != 0;
+        (*coder).is_flushed = true;
         return LZMA_OK;
     }
     return LZMA_STREAM_END;
@@ -1226,7 +1224,7 @@ unsafe extern "C" fn lzma_lzma_set_out_limit(
     let mut coder: *mut lzma_lzma1_encoder = coder_ptr as *mut lzma_lzma1_encoder;
     (*coder).out_limit = out_limit;
     (*coder).uncomp_size_ptr = uncomp_size;
-    (*coder).use_eopm = false_0 != 0;
+    (*coder).use_eopm = false;
     return LZMA_OK;
 }
 unsafe extern "C" fn is_options_valid(mut options: *const lzma_options_lzma) -> bool {
@@ -1384,10 +1382,10 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
     let mut coder: *mut lzma_lzma1_encoder = *coder_ptr as *mut lzma_lzma1_encoder;
     match (*options).mode {
         1 => {
-            (*coder).fast_mode = true_0 != 0;
+            (*coder).fast_mode = true;
         }
         2 => {
-            (*coder).fast_mode = false_0 != 0;
+            (*coder).fast_mode = false;
             if (*options).dict_size > ((1 as u32) << 30).wrapping_add((1 as u32) << 29) {
                 return LZMA_OPTIONS_ERROR;
             }
@@ -1412,7 +1410,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
     }
     (*coder).is_initialized =
         !(*options).preset_dict.is_null() && (*options).preset_dict_size > 0 as u32;
-    (*coder).is_flushed = false_0 != 0;
+    (*coder).is_flushed = false;
     (*coder).uncomp_size = 0 as u64;
     (*coder).uncomp_size_ptr = ::core::ptr::null_mut::<u64>();
     (*coder).out_limit = 0 as u64;
@@ -1518,7 +1516,7 @@ pub unsafe extern "C" fn lzma_lzma_lclppb_encode(
     mut byte: *mut u8,
 ) -> bool {
     if !is_lclppb_valid(options) {
-        return true_0 != 0;
+        return true;
     }
     *byte = (*options)
         .pb
@@ -1526,7 +1524,7 @@ pub unsafe extern "C" fn lzma_lzma_lclppb_encode(
         .wrapping_add((*options).lp)
         .wrapping_mul(9 as u32)
         .wrapping_add((*options).lc) as u8;
-    return false_0 != 0;
+    return false;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_props_encode(

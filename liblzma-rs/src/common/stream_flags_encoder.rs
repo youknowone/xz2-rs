@@ -53,8 +53,6 @@ pub struct lzma_stream_flags {
     pub reserved_int1: u32,
     pub reserved_int2: u32,
 }
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn write32le(mut buf: *mut u8, mut num: u32) {
     *buf.offset(0) = num as u8;
@@ -77,11 +75,11 @@ unsafe extern "C" fn stream_flags_encode(
     mut out: *mut u8,
 ) -> bool {
     if (*options).check > LZMA_CHECK_ID_MAX {
-        return true_0 != 0;
+        return true;
     }
     *out.offset(0) = 0 as u8;
     *out.offset(1) = (*options).check as u8;
-    return false_0 != 0;
+    return false;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_header_encode(

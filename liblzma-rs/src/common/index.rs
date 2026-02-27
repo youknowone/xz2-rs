@@ -205,8 +205,6 @@ pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn bsr32(mut n: u32) -> u32 {
     return n.leading_zeros() as i32 as u32 ^ 31 as u32;
@@ -983,7 +981,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
     mut mode: lzma_index_iter_mode,
 ) -> lzma_bool {
     if mode > LZMA_INDEX_ITER_NONEMPTY_BLOCK {
-        return true_0 as lzma_bool;
+        return true as lzma_bool;
     }
     let mut i: *const lzma_index = (*iter).internal[ITER_INDEX as usize].p as *const lzma_index;
     let mut stream: *const index_stream =
@@ -1013,7 +1011,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
                 while (*stream).groups.leftmost.is_null() {
                     stream = index_tree_next(&raw const (*stream).node) as *const index_stream;
                     if stream.is_null() {
-                        return true_0 as lzma_bool;
+                        return true as lzma_bool;
                     }
                 }
             }
@@ -1030,7 +1028,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
                 loop {
                     stream = index_tree_next(&raw const (*stream).node) as *const index_stream;
                     if stream.is_null() {
-                        return true_0 as lzma_bool;
+                        return true as lzma_bool;
                     }
                     if !(mode >= LZMA_INDEX_ITER_BLOCK && (*stream).groups.leftmost.is_null()) {
                         break;
@@ -1062,7 +1060,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
     (*iter).internal[ITER_GROUP as usize].p = group as *const c_void;
     (*iter).internal[ITER_RECORD as usize].s = record;
     iter_set_info(iter);
-    return false_0 as lzma_bool;
+    return false as lzma_bool;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_index_iter_locate(
@@ -1071,7 +1069,7 @@ pub unsafe extern "C" fn lzma_index_iter_locate(
 ) -> lzma_bool {
     let mut i: *const lzma_index = (*iter).internal[ITER_INDEX as usize].p as *const lzma_index;
     if (*i).uncompressed_size <= target {
-        return true_0 as lzma_bool;
+        return true as lzma_bool;
     }
     let mut stream: *const index_stream =
         index_tree_locate(&raw const (*i).streams, target) as *const index_stream;
@@ -1095,5 +1093,5 @@ pub unsafe extern "C" fn lzma_index_iter_locate(
     (*iter).internal[ITER_GROUP as usize].p = group as *const c_void;
     (*iter).internal[ITER_RECORD as usize].s = left;
     iter_set_info(iter);
-    return false_0 as lzma_bool;
+    return false as lzma_bool;
 }

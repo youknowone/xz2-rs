@@ -244,7 +244,6 @@ pub const SEQ_COUNT: C2RustUnnamed_3 = 1;
 pub const SEQ_INDICATOR: C2RustUnnamed_3 = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
-pub const true_0: c_int = 1 as c_int;
 pub const INDEX_INDICATOR: c_int = 0 as c_int;
 unsafe extern "C" fn index_encode(
     mut coder_ptr: *mut c_void,
@@ -461,8 +460,8 @@ pub unsafe extern "C" fn lzma_index_encoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }
 #[no_mangle]

@@ -223,8 +223,6 @@ pub const SEQ_CONTROL: sequence = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT32_MAX: c_uint = 4294967295;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZ_DICT_REPEAT_MAX: c_int = 288 as c_int;
 pub const LZ_DICT_INIT_POS: c_int = 2 as c_int * LZ_DICT_REPEAT_MAX;
 pub const LZMA_LZ_DECODER_INIT: lzma_lz_decoder = lzma_lz_decoder {
@@ -259,7 +257,7 @@ unsafe extern "C" fn dict_write(
 }
 #[inline]
 unsafe extern "C" fn dict_reset(mut dict: *mut lzma_dict) {
-    (*dict).need_reset = true_0 != 0;
+    (*dict).need_reset = true;
 }
 unsafe extern "C" fn lzma2_decode(
     mut coder_ptr: *mut c_void,
@@ -278,8 +276,8 @@ unsafe extern "C" fn lzma2_decode(
                     return LZMA_STREAM_END;
                 }
                 if control >= 0xe0 as u32 || control == 1 as u32 {
-                    (*coder).need_properties = true_0 != 0;
-                    (*coder).need_dictionary_reset = true_0 != 0;
+                    (*coder).need_properties = true;
+                    (*coder).need_dictionary_reset = true;
                 } else if (*coder).need_dictionary_reset {
                     return LZMA_DATA_ERROR;
                 }
@@ -287,7 +285,7 @@ unsafe extern "C" fn lzma2_decode(
                     (*coder).uncompressed_size = ((control & 0x1f as u32) << 16) as size_t;
                     (*coder).sequence = SEQ_UNCOMPRESSED_1;
                     if control >= 0xc0 as u32 {
-                        (*coder).need_properties = false_0 != 0;
+                        (*coder).need_properties = false;
                         (*coder).next_sequence = SEQ_PROPERTIES;
                     } else if (*coder).need_properties {
                         return LZMA_DATA_ERROR;
@@ -308,7 +306,7 @@ unsafe extern "C" fn lzma2_decode(
                     (*coder).next_sequence = SEQ_COPY;
                 }
                 if (*coder).need_dictionary_reset {
-                    (*coder).need_dictionary_reset = false_0 != 0;
+                    (*coder).need_dictionary_reset = false;
                     dict_reset(dict);
                     return LZMA_OK;
                 }
@@ -334,7 +332,7 @@ unsafe extern "C" fn lzma2_decode(
                     .expect("non-null function pointer")(
                     (*coder).lzma.coder,
                     (*coder).uncompressed_size as lzma_vli,
-                    false_0 != 0,
+                    false,
                 );
             }
             3 => {
@@ -456,7 +454,7 @@ unsafe extern "C" fn lzma2_decoder_init(
     }
     let mut options: *const lzma_options_lzma = opt as *const lzma_options_lzma;
     (*coder).sequence = SEQ_CONTROL;
-    (*coder).need_properties = true_0 != 0;
+    (*coder).need_properties = true;
     (*coder).need_dictionary_reset =
         (*options).preset_dict.is_null() || (*options).preset_dict_size == 0 as u32;
     return lzma_lzma_decoder_create(&raw mut (*coder).lzma, allocator, options, lz_options);

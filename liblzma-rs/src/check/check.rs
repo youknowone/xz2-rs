@@ -38,31 +38,29 @@ pub union C2RustUnnamed_0 {
     pub u64_0: [u64; 8],
 }
 pub const UINT32_MAX: c_uint = 4294967295;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_check_is_supported(mut type_0: lzma_check) -> lzma_bool {
     if type_0 > LZMA_CHECK_ID_MAX {
-        return false_0 as lzma_bool;
+        return false as lzma_bool;
     }
     static mut available_checks: [lzma_bool; 16] = [
-        true_0 as lzma_bool,
-        true_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        true_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        true_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
-        false_0 as lzma_bool,
+        true as lzma_bool,
+        true as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        true as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        true as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
+        false as lzma_bool,
     ];
     return available_checks[type_0 as usize];
 }

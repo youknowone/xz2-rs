@@ -43,8 +43,6 @@ pub struct lzma_mf_s {
 }
 pub type lzma_mf = lzma_mf_s;
 pub const UINT32_MAX: c_uint = 4294967295;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn mf_ptr(mut mf: *const lzma_mf) -> *const u8 {
     return (*mf).buffer.offset((*mf).read_pos as isize);

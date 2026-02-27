@@ -204,8 +204,6 @@ pub struct lzma_coder {
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 #[inline]
@@ -335,7 +333,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         && (*lz_options).dict_size <= (1u32 << 30).wrapping_add(1u32 << 29) as size_t)
         || (*lz_options).nice_len > (*lz_options).match_len_max
     {
-        return true_0 != 0;
+        return true;
     }
     (*mf).keep_size_before = (*lz_options)
         .before_size
@@ -408,7 +406,7 @@ unsafe extern "C" fn lz_encoder_prepare(
             (*mf).skip = Some(lzma_mf_bt4_skip as unsafe extern "C" fn(*mut lzma_mf, u32) -> ())
                 as Option<unsafe extern "C" fn(*mut lzma_mf, u32) -> ()>;
         }
-        _ => return true_0 != 0,
+        _ => return true,
     }
     let hash_bytes: u32 = mf_get_hash_bytes((*lz_options).match_finder) as u32;
     let is_bt: bool = (*lz_options).match_finder & 0x10 != 0;
@@ -460,7 +458,7 @@ unsafe extern "C" fn lz_encoder_prepare(
             (*mf).depth = (4 as u32).wrapping_add((*mf).nice_len.wrapping_div(4 as u32));
         }
     }
-    return false_0 != 0;
+    return false;
 }
 unsafe extern "C" fn lz_encoder_init(
     mut mf: *mut lzma_mf,
@@ -473,7 +471,7 @@ unsafe extern "C" fn lz_encoder_init(
             allocator,
         ) as *mut u8;
         if (*mf).buffer.is_null() {
-            return true_0 != 0;
+            return true;
         }
         memset(
             (*mf).buffer.offset((*mf).size as isize) as *mut c_void,
@@ -501,7 +499,7 @@ unsafe extern "C" fn lz_encoder_init(
             (*mf).hash = ::core::ptr::null_mut::<u32>();
             lzma_free((*mf).son as *mut c_void, allocator);
             (*mf).son = ::core::ptr::null_mut::<u32>();
-            return true_0 != 0;
+            return true;
         }
     } else {
         memset(
@@ -529,7 +527,7 @@ unsafe extern "C" fn lz_encoder_init(
         (*mf).skip.expect("non-null function pointer")(mf, (*mf).write_pos);
     }
     (*mf).action = LZMA_RUN;
-    return false_0 != 0;
+    return false;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lz_encoder_memusage(mut lz_options: *const lzma_lz_options) -> u64 {
@@ -746,11 +744,11 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_is_supported(mut mf: lzma_match_finder) -> lzma_bool {
     match mf {
-        3 => return true_0 as lzma_bool,
-        4 => return true_0 as lzma_bool,
-        18 => return true_0 as lzma_bool,
-        19 => return true_0 as lzma_bool,
-        20 => return true_0 as lzma_bool,
-        _ => return false_0 as lzma_bool,
+        3 => return true as lzma_bool,
+        4 => return true as lzma_bool,
+        18 => return true as lzma_bool,
+        19 => return true as lzma_bool,
+        20 => return true as lzma_bool,
+        _ => return false as lzma_bool,
     };
 }

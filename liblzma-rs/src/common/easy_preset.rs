@@ -52,8 +52,6 @@ pub struct lzma_options_easy {
     pub opt_lzma: lzma_options_lzma,
 }
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21;
 #[no_mangle]
@@ -62,10 +60,10 @@ pub unsafe extern "C" fn lzma_easy_preset(
     mut preset: u32,
 ) -> bool {
     if lzma_lzma_preset(&raw mut (*opt_easy).opt_lzma, preset) != 0 {
-        return true_0 != 0;
+        return true;
     }
     (*opt_easy).filters[0].id = LZMA_FILTER_LZMA2 as lzma_vli;
     (*opt_easy).filters[0].options = &raw mut (*opt_easy).opt_lzma as *mut c_void;
     (*opt_easy).filters[1].id = LZMA_VLI_UNKNOWN as lzma_vli;
-    return false_0 != 0;
+    return false;
 }

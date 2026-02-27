@@ -233,7 +233,6 @@ pub type lzma_filter_find = Option<unsafe extern "C" fn(lzma_vli) -> *const lzma
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTER_X86: c_ulonglong = 0x4;
@@ -549,7 +548,7 @@ pub unsafe extern "C" fn lzma_raw_encoder_init(
         allocator,
         filters,
         Some(coder_find as unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder),
-        true_0 != 0,
+        true,
     );
 }
 #[no_mangle]
@@ -572,9 +571,9 @@ pub unsafe extern "C" fn lzma_raw_encoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }
 #[no_mangle]

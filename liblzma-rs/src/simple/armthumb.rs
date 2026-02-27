@@ -106,8 +106,6 @@ pub type lzma_init_function = Option<
     ) -> lzma_ret,
 >;
 pub type lzma_filter_info = lzma_filter_info_s;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 unsafe extern "C" fn armthumb_code(
     mut simple: *mut c_void,
     mut now_pos: u32,
@@ -181,7 +179,7 @@ pub unsafe extern "C" fn lzma_simple_armthumb_encoder_init(
     mut allocator: *const lzma_allocator,
     mut filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return armthumb_coder_init(next, allocator, filters, true_0 != 0);
+    return armthumb_coder_init(next, allocator, filters, true);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_armthumb_decoder_init(
@@ -189,5 +187,5 @@ pub unsafe extern "C" fn lzma_simple_armthumb_decoder_init(
     mut allocator: *const lzma_allocator,
     mut filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return armthumb_coder_init(next, allocator, filters, false_0 != 0);
+    return armthumb_coder_init(next, allocator, filters, false);
 }

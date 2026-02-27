@@ -95,7 +95,6 @@ pub struct lzma_block {
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn read32le(mut buf: *const u8) -> u32 {
     let mut num: u32 = *buf.offset(0) as u32;
@@ -126,7 +125,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     if (*block).version > 1 as u32 {
         (*block).version = 1 as u32;
     }
-    (*block).ignore_check = false_0 as lzma_bool;
+    (*block).ignore_check = false as lzma_bool;
     if (*in_0.offset(0) as u32)
         .wrapping_add(1 as u32)
         .wrapping_mul(4 as u32)

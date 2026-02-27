@@ -263,8 +263,6 @@ pub const SEQ_STREAM_HEADER: C2RustUnnamed_0 = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_TELL_NO_CHECK: c_uint = 0x1;
 pub const LZMA_TELL_UNSUPPORTED_CHECK: c_uint = 0x2;
@@ -332,7 +330,7 @@ unsafe extern "C" fn stream_decode(
                         ret
                     }) as lzma_ret;
                 }
-                (*coder).first_stream = false_0 != 0;
+                (*coder).first_stream = false;
                 (*coder).block_options.check = (*coder).stream_flags.check;
                 (*coder).sequence = SEQ_BLOCK_HEADER;
                 if (*coder).tell_no_check as c_int != 0
@@ -715,7 +713,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
     (*coder).tell_any_check = flags & LZMA_TELL_ANY_CHECK as u32 != 0 as u32;
     (*coder).ignore_check = flags & LZMA_IGNORE_CHECK as u32 != 0 as u32;
     (*coder).concatenated = flags & LZMA_CONCATENATED as u32 != 0 as u32;
-    (*coder).first_stream = true_0 != 0;
+    (*coder).first_stream = true;
     return stream_decoder_reset(coder, allocator);
 }
 #[no_mangle]
@@ -738,7 +736,7 @@ pub unsafe extern "C" fn lzma_stream_decoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

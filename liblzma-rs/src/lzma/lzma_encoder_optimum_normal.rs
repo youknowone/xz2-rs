@@ -145,8 +145,6 @@ pub struct lzma_length_encoder {
 }
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
 pub const UINT32_MAX: c_uint = 4294967295;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 #[inline]
 unsafe extern "C" fn mf_ptr(mut mf: *const lzma_mf) -> *const u8 {
     return (*mf).buffer.offset((*mf).read_pos as isize);
@@ -498,12 +496,12 @@ unsafe extern "C" fn fill_align_prices(mut coder: *mut lzma_lzma1_encoder) {
 #[inline]
 unsafe extern "C" fn make_literal(mut optimal: *mut lzma_optimal) {
     (*optimal).back_prev = UINT32_MAX as u32;
-    (*optimal).prev_1_is_literal = false_0 != 0;
+    (*optimal).prev_1_is_literal = false;
 }
 #[inline]
 unsafe extern "C" fn make_short_rep(mut optimal: *mut lzma_optimal) {
     (*optimal).back_prev = 0 as u32;
-    (*optimal).prev_1_is_literal = false_0 != 0;
+    (*optimal).prev_1_is_literal = false;
 }
 unsafe extern "C" fn backward(
     mut coder: *mut lzma_lzma1_encoder,
@@ -522,8 +520,7 @@ unsafe extern "C" fn backward(
             );
             (*coder).opts[pos_mem as usize].pos_prev = pos_mem.wrapping_sub(1 as u32);
             if (*coder).opts[cur as usize].prev_2 {
-                (*coder).opts[pos_mem.wrapping_sub(1 as u32) as usize].prev_1_is_literal =
-                    false_0 != 0;
+                (*coder).opts[pos_mem.wrapping_sub(1 as u32) as usize].prev_1_is_literal = false;
                 (*coder).opts[pos_mem.wrapping_sub(1 as u32) as usize].pos_prev =
                     (*coder).opts[cur as usize].pos_prev_2;
                 (*coder).opts[pos_mem.wrapping_sub(1 as u32) as usize].back_prev =
@@ -694,7 +691,7 @@ unsafe extern "C" fn helper1(
                     (*coder).opts[rep_len as usize].price = cur_and_len_price;
                     (*coder).opts[rep_len as usize].pos_prev = 0 as u32;
                     (*coder).opts[rep_len as usize].back_prev = i_1;
-                    (*coder).opts[rep_len as usize].prev_1_is_literal = false_0 != 0;
+                    (*coder).opts[rep_len as usize].prev_1_is_literal = false;
                 }
                 rep_len = rep_len.wrapping_sub(1);
                 if !(rep_len >= 2 as u32) {
@@ -724,7 +721,7 @@ unsafe extern "C" fn helper1(
                 (*coder).opts[len as usize].price = cur_and_len_price_0;
                 (*coder).opts[len as usize].pos_prev = 0 as u32;
                 (*coder).opts[len as usize].back_prev = dist.wrapping_add(REPS as u32);
-                (*coder).opts[len as usize].prev_1_is_literal = false_0 != 0;
+                (*coder).opts[len as usize].prev_1_is_literal = false;
             }
             if len == (*coder).matches[i_2 as usize].len {
                 i_2 = i_2.wrapping_add(1);
@@ -869,7 +866,7 @@ unsafe extern "C" fn helper2(
             match_byte as u32,
             current_byte as u32,
         ) as u32);
-    let mut next_is_literal: bool = false_0 != 0;
+    let mut next_is_literal: bool = false;
     if cur_and_1_price < (*coder).opts[cur.wrapping_add(1 as u32) as usize].price {
         (*coder).opts[cur.wrapping_add(1 as u32) as usize].price = cur_and_1_price;
         (*coder).opts[cur.wrapping_add(1 as u32) as usize].pos_prev = cur;
@@ -877,7 +874,7 @@ unsafe extern "C" fn helper2(
             (&raw mut (*coder).opts as *mut lzma_optimal)
                 .offset(cur.wrapping_add(1 as u32) as isize) as *mut lzma_optimal,
         );
-        next_is_literal = true_0 != 0;
+        next_is_literal = true;
     }
     let match_price: u32 = cur_price
         .wrapping_add(rc_bit_1_price((*coder).is_match[state as usize][pos_state as usize]) as u32);
@@ -897,7 +894,7 @@ unsafe extern "C" fn helper2(
                     .offset(cur.wrapping_add(1 as u32) as isize)
                     as *mut lzma_optimal,
             );
-            next_is_literal = true_0 != 0;
+            next_is_literal = true;
         }
     }
     if buf_avail_full < 2 as u32 {
@@ -948,8 +945,8 @@ unsafe extern "C" fn helper2(
                 (*coder).opts[offset as usize].price = cur_and_len_price;
                 (*coder).opts[offset as usize].pos_prev = cur.wrapping_add(1 as u32);
                 (*coder).opts[offset as usize].back_prev = 0 as u32;
-                (*coder).opts[offset as usize].prev_1_is_literal = true_0 != 0;
-                (*coder).opts[offset as usize].prev_2 = false_0 != 0;
+                (*coder).opts[offset as usize].prev_1_is_literal = true;
+                (*coder).opts[offset as usize].prev_2 = false;
             }
         }
     }
@@ -982,8 +979,7 @@ unsafe extern "C" fn helper2(
                         cur_and_len_price_0;
                     (*coder).opts[cur.wrapping_add(len_test_0) as usize].pos_prev = cur;
                     (*coder).opts[cur.wrapping_add(len_test_0) as usize].back_prev = rep_index;
-                    (*coder).opts[cur.wrapping_add(len_test_0) as usize].prev_1_is_literal =
-                        false_0 != 0;
+                    (*coder).opts[cur.wrapping_add(len_test_0) as usize].prev_1_is_literal = false;
                 }
                 len_test_0 = len_test_0.wrapping_sub(1);
                 if !(len_test_0 >= 2 as u32) {
@@ -1026,7 +1022,7 @@ unsafe extern "C" fn helper2(
                         coder,
                         position.wrapping_add(len_test_0),
                         *buf.offset(len_test_0.wrapping_sub(1 as u32) as isize) as u32,
-                        true_0 != 0,
+                        true,
                         *buf_back_0.offset(len_test_0 as isize) as u32,
                         *buf.offset(len_test_0 as isize) as u32,
                     ) as u32);
@@ -1065,8 +1061,8 @@ unsafe extern "C" fn helper2(
                     (*coder).opts[offset_0 as usize].pos_prev =
                         cur.wrapping_add(len_test_0).wrapping_add(1 as u32);
                     (*coder).opts[offset_0 as usize].back_prev = 0 as u32;
-                    (*coder).opts[offset_0 as usize].prev_1_is_literal = true_0 != 0;
-                    (*coder).opts[offset_0 as usize].prev_2 = true_0 != 0;
+                    (*coder).opts[offset_0 as usize].prev_1_is_literal = true;
+                    (*coder).opts[offset_0 as usize].prev_2 = true;
                     (*coder).opts[offset_0 as usize].pos_prev_2 = cur;
                     (*coder).opts[offset_0 as usize].back_prev_2 = rep_index;
                 }
@@ -1105,8 +1101,7 @@ unsafe extern "C" fn helper2(
                 (*coder).opts[cur.wrapping_add(len_test_1) as usize].pos_prev = cur;
                 (*coder).opts[cur.wrapping_add(len_test_1) as usize].back_prev =
                     cur_back.wrapping_add(REPS as u32);
-                (*coder).opts[cur.wrapping_add(len_test_1) as usize].prev_1_is_literal =
-                    false_0 != 0;
+                (*coder).opts[cur.wrapping_add(len_test_1) as usize].prev_1_is_literal = false;
             }
             if len_test_1 == (*coder).matches[i_2 as usize].len {
                 let buf_back_1: *const u8 = buf.offset(-(cur_back as isize)).offset(-1);
@@ -1137,7 +1132,7 @@ unsafe extern "C" fn helper2(
                             coder,
                             position.wrapping_add(len_test_1),
                             *buf.offset(len_test_1.wrapping_sub(1 as u32) as isize) as u32,
-                            true_0 != 0,
+                            true,
                             *buf_back_1.offset(len_test_1 as isize) as u32,
                             *buf.offset(len_test_1 as isize) as u32,
                         ) as u32);
@@ -1174,8 +1169,8 @@ unsafe extern "C" fn helper2(
                         (*coder).opts[offset_1 as usize].pos_prev =
                             cur.wrapping_add(len_test_1).wrapping_add(1 as u32);
                         (*coder).opts[offset_1 as usize].back_prev = 0 as u32;
-                        (*coder).opts[offset_1 as usize].prev_1_is_literal = true_0 != 0;
-                        (*coder).opts[offset_1 as usize].prev_2 = true_0 != 0;
+                        (*coder).opts[offset_1 as usize].prev_1_is_literal = true;
+                        (*coder).opts[offset_1 as usize].prev_2 = true;
                         (*coder).opts[offset_1 as usize].pos_prev_2 = cur;
                         (*coder).opts[offset_1 as usize].back_prev_2 =
                             cur_back.wrapping_add(REPS as u32);

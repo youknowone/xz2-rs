@@ -251,8 +251,6 @@ pub struct lzma_stream_flags {
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_STREAM_HEADER_SIZE: c_int = 12 as c_int;
 unsafe extern "C" fn block_encoder_init(
@@ -328,7 +326,7 @@ unsafe extern "C" fn stream_encode(
                             return ret__0;
                         }
                     }
-                    (*coder).block_encoder_is_initialized = false_0 != 0;
+                    (*coder).block_encoder_is_initialized = false;
                     if lzma_block_header_encode(
                         &raw mut (*coder).block_options,
                         &raw mut (*coder).buffer as *mut u8,
@@ -460,14 +458,14 @@ unsafe extern "C" fn stream_encoder_update(
         return ret_;
     }
     if (*coder).sequence <= SEQ_BLOCK_INIT {
-        (*coder).block_encoder_is_initialized = false_0 != 0;
+        (*coder).block_encoder_is_initialized = false;
         (*coder).block_options.filters = &raw mut temp as *mut lzma_filter;
         ret = block_encoder_init(coder, allocator);
         (*coder).block_options.filters = &raw mut (*coder).filters as *mut lzma_filter;
         if ret != LZMA_OK {
             current_block = 9913398440939854562;
         } else {
-            (*coder).block_encoder_is_initialized = true_0 != 0;
+            (*coder).block_encoder_is_initialized = true;
             current_block = 8236137900636309791;
         }
     } else if (*coder).sequence <= SEQ_BLOCK_ENCODE {
@@ -688,10 +686,10 @@ pub unsafe extern "C" fn lzma_stream_encoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FULL_FLUSH as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FULL_BARRIER as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FULL_FLUSH as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FULL_BARRIER as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

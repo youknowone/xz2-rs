@@ -142,8 +142,6 @@ pub struct lzma_simple_coder {
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 unsafe extern "C" fn copy_or_code(
     mut coder: *mut lzma_simple_coder,
@@ -159,7 +157,7 @@ unsafe extern "C" fn copy_or_code(
     if (*coder).next.code.is_none() {
         lzma_bufcpy(in_0, in_pos, in_size, out, out_pos, out_size);
         if (*coder).is_encoder as c_int != 0 && action == LZMA_FINISH && *in_pos == in_size {
-            (*coder).end_was_reached = true_0 != 0;
+            (*coder).end_was_reached = true;
         }
     } else {
         let ret: lzma_ret = (*coder).next.code.expect("non-null function pointer")(
@@ -174,7 +172,7 @@ unsafe extern "C" fn copy_or_code(
             action,
         ) as lzma_ret;
         if ret == LZMA_STREAM_END {
-            (*coder).end_was_reached = true_0 != 0;
+            (*coder).end_was_reached = true;
         } else if ret != LZMA_OK {
             return ret;
         }
@@ -420,7 +418,7 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
         (*coder).now_pos = 0 as u32;
     }
     (*coder).is_encoder = is_encoder;
-    (*coder).end_was_reached = false_0 != 0;
+    (*coder).end_was_reached = false;
     (*coder).pos = 0 as size_t;
     (*coder).filtered = 0 as size_t;
     (*coder).size = 0 as size_t;

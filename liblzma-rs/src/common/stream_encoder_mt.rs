@@ -524,8 +524,6 @@ pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const SIG_SETMASK: c_int = 3 as c_int;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const MYTHREAD_RET_VALUE: *mut c_void = NULL;
 #[inline]
 unsafe extern "C" fn mythread_sigmask(
@@ -911,7 +909,7 @@ unsafe extern "C" fn worker_start(mut thr_ptr: *mut c_void) -> *mut c_void {
             while mythread_j_408 == 0 {
                 if state == THR_FINISH {
                     (*(*thr).outbuf).pos = out_pos;
-                    (*(*thr).outbuf).finished = true_0 != 0;
+                    (*(*thr).outbuf).finished = true;
                 }
                 (*(*thr).coder).progress_in = (*(*thr).coder)
                     .progress_in
@@ -1181,7 +1179,7 @@ unsafe extern "C" fn stream_encode_in(
         );
         let finish: bool =
             thr_in_size == (*coder).block_size || *in_pos == in_size && action != LZMA_RUN;
-        let mut block_error: bool = false_0 != 0;
+        let mut block_error: bool = false;
         let mut mythread_i_628: c_uint = 0;
         while if mythread_i_628 != 0 {
             mythread_mutex_unlock(&raw mut (*(*coder).thr).mutex);
@@ -1194,7 +1192,7 @@ unsafe extern "C" fn stream_encode_in(
             let mut mythread_j_628: c_uint = 0;
             while mythread_j_628 == 0 {
                 if (*(*coder).thr).state == THR_IDLE {
-                    block_error = true_0 != 0;
+                    block_error = true;
                 } else {
                     (*(*coder).thr).in_size = thr_in_size;
                     if finish {
@@ -1239,10 +1237,10 @@ unsafe extern "C" fn wait_for_work(
     mut has_input: bool,
 ) -> bool {
     if (*coder).timeout != 0 as u32 && !*has_blocked {
-        *has_blocked = true_0 != 0;
+        *has_blocked = true;
         mythread_condtime_set(wait_abs, &raw mut (*coder).cond, (*coder).timeout);
     }
-    let mut timed_out: bool = false_0 != 0;
+    let mut timed_out: bool = false;
     let mut mythread_i_689: c_uint = 0;
     while if mythread_i_689 != 0 {
         mythread_mutex_unlock(&raw mut (*coder).mutex);
@@ -1326,7 +1324,7 @@ unsafe extern "C" fn stream_encode_mt(
                 let mut unpadded_size: lzma_vli = 0 as lzma_vli;
                 let mut uncompressed_size: lzma_vli = 0 as lzma_vli;
                 let mut ret: lzma_ret = LZMA_OK;
-                let mut has_blocked: bool = false_0 != 0;
+                let mut has_blocked: bool = false;
                 let mut wait_abs: mythread_condtime = timespec {
                     tv_sec: 0 as __darwin_time_t,
                     tv_nsec: 0,
@@ -1368,7 +1366,7 @@ unsafe extern "C" fn stream_encode_mt(
                             uncompressed_size,
                         );
                         if ret != LZMA_OK {
-                            threads_stop(coder, false_0 != 0);
+                            threads_stop(coder, false);
                             return ret;
                         }
                         if *out_pos < out_size {
@@ -1376,12 +1374,12 @@ unsafe extern "C" fn stream_encode_mt(
                         }
                     }
                     if ret != LZMA_OK {
-                        threads_stop(coder, false_0 != 0);
+                        threads_stop(coder, false);
                         return ret;
                     }
                     ret = stream_encode_in(coder, allocator, in_0, in_pos, in_size, action);
                     if ret != LZMA_OK {
-                        threads_stop(coder, false_0 != 0);
+                        threads_stop(coder, false);
                         return ret;
                     }
                     if *in_pos == in_size {
@@ -1816,7 +1814,7 @@ unsafe extern "C" fn stream_encoder_mt_init(
         }
         (*coder).threads_max = (*options).threads;
     } else {
-        threads_stop(coder, true_0 != 0);
+        threads_stop(coder, true);
     }
     let ret__0: lzma_ret =
         lzma_outq_init(&raw mut (*coder).outq, allocator, (*options).threads) as lzma_ret;
@@ -1874,10 +1872,10 @@ pub unsafe extern "C" fn lzma_stream_encoder_mt(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FULL_FLUSH as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FULL_BARRIER as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FULL_FLUSH as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FULL_BARRIER as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }
 #[no_mangle]

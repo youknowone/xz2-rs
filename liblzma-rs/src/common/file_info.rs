@@ -221,8 +221,6 @@ pub const SEQ_MAGIC_BYTES: C2RustUnnamed_0 = 0;
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_STREAM_HEADER_SIZE: c_int = 12 as c_int;
@@ -258,10 +256,10 @@ unsafe extern "C" fn seek_to_pos(
     let mut external_seek_needed: bool = false;
     if target_pos >= pos_min && target_pos <= pos_max {
         *in_pos = (*in_pos).wrapping_add(target_pos.wrapping_sub((*coder).file_cur_pos) as size_t);
-        external_seek_needed = false_0 != 0;
+        external_seek_needed = false;
     } else {
         *(*coder).external_seek_pos = target_pos;
-        external_seek_needed = true_0 != 0;
+        external_seek_needed = true;
         *in_pos = in_size;
     }
     (*coder).file_cur_pos = target_pos;
@@ -540,14 +538,14 @@ unsafe extern "C" fn file_info_decode(
                         &raw mut (*coder).temp as *mut u8,
                         &raw mut (*coder).temp_pos,
                         (*coder).temp_size,
-                        false_0 != 0,
+                        false,
                     );
                 } else {
                     let mut in_stop: size_t = in_size;
                     if in_size.wrapping_sub(*in_pos) as lzma_vli > (*coder).index_remaining {
                         in_stop = (*in_pos).wrapping_add((*coder).index_remaining as size_t);
                     }
-                    ret = decode_index(coder, allocator, in_0, in_pos, in_stop, true_0 != 0);
+                    ret = decode_index(coder, allocator, in_0, in_pos, in_stop, true);
                 }
                 match ret {
                     0 => {
@@ -890,7 +888,7 @@ pub unsafe extern "C" fn lzma_file_info_decoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true_0 != 0;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true_0 != 0;
+    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
+    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     return LZMA_OK;
 }

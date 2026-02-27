@@ -199,8 +199,6 @@ pub struct lzma_sha256_state {
 pub const __DARWIN_NULL: *mut c_void = ::core::ptr::null_mut::<c_void>();
 pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_VLI_BYTES_MAX: c_int = 9 as c_int;
@@ -502,14 +500,7 @@ pub unsafe extern "C" fn lzma_block_buffer_encode(
     mut out_size: size_t,
 ) -> lzma_ret {
     return block_buffer_encode(
-        block,
-        allocator,
-        in_0,
-        in_size,
-        out,
-        out_pos,
-        out_size,
-        true_0 != 0,
+        block, allocator, in_0, in_size, out, out_pos, out_size, true,
     );
 }
 #[no_mangle]
@@ -529,6 +520,6 @@ pub unsafe extern "C" fn lzma_block_uncomp_encode(
         out,
         out_pos,
         out_size,
-        false_0 != 0,
+        false,
     );
 }

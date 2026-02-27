@@ -156,8 +156,6 @@ pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT32_MAX: c_uint = 4294967295;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const INT_MAX: c_int = c_int::MAX;
-pub const true_0: c_int = 1 as c_int;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_FILTERS_MAX: c_int = 4 as c_int;
 pub const LZMA_STR_ALL_FILTERS: c_uint = 0x1;
@@ -475,7 +473,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const lzma12_optmap as *const option_map,
             strfy_encoder: 9 as u8,
             strfy_decoder: 5 as u8,
-            allow_null: false_0 != 0,
+            allow_null: false,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lzma2\0\0\0\0\0\0\0"),
@@ -492,7 +490,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const lzma12_optmap as *const option_map,
             strfy_encoder: 9 as u8,
             strfy_decoder: 2 as u8,
-            allow_null: false_0 != 0,
+            allow_null: false,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"x86\0\0\0\0\0\0\0\0\0"),
@@ -509,7 +507,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const bcj_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: true_0 != 0,
+            allow_null: true,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"arm\0\0\0\0\0\0\0\0\0"),
@@ -526,7 +524,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const bcj_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: true_0 != 0,
+            allow_null: true,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"armthumb\0\0\0\0"),
@@ -543,7 +541,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const bcj_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: true_0 != 0,
+            allow_null: true,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"arm64\0\0\0\0\0\0\0"),
@@ -560,7 +558,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const bcj_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: true_0 != 0,
+            allow_null: true,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"riscv\0\0\0\0\0\0\0"),
@@ -577,7 +575,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const bcj_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: true_0 != 0,
+            allow_null: true,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"powerpc\0\0\0\0\0"),
@@ -594,7 +592,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const bcj_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: true_0 != 0,
+            allow_null: true,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"ia64\0\0\0\0\0\0\0\0"),
@@ -611,7 +609,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const bcj_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: true_0 != 0,
+            allow_null: true,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"sparc\0\0\0\0\0\0\0"),
@@ -628,7 +626,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const bcj_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: true_0 != 0,
+            allow_null: true,
         },
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"delta\0\0\0\0\0\0\0"),
@@ -645,7 +643,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             optmap: &raw const delta_optmap as *const option_map,
             strfy_encoder: 1 as u8,
             strfy_decoder: 1 as u8,
-            allow_null: false_0 != 0,
+            allow_null: false,
         },
     ]
 };
@@ -1281,7 +1279,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
     } else {
         b":\0" as *const u8 as *const c_char
     };
-    let mut first_filter_printed: bool = false_0 != 0;
+    let mut first_filter_printed: bool = false;
     let mut i: size_t = 0 as size_t;
     while i
         < (::core::mem::size_of::<[C2RustUnnamed; 11]>() as usize)
@@ -1297,7 +1295,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
                 if first_filter_printed {
                     str_append_str(&raw mut dest, filter_delim);
                 }
-                first_filter_printed = true_0 != 0;
+                first_filter_printed = true;
                 if flags & LZMA_STR_GETOPT_LONG as u32 != 0 {
                     str_append_str(&raw mut dest, b"--\0" as *const u8 as *const c_char);
                 }

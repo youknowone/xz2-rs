@@ -73,7 +73,6 @@ pub const NULL: *mut c_void = __DARWIN_NULL;
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
-pub const false_0: c_int = 0 as c_int;
 pub const LZMA_THREADS_MAX: c_int = 16384 as c_int;
 #[inline]
 unsafe extern "C" fn lzma_outq_outbuf_memusage(mut buf_size: size_t) -> u64 {
@@ -215,7 +214,7 @@ pub unsafe extern "C" fn lzma_outq_get_buf(
     }
     (*outq).tail = buf;
     (*buf).worker = worker;
-    (*buf).finished = false_0 != 0;
+    (*buf).finished = false;
     (*buf).finish_ret = LZMA_STREAM_END;
     (*buf).pos = 0 as size_t;
     (*buf).decoder_in_pos = 0 as size_t;
@@ -230,7 +229,7 @@ pub unsafe extern "C" fn lzma_outq_get_buf(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_is_readable(mut outq: *const lzma_outq) -> bool {
     if (*outq).head.is_null() {
-        return false_0 != 0;
+        return false;
     }
     return (*outq).read_pos < (*(*outq).head).pos || (*(*outq).head).finished as c_int != 0;
 }
