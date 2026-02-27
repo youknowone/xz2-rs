@@ -227,6 +227,8 @@ pub const LZMA_FILTER_LZMA1: ::core::ffi::c_ulonglong = 0x4000000000000001
     as ::core::ffi::c_ulonglong;
 pub const LZMA_FILTER_LZMA2: ::core::ffi::c_ulonglong = 0x21 as ::core::ffi::c_ulonglong;
 pub const LZMA_DICT_SIZE_MIN: ::core::ffi::c_uint = 4096 as ::core::ffi::c_uint;
+pub const LZMA_DICT_SIZE_DEFAULT: ::core::ffi::c_uint = (1 as ::core::ffi::c_uint)
+    << 23 as ::core::ffi::c_int;
 pub const LZMA_LCLP_MIN: ::core::ffi::c_int = 0 as ::core::ffi::c_int;
 pub const LZMA_LCLP_MAX: ::core::ffi::c_int = 4 as ::core::ffi::c_int;
 pub const LZMA_PB_MIN: ::core::ffi::c_int = 0 as ::core::ffi::c_int;

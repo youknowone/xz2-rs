@@ -37,6 +37,19 @@ fn rs_sys_avoids_literal_lzma_const_defs() {
 }
 
 #[test]
+fn rs_sys_uses_libc_size_t() {
+    let src = include_str!("../liblzma-rs-sys/src/lib.rs");
+    assert!(
+        src.contains("use libc::size_t;"),
+        "liblzma-rs-sys must import libc::size_t directly"
+    );
+    assert!(
+        !src.contains("type size_t ="),
+        "local size_t alias is forbidden; use libc::size_t"
+    );
+}
+
+#[test]
 fn api_constants_match_c_backend() {
     macro_rules! assert_const_eq {
         ($($name:ident),+ $(,)?) => {

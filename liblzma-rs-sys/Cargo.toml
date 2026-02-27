@@ -18,3 +18,4 @@ thin-lto = []
 
 [dependencies]
 liblzma-rs = { path = "../liblzma-rs" }
+libc = "0.2"
