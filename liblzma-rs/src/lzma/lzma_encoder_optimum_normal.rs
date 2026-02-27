@@ -345,12 +345,14 @@ unsafe extern "C" fn get_literal_price(
     return price;
 }
 #[inline]
-unsafe extern "C" fn get_len_price(
+extern "C" fn get_len_price(
     lencoder: *const lzma_length_encoder,
     len: u32,
     pos_state: u32,
 ) -> u32 {
-    return (*lencoder).prices[pos_state as usize][len.wrapping_sub(MATCH_LEN_MIN as u32) as usize];
+    return unsafe {
+        (*lencoder).prices[pos_state as usize][len.wrapping_sub(MATCH_LEN_MIN as u32) as usize]
+    };
 }
 #[inline]
 extern "C" fn get_short_rep_price(
@@ -365,31 +367,33 @@ extern "C" fn get_short_rep_price(
     };
 }
 #[inline]
-unsafe extern "C" fn get_pure_rep_price(
+extern "C" fn get_pure_rep_price(
     coder: *const lzma_lzma1_encoder,
     rep_index: u32,
     state: lzma_lzma_state,
     pos_state: u32,
 ) -> u32 {
-    let mut price: u32 = 0;
-    if rep_index == 0 {
-        price = rc_bit_0_price((*coder).is_rep0[state as usize]);
-        price = price.wrapping_add(rc_bit_1_price(
-            (*coder).is_rep0_long[state as usize][pos_state as usize],
-        ));
-    } else {
-        price = rc_bit_1_price((*coder).is_rep0[state as usize]);
-        if rep_index == 1 {
-            price = price.wrapping_add(rc_bit_0_price((*coder).is_rep1[state as usize]));
-        } else {
-            price = price.wrapping_add(rc_bit_1_price((*coder).is_rep1[state as usize]));
-            price = price.wrapping_add(rc_bit_price(
-                (*coder).is_rep2[state as usize],
-                rep_index.wrapping_sub(2),
+    return unsafe {
+        let mut price: u32 = 0;
+        if rep_index == 0 {
+            price = rc_bit_0_price((*coder).is_rep0[state as usize]);
+            price = price.wrapping_add(rc_bit_1_price(
+                (*coder).is_rep0_long[state as usize][pos_state as usize],
             ));
+        } else {
+            price = rc_bit_1_price((*coder).is_rep0[state as usize]);
+            if rep_index == 1 {
+                price = price.wrapping_add(rc_bit_0_price((*coder).is_rep1[state as usize]));
+            } else {
+                price = price.wrapping_add(rc_bit_1_price((*coder).is_rep1[state as usize]));
+                price = price.wrapping_add(rc_bit_price(
+                    (*coder).is_rep2[state as usize],
+                    rep_index.wrapping_sub(2),
+                ));
+            }
         }
-    }
-    return price;
+        price
+    };
 }
 #[inline]
 extern "C" fn get_rep_price(
@@ -405,31 +409,33 @@ extern "C" fn get_rep_price(
     };
 }
 #[inline]
-unsafe extern "C" fn get_dist_len_price(
+extern "C" fn get_dist_len_price(
     coder: *const lzma_lzma1_encoder,
     dist: u32,
     len: u32,
     pos_state: u32,
 ) -> u32 {
-    let dist_state: u32 = if len < (DIST_STATES + MATCH_LEN_MIN) as u32 {
-        len.wrapping_sub(MATCH_LEN_MIN as u32)
-    } else {
-        (DIST_STATES - 1 as c_int) as u32
+    return unsafe {
+        let dist_state: u32 = if len < (DIST_STATES + MATCH_LEN_MIN) as u32 {
+            len.wrapping_sub(MATCH_LEN_MIN as u32)
+        } else {
+            (DIST_STATES - 1 as c_int) as u32
+        };
+        let mut price: u32 = 0;
+        if dist < FULL_DISTANCES as u32 {
+            price = (*coder).dist_prices[dist_state as usize][dist as usize];
+        } else {
+            let dist_slot: u32 = get_dist_slot_2(dist) as u32;
+            price = (*coder).dist_slot_prices[dist_state as usize][dist_slot as usize]
+                .wrapping_add((*coder).align_prices[(dist & ALIGN_MASK as u32) as usize]);
+        }
+        price = price.wrapping_add(get_len_price(
+            &raw const (*coder).match_len_encoder,
+            len,
+            pos_state,
+        ));
+        price
     };
-    let mut price: u32 = 0;
-    if dist < FULL_DISTANCES as u32 {
-        price = (*coder).dist_prices[dist_state as usize][dist as usize];
-    } else {
-        let dist_slot: u32 = get_dist_slot_2(dist) as u32;
-        price = (*coder).dist_slot_prices[dist_state as usize][dist_slot as usize]
-            .wrapping_add((*coder).align_prices[(dist & ALIGN_MASK as u32) as usize]);
-    }
-    price = price.wrapping_add(get_len_price(
-        &raw const (*coder).match_len_encoder,
-        len,
-        pos_state,
-    ));
-    return price;
 }
 unsafe extern "C" fn fill_dist_prices(coder: *mut lzma_lzma1_encoder) {
     let mut dist_state: u32 = 0;
