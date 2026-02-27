@@ -119,10 +119,10 @@ pub unsafe extern "C" fn lzma_check_finish(
 ) {
     match type_0 {
         1 => {
-            (*check).buffer.u32_0[0 as usize] = (*check).state.crc32;
+            (*check).buffer.u32_0[0] = (*check).state.crc32;
         }
         4 => {
-            (*check).buffer.u64_0[0 as usize] = (*check).state.crc64;
+            (*check).buffer.u64_0[0] = (*check).state.crc64;
         }
         10 => {
             lzma_sha256_finish(check);

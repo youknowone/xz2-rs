@@ -51,7 +51,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
         state as *const c_void,
         ::core::mem::size_of::<[u32; 8]>() as size_t,
     );
-    W[0 as usize] = (*data.offset(0 as isize) & 0xff) << 24
+    W[0] = (*data.offset(0 as isize) & 0xff) << 24
         | (*data.offset(0 as isize) & 0xff00) << 8
         | (*data.offset(0 as isize) & 0xff0000) >> 8
         | (*data.offset(0 as isize) & 0xff000000) >> 24;
@@ -73,7 +73,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 0 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(0 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[0 as usize]),
+            .wrapping_add(W[0]),
         );
     T[(3 as c_int - 0 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 0 as c_int & 7 as c_int) as usize]
@@ -99,7 +99,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[1 as usize] = (*data.offset(1 as isize) & 0xff) << 24
+    W[1] = (*data.offset(1 as isize) & 0xff) << 24
         | (*data.offset(1 as isize) & 0xff00) << 8
         | (*data.offset(1 as isize) & 0xff0000) >> 8
         | (*data.offset(1 as isize) & 0xff000000) >> 24;
@@ -121,7 +121,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 1 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(1 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[1 as usize]),
+            .wrapping_add(W[1]),
         );
     T[(3 as c_int - 1 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 1 as c_int & 7 as c_int) as usize]
@@ -147,7 +147,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[2 as usize] = (*data.offset(2 as isize) & 0xff) << 24
+    W[2] = (*data.offset(2 as isize) & 0xff) << 24
         | (*data.offset(2 as isize) & 0xff00) << 8
         | (*data.offset(2 as isize) & 0xff0000) >> 8
         | (*data.offset(2 as isize) & 0xff000000) >> 24;
@@ -169,7 +169,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 2 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(2 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[2 as usize]),
+            .wrapping_add(W[2]),
         );
     T[(3 as c_int - 2 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 2 as c_int & 7 as c_int) as usize]
@@ -195,7 +195,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[3 as usize] = (*data.offset(3 as isize) & 0xff) << 24
+    W[3] = (*data.offset(3 as isize) & 0xff) << 24
         | (*data.offset(3 as isize) & 0xff00) << 8
         | (*data.offset(3 as isize) & 0xff0000) >> 8
         | (*data.offset(3 as isize) & 0xff000000) >> 24;
@@ -217,7 +217,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 3 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(3 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[3 as usize]),
+            .wrapping_add(W[3]),
         );
     T[(3 as c_int - 3 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 3 as c_int & 7 as c_int) as usize]
@@ -243,7 +243,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[4 as usize] = (*data.offset(4 as isize) & 0xff) << 24
+    W[4] = (*data.offset(4 as isize) & 0xff) << 24
         | (*data.offset(4 as isize) & 0xff00) << 8
         | (*data.offset(4 as isize) & 0xff0000) >> 8
         | (*data.offset(4 as isize) & 0xff000000) >> 24;
@@ -265,7 +265,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 4 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(4 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[4 as usize]),
+            .wrapping_add(W[4]),
         );
     T[(3 as c_int - 4 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 4 as c_int & 7 as c_int) as usize]
@@ -291,7 +291,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[5 as usize] = (*data.offset(5 as isize) & 0xff) << 24
+    W[5] = (*data.offset(5 as isize) & 0xff) << 24
         | (*data.offset(5 as isize) & 0xff00) << 8
         | (*data.offset(5 as isize) & 0xff0000) >> 8
         | (*data.offset(5 as isize) & 0xff000000) >> 24;
@@ -313,7 +313,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 5 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(5 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[5 as usize]),
+            .wrapping_add(W[5]),
         );
     T[(3 as c_int - 5 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 5 as c_int & 7 as c_int) as usize]
@@ -339,7 +339,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[6 as usize] = (*data.offset(6 as isize) & 0xff) << 24
+    W[6] = (*data.offset(6 as isize) & 0xff) << 24
         | (*data.offset(6 as isize) & 0xff00) << 8
         | (*data.offset(6 as isize) & 0xff0000) >> 8
         | (*data.offset(6 as isize) & 0xff000000) >> 24;
@@ -361,7 +361,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 6 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(6 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[6 as usize]),
+            .wrapping_add(W[6]),
         );
     T[(3 as c_int - 6 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 6 as c_int & 7 as c_int) as usize]
@@ -387,7 +387,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[7 as usize] = (*data.offset(7 as isize) & 0xff) << 24
+    W[7] = (*data.offset(7 as isize) & 0xff) << 24
         | (*data.offset(7 as isize) & 0xff00) << 8
         | (*data.offset(7 as isize) & 0xff0000) >> 8
         | (*data.offset(7 as isize) & 0xff000000) >> 24;
@@ -409,7 +409,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 7 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(7 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[7 as usize]),
+            .wrapping_add(W[7]),
         );
     T[(3 as c_int - 7 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 7 as c_int & 7 as c_int) as usize]
@@ -435,7 +435,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[8 as usize] = (*data.offset(8 as isize) & 0xff) << 24
+    W[8] = (*data.offset(8 as isize) & 0xff) << 24
         | (*data.offset(8 as isize) & 0xff00) << 8
         | (*data.offset(8 as isize) & 0xff0000) >> 8
         | (*data.offset(8 as isize) & 0xff000000) >> 24;
@@ -457,7 +457,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 8 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(8 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[8 as usize]),
+            .wrapping_add(W[8]),
         );
     T[(3 as c_int - 8 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 8 as c_int & 7 as c_int) as usize]
@@ -483,7 +483,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[9 as usize] = (*data.offset(9 as isize) & 0xff) << 24
+    W[9] = (*data.offset(9 as isize) & 0xff) << 24
         | (*data.offset(9 as isize) & 0xff00) << 8
         | (*data.offset(9 as isize) & 0xff0000) >> 8
         | (*data.offset(9 as isize) & 0xff000000) >> 24;
@@ -505,7 +505,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 9 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(9 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[9 as usize]),
+            .wrapping_add(W[9]),
         );
     T[(3 as c_int - 9 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 9 as c_int & 7 as c_int) as usize]
@@ -531,7 +531,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[10 as usize] = (*data.offset(10 as isize) & 0xff) << 24
+    W[10] = (*data.offset(10 as isize) & 0xff) << 24
         | (*data.offset(10 as isize) & 0xff00) << 8
         | (*data.offset(10 as isize) & 0xff0000) >> 8
         | (*data.offset(10 as isize) & 0xff000000) >> 24;
@@ -553,7 +553,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 10 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(10 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[10 as usize]),
+            .wrapping_add(W[10]),
         );
     T[(3 as c_int - 10 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 10 as c_int & 7 as c_int) as usize]
@@ -579,7 +579,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[11 as usize] = (*data.offset(11 as isize) & 0xff) << 24
+    W[11] = (*data.offset(11 as isize) & 0xff) << 24
         | (*data.offset(11 as isize) & 0xff00) << 8
         | (*data.offset(11 as isize) & 0xff0000) >> 8
         | (*data.offset(11 as isize) & 0xff000000) >> 24;
@@ -601,7 +601,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 11 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(11 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[11 as usize]),
+            .wrapping_add(W[11]),
         );
     T[(3 as c_int - 11 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 11 as c_int & 7 as c_int) as usize]
@@ -627,7 +627,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[12 as usize] = (*data.offset(12 as isize) & 0xff) << 24
+    W[12] = (*data.offset(12 as isize) & 0xff) << 24
         | (*data.offset(12 as isize) & 0xff00) << 8
         | (*data.offset(12 as isize) & 0xff0000) >> 8
         | (*data.offset(12 as isize) & 0xff000000) >> 24;
@@ -649,7 +649,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 12 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(12 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[12 as usize]),
+            .wrapping_add(W[12]),
         );
     T[(3 as c_int - 12 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 12 as c_int & 7 as c_int) as usize]
@@ -675,7 +675,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[13 as usize] = (*data.offset(13 as isize) & 0xff) << 24
+    W[13] = (*data.offset(13 as isize) & 0xff) << 24
         | (*data.offset(13 as isize) & 0xff00) << 8
         | (*data.offset(13 as isize) & 0xff0000) >> 8
         | (*data.offset(13 as isize) & 0xff000000) >> 24;
@@ -697,7 +697,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 13 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(13 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[13 as usize]),
+            .wrapping_add(W[13]),
         );
     T[(3 as c_int - 13 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 13 as c_int & 7 as c_int) as usize]
@@ -723,7 +723,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[14 as usize] = (*data.offset(14 as isize) & 0xff) << 24
+    W[14] = (*data.offset(14 as isize) & 0xff) << 24
         | (*data.offset(14 as isize) & 0xff00) << 8
         | (*data.offset(14 as isize) & 0xff0000) >> 8
         | (*data.offset(14 as isize) & 0xff000000) >> 24;
@@ -745,7 +745,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 14 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(14 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[14 as usize]),
+            .wrapping_add(W[14]),
         );
     T[(3 as c_int - 14 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 14 as c_int & 7 as c_int) as usize]
@@ -771,7 +771,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                     ),
             ),
         );
-    W[15 as usize] = (*data.offset(15 as isize) & 0xff) << 24
+    W[15] = (*data.offset(15 as isize) & 0xff) << 24
         | (*data.offset(15 as isize) & 0xff00) << 8
         | (*data.offset(15 as isize) & 0xff0000) >> 8
         | (*data.offset(15 as isize) & 0xff000000) >> 24;
@@ -793,7 +793,7 @@ unsafe extern "C" fn transform(mut state: *mut u32, mut data: *const u32) {
                             ^ T[(6 as c_int - 15 as c_int & 7 as c_int) as usize]),
             )
             .wrapping_add(SHA256_K[(15 as c_int + 0 as c_int) as usize])
-            .wrapping_add(W[15 as usize]),
+            .wrapping_add(W[15]),
         );
     T[(3 as c_int - 15 as c_int & 7 as c_int) as usize] = T
         [(3 as c_int - 15 as c_int & 7 as c_int) as usize]

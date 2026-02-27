@@ -715,7 +715,7 @@ unsafe extern "C" fn parse_options(
                     let mut map: *const name_value_map = (*optmap.offset(i as isize)).u.map;
                     let mut j: size_t = 0 as size_t;
                     loop {
-                        if (*map.offset(j as isize)).name[0 as usize] as c_int == '\0' as i32 {
+                        if (*map.offset(j as isize)).name[0] as c_int == '\0' as i32 {
                             return b"Invalid option value\0" as *const u8 as *const c_char;
                         }
                         if memcmp(
@@ -1121,7 +1121,7 @@ unsafe extern "C" fn strfy_filter(
                     let mut map: *const name_value_map = (*optmap.offset(i as isize)).u.map;
                     let mut j: size_t = 0 as size_t;
                     loop {
-                        if (*map.offset(j as isize)).name[0 as usize] as c_int == '\0' as i32 {
+                        if (*map.offset(j as isize)).name[0] as c_int == '\0' as i32 {
                             str_append_str(dest, b"UNKNOWN\0" as *const u8 as *const c_char);
                             break;
                         } else if (*map.offset(j as isize)).value == v {
@@ -1335,7 +1335,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
                         {
                             let mut m: *const name_value_map = (*optmap.offset(j as isize)).u.map;
                             let mut k: size_t = 0 as size_t;
-                            while (*m.offset(k as isize)).name[0 as usize] as c_int != '\0' as i32 {
+                            while (*m.offset(k as isize)).name[0] as c_int != '\0' as i32 {
                                 if k > 0 as size_t {
                                     str_append_str(
                                         &raw mut dest,

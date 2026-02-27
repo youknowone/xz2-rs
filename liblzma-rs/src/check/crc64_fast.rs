@@ -1045,8 +1045,7 @@ unsafe extern "C" fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mu
         while buf as uintptr_t & 3 as uintptr_t != 0 {
             let fresh0 = buf;
             buf = buf.offset(1);
-            crc = lzma_crc64_table[0 as usize][(*fresh0 as u64 ^ crc & 0xff as u64) as usize]
-                ^ crc >> 8;
+            crc = lzma_crc64_table[0][(*fresh0 as u64 ^ crc & 0xff as u64) as usize] ^ crc >> 8;
             size = size.wrapping_sub(1);
         }
         let limit: *const u8 = buf.offset((size & !(3 as size_t)) as isize);
@@ -1054,11 +1053,11 @@ unsafe extern "C" fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mu
         while buf < limit {
             let tmp: u32 = crc as u32 ^ aligned_read32ne(buf) as u32;
             buf = buf.offset(4 as isize);
-            crc = lzma_crc64_table[3 as usize][(tmp & 0xff as u32) as usize]
-                ^ lzma_crc64_table[2 as usize][(tmp >> 8 & 0xff as u32) as usize]
+            crc = lzma_crc64_table[3][(tmp & 0xff as u32) as usize]
+                ^ lzma_crc64_table[2][(tmp >> 8 & 0xff as u32) as usize]
                 ^ crc >> 32
-                ^ lzma_crc64_table[1 as usize][(tmp >> 16 & 0xff as u32) as usize]
-                ^ lzma_crc64_table[0 as usize][(tmp >> 24) as usize];
+                ^ lzma_crc64_table[1][(tmp >> 16 & 0xff as u32) as usize]
+                ^ lzma_crc64_table[0][(tmp >> 24) as usize];
         }
     }
     loop {
@@ -1069,8 +1068,7 @@ unsafe extern "C" fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mu
         }
         let fresh2 = buf;
         buf = buf.offset(1);
-        crc =
-            lzma_crc64_table[0 as usize][(*fresh2 as u64 ^ crc & 0xff as u64) as usize] ^ crc >> 8;
+        crc = lzma_crc64_table[0][(*fresh2 as u64 ^ crc & 0xff as u64) as usize] ^ crc >> 8;
     }
     return !crc;
 }

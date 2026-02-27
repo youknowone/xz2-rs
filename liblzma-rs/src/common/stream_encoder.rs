@@ -598,7 +598,7 @@ unsafe extern "C" fn stream_encoder_init(
                     *const lzma_filter,
                 ) -> lzma_ret,
             >;
-        (*coder).filters[0 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*coder).filters[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
         (*coder).block_encoder = lzma_next_coder_s {
             coder: NULL,
             id: LZMA_VLI_UNKNOWN as lzma_vli,

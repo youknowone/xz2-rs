@@ -2053,7 +2053,7 @@ unsafe extern "C" fn stream_decoder_mt_init(
                 as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> (),
         )
             as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>;
-        (*coder).filters[0 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*coder).filters[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
         memset(
             &raw mut (*coder).outq as *mut c_void,
             0 as c_int,

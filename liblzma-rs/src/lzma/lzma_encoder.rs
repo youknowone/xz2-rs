@@ -793,7 +793,7 @@ unsafe extern "C" fn literal(
         let match_byte: u8 = *(*mf).buffer.offset(
             (*mf)
                 .read_pos
-                .wrapping_sub((*coder).reps[0 as usize])
+                .wrapping_sub((*coder).reps[0])
                 .wrapping_sub(1 as u32)
                 .wrapping_sub((*mf).read_ahead) as isize,
         );
@@ -953,10 +953,10 @@ unsafe extern "C" fn match_0(
             (*coder).align_price_count = (*coder).align_price_count.wrapping_add(1);
         }
     }
-    (*coder).reps[3 as usize] = (*coder).reps[2 as usize];
-    (*coder).reps[2 as usize] = (*coder).reps[1 as usize];
-    (*coder).reps[1 as usize] = (*coder).reps[0 as usize];
-    (*coder).reps[0 as usize] = distance;
+    (*coder).reps[3] = (*coder).reps[2];
+    (*coder).reps[2] = (*coder).reps[1];
+    (*coder).reps[1] = (*coder).reps[0];
+    (*coder).reps[0] = distance;
     (*coder).match_price_count = (*coder).match_price_count.wrapping_add(1);
 }
 #[inline]
@@ -1009,12 +1009,12 @@ unsafe extern "C" fn rep_match(
                 rep.wrapping_sub(2 as u32),
             );
             if rep == 3 as u32 {
-                (*coder).reps[3 as usize] = (*coder).reps[2 as usize];
+                (*coder).reps[3] = (*coder).reps[2];
             }
-            (*coder).reps[2 as usize] = (*coder).reps[1 as usize];
+            (*coder).reps[2] = (*coder).reps[1];
         }
-        (*coder).reps[1 as usize] = (*coder).reps[0 as usize];
-        (*coder).reps[0 as usize] = distance;
+        (*coder).reps[1] = (*coder).reps[0];
+        (*coder).reps[0] = distance;
     }
     if len == 1 as u32 {
         (*coder).state = (if ((*coder).state as c_uint) < LIT_STATES as c_uint {

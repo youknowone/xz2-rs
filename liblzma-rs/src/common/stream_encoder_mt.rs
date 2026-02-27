@@ -1052,7 +1052,7 @@ unsafe extern "C" fn initialize_new_thread(
                 update: None,
                 set_out_limit: None,
             };
-            (*thr).filters[0 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+            (*thr).filters[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
             if mythread_create(
                 &raw mut (*thr).thread_id,
                 Some(worker_start as unsafe extern "C" fn(*mut c_void) -> *mut c_void),
@@ -1086,7 +1086,7 @@ unsafe extern "C" fn get_thread(
     if ret_ != LZMA_OK {
         return ret_;
     }
-    if (*coder).filters_cache[0 as usize].id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*coder).filters_cache[0].id == LZMA_VLI_UNKNOWN as lzma_vli {
         let ret__0: lzma_ret = lzma_filters_copy(
             &raw mut (*coder).filters as *mut lzma_filter,
             &raw mut (*coder).filters_cache as *mut lzma_filter,
@@ -1147,7 +1147,7 @@ unsafe extern "C" fn get_thread(
                 &raw mut (*coder).filters_cache as *mut lzma_filter as *const c_void,
                 ::core::mem::size_of::<[lzma_filter; 5]>() as size_t,
             );
-            (*coder).filters_cache[0 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+            (*coder).filters_cache[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
             mythread_cond_signal(&raw mut (*(*coder).thr).cond);
             mythread_j_578 = 1;
         }
@@ -1771,8 +1771,8 @@ unsafe extern "C" fn stream_encoder_mt_init(
                     *const lzma_filter,
                 ) -> lzma_ret,
             >;
-        (*coder).filters[0 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
-        (*coder).filters_cache[0 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*coder).filters[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*coder).filters_cache[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
         (*coder).index_encoder = lzma_next_coder_s {
             coder: NULL,
             id: LZMA_VLI_UNKNOWN as lzma_vli,

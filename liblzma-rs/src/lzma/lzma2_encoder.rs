@@ -372,14 +372,13 @@ unsafe extern "C" fn lzma2_header_lzma(mut coder: *mut lzma_lzma2_coder) {
 }
 unsafe extern "C" fn lzma2_header_uncompressed(mut coder: *mut lzma_lzma2_coder) {
     if (*coder).need_dictionary_reset {
-        (*coder).buf[0 as usize] = 1 as u8;
+        (*coder).buf[0] = 1 as u8;
     } else {
-        (*coder).buf[0 as usize] = 2 as u8;
+        (*coder).buf[0] = 2 as u8;
     }
     (*coder).need_dictionary_reset = false_0 != 0;
-    (*coder).buf[1 as usize] = ((*coder).uncompressed_size.wrapping_sub(1 as size_t) >> 8) as u8;
-    (*coder).buf[2 as usize] =
-        ((*coder).uncompressed_size.wrapping_sub(1 as size_t) & 0xff as size_t) as u8;
+    (*coder).buf[1] = ((*coder).uncompressed_size.wrapping_sub(1 as size_t) >> 8) as u8;
+    (*coder).buf[2] = ((*coder).uncompressed_size.wrapping_sub(1 as size_t) & 0xff as size_t) as u8;
     (*coder).buf_pos = 0 as size_t;
 }
 unsafe extern "C" fn lzma2_encode(

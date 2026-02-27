@@ -290,9 +290,9 @@ unsafe extern "C" fn block_encode_uncompressed(
         id: 0,
         options: ::core::ptr::null_mut::<c_void>(),
     }; 2];
-    filters[0 as usize].id = LZMA_FILTER_LZMA2 as lzma_vli;
-    filters[0 as usize].options = &raw mut lzma2 as *mut c_void;
-    filters[1 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+    filters[0].id = LZMA_FILTER_LZMA2 as lzma_vli;
+    filters[0].options = &raw mut lzma2 as *mut c_void;
+    filters[1].id = LZMA_VLI_UNKNOWN as lzma_vli;
     let mut filters_orig: *mut lzma_filter = (*block).filters;
     (*block).filters = &raw mut filters as *mut lzma_filter;
     if lzma_block_header_size(block) != LZMA_OK {

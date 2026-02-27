@@ -64,8 +64,8 @@ pub unsafe extern "C" fn lzma_easy_preset(
     if lzma_lzma_preset(&raw mut (*opt_easy).opt_lzma, preset) != 0 {
         return true_0 != 0;
     }
-    (*opt_easy).filters[0 as usize].id = LZMA_FILTER_LZMA2 as lzma_vli;
-    (*opt_easy).filters[0 as usize].options = &raw mut (*opt_easy).opt_lzma as *mut c_void;
-    (*opt_easy).filters[1 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+    (*opt_easy).filters[0].id = LZMA_FILTER_LZMA2 as lzma_vli;
+    (*opt_easy).filters[0].options = &raw mut (*opt_easy).opt_lzma as *mut c_void;
+    (*opt_easy).filters[1].id = LZMA_VLI_UNKNOWN as lzma_vli;
     return false_0 != 0;
 }
