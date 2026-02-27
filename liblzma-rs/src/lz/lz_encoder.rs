@@ -205,7 +205,7 @@ pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 #[inline]
-unsafe extern "C" fn mf_get_hash_bytes(mut match_finder: lzma_match_finder) -> u32 {
+extern "C" fn mf_get_hash_bytes(mut match_finder: lzma_match_finder) -> u32 {
     return match_finder as u32 & 0xf as u32;
 }
 pub const HASH_2_SIZE: c_uint = 1u32 << 10;

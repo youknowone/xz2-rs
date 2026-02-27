@@ -130,7 +130,6 @@ pub struct lzma_block {
     pub reserved_bool7: lzma_bool,
     pub reserved_bool8: lzma_bool,
 }
-pub const LZMA_VLI_MAX: c_ulonglong = u64::MAX.wrapping_div(2);
 pub const LZMA_VLI_BYTES_MAX: c_int = 9 as c_int;
 pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 pub const LZMA_STREAM_HEADER_SIZE: c_int = 12 as c_int;
@@ -138,6 +137,7 @@ pub const INDEX_BOUND: c_int =
     1 as c_int + 1 as c_int + 2 as c_int * LZMA_VLI_BYTES_MAX + 4 as c_int + 3 as c_int
         & !(3 as c_int);
 pub const HEADERS_BOUND: c_int = 2 as c_int * LZMA_STREAM_HEADER_SIZE + INDEX_BOUND;
+pub const LZMA_VLI_MAX: lzma_vli = u64::MAX / 2;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_buffer_bound(mut uncompressed_size: size_t) -> size_t {
     let block_bound: size_t = lzma_block_buffer_bound(uncompressed_size) as size_t;

@@ -30,7 +30,7 @@ pub union C2RustUnnamed_0 {
     pub u64_0: [u64; 8],
 }
 #[inline]
-unsafe extern "C" fn rotr_32(mut num: u32, mut amount: c_uint) -> u32 {
+extern "C" fn rotr_32(mut num: u32, mut amount: c_uint) -> u32 {
     return num >> amount | num << 32u32.wrapping_sub(amount);
 }
 static mut SHA256_K: [u32; 64] = [

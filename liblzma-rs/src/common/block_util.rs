@@ -77,7 +77,7 @@ pub const LZMA_BLOCK_HEADER_SIZE_MIN: c_int = 8 as c_int;
 pub const LZMA_BLOCK_HEADER_SIZE_MAX: c_int = 1024 as c_int;
 pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
 #[inline]
-unsafe extern "C" fn vli_ceil4(mut vli: lzma_vli) -> lzma_vli {
+extern "C" fn vli_ceil4(mut vli: lzma_vli) -> lzma_vli {
     return vli.wrapping_add(3 as lzma_vli) & !(3 as lzma_vli);
 }
 #[no_mangle]

@@ -73,7 +73,7 @@ pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
 pub const LZMA_THREADS_MAX: c_int = 16384 as c_int;
 #[inline]
-unsafe extern "C" fn lzma_outq_outbuf_memusage(mut buf_size: size_t) -> u64 {
+extern "C" fn lzma_outq_outbuf_memusage(mut buf_size: size_t) -> u64 {
     return (::core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize) as u64;
 }
 #[no_mangle]

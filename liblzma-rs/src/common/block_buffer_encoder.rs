@@ -219,7 +219,7 @@ pub const HEADERS_BOUND: c_int = 1 as c_int
     + LZMA_CHECK_SIZE_MAX
     + 3 as c_int
     & !(3 as c_int);
-unsafe extern "C" fn lzma2_bound(mut uncompressed_size: u64) -> u64 {
+extern "C" fn lzma2_bound(mut uncompressed_size: u64) -> u64 {
     if uncompressed_size > COMPRESSED_SIZE_MAX as u64 {
         return 0 as u64;
     }

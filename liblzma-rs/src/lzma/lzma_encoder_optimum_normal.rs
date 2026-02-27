@@ -166,20 +166,24 @@ pub const RC_MOVE_REDUCING_BITS: c_int = 4 as c_int;
 pub const RC_BIT_PRICE_SHIFT_BITS: c_int = 4 as c_int;
 pub const RC_INFINITY_PRICE: c_uint = 1u32 << 30;
 #[inline]
-unsafe extern "C" fn rc_bit_price(prob: probability, bit: u32) -> u32 {
-    return lzma_rc_prices[((prob as u32
-        ^ (0 as u32).wrapping_sub(bit) & (RC_BIT_MODEL_TOTAL as u32).wrapping_sub(1 as u32))
-        >> RC_MOVE_REDUCING_BITS) as usize] as u32;
+extern "C" fn rc_bit_price(prob: probability, bit: u32) -> u32 {
+    return unsafe {
+        lzma_rc_prices[((prob as u32
+            ^ (0 as u32).wrapping_sub(bit) & (RC_BIT_MODEL_TOTAL as u32).wrapping_sub(1 as u32))
+            >> RC_MOVE_REDUCING_BITS) as usize] as u32
+    };
 }
 #[inline]
-unsafe extern "C" fn rc_bit_0_price(prob: probability) -> u32 {
-    return lzma_rc_prices[(prob as c_int >> RC_MOVE_REDUCING_BITS) as usize] as u32;
+extern "C" fn rc_bit_0_price(prob: probability) -> u32 {
+    return unsafe { lzma_rc_prices[(prob as c_int >> RC_MOVE_REDUCING_BITS) as usize] as u32 };
 }
 #[inline]
-unsafe extern "C" fn rc_bit_1_price(prob: probability) -> u32 {
-    return lzma_rc_prices
-        [((prob as u32 ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1)) >> RC_MOVE_REDUCING_BITS) as usize]
-        as u32;
+extern "C" fn rc_bit_1_price(prob: probability) -> u32 {
+    return unsafe {
+        lzma_rc_prices
+            [((prob as u32 ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1)) >> RC_MOVE_REDUCING_BITS) as usize]
+            as u32
+    };
 }
 #[inline]
 unsafe extern "C" fn rc_bittree_price(
