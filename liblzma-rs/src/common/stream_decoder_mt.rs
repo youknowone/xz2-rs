@@ -641,7 +641,7 @@ unsafe extern "C" fn lzma_outq_is_empty(outq: *const lzma_outq) -> bool {
     return (*outq).bufs_in_use == 0;
 }
 #[inline]
-unsafe extern "C" fn lzma_outq_outbuf_memusage(buf_size: size_t) -> u64 {
+extern "C" fn lzma_outq_outbuf_memusage(buf_size: size_t) -> u64 {
     return (core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize) as u64;
 }
 unsafe extern "C" fn worker_enable_partial_update(thr_ptr: *mut c_void) {
@@ -1135,7 +1135,7 @@ unsafe extern "C" fn comp_blk_size(coder: *const lzma_stream_coder) -> size_t {
         .wrapping_add(lzma_check_size((*coder).stream_flags.check) as lzma_vli)
         as size_t;
 }
-unsafe extern "C" fn is_direct_mode_needed(size: lzma_vli) -> bool {
+extern "C" fn is_direct_mode_needed(size: lzma_vli) -> bool {
     return size == LZMA_VLI_UNKNOWN as lzma_vli
         || size > SIZE_MAX.wrapping_div(3 as c_ulong) as lzma_vli;
 }
