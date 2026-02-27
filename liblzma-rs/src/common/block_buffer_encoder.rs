@@ -318,12 +318,11 @@ unsafe extern "C" fn block_encode_uncompressed(
         *out_pos = (*out_pos).wrapping_add(1);
         *out.offset(fresh1 as isize) = control;
         control = 0x2 as u8;
-        let copy_size: size_t =
-            if in_size.wrapping_sub(in_pos) < (1u32 << 16) as size_t {
-                in_size.wrapping_sub(in_pos)
-            } else {
-                (1u32 << 16) as size_t
-            };
+        let copy_size: size_t = if in_size.wrapping_sub(in_pos) < (1u32 << 16) as size_t {
+            in_size.wrapping_sub(in_pos)
+        } else {
+            (1u32 << 16) as size_t
+        };
         let fresh2 = *out_pos;
         *out_pos = (*out_pos).wrapping_add(1);
         *out.offset(fresh2 as isize) = (copy_size.wrapping_sub(1 as size_t) >> 8) as u8;

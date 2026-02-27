@@ -435,10 +435,10 @@ unsafe extern "C" fn lz_encoder_prepare(
     (*mf).hash_mask = hs;
     hs = hs.wrapping_add(1);
     if hash_bytes > 2 as u32 {
-        hs = (hs as c_uint).wrapping_add(HASH_2_SIZE) as u32 as u32;
+        hs = hs.wrapping_add(HASH_2_SIZE);
     }
     if hash_bytes > 3 as u32 {
-        hs = (hs as c_uint).wrapping_add(HASH_3_SIZE) as u32 as u32;
+        hs = hs.wrapping_add(HASH_3_SIZE);
     }
     let old_hash_count: u32 = (*mf).hash_count;
     let old_sons_count: u32 = (*mf).sons_count;

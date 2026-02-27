@@ -325,7 +325,7 @@ unsafe extern "C" fn lzma2_decode(
                 let fresh1 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
                 (*coder).uncompressed_size = (*coder).uncompressed_size.wrapping_add(
-                    (*in_0.offset(fresh1 as isize) as c_uint).wrapping_add(1) as size_t,
+                    u32::from(*in_0.offset(fresh1 as isize)).wrapping_add(1) as size_t,
                 );
                 (*coder).sequence = SEQ_COMPRESSED_0;
                 (*coder)
@@ -348,7 +348,7 @@ unsafe extern "C" fn lzma2_decode(
                 let fresh3 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
                 (*coder).compressed_size = (*coder).compressed_size.wrapping_add(
-                    (*in_0.offset(fresh3 as isize) as c_uint).wrapping_add(1) as size_t,
+                    u32::from(*in_0.offset(fresh3 as isize)).wrapping_add(1) as size_t,
                 );
                 (*coder).sequence = (*coder).next_sequence as sequence;
             }
@@ -515,8 +515,8 @@ pub unsafe extern "C" fn lzma_lzma2_props_decode(
     if *props.offset(0 as isize) as c_int == 40 as c_int {
         (*opt).dict_size = UINT32_MAX as u32;
     } else {
-        (*opt).dict_size = (2 | *props.offset(0 as isize) as c_uint & 1) as u32;
-        (*opt).dict_size <<= (*props.offset(0 as isize) as c_uint)
+        (*opt).dict_size = 2u32 | (u32::from(*props.offset(0 as isize)) & 1);
+        (*opt).dict_size <<= u32::from(*props.offset(0 as isize))
             .wrapping_div(2)
             .wrapping_add(11);
     }
