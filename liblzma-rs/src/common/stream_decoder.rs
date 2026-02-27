@@ -586,9 +586,11 @@ unsafe extern "C" fn stream_decoder_end(coder_ptr: *mut c_void, allocator: *cons
     lzma_index_hash_end((*coder).index_hash, allocator);
     lzma_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn stream_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
-    let coder: *const lzma_stream_coder = coder_ptr as *const lzma_stream_coder;
-    return (*coder).stream_flags.check;
+extern "C" fn stream_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
+    return unsafe {
+        let coder: *const lzma_stream_coder = coder_ptr as *const lzma_stream_coder;
+        (*coder).stream_flags.check
+    };
 }
 unsafe extern "C" fn stream_decoder_memconfig(
     coder_ptr: *mut c_void,

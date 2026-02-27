@@ -492,7 +492,7 @@ extern "C" fn encoder_find(id: lzma_vli) -> *const lzma_filter_encoder {
     }
     return ::core::ptr::null::<lzma_filter_encoder>();
 }
-unsafe extern "C" fn coder_find(id: lzma_vli) -> *const lzma_filter_coder {
+extern "C" fn coder_find(id: lzma_vli) -> *const lzma_filter_coder {
     return encoder_find(id) as *const lzma_filter_coder;
 }
 #[no_mangle]

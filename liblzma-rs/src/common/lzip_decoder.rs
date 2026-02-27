@@ -495,7 +495,7 @@ unsafe extern "C" fn lzip_decoder_end(coder_ptr: *mut c_void, allocator: *const 
     lzma_next_end(&raw mut (*coder).lzma_decoder, allocator);
     lzma_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn lzip_decoder_get_check(_coder_ptr: *const c_void) -> lzma_check {
+extern "C" fn lzip_decoder_get_check(_coder_ptr: *const c_void) -> lzma_check {
     return LZMA_CHECK_CRC32;
 }
 unsafe extern "C" fn lzip_decoder_memconfig(

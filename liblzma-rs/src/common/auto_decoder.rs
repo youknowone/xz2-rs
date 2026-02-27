@@ -256,13 +256,15 @@ unsafe extern "C" fn auto_decoder_end(coder_ptr: *mut c_void, allocator: *const 
     lzma_next_end(&raw mut (*coder).next, allocator);
     lzma_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn auto_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
-    let coder: *const lzma_auto_coder = coder_ptr as *const lzma_auto_coder;
-    return (if (*coder).next.get_check.is_none() {
-        LZMA_CHECK_NONE
-    } else {
-        (*coder).next.get_check.expect("non-null function pointer")((*coder).next.coder)
-    }) as lzma_check;
+extern "C" fn auto_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
+    return unsafe {
+        let coder: *const lzma_auto_coder = coder_ptr as *const lzma_auto_coder;
+        (if (*coder).next.get_check.is_none() {
+            LZMA_CHECK_NONE
+        } else {
+            (*coder).next.get_check.expect("non-null function pointer")((*coder).next.coder)
+        }) as lzma_check
+    };
 }
 unsafe extern "C" fn auto_decoder_memconfig(
     coder_ptr: *mut c_void,
