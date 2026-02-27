@@ -140,22 +140,26 @@ unsafe extern "C" fn arm_code(
     }
     return i;
 }
-unsafe extern "C" fn arm_coder_init(
+extern "C" fn arm_coder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
     is_encoder: bool,
 ) -> lzma_ret {
-    return lzma_simple_coder_init(
-        next,
-        allocator,
-        filters,
-        Some(arm_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
-        0,
-        4,
-        4,
-        is_encoder,
-    );
+    return unsafe {
+        lzma_simple_coder_init(
+            next,
+            allocator,
+            filters,
+            Some(
+                arm_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t
+            ),
+            0,
+            4,
+            4,
+            is_encoder,
+        )
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_arm_encoder_init(
