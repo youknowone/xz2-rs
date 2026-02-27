@@ -158,11 +158,11 @@ pub const LZMA_VERSION: c_uint = (LZMA_VERSION_MAJOR as u32)
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_TIMED_OUT: c_uint = 101;
 #[no_mangle]
-pub unsafe extern "C" fn lzma_version_number() -> u32 {
+pub extern "C" fn lzma_version_number() -> u32 {
     return LZMA_VERSION as u32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_version_string() -> *const c_char {
+pub extern "C" fn lzma_version_string() -> *const c_char {
     return b"5.8.2\0" as *const u8 as *const c_char;
 }
 #[no_mangle]
