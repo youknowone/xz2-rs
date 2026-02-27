@@ -6,12 +6,12 @@ license = "MIT OR Apache-2.0"
 description = "liblzma-sys compatible API layer backed by pure Rust liblzma-rs"
 
 [features]
-default = []
+default = ["bindgen"]
 # Feature stubs matching liblzma-sys for smooth migration
 static = []
 parallel = []
 bindgen = []
-wasm = []
+wasm = ["static", "bindgen"]
 uncheck_liblzma_version = []
 fat-lto = []
 thin-lto = []

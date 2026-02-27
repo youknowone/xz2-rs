@@ -1,9 +1,61 @@
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 use std::ptr;
 
 use liblzma_c_sys_test as c_sys;
 use liblzma_sys as rs_sys;
+
+fn parse_feature_table(cargo_toml: &str) -> BTreeMap<String, Vec<String>> {
+    let mut in_features = false;
+    let mut features = BTreeMap::new();
+
+    for raw_line in cargo_toml.lines() {
+        let line = raw_line.trim();
+        if line.starts_with('[') && line.ends_with(']') {
+            in_features = line == "[features]";
+            continue;
+        }
+        if !in_features || line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+
+        let line = line.split('#').next().unwrap_or("").trim();
+        if line.is_empty() {
+            continue;
+        }
+
+        let (name, rhs) = line
+            .split_once('=')
+            .expect("feature entry must contain '='");
+        let name = name.trim().to_owned();
+        let rhs = rhs.trim();
+        let mut deps = Vec::new();
+
+        if rhs != "[]" {
+            assert!(
+                rhs.starts_with('[') && rhs.ends_with(']'),
+                "feature value must be an array: {name} = {rhs}",
+            );
+            let inner = &rhs[1..rhs.len() - 1];
+            for item in inner.split(',') {
+                let item = item.trim();
+                if item.is_empty() {
+                    continue;
+                }
+                let item = item
+                    .strip_prefix('"')
+                    .and_then(|s| s.strip_suffix('"'))
+                    .unwrap_or_else(|| panic!("feature dependency must be quoted: {item}"));
+                deps.push(item.to_owned());
+            }
+        }
+
+        features.insert(name, deps);
+    }
+
+    features
+}
 
 #[test]
 fn rs_sys_avoids_literal_lzma_const_defs() {
@@ -46,6 +98,17 @@ fn rs_sys_uses_libc_size_t() {
     assert!(
         !src.contains("type size_t ="),
         "local size_t alias is forbidden; use libc::size_t"
+    );
+}
+
+#[test]
+fn cargo_features_match_c_backend() {
+    let c_sys_features = parse_feature_table(include_str!("../liblzma-sys/Cargo.toml"));
+    let rs_sys_features = parse_feature_table(include_str!("../liblzma-rs-sys/Cargo.toml"));
+
+    assert_eq!(
+        rs_sys_features, c_sys_features,
+        "liblzma-rs-sys feature table must stay compatible with liblzma-sys",
     );
 }
 
