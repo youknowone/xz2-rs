@@ -300,7 +300,7 @@ unsafe extern "C" fn microlzma_decode(
             allocator,
             &raw const dummy_in,
             &raw mut dummy_in_pos,
-            1 as size_t,
+            1,
             out,
             out_pos,
             out_size,
@@ -409,7 +409,7 @@ unsafe extern "C" fn microlzma_decoder_init(
     let mut coder: *mut lzma_microlzma_coder = (*next).coder as *mut lzma_microlzma_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_microlzma_coder>() as size_t,
+            core::mem::size_of::<lzma_microlzma_coder>() as size_t,
             allocator,
         ) as *mut lzma_microlzma_coder;
         if coder.is_null() {

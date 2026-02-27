@@ -139,7 +139,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     if *in_0.offset(1) as c_int & 0x3c as c_int != 0 {
         return LZMA_OPTIONS_ERROR;
     }
-    let mut in_pos: size_t = 2 as size_t;
+    let mut in_pos: size_t = 2;
     if *in_0.offset(1) as c_int & 0x40 as c_int != 0 {
         let ret_: lzma_ret = lzma_vli_decode(
             &raw mut (*block).compressed_size,

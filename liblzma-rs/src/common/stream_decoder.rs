@@ -492,7 +492,7 @@ unsafe extern "C" fn stream_decode(
                         break;
                     }
                     *in_pos = (*in_pos).wrapping_add(1);
-                    (*coder).pos = (*coder).pos.wrapping_add(1 as size_t) & 3 as size_t;
+                    (*coder).pos = (*coder).pos.wrapping_add(1) & 3;
                 }
                 if (*coder).pos != 0 {
                     *in_pos = (*in_pos).wrapping_add(1);
@@ -654,7 +654,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
     let mut coder: *mut lzma_stream_coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_stream_coder>() as size_t,
+            core::mem::size_of::<lzma_stream_coder>() as size_t,
             allocator,
         ) as *mut lzma_stream_coder;
         if coder.is_null() {

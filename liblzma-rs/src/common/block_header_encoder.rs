@@ -151,9 +151,9 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         return LZMA_PROG_ERROR;
     }
     let out_size: size_t = (*block).header_size.wrapping_sub(4 as u32) as size_t;
-    *out.offset(0) = out_size.wrapping_div(4 as size_t) as u8;
+    *out.offset(0) = out_size.wrapping_div(4) as u8;
     *out.offset(1) = 0;
-    let mut out_pos: size_t = 2 as size_t;
+    let mut out_pos: size_t = 2;
     if (*block).compressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
         let ret_: lzma_ret = lzma_vli_encode(
             (*block).compressed_size,
@@ -207,15 +207,12 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         }
     }
     let ref mut fresh2 = *out.offset(1);
-    *fresh2 = (*fresh2 as size_t | filter_count.wrapping_sub(1 as size_t)) as u8;
+    *fresh2 = (*fresh2 as size_t | filter_count.wrapping_sub(1)) as u8;
     memset(
         out.offset(out_pos as isize) as *mut c_void,
         0 as c_int,
         out_size.wrapping_sub(out_pos),
     );
-    write32le(
-        out.offset(out_size as isize),
-        lzma_crc32(out, out_size, 0),
-    );
+    write32le(out.offset(out_size as isize), lzma_crc32(out, out_size, 0));
     return LZMA_OK;
 }

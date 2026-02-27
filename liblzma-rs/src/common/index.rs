@@ -236,8 +236,8 @@ unsafe extern "C" fn index_size(mut count: lzma_vli, mut index_list_size: lzma_v
 }
 pub const INDEX_GROUP_SIZE: c_int = 512 as c_int;
 pub const PREALLOC_MAX: usize = (SIZE_MAX as usize)
-    .wrapping_sub(::core::mem::size_of::<index_group>() as usize)
-    .wrapping_div(::core::mem::size_of::<index_record>() as usize);
+    .wrapping_sub(core::mem::size_of::<index_group>() as usize)
+    .wrapping_div(core::mem::size_of::<index_record>() as usize);
 unsafe extern "C" fn index_tree_init(mut tree: *mut index_tree) {
     (*tree).root = core::ptr::null_mut();
     (*tree).leftmost = core::ptr::null_mut();
@@ -341,7 +341,7 @@ unsafe extern "C" fn index_stream_init(
     mut allocator: *const lzma_allocator,
 ) -> *mut index_stream {
     let mut s: *mut index_stream =
-        lzma_alloc(::core::mem::size_of::<index_stream>() as size_t, allocator)
+        lzma_alloc(core::mem::size_of::<index_stream>() as size_t, allocator)
             as *mut index_stream;
     if s.is_null() {
         return core::ptr::null_mut();
@@ -371,7 +371,7 @@ unsafe extern "C" fn index_stream_end(mut node: *mut c_void, mut allocator: *con
 }
 unsafe extern "C" fn index_init_plain(mut allocator: *const lzma_allocator) -> *mut lzma_index {
     let mut i: *mut lzma_index =
-        lzma_alloc(::core::mem::size_of::<lzma_index>() as size_t, allocator) as *mut lzma_index;
+        lzma_alloc(core::mem::size_of::<lzma_index>() as size_t, allocator) as *mut lzma_index;
     if !i.is_null() {
         index_tree_init(&raw mut (*i).streams);
         (*i).uncompressed_size = 0 as lzma_vli;
@@ -429,14 +429,14 @@ pub unsafe extern "C" fn lzma_index_prealloc(mut i: *mut lzma_index, mut records
 #[no_mangle]
 pub unsafe extern "C" fn lzma_index_memusage(mut streams: lzma_vli, mut blocks: lzma_vli) -> u64 {
     let alloc_overhead: size_t =
-        (4 as size_t).wrapping_mul(::core::mem::size_of::<*mut c_void>() as size_t);
-    let stream_base: size_t = (::core::mem::size_of::<index_stream>() as size_t)
-        .wrapping_add(::core::mem::size_of::<index_group>() as size_t)
+        (4 as size_t).wrapping_mul(core::mem::size_of::<*mut c_void>() as size_t);
+    let stream_base: size_t = (core::mem::size_of::<index_stream>() as size_t)
+        .wrapping_add(core::mem::size_of::<index_group>() as size_t)
         .wrapping_add((2 as size_t).wrapping_mul(alloc_overhead));
-    let group_base: size_t = (::core::mem::size_of::<index_group>() as size_t)
+    let group_base: size_t = (core::mem::size_of::<index_group>() as size_t)
         .wrapping_add(
             (INDEX_GROUP_SIZE as size_t)
-                .wrapping_mul(::core::mem::size_of::<index_record>() as size_t),
+                .wrapping_mul(core::mem::size_of::<index_record>() as size_t),
         )
         .wrapping_add(alloc_overhead);
     let groups: lzma_vli = blocks
@@ -445,7 +445,7 @@ pub unsafe extern "C" fn lzma_index_memusage(mut streams: lzma_vli, mut blocks: 
         .wrapping_div(INDEX_GROUP_SIZE as lzma_vli);
     let streams_mem: u64 = (streams as u64).wrapping_mul(stream_base as u64);
     let groups_mem: u64 = (groups as u64).wrapping_mul(group_base as u64);
-    let index_base: u64 = (::core::mem::size_of::<lzma_index>() as usize)
+    let index_base: u64 = (core::mem::size_of::<lzma_index>() as usize)
         .wrapping_add(alloc_overhead as usize) as u64;
     let limit: u64 = (UINT64_MAX as u64).wrapping_sub(index_base);
     if streams == 0 as lzma_vli
@@ -636,13 +636,13 @@ pub unsafe extern "C" fn lzma_index_append(
     {
         return LZMA_DATA_ERROR;
     }
-    if !g.is_null() && (*g).last.wrapping_add(1 as size_t) < (*g).allocated {
+    if !g.is_null() && (*g).last.wrapping_add(1) < (*g).allocated {
         (*g).last = (*g).last.wrapping_add(1);
     } else {
         g = lzma_alloc(
-            (::core::mem::size_of::<index_group>() as size_t).wrapping_add(
+            (core::mem::size_of::<index_group>() as size_t).wrapping_add(
                 (*i).prealloc
-                    .wrapping_mul(::core::mem::size_of::<index_record>() as size_t),
+                    .wrapping_mul(core::mem::size_of::<index_record>() as size_t),
             ),
             allocator,
         ) as *mut index_group;
@@ -723,12 +723,12 @@ pub unsafe extern "C" fn lzma_index_cat(
     }
     let mut s: *mut index_stream = (*dest).streams.rightmost as *mut index_stream;
     let mut g: *mut index_group = (*s).groups.rightmost as *mut index_group;
-    if !g.is_null() && (*g).last.wrapping_add(1 as size_t) < (*g).allocated {
+    if !g.is_null() && (*g).last.wrapping_add(1) < (*g).allocated {
         let mut newg: *mut index_group = lzma_alloc(
-            (::core::mem::size_of::<index_group>() as size_t).wrapping_add(
+            (core::mem::size_of::<index_group>() as size_t).wrapping_add(
                 (*g).last
-                    .wrapping_add(1 as size_t)
-                    .wrapping_mul(::core::mem::size_of::<index_record>() as size_t),
+                    .wrapping_add(1)
+                    .wrapping_mul(core::mem::size_of::<index_record>() as size_t),
             ),
             allocator,
         ) as *mut index_group;
@@ -736,7 +736,7 @@ pub unsafe extern "C" fn lzma_index_cat(
             return LZMA_MEM_ERROR;
         }
         (*newg).node = (*g).node;
-        (*newg).allocated = (*g).last.wrapping_add(1 as size_t);
+        (*newg).allocated = (*g).last.wrapping_add(1);
         (*newg).last = (*g).last;
         (*newg).number_base = (*g).number_base;
         memcpy(
@@ -744,7 +744,7 @@ pub unsafe extern "C" fn lzma_index_cat(
             &raw mut (*g).records as *mut index_record as *const c_void,
             (*newg)
                 .allocated
-                .wrapping_mul(::core::mem::size_of::<index_record>() as size_t),
+                .wrapping_mul(core::mem::size_of::<index_record>() as size_t),
         );
         if !(*g).node.parent.is_null() {
             (*(*g).node.parent).right = &raw mut (*newg).node;
@@ -800,10 +800,10 @@ unsafe extern "C" fn index_dup_stream(
         return dest;
     }
     let mut destg: *mut index_group = lzma_alloc(
-        (::core::mem::size_of::<index_group>() as lzma_vli).wrapping_add(
+        (core::mem::size_of::<index_group>() as lzma_vli).wrapping_add(
             (*src)
                 .record_count
-                .wrapping_mul(::core::mem::size_of::<index_record>() as lzma_vli),
+                .wrapping_mul(core::mem::size_of::<index_record>() as lzma_vli),
         ) as size_t,
         allocator,
     ) as *mut index_group;
@@ -824,10 +824,10 @@ unsafe extern "C" fn index_dup_stream(
             &raw const (*srcg).records as *const index_record as *const c_void,
             (*srcg)
                 .last
-                .wrapping_add(1 as size_t)
-                .wrapping_mul(::core::mem::size_of::<index_record>() as size_t),
+                .wrapping_add(1)
+                .wrapping_mul(core::mem::size_of::<index_record>() as size_t),
         );
-        i = i.wrapping_add((*srcg).last.wrapping_add(1 as size_t));
+        i = i.wrapping_add((*srcg).last.wrapping_add(1));
         srcg = index_tree_next(&raw const (*srcg).node) as *const index_group;
         if srcg.is_null() {
             break;
@@ -924,7 +924,7 @@ unsafe extern "C" fn iter_set_info(mut iter: *mut lzma_index_iter) {
         } else {
             vli_ceil4(
                 (*(&raw const (*group).records as *const index_record)
-                    .offset(record.wrapping_sub(1 as size_t) as isize))
+                    .offset(record.wrapping_sub(1) as isize))
                 .unpadded_sum,
             )
         };
@@ -932,7 +932,7 @@ unsafe extern "C" fn iter_set_info(mut iter: *mut lzma_index_iter) {
             (*group).node.uncompressed_base
         } else {
             (*(&raw const (*group).records as *const index_record)
-                .offset(record.wrapping_sub(1 as size_t) as isize))
+                .offset(record.wrapping_sub(1) as isize))
             .uncompressed_sum
         };
         (*iter).block.uncompressed_size = (*(&raw const (*group).records as *const index_record)
@@ -1046,7 +1046,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
                 break;
             }
         } else if !((*(&raw const (*group).records as *const index_record)
-            .offset(record.wrapping_sub(1 as size_t) as isize))
+            .offset(record.wrapping_sub(1) as isize))
         .uncompressed_sum
             == (*(&raw const (*group).records as *const index_record).offset(record as isize))
                 .uncompressed_sum)
@@ -1077,12 +1077,12 @@ pub unsafe extern "C" fn lzma_index_iter_locate(
     let mut left: size_t = 0;
     let mut right: size_t = (*group).last;
     while left < right {
-        let pos: size_t = left.wrapping_add(right.wrapping_sub(left).wrapping_div(2 as size_t));
+        let pos: size_t = left.wrapping_add(right.wrapping_sub(left).wrapping_div(2));
         if (*(&raw const (*group).records as *const index_record).offset(pos as isize))
             .uncompressed_sum
             <= target
         {
-            left = pos.wrapping_add(1 as size_t);
+            left = pos.wrapping_add(1);
         } else {
             right = pos;
         }

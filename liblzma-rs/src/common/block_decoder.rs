@@ -457,7 +457,7 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     let mut coder: *mut lzma_block_coder = (*next).coder as *mut lzma_block_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_block_coder>() as size_t,
+            core::mem::size_of::<lzma_block_coder>() as size_t,
             allocator,
         ) as *mut lzma_block_coder;
         if coder.is_null() {

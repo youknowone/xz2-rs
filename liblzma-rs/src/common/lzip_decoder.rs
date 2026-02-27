@@ -281,7 +281,7 @@ unsafe extern "C" fn lzip_decode(
         match (*coder).sequence {
             0 => {
                 let lzip_id_string: [u8; 4] = [0x4c as u8, 0x5a as u8, 0x49 as u8, 0x50 as u8];
-                while (*coder).pos < ::core::mem::size_of::<[u8; 4]>() as usize {
+                while (*coder).pos < core::mem::size_of::<[u8; 4]>() as usize {
                     if *in_pos >= in_size {
                         return (if !(*coder).first_member && action == LZMA_FINISH {
                             LZMA_STREAM_END as c_int
@@ -304,7 +304,7 @@ unsafe extern "C" fn lzip_decode(
                 (*coder).pos = 0;
                 (*coder).crc32 = 0;
                 (*coder).uncompressed_size = 0;
-                (*coder).member_size = ::core::mem::size_of::<[u8; 4]>() as u64;
+                (*coder).member_size = core::mem::size_of::<[u8; 4]>() as u64;
                 (*coder).sequence = SEQ_VERSION;
                 current_block_80 = 11220331375136032509;
             }
@@ -356,10 +356,7 @@ unsafe extern "C" fn lzip_decode(
                 (*coder).member_size = (*coder).member_size.wrapping_add(1);
                 let b2log: u32 = ds & 0x1f as u32;
                 let fracnum: u32 = ds >> 5;
-                if b2log < 12 as u32
-                    || b2log > 29 as u32
-                    || b2log == 12 as u32 && fracnum > 0
-                {
+                if b2log < 12 as u32 || b2log > 29 as u32 || b2log == 12 as u32 && fracnum > 0 {
                     return LZMA_DATA_ERROR;
                 }
                 (*coder).options.dict_size =
@@ -565,7 +562,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     let mut coder: *mut lzma_lzip_coder = (*next).coder as *mut lzma_lzip_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_lzip_coder>() as size_t,
+            core::mem::size_of::<lzma_lzip_coder>() as size_t,
             allocator,
         ) as *mut lzma_lzip_coder;
         if coder.is_null() {

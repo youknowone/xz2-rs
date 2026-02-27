@@ -1222,7 +1222,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_normal(
     memcpy(
         &raw mut reps as *mut u32 as *mut c_void,
         &raw mut (*coder).reps as *mut u32 as *const c_void,
-        ::core::mem::size_of::<[u32; 4]>() as size_t,
+        core::mem::size_of::<[u32; 4]>() as size_t,
     );
     let mut cur: u32 = 0;
     cur = 1 as u32;

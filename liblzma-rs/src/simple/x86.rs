@@ -138,13 +138,13 @@ unsafe extern "C" fn x86_code(
     let mut simple: *mut lzma_simple_x86 = simple_ptr as *mut lzma_simple_x86;
     let mut prev_mask: u32 = (*simple).prev_mask;
     let mut prev_pos: u32 = (*simple).prev_pos;
-    if size < 5 as size_t {
+    if size < 5 {
         return 0;
     }
     if now_pos.wrapping_sub(prev_pos) > 5 as u32 {
         prev_pos = now_pos.wrapping_sub(5 as u32);
     }
-    let limit: size_t = size.wrapping_sub(5 as size_t);
+    let limit: size_t = size.wrapping_sub(5);
     let mut buffer_pos: size_t = 0;
     while buffer_pos <= limit {
         let mut b: u8 = *buffer.offset(buffer_pos as isize);
@@ -165,15 +165,15 @@ unsafe extern "C" fn x86_code(
                     i = i.wrapping_add(1);
                 }
             }
-            b = *buffer.offset(buffer_pos.wrapping_add(4 as size_t) as isize);
+            b = *buffer.offset(buffer_pos.wrapping_add(4) as isize);
             if (b as c_int == 0 as c_int || b as c_int == 0xff as c_int)
                 && prev_mask >> 1 <= 4 as u32
                 && prev_mask >> 1 != 3 as u32
             {
                 let mut src: u32 = (b as u32) << 24
-                    | (*buffer.offset(buffer_pos.wrapping_add(3 as size_t) as isize) as u32) << 16
-                    | (*buffer.offset(buffer_pos.wrapping_add(2 as size_t) as isize) as u32) << 8
-                    | *buffer.offset(buffer_pos.wrapping_add(1 as size_t) as isize) as u32;
+                    | (*buffer.offset(buffer_pos.wrapping_add(3) as isize) as u32) << 16
+                    | (*buffer.offset(buffer_pos.wrapping_add(2) as isize) as u32) << 8
+                    | *buffer.offset(buffer_pos.wrapping_add(1) as isize) as u32;
                 let mut dest: u32 = 0;
                 loop {
                     if is_encoder {
@@ -201,12 +201,12 @@ unsafe extern "C" fn x86_code(
                         ^ ((1 as u32) << (32 as u32).wrapping_sub(i_0.wrapping_mul(8 as u32)))
                             .wrapping_sub(1 as u32);
                 }
-                *buffer.offset(buffer_pos.wrapping_add(4 as size_t) as isize) =
+                *buffer.offset(buffer_pos.wrapping_add(4) as isize) =
                     !(dest >> 24 & 1 as u32).wrapping_sub(1 as u32) as u8;
-                *buffer.offset(buffer_pos.wrapping_add(3 as size_t) as isize) = (dest >> 16) as u8;
-                *buffer.offset(buffer_pos.wrapping_add(2 as size_t) as isize) = (dest >> 8) as u8;
-                *buffer.offset(buffer_pos.wrapping_add(1 as size_t) as isize) = dest as u8;
-                buffer_pos = buffer_pos.wrapping_add(5 as size_t);
+                *buffer.offset(buffer_pos.wrapping_add(3) as isize) = (dest >> 16) as u8;
+                *buffer.offset(buffer_pos.wrapping_add(2) as isize) = (dest >> 8) as u8;
+                *buffer.offset(buffer_pos.wrapping_add(1) as isize) = dest as u8;
+                buffer_pos = buffer_pos.wrapping_add(5);
                 prev_mask = 0;
             } else {
                 buffer_pos = buffer_pos.wrapping_add(1);
@@ -232,8 +232,8 @@ unsafe extern "C" fn x86_coder_init(
         allocator,
         filters,
         Some(x86_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
-        ::core::mem::size_of::<lzma_simple_x86>() as size_t,
-        5 as size_t,
+        core::mem::size_of::<lzma_simple_x86>() as size_t,
+        5,
         1 as u32,
         is_encoder,
     ) as lzma_ret;

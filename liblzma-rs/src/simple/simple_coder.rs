@@ -340,7 +340,7 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
     let mut coder: *mut lzma_simple_coder = (*next).coder as *mut lzma_simple_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            (::core::mem::size_of::<lzma_simple_coder>() as size_t)
+            (core::mem::size_of::<lzma_simple_coder>() as size_t)
                 .wrapping_add((2 as size_t).wrapping_mul(unfiltered_max)),
             allocator,
         ) as *mut lzma_simple_coder;

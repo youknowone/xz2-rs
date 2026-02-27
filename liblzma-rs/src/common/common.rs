@@ -169,15 +169,11 @@ pub unsafe extern "C" fn lzma_alloc(
     mut allocator: *const lzma_allocator,
 ) -> *mut c_void {
     if size == 0 {
-        size = 1 as size_t;
+        size = 1;
     }
     let mut ptr: *mut c_void = core::ptr::null_mut();
     if !allocator.is_null() && (*allocator).alloc.is_some() {
-        ptr = (*allocator).alloc.expect("non-null function pointer")(
-            (*allocator).opaque,
-            1 as size_t,
-            size,
-        );
+        ptr = (*allocator).alloc.expect("non-null function pointer")((*allocator).opaque, 1, size);
     } else {
         ptr = malloc(size);
     }
@@ -189,20 +185,16 @@ pub unsafe extern "C" fn lzma_alloc_zero(
     mut allocator: *const lzma_allocator,
 ) -> *mut c_void {
     if size == 0 {
-        size = 1 as size_t;
+        size = 1;
     }
     let mut ptr: *mut c_void = core::ptr::null_mut();
     if !allocator.is_null() && (*allocator).alloc.is_some() {
-        ptr = (*allocator).alloc.expect("non-null function pointer")(
-            (*allocator).opaque,
-            1 as size_t,
-            size,
-        );
+        ptr = (*allocator).alloc.expect("non-null function pointer")((*allocator).opaque, 1, size);
         if !ptr.is_null() {
             memset(ptr, 0 as c_int, size);
         }
     } else {
-        ptr = calloc(1 as size_t, size);
+        ptr = calloc(1, size);
     }
     return ptr;
 }
@@ -314,7 +306,7 @@ pub unsafe extern "C" fn lzma_strm_init(mut strm: *mut lzma_stream) -> lzma_ret 
     }
     if (*strm).internal.is_null() {
         (*strm).internal = lzma_alloc(
-            ::core::mem::size_of::<lzma_internal>() as size_t,
+            core::mem::size_of::<lzma_internal>() as size_t,
             (*strm).allocator,
         ) as *mut lzma_internal;
         if (*strm).internal.is_null() {
@@ -336,7 +328,7 @@ pub unsafe extern "C" fn lzma_strm_init(mut strm: *mut lzma_stream) -> lzma_ret 
     memset(
         &raw mut (*(*strm).internal).supported_actions as *mut bool as *mut c_void,
         0 as c_int,
-        ::core::mem::size_of::<[bool; 5]>() as size_t,
+        core::mem::size_of::<[bool; 5]>() as size_t,
     );
     (*(*strm).internal).sequence = ISEQ_RUN;
     (*(*strm).internal).allow_buf_error = false;

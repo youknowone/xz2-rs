@@ -335,7 +335,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
 ) -> lzma_ret {
     let mut coder: *mut lzma_coder = (*next).coder as *mut lzma_coder;
     if coder.is_null() {
-        coder = lzma_alloc(::core::mem::size_of::<lzma_coder>() as size_t, allocator)
+        coder = lzma_alloc(core::mem::size_of::<lzma_coder>() as size_t, allocator)
             as *mut lzma_coder;
         if coder.is_null() {
             return LZMA_MEM_ERROR;
@@ -389,18 +389,18 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
     if ret_ != LZMA_OK {
         return ret_;
     }
-    if lz_options.dict_size < 4096 as size_t {
-        lz_options.dict_size = 4096 as size_t;
+    if lz_options.dict_size < 4096 {
+        lz_options.dict_size = 4096;
     }
     if lz_options.dict_size
         > (SIZE_MAX as size_t)
-            .wrapping_sub(15 as size_t)
+            .wrapping_sub(15)
             .wrapping_sub((2 as c_int * LZ_DICT_REPEAT_MAX) as size_t)
             .wrapping_sub(LZ_DICT_EXTRA as size_t)
     {
         return LZMA_MEM_ERROR;
     }
-    lz_options.dict_size = lz_options.dict_size.wrapping_add(15 as size_t) & !(15 as size_t);
+    lz_options.dict_size = lz_options.dict_size.wrapping_add(15) & !(15);
     let alloc_size: size_t = lz_options
         .dict_size
         .wrapping_add((2 as c_int * LZ_DICT_REPEAT_MAX) as size_t);
@@ -437,7 +437,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lz_decoder_memusage(mut dictionary_size: size_t) -> u64 {
-    return (::core::mem::size_of::<lzma_coder>() as u64)
+    return (core::mem::size_of::<lzma_coder>() as u64)
         .wrapping_add(dictionary_size as u64)
         .wrapping_add((2 as c_int * LZ_DICT_REPEAT_MAX) as u64)
         .wrapping_add(LZ_DICT_EXTRA as u64);

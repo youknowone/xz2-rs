@@ -55,11 +55,11 @@ pub unsafe extern "C" fn lzma_simple_props_decode(
     if props_size == 0 {
         return LZMA_OK;
     }
-    if props_size != 4 as size_t {
+    if props_size != 4 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut opt: *mut lzma_options_bcj = lzma_alloc(
-        ::core::mem::size_of::<lzma_options_bcj>() as size_t,
+        core::mem::size_of::<lzma_options_bcj>() as size_t,
         allocator,
     ) as *mut lzma_options_bcj;
     if opt.is_null() {

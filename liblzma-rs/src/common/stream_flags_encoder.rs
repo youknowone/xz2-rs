@@ -92,21 +92,21 @@ pub unsafe extern "C" fn lzma_stream_header_encode(
     memcpy(
         out as *mut c_void,
         &raw const lzma_header_magic as *const u8 as *const c_void,
-        ::core::mem::size_of::<[u8; 6]>() as size_t,
+        core::mem::size_of::<[u8; 6]>() as size_t,
     );
     if stream_flags_encode(
         options,
-        out.offset(::core::mem::size_of::<[u8; 6]>() as usize as isize),
+        out.offset(core::mem::size_of::<[u8; 6]>() as usize as isize),
     ) {
         return LZMA_PROG_ERROR;
     }
     let crc: u32 = lzma_crc32(
-        out.offset(::core::mem::size_of::<[u8; 6]>() as usize as isize),
+        out.offset(core::mem::size_of::<[u8; 6]>() as usize as isize),
         LZMA_STREAM_FLAGS_SIZE as size_t,
         0,
     ) as u32;
     write32le(
-        out.offset(::core::mem::size_of::<[u8; 6]>() as usize as isize)
+        out.offset(core::mem::size_of::<[u8; 6]>() as usize as isize)
             .offset(LZMA_STREAM_FLAGS_SIZE as isize),
         crc,
     );
@@ -143,7 +143,7 @@ pub unsafe extern "C" fn lzma_stream_footer_encode(
         out.offset((2 as c_int * 4) as isize)
             .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *mut c_void,
         &raw const lzma_footer_magic as *const u8 as *const c_void,
-        ::core::mem::size_of::<[u8; 2]>() as size_t,
+        core::mem::size_of::<[u8; 2]>() as size_t,
     );
     return LZMA_OK;
 }

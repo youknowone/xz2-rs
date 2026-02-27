@@ -482,8 +482,8 @@ static mut encoders: [lzma_filter_encoder; 12] = [
 unsafe extern "C" fn encoder_find(mut id: lzma_vli) -> *const lzma_filter_encoder {
     let mut i: size_t = 0;
     while i
-        < (::core::mem::size_of::<[lzma_filter_encoder; 12]>() as usize)
-            .wrapping_div(::core::mem::size_of::<lzma_filter_encoder>() as usize)
+        < (core::mem::size_of::<[lzma_filter_encoder; 12]>() as usize)
+            .wrapping_div(core::mem::size_of::<lzma_filter_encoder>() as usize)
     {
         if encoders[i as usize].id == id {
             return (&raw const encoders as *const lzma_filter_encoder).offset(i as isize);
@@ -510,7 +510,7 @@ pub unsafe extern "C" fn lzma_filters_update(
     if lzma_raw_encoder_memusage(filters) == UINT64_MAX as u64 {
         return LZMA_OPTIONS_ERROR;
     }
-    let mut count: size_t = 1 as size_t;
+    let mut count: size_t = 1;
     while (*filters.offset(count as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli {
         count = count.wrapping_add(1);
     }
@@ -520,7 +520,7 @@ pub unsafe extern "C" fn lzma_filters_update(
     }; 5];
     let mut i: size_t = 0;
     while i < count {
-        reversed_filters[count.wrapping_sub(i).wrapping_sub(1 as size_t) as usize] =
+        reversed_filters[count.wrapping_sub(i).wrapping_sub(1) as usize] =
             *filters.offset(i as isize);
         i = i.wrapping_add(1);
     }

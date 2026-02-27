@@ -479,7 +479,7 @@ unsafe extern "C" fn rc_direct(
 #[inline]
 unsafe extern "C" fn rc_flush(mut rc: *mut lzma_range_encoder) {
     let mut i: size_t = 0;
-    while i < 5 as size_t {
+    while i < 5 {
         let fresh1 = (*rc).count;
         (*rc).count = (*rc).count.wrapping_add(1);
         (*rc).symbols[fresh1 as usize] = RC_FLUSH;
@@ -651,7 +651,7 @@ unsafe extern "C" fn rc_encode_dummy(
         pos = pos.wrapping_add(1);
     }
     pos = 0;
-    while pos < 5 as size_t {
+    while pos < 5 {
         if rc_shift_low_dummy(
             &raw mut low,
             &raw mut cache_size,
@@ -1374,7 +1374,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
 ) -> lzma_ret {
     if (*coder_ptr).is_null() {
         *coder_ptr = lzma_alloc(
-            ::core::mem::size_of::<lzma_lzma1_encoder>() as size_t,
+            core::mem::size_of::<lzma_lzma1_encoder>() as size_t,
             allocator,
         );
         if (*coder_ptr).is_null() {
@@ -1410,8 +1410,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
         }
         _ => return LZMA_OPTIONS_ERROR,
     }
-    (*coder).is_initialized =
-        !(*options).preset_dict.is_null() && (*options).preset_dict_size > 0;
+    (*coder).is_initialized = !(*options).preset_dict.is_null() && (*options).preset_dict_size > 0;
     (*coder).is_flushed = false;
     (*coder).uncomp_size = 0;
     (*coder).uncomp_size_ptr = core::ptr::null_mut();
@@ -1510,7 +1509,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_memusage(mut options: *const c_void) 
     if lz_memusage == UINT64_MAX as u64 {
         return UINT64_MAX as u64;
     }
-    return (::core::mem::size_of::<lzma_lzma1_encoder>() as u64).wrapping_add(lz_memusage);
+    return (core::mem::size_of::<lzma_lzma1_encoder>() as u64).wrapping_add(lz_memusage);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_lclppb_encode(

@@ -157,10 +157,10 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
                     in_size,
                     &raw mut tmp as *mut u8,
                     &raw mut tmp_pos,
-                    1 as size_t,
+                    1,
                     LZMA_FINISH,
                 );
-                if tmp_pos == 1 as size_t {
+                if tmp_pos == 1 {
                     ret = LZMA_BUF_ERROR;
                 } else {
                     ret = LZMA_DATA_ERROR;

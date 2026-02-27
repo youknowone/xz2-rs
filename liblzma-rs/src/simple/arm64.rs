@@ -128,7 +128,7 @@ unsafe extern "C" fn arm64_code(
     mut buffer: *mut u8,
     mut size: size_t,
 ) -> size_t {
-    size &= !(3 as size_t);
+    size &= !(3);
     let mut i: size_t = 0;
     i = 0;
     while i < size {
@@ -154,12 +154,12 @@ unsafe extern "C" fn arm64_code(
                 let dest: u32 = src_0.wrapping_add(pc);
                 instr |= (dest & 3 as u32) << 29;
                 instr |= (dest & 0x3fffc as u32) << 3;
-                instr = (instr | (0u32.wrapping_sub(dest & 0x20000 as u32) & 0xe00000 as u32))
-                    as u32;
+                instr =
+                    (instr | (0u32.wrapping_sub(dest & 0x20000 as u32) & 0xe00000 as u32)) as u32;
                 write32le(buffer.offset(i as isize), instr);
             }
         }
-        i = i.wrapping_add(4 as size_t);
+        i = i.wrapping_add(4);
     }
     return i;
 }
@@ -175,7 +175,7 @@ unsafe extern "C" fn arm64_coder_init(
         filters,
         Some(arm64_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
-        4 as size_t,
+        4,
         4 as u32,
         is_encoder,
     );

@@ -338,7 +338,7 @@ unsafe extern "C" fn auto_decoder_init(
     let mut coder: *mut lzma_auto_coder = (*next).coder as *mut lzma_auto_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_auto_coder>() as size_t,
+            core::mem::size_of::<lzma_auto_coder>() as size_t,
             allocator,
         ) as *mut lzma_auto_coder;
         if coder.is_null() {

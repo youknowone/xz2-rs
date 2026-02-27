@@ -752,7 +752,7 @@ unsafe extern "C" fn worker_encode(
         } else {
             LZMA_RUN as c_int
         }) as lzma_action;
-        static mut in_chunk_max: size_t = 16384 as size_t;
+        static mut in_chunk_max: size_t = 16384;
         let mut in_limit: size_t = in_size;
         if in_size.wrapping_sub(in_pos) > in_chunk_max {
             in_limit = in_pos.wrapping_add(in_chunk_max);
@@ -1138,7 +1138,7 @@ unsafe extern "C" fn get_thread(
             memcpy(
                 &raw mut (*(*coder).thr).filters as *mut lzma_filter as *mut c_void,
                 &raw mut (*coder).filters_cache as *mut lzma_filter as *const c_void,
-                ::core::mem::size_of::<[lzma_filter; 5]>() as size_t,
+                core::mem::size_of::<[lzma_filter; 5]>() as size_t,
             );
             (*coder).filters_cache[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
             mythread_cond_signal(&raw mut (*(*coder).thr).cond);
@@ -1289,12 +1289,12 @@ unsafe extern "C" fn stream_encode_mt(
                 lzma_bufcpy(
                     &raw mut (*coder).header as *mut u8,
                     &raw mut (*coder).header_pos,
-                    ::core::mem::size_of::<[u8; 12]>() as size_t,
+                    core::mem::size_of::<[u8; 12]>() as size_t,
                     out,
                     out_pos,
                     out_size,
                 );
-                if (*coder).header_pos < ::core::mem::size_of::<[u8; 12]>() as usize {
+                if (*coder).header_pos < core::mem::size_of::<[u8; 12]>() as usize {
                     return LZMA_OK;
                 }
                 (*coder).header_pos = 0;
@@ -1457,12 +1457,12 @@ unsafe extern "C" fn stream_encode_mt(
         lzma_bufcpy(
             &raw mut (*coder).header as *mut u8,
             &raw mut (*coder).header_pos,
-            ::core::mem::size_of::<[u8; 12]>() as size_t,
+            core::mem::size_of::<[u8; 12]>() as size_t,
             out,
             out_pos,
             out_size,
         );
-        return (if (*coder).header_pos < ::core::mem::size_of::<[u8; 12]>() as usize {
+        return (if (*coder).header_pos < core::mem::size_of::<[u8; 12]>() as usize {
             LZMA_OK as c_int
         } else {
             LZMA_STREAM_END as c_int
@@ -1521,7 +1521,7 @@ unsafe extern "C" fn stream_encoder_mt_update(
     memcpy(
         &raw mut (*coder).filters as *mut lzma_filter as *mut c_void,
         &raw mut temp as *mut lzma_filter as *const c_void,
-        ::core::mem::size_of::<[lzma_filter; 5]>() as size_t,
+        core::mem::size_of::<[lzma_filter; 5]>() as size_t,
     );
     return LZMA_OK;
 }
@@ -1709,7 +1709,7 @@ unsafe extern "C" fn stream_encoder_mt_init(
     let mut coder: *mut lzma_stream_coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_stream_coder>() as size_t,
+            core::mem::size_of::<lzma_stream_coder>() as size_t,
             allocator,
         ) as *mut lzma_stream_coder;
         if coder.is_null() {
@@ -1782,7 +1782,7 @@ unsafe extern "C" fn stream_encoder_mt_init(
         memset(
             &raw mut (*coder).outq as *mut c_void,
             0 as c_int,
-            ::core::mem::size_of::<lzma_outq>() as size_t,
+            core::mem::size_of::<lzma_outq>() as size_t,
         );
         (*coder).threads = core::ptr::null_mut();
         (*coder).threads_max = 0;
@@ -1801,7 +1801,7 @@ unsafe extern "C" fn stream_encoder_mt_init(
         (*coder).threads_free = core::ptr::null_mut();
         (*coder).threads = lzma_alloc(
             ((*options).threads as size_t)
-                .wrapping_mul(::core::mem::size_of::<worker_thread>() as size_t),
+                .wrapping_mul(core::mem::size_of::<worker_thread>() as size_t),
             allocator,
         ) as *mut worker_thread;
         if (*coder).threads.is_null() {
@@ -1931,10 +1931,10 @@ pub unsafe extern "C" fn lzma_stream_encoder_mt_memusage(mut options: *const lzm
         return UINT64_MAX as u64;
     }
     let mut total_memusage: u64 = (LZMA_MEMUSAGE_BASE as u64)
-        .wrapping_add(::core::mem::size_of::<lzma_stream_coder>() as u64)
+        .wrapping_add(core::mem::size_of::<lzma_stream_coder>() as u64)
         .wrapping_add(
             ((*options).threads as usize)
-                .wrapping_mul(::core::mem::size_of::<worker_thread>() as usize) as u64,
+                .wrapping_mul(core::mem::size_of::<worker_thread>() as usize) as u64,
         );
     if (UINT64_MAX as u64).wrapping_sub(total_memusage) < inbuf_memusage {
         return UINT64_MAX as u64;

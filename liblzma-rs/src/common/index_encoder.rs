@@ -332,12 +332,11 @@ unsafe extern "C" fn index_encode(
                     if *out_pos == out_size {
                         return LZMA_OK;
                     }
-                    *out.offset(*out_pos as isize) = ((*coder).crc32
-                        >> (*coder).pos.wrapping_mul(8 as size_t)
-                        & 0xff as u32) as u8;
+                    *out.offset(*out_pos as isize) =
+                        ((*coder).crc32 >> (*coder).pos.wrapping_mul(8) & 0xff as u32) as u8;
                     *out_pos = (*out_pos).wrapping_add(1);
                     (*coder).pos = (*coder).pos.wrapping_add(1);
-                    if !((*coder).pos < 4 as size_t) {
+                    if !((*coder).pos < 4) {
                         break;
                     }
                 }
@@ -415,7 +414,7 @@ pub unsafe extern "C" fn lzma_index_encoder_init(
     }
     if (*next).coder.is_null() {
         (*next).coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_index_coder>() as size_t,
+            core::mem::size_of::<lzma_index_coder>() as size_t,
             allocator,
         );
         if (*next).coder.is_null() {

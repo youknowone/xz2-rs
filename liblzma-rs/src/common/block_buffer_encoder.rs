@@ -321,10 +321,10 @@ unsafe extern "C" fn block_encode_uncompressed(
         };
         let fresh2 = *out_pos;
         *out_pos = (*out_pos).wrapping_add(1);
-        *out.offset(fresh2 as isize) = (copy_size.wrapping_sub(1 as size_t) >> 8) as u8;
+        *out.offset(fresh2 as isize) = (copy_size.wrapping_sub(1) >> 8) as u8;
         let fresh3 = *out_pos;
         *out_pos = (*out_pos).wrapping_add(1);
-        *out.offset(fresh3 as isize) = (copy_size.wrapping_sub(1 as size_t) & 0xff as size_t) as u8;
+        *out.offset(fresh3 as isize) = (copy_size.wrapping_sub(1) & 0xff as size_t) as u8;
         memcpy(
             out.offset(*out_pos as isize) as *mut c_void,
             in_0.offset(in_pos as isize) as *const c_void,
@@ -433,7 +433,7 @@ unsafe extern "C" fn block_buffer_encode(
     if lzma_check_is_supported((*block).check) == 0 {
         return LZMA_UNSUPPORTED_CHECK;
     }
-    out_size = out_size.wrapping_sub(out_size.wrapping_sub(*out_pos) & 3 as size_t);
+    out_size = out_size.wrapping_sub(out_size.wrapping_sub(*out_pos) & 3);
     let check_size: size_t = lzma_check_size((*block).check) as size_t;
     if out_size.wrapping_sub(*out_pos) <= check_size {
         return LZMA_BUF_ERROR;
@@ -459,7 +459,7 @@ unsafe extern "C" fn block_buffer_encode(
         }
     }
     let mut i: size_t = (*block).compressed_size as size_t;
-    while i & 3 as size_t != 0 {
+    while i & 3 != 0 {
         let fresh0 = *out_pos;
         *out_pos = (*out_pos).wrapping_add(1);
         *out.offset(fresh0 as isize) = 0;

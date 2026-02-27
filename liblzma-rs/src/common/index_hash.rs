@@ -153,7 +153,7 @@ pub unsafe extern "C" fn lzma_index_hash_init(
 ) -> *mut lzma_index_hash {
     if index_hash.is_null() {
         index_hash = lzma_alloc(
-            ::core::mem::size_of::<lzma_index_hash>() as size_t,
+            core::mem::size_of::<lzma_index_hash>() as size_t,
             allocator,
         ) as *mut lzma_index_hash;
         if index_hash.is_null() {
@@ -207,7 +207,7 @@ unsafe extern "C" fn hash_append(
         &raw mut (*info).check,
         LZMA_CHECK_SHA256,
         &raw const sizes as *const lzma_vli as *const u8,
-        ::core::mem::size_of::<[lzma_vli; 2]>() as size_t,
+        core::mem::size_of::<[lzma_vli; 2]>() as size_t,
     );
 }
 #[no_mangle]
@@ -396,13 +396,13 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
             }
             let fresh2 = *in_pos;
             *in_pos = (*in_pos).wrapping_add(1);
-            if (*index_hash).crc32 >> (*index_hash).pos.wrapping_mul(8 as size_t) & 0xff as u32
+            if (*index_hash).crc32 >> (*index_hash).pos.wrapping_mul(8) & 0xff as u32
                 != *in_0.offset(fresh2 as isize) as u32
             {
                 return LZMA_DATA_ERROR;
             }
             (*index_hash).pos = (*index_hash).pos.wrapping_add(1);
-            if !((*index_hash).pos < 4 as size_t) {
+            if !((*index_hash).pos < 4) {
                 break;
             }
         }

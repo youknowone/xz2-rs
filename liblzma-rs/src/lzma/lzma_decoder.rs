@@ -293,7 +293,7 @@ unsafe extern "C" fn dict_get(dict: *const lzma_dict, distance: u32) -> u8 {
         (*dict)
             .pos
             .wrapping_sub(distance as size_t)
-            .wrapping_sub(1 as size_t)
+            .wrapping_sub(1)
             .wrapping_add(
                 (if (distance as size_t) < (*dict).pos {
                     0
@@ -305,9 +305,7 @@ unsafe extern "C" fn dict_get(dict: *const lzma_dict, distance: u32) -> u8 {
 }
 #[inline]
 unsafe extern "C" fn dict_get0(dict: *const lzma_dict) -> u8 {
-    return *(*dict)
-        .buf
-        .offset((*dict).pos.wrapping_sub(1 as size_t) as isize);
+    return *(*dict).buf.offset((*dict).pos.wrapping_sub(1) as isize);
 }
 #[inline]
 unsafe extern "C" fn dict_is_distance_valid(dict: *const lzma_dict, distance: size_t) -> bool {
@@ -326,10 +324,7 @@ unsafe extern "C" fn dict_repeat(
         *len as size_t
     }) as u32;
     *len = (*len).wrapping_sub(left);
-    let mut back: size_t = (*dict)
-        .pos
-        .wrapping_sub(distance as size_t)
-        .wrapping_sub(1 as size_t);
+    let mut back: size_t = (*dict).pos.wrapping_sub(distance as size_t).wrapping_sub(1);
     if distance as size_t >= (*dict).pos {
         back = back.wrapping_add((*dict).size.wrapping_sub(LZ_DICT_REPEAT_MAX as size_t));
     }
@@ -3891,7 +3886,7 @@ pub unsafe extern "C" fn lzma_lzma_decoder_create(
 ) -> lzma_ret {
     if (*lz).coder.is_null() {
         (*lz).coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_lzma1_decoder>() as size_t,
+            core::mem::size_of::<lzma_lzma1_decoder>() as size_t,
             allocator,
         );
         if (*lz).coder.is_null() {
@@ -4004,7 +3999,7 @@ pub unsafe extern "C" fn lzma_lzma_lclppb_decode(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_decoder_memusage_nocheck(mut options: *const c_void) -> u64 {
     let opt: *const lzma_options_lzma = options as *const lzma_options_lzma;
-    return (::core::mem::size_of::<lzma_lzma1_decoder>() as u64)
+    return (core::mem::size_of::<lzma_lzma1_decoder>() as u64)
         .wrapping_add(lzma_lz_decoder_memusage((*opt).dict_size as size_t));
 }
 #[no_mangle]
@@ -4021,11 +4016,11 @@ pub unsafe extern "C" fn lzma_lzma_props_decode(
     mut props: *const u8,
     mut props_size: size_t,
 ) -> lzma_ret {
-    if props_size != 5 as size_t {
+    if props_size != 5 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut opt: *mut lzma_options_lzma = lzma_alloc(
-        ::core::mem::size_of::<lzma_options_lzma>() as size_t,
+        core::mem::size_of::<lzma_options_lzma>() as size_t,
         allocator,
     ) as *mut lzma_options_lzma;
     if opt.is_null() {

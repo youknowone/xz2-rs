@@ -147,7 +147,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
     let mut coder: *mut lzma_delta_coder = (*next).coder as *mut lzma_delta_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_delta_coder>() as size_t,
+            core::mem::size_of::<lzma_delta_coder>() as size_t,
             allocator,
         ) as *mut lzma_delta_coder;
         if coder.is_null() {
@@ -180,7 +180,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
     memset(
         &raw mut (*coder).history as *mut u8 as *mut c_void,
         0 as c_int,
-        256 as size_t,
+        256,
     );
     return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
 }
@@ -194,5 +194,5 @@ pub unsafe extern "C" fn lzma_delta_coder_memusage(mut options: *const c_void) -
     {
         return UINT64_MAX as u64;
     }
-    return ::core::mem::size_of::<lzma_delta_coder>() as u64;
+    return core::mem::size_of::<lzma_delta_coder>() as u64;
 }

@@ -495,7 +495,7 @@ unsafe extern "C" fn stream_encoder_update(
             memcpy(
                 &raw mut (*coder).filters as *mut lzma_filter as *mut c_void,
                 &raw mut temp as *mut lzma_filter as *const c_void,
-                ::core::mem::size_of::<[lzma_filter; 5]>() as size_t,
+                core::mem::size_of::<[lzma_filter; 5]>() as size_t,
             );
             return LZMA_OK;
         }
@@ -554,7 +554,7 @@ unsafe extern "C" fn stream_encoder_init(
     let mut coder: *mut lzma_stream_coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_stream_coder>() as size_t,
+            core::mem::size_of::<lzma_stream_coder>() as size_t,
             allocator,
         ) as *mut lzma_stream_coder;
         if coder.is_null() {

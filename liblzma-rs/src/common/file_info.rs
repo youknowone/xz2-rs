@@ -276,13 +276,13 @@ unsafe extern "C" fn reverse_seek(
     if (*coder)
         .file_target_pos
         .wrapping_sub(LZMA_STREAM_HEADER_SIZE as u64)
-        < ::core::mem::size_of::<[u8; 8192]>() as u64
+        < core::mem::size_of::<[u8; 8192]>() as u64
     {
         (*coder).temp_size = (*coder)
             .file_target_pos
             .wrapping_sub(LZMA_STREAM_HEADER_SIZE as u64) as size_t;
     } else {
-        (*coder).temp_size = ::core::mem::size_of::<[u8; 8192]>() as usize as size_t;
+        (*coder).temp_size = core::mem::size_of::<[u8; 8192]>() as usize as size_t;
     }
     if seek_to_pos(
         coder,
@@ -799,7 +799,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
     let mut coder: *mut lzma_file_info_coder = (*next).coder as *mut lzma_file_info_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_file_info_coder>() as size_t,
+            core::mem::size_of::<lzma_file_info_coder>() as size_t,
             allocator,
         ) as *mut lzma_file_info_coder;
         if coder.is_null() {

@@ -320,7 +320,7 @@ unsafe extern "C" fn alone_encoder_init(
     let mut coder: *mut lzma_alone_coder = (*next).coder as *mut lzma_alone_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_alone_coder>() as size_t,
+            core::mem::size_of::<lzma_alone_coder>() as size_t,
             allocator,
         ) as *mut lzma_alone_coder;
         if coder.is_null() {
@@ -378,7 +378,7 @@ unsafe extern "C" fn alone_encoder_init(
     memset(
         (&raw mut (*coder).header as *mut u8).offset(1).offset(4) as *mut c_void,
         0xff as c_int,
-        8 as size_t,
+        8,
     );
     let filters: [lzma_filter_info; 2] = [
         lzma_filter_info_s {

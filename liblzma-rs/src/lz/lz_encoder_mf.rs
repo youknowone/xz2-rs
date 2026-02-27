@@ -157,13 +157,12 @@ unsafe extern "C" fn hc_find_func(
             return matches;
         }
         let pb: *const u8 = cur.offset(-(delta as isize));
-        cur_match = *son.offset(cyclic_pos.wrapping_sub(delta).wrapping_add(
-            (if delta > cyclic_pos {
-                cyclic_size
-            } else {
-                0
-            }),
-        ) as isize);
+        cur_match = *son.offset(
+            cyclic_pos
+                .wrapping_sub(delta)
+                .wrapping_add((if delta > cyclic_pos { cyclic_size } else { 0 }))
+                as isize,
+        );
         if *pb.offset(len_best as isize) as c_int == *cur.offset(len_best as isize) as c_int
             && *pb.offset(0) as c_int == *cur.offset(0) as c_int
         {
@@ -403,13 +402,10 @@ unsafe extern "C" fn bt_find_func(
             return matches;
         }
         let pair: *mut u32 = son.offset(
-            (cyclic_pos.wrapping_sub(delta).wrapping_add(
-                (if delta > cyclic_pos {
-                    cyclic_size
-                } else {
-                    0
-                }),
-            ) << 1) as isize,
+            (cyclic_pos
+                .wrapping_sub(delta)
+                .wrapping_add((if delta > cyclic_pos { cyclic_size } else { 0 }))
+                << 1) as isize,
         );
         let pb: *const u8 = cur.offset(-(delta as isize));
         let mut len: u32 = if len0 < len1 { len0 } else { len1 };
@@ -464,13 +460,10 @@ unsafe extern "C" fn bt_skip_func(
             return;
         }
         let mut pair: *mut u32 = son.offset(
-            (cyclic_pos.wrapping_sub(delta).wrapping_add(
-                (if delta > cyclic_pos {
-                    cyclic_size
-                } else {
-                    0
-                }),
-            ) << 1) as isize,
+            (cyclic_pos
+                .wrapping_sub(delta)
+                .wrapping_add((if delta > cyclic_pos { cyclic_size } else { 0 }))
+                << 1) as isize,
         );
         let mut pb: *const u8 = cur.offset(-(delta as isize));
         let mut len: u32 = if len0 < len1 { len0 } else { len1 };

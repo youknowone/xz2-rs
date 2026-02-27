@@ -241,11 +241,10 @@ unsafe extern "C" fn alone_decode(
             }
             1 => {
                 (*coder).options.dict_size = ((*coder).options.dict_size as size_t
-                    | (*in_0.offset(*in_pos as isize) as size_t)
-                        << (*coder).pos.wrapping_mul(8 as size_t))
+                    | (*in_0.offset(*in_pos as isize) as size_t) << (*coder).pos.wrapping_mul(8))
                     as u32;
                 (*coder).pos = (*coder).pos.wrapping_add(1);
-                if (*coder).pos == 4 as size_t {
+                if (*coder).pos == 4 {
                     if (*coder).picky as c_int != 0
                         && (*coder).options.dict_size != UINT32_MAX as u32
                     {
@@ -267,11 +266,11 @@ unsafe extern "C" fn alone_decode(
                 current_block_42 = 11048769245176032998;
             }
             2 => {
-                (*coder).uncompressed_size |= (*in_0.offset(*in_pos as isize) as lzma_vli)
-                    << (*coder).pos.wrapping_mul(8 as size_t);
+                (*coder).uncompressed_size |=
+                    (*in_0.offset(*in_pos as isize) as lzma_vli) << (*coder).pos.wrapping_mul(8);
                 *in_pos = (*in_pos).wrapping_add(1);
                 (*coder).pos = (*coder).pos.wrapping_add(1);
-                if (*coder).pos < 8 as size_t {
+                if (*coder).pos < 8 {
                     current_block_42 = 11048769245176032998;
                 } else {
                     if (*coder).picky as c_int != 0
@@ -426,7 +425,7 @@ pub unsafe extern "C" fn lzma_alone_decoder_init(
     let mut coder: *mut lzma_alone_coder = (*next).coder as *mut lzma_alone_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_alone_coder>() as size_t,
+            core::mem::size_of::<lzma_alone_coder>() as size_t,
             allocator,
         ) as *mut lzma_alone_coder;
         if coder.is_null() {

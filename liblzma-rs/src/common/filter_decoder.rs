@@ -521,8 +521,8 @@ static mut decoders: [lzma_filter_decoder; 12] = [
 unsafe extern "C" fn decoder_find(mut id: lzma_vli) -> *const lzma_filter_decoder {
     let mut i: size_t = 0;
     while i
-        < (::core::mem::size_of::<[lzma_filter_decoder; 12]>() as usize)
-            .wrapping_div(::core::mem::size_of::<lzma_filter_decoder>() as usize)
+        < (core::mem::size_of::<[lzma_filter_decoder; 12]>() as usize)
+            .wrapping_div(core::mem::size_of::<lzma_filter_decoder>() as usize)
     {
         if decoders[i as usize].id == id {
             return (&raw const decoders as *const lzma_filter_decoder).offset(i as isize);

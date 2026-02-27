@@ -651,7 +651,7 @@ unsafe extern "C" fn lzma_outq_is_empty(mut outq: *const lzma_outq) -> bool {
 }
 #[inline]
 unsafe extern "C" fn lzma_outq_outbuf_memusage(mut buf_size: size_t) -> u64 {
-    return (::core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize) as u64;
+    return (core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize) as u64;
 }
 unsafe extern "C" fn worker_enable_partial_update(mut thr_ptr: *mut c_void) {
     let mut thr: *mut worker_thread = thr_ptr as *mut worker_thread;
@@ -705,7 +705,7 @@ unsafe extern "C" fn worker_decoder(mut thr_ptr: *mut c_void) -> *mut c_void {
             }
         }
         mythread_mutex_unlock(&raw mut (*thr).mutex);
-        let chunk_size: size_t = 16384 as size_t;
+        let chunk_size: size_t = 16384;
         if in_filled.wrapping_sub((*thr).in_pos) > chunk_size {
             in_filled = (*thr).in_pos.wrapping_add(chunk_size);
         }
@@ -883,7 +883,7 @@ unsafe extern "C" fn initialize_new_thread(
     if (*coder).threads.is_null() {
         (*coder).threads = lzma_alloc(
             ((*coder).threads_max as size_t)
-                .wrapping_mul(::core::mem::size_of::<worker_thread>() as size_t),
+                .wrapping_mul(core::mem::size_of::<worker_thread>() as size_t),
             allocator,
         ) as *mut worker_thread;
         if (*coder).threads.is_null() {
@@ -1588,7 +1588,7 @@ unsafe extern "C" fn stream_decode_mt(
                     }
                     *in_pos = (*in_pos).wrapping_add(1);
                     (*coder).progress_in = (*coder).progress_in.wrapping_add(1);
-                    (*coder).pos = (*coder).pos.wrapping_add(1 as size_t) & 3 as size_t;
+                    (*coder).pos = (*coder).pos.wrapping_add(1) & 3;
                 }
                 if (*coder).pos != 0 {
                     *in_pos = (*in_pos).wrapping_add(1);
@@ -2000,7 +2000,7 @@ unsafe extern "C" fn stream_decoder_mt_init(
     coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_stream_coder>() as size_t,
+            core::mem::size_of::<lzma_stream_coder>() as size_t,
             allocator,
         ) as *mut lzma_stream_coder;
         if coder.is_null() {
@@ -2050,7 +2050,7 @@ unsafe extern "C" fn stream_decoder_mt_init(
         memset(
             &raw mut (*coder).outq as *mut c_void,
             0 as c_int,
-            ::core::mem::size_of::<lzma_outq>() as size_t,
+            core::mem::size_of::<lzma_outq>() as size_t,
         );
         (*coder).block_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
@@ -2096,8 +2096,7 @@ unsafe extern "C" fn stream_decoder_mt_init(
         (*coder).memlimit_threading = (*coder).memlimit_stop;
     }
     (*coder).tell_no_check = (*options).flags & LZMA_TELL_NO_CHECK as u32 != 0;
-    (*coder).tell_unsupported_check =
-        (*options).flags & LZMA_TELL_UNSUPPORTED_CHECK as u32 != 0;
+    (*coder).tell_unsupported_check = (*options).flags & LZMA_TELL_UNSUPPORTED_CHECK as u32 != 0;
     (*coder).tell_any_check = (*options).flags & LZMA_TELL_ANY_CHECK as u32 != 0;
     (*coder).ignore_check = (*options).flags & LZMA_IGNORE_CHECK as u32 != 0;
     (*coder).concatenated = (*options).flags & LZMA_CONCATENATED as u32 != 0;

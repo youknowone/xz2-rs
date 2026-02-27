@@ -74,7 +74,7 @@ pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
 pub const LZMA_THREADS_MAX: c_int = 16384 as c_int;
 #[inline]
 extern "C" fn lzma_outq_outbuf_memusage(mut buf_size: size_t) -> u64 {
-    return (::core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize) as u64;
+    return (core::mem::size_of::<lzma_outbuf>() as usize).wrapping_add(buf_size as usize) as u64;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_memusage(mut buf_size_max: u64, mut threads: u32) -> u64 {
@@ -182,7 +182,7 @@ pub unsafe extern "C" fn lzma_outq_prealloc_buf(
     if !(*outq).cache.is_null() && (*(*outq).cache).allocated == size {
         return LZMA_OK;
     }
-    if size > (SIZE_MAX as usize).wrapping_sub(::core::mem::size_of::<lzma_outbuf>() as usize) {
+    if size > (SIZE_MAX as usize).wrapping_sub(core::mem::size_of::<lzma_outbuf>() as usize) {
         return LZMA_MEM_ERROR;
     }
     let alloc_size: size_t = lzma_outq_outbuf_memusage(size) as size_t;

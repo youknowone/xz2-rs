@@ -315,13 +315,13 @@ unsafe extern "C" fn index_decode(
             }
             let fresh2 = *in_pos;
             *in_pos = (*in_pos).wrapping_add(1);
-            if (*coder).crc32 >> (*coder).pos.wrapping_mul(8 as size_t) & 0xff as u32
+            if (*coder).crc32 >> (*coder).pos.wrapping_mul(8) & 0xff as u32
                 != *in_0.offset(fresh2 as isize) as u32
             {
                 return LZMA_DATA_ERROR;
             }
             (*coder).pos = (*coder).pos.wrapping_add(1);
-            if !((*coder).pos < 4 as size_t) {
+            if !((*coder).pos < 4) {
                 break;
             }
         }
@@ -437,7 +437,7 @@ pub unsafe extern "C" fn lzma_index_decoder_init(
     let mut coder: *mut lzma_index_coder = (*next).coder as *mut lzma_index_coder;
     if coder.is_null() {
         coder = lzma_alloc(
-            ::core::mem::size_of::<lzma_index_coder>() as size_t,
+            core::mem::size_of::<lzma_index_coder>() as size_t,
             allocator,
         ) as *mut lzma_index_coder;
         if coder.is_null() {

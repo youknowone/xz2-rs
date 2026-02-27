@@ -202,11 +202,11 @@ pub unsafe extern "C" fn lzma_delta_props_decode(
     mut props: *const u8,
     mut props_size: size_t,
 ) -> lzma_ret {
-    if props_size != 1 as size_t {
+    if props_size != 1 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut opt: *mut lzma_options_delta = lzma_alloc(
-        ::core::mem::size_of::<lzma_options_delta>() as size_t,
+        core::mem::size_of::<lzma_options_delta>() as size_t,
         allocator,
     ) as *mut lzma_options_delta;
     if opt.is_null() {
