@@ -55,22 +55,27 @@ pub struct lzma_stream_flags {
 }
 pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 #[inline]
-unsafe extern "C" fn read32le(buf: *const u8) -> u32 {
-    let mut num: u32 = *buf.offset(0) as u32;
-    num |= (*buf.offset(1) as u32) << 8;
-    num |= (*buf.offset(2) as u32) << 16;
-    num |= (*buf.offset(3) as u32) << 24;
-    return num;
+extern "C" fn read32le(buf: *const u8) -> u32 {
+    return unsafe {
+        let mut num: u32 = *buf.offset(0) as u32;
+        num |= (*buf.offset(1) as u32) << 8;
+        num |= (*buf.offset(2) as u32) << 16;
+        num |= (*buf.offset(3) as u32) << 24;
+        num
+    };
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_STREAM_FLAGS_SIZE: c_int = 2;
-unsafe extern "C" fn stream_flags_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> bool {
-    if *in_0.offset(0) as c_int != 0 as c_int || *in_0.offset(1) as c_int & 0xf0 as c_int != 0 {
-        return true;
-    }
-    (*options).version = 0;
-    (*options).check = (*in_0.offset(1) as c_int & 0xf as c_int) as lzma_check;
-    return false;
+extern "C" fn stream_flags_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> bool {
+    return unsafe {
+        if *in_0.offset(0) as c_int != 0 as c_int || *in_0.offset(1) as c_int & 0xf0 as c_int != 0
+        {
+            return true;
+        }
+        (*options).version = 0;
+        (*options).check = (*in_0.offset(1) as c_int & 0xf as c_int) as lzma_check;
+        false
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_header_decode(

@@ -54,29 +54,35 @@ pub struct lzma_stream_flags {
     pub reserved_int2: u32,
 }
 #[inline]
-unsafe extern "C" fn write32le(buf: *mut u8, num: u32) {
-    *buf.offset(0) = num as u8;
-    *buf.offset(1) = (num >> 8) as u8;
-    *buf.offset(2) = (num >> 16) as u8;
-    *buf.offset(3) = (num >> 24) as u8;
+extern "C" fn write32le(buf: *mut u8, num: u32) {
+    unsafe {
+        *buf.offset(0) = num as u8;
+        *buf.offset(1) = (num >> 8) as u8;
+        *buf.offset(2) = (num >> 16) as u8;
+        *buf.offset(3) = (num >> 24) as u8;
+    }
 }
 pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 pub const LZMA_BACKWARD_SIZE_MIN: c_int = 4;
 pub const LZMA_BACKWARD_SIZE_MAX: c_ulonglong = 1 << 34;
 pub const LZMA_STREAM_FLAGS_SIZE: c_int = 2;
 #[inline]
-unsafe extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
-    return (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
-        && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
-        && (*options).backward_size & 3 as lzma_vli == 0 as lzma_vli;
+extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
+    return unsafe {
+        (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
+            && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
+            && (*options).backward_size & 3 as lzma_vli == 0 as lzma_vli
+    };
 }
-unsafe extern "C" fn stream_flags_encode(options: *const lzma_stream_flags, out: *mut u8) -> bool {
-    if (*options).check > LZMA_CHECK_ID_MAX {
-        return true;
-    }
-    *out.offset(0) = 0;
-    *out.offset(1) = (*options).check as u8;
-    return false;
+extern "C" fn stream_flags_encode(options: *const lzma_stream_flags, out: *mut u8) -> bool {
+    return unsafe {
+        if (*options).check > LZMA_CHECK_ID_MAX {
+            return true;
+        }
+        *out.offset(0) = 0;
+        *out.offset(1) = (*options).check as u8;
+        false
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_header_encode(

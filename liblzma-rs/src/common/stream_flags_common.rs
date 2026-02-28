@@ -53,10 +53,12 @@ pub const LZMA_CHECK_ID_MAX: lzma_check = 15;
 pub const LZMA_BACKWARD_SIZE_MIN: c_int = 4;
 pub const LZMA_BACKWARD_SIZE_MAX: c_ulonglong = 1 << 34;
 #[inline]
-unsafe extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
-    return (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
-        && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
-        && (*options).backward_size & 3 as lzma_vli == 0 as lzma_vli;
+extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
+    return unsafe {
+        (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
+            && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
+            && (*options).backward_size & 3 as lzma_vli == 0 as lzma_vli
+    };
 }
 #[no_mangle]
 pub static mut lzma_header_magic: [u8; 6] = [
