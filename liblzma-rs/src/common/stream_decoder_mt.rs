@@ -563,56 +563,64 @@ extern "C" fn mythread_mutex_unlock(mutex: *mut mythread_mutex) {
     let _ret: c_int = unsafe { pthread_mutex_unlock(mutex as *mut pthread_mutex_t) };
 }
 #[inline]
-unsafe extern "C" fn mythread_cond_init(mycond: *mut mythread_cond) -> c_int {
-    (*mycond).clk_id = _CLOCK_REALTIME;
-    return pthread_cond_init(
-        &raw mut (*mycond).cond,
-        ::core::ptr::null::<pthread_condattr_t>(),
-    );
+extern "C" fn mythread_cond_init(mycond: *mut mythread_cond) -> c_int {
+    return unsafe {
+        (*mycond).clk_id = _CLOCK_REALTIME;
+        pthread_cond_init(
+            &raw mut (*mycond).cond,
+            ::core::ptr::null::<pthread_condattr_t>(),
+        )
+    };
 }
 #[inline]
-unsafe extern "C" fn mythread_cond_destroy(cond: *mut mythread_cond) {
-    let _ret: c_int = pthread_cond_destroy(&raw mut (*cond).cond);
+extern "C" fn mythread_cond_destroy(cond: *mut mythread_cond) {
+    let _ret: c_int = unsafe { pthread_cond_destroy(&raw mut (*cond).cond) };
 }
 #[inline]
-unsafe extern "C" fn mythread_cond_signal(cond: *mut mythread_cond) {
-    let _ret: c_int = pthread_cond_signal(&raw mut (*cond).cond);
+extern "C" fn mythread_cond_signal(cond: *mut mythread_cond) {
+    let _ret: c_int = unsafe { pthread_cond_signal(&raw mut (*cond).cond) };
 }
 #[inline]
-unsafe extern "C" fn mythread_cond_wait(cond: *mut mythread_cond, mutex: *mut mythread_mutex) {
-    let _ret: c_int = pthread_cond_wait(&raw mut (*cond).cond, mutex as *mut pthread_mutex_t);
+extern "C" fn mythread_cond_wait(cond: *mut mythread_cond, mutex: *mut mythread_mutex) {
+    let _ret: c_int = unsafe {
+        pthread_cond_wait(&raw mut (*cond).cond, mutex as *mut pthread_mutex_t)
+    };
 }
 #[inline]
-unsafe extern "C" fn mythread_cond_timedwait(
+extern "C" fn mythread_cond_timedwait(
     cond: *mut mythread_cond,
     mutex: *mut mythread_mutex,
     condtime: *const mythread_condtime,
 ) -> c_int {
-    let ret: c_int = pthread_cond_timedwait(
-        &raw mut (*cond).cond,
-        mutex as *mut pthread_mutex_t,
-        condtime as *const timespec,
-    );
+    let ret: c_int = unsafe {
+        pthread_cond_timedwait(
+            &raw mut (*cond).cond,
+            mutex as *mut pthread_mutex_t,
+            condtime as *const timespec,
+        )
+    };
     return ret;
 }
 #[inline]
-unsafe extern "C" fn mythread_condtime_set(
+extern "C" fn mythread_condtime_set(
     condtime: *mut mythread_condtime,
     cond: *const mythread_cond,
     timeout_ms: u32,
 ) {
-    (*condtime).tv_sec = timeout_ms.wrapping_div(1000) as time_t as __darwin_time_t;
-    (*condtime).tv_nsec = timeout_ms.wrapping_rem(1000).wrapping_mul(1000000) as c_long;
-    let mut now: timespec = timespec {
-        tv_sec: 0,
-        tv_nsec: 0,
-    };
-    let _ret: c_int = clock_gettime((*cond).clk_id, &raw mut now);
-    (*condtime).tv_sec += now.tv_sec;
-    (*condtime).tv_nsec += now.tv_nsec;
-    if (*condtime).tv_nsec >= 1000000000 as c_long {
-        (*condtime).tv_nsec -= 1000000000 as c_long;
-        (*condtime).tv_sec += 1;
+    unsafe {
+        (*condtime).tv_sec = timeout_ms.wrapping_div(1000) as time_t as __darwin_time_t;
+        (*condtime).tv_nsec = timeout_ms.wrapping_rem(1000).wrapping_mul(1000000) as c_long;
+        let mut now: timespec = timespec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+        let _ret: c_int = clock_gettime((*cond).clk_id, &raw mut now);
+        (*condtime).tv_sec += now.tv_sec;
+        (*condtime).tv_nsec += now.tv_nsec;
+        if (*condtime).tv_nsec >= 1000000000 as c_long {
+            (*condtime).tv_nsec -= 1000000000 as c_long;
+            (*condtime).tv_sec += 1;
+        }
     }
 }
 pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
