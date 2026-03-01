@@ -1,8 +1,7 @@
 use crate::types::*;
-use core::ffi::{c_char, c_int, c_long, c_uint, c_ulong, c_ulonglong, c_void};
+use core::ffi::{c_char, c_int, c_long, c_uint, c_ulong, c_void};
 pub enum lzma_index_hash_s {}
 extern "C" {
-    fn memset(__b: *mut c_void, __c: c_int, __len: size_t) -> *mut c_void;
     fn clock_gettime(__clock_id: clockid_t, __tp: *mut timespec) -> c_int;
     fn pthread_cond_destroy(_: *mut pthread_cond_t) -> c_int;
     fn pthread_cond_init(_: *mut pthread_cond_t, _: *const pthread_condattr_t) -> c_int;
@@ -59,8 +58,6 @@ extern "C" {
         in_size: size_t,
     ) -> lzma_ret;
     fn lzma_index_hash_size(index_hash: *const lzma_index_hash) -> lzma_vli;
-    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
-    fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
     fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
     fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
     fn lzma_bufcpy(
@@ -194,152 +191,6 @@ pub struct mythread_cond {
     pub clk_id: clockid_t,
 }
 pub type mythread_condtime = timespec;
-pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
-pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
-pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
-pub const LZMA_RET_INTERNAL5: lzma_ret = 105;
-pub const LZMA_RET_INTERNAL4: lzma_ret = 104;
-pub const LZMA_RET_INTERNAL3: lzma_ret = 103;
-pub const LZMA_RET_INTERNAL2: lzma_ret = 102;
-pub const LZMA_RET_INTERNAL1: lzma_ret = 101;
-pub const LZMA_SEEK_NEEDED: lzma_ret = 12;
-pub const LZMA_PROG_ERROR: lzma_ret = 11;
-pub const LZMA_BUF_ERROR: lzma_ret = 10;
-pub const LZMA_DATA_ERROR: lzma_ret = 9;
-pub const LZMA_OPTIONS_ERROR: lzma_ret = 8;
-pub const LZMA_FORMAT_ERROR: lzma_ret = 7;
-pub const LZMA_MEMLIMIT_ERROR: lzma_ret = 6;
-pub const LZMA_MEM_ERROR: lzma_ret = 5;
-pub const LZMA_GET_CHECK: lzma_ret = 4;
-pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
-pub const LZMA_NO_CHECK: lzma_ret = 2;
-pub const LZMA_STREAM_END: lzma_ret = 1;
-pub const LZMA_OK: lzma_ret = 0;
-pub const LZMA_FINISH: lzma_action = 3;
-pub const LZMA_FULL_BARRIER: lzma_action = 4;
-pub const LZMA_FULL_FLUSH: lzma_action = 2;
-pub const LZMA_SYNC_FLUSH: lzma_action = 1;
-pub const LZMA_RUN: lzma_action = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_allocator {
-    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
-    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
-    pub opaque: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_internal_s {
-    pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed,
-    pub avail_in: size_t,
-    pub supported_actions: [bool; 5],
-    pub allow_buf_error: bool,
-}
-pub type C2RustUnnamed = c_uint;
-pub const ISEQ_ERROR: C2RustUnnamed = 6;
-pub const ISEQ_END: C2RustUnnamed = 5;
-pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
-pub const ISEQ_FINISH: C2RustUnnamed = 3;
-pub const ISEQ_FULL_FLUSH: C2RustUnnamed = 2;
-pub const ISEQ_SYNC_FLUSH: C2RustUnnamed = 1;
-pub const ISEQ_RUN: C2RustUnnamed = 0;
-pub type lzma_next_coder = lzma_next_coder_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_next_coder_s {
-    pub coder: *mut c_void,
-    pub id: lzma_vli,
-    pub init: uintptr_t,
-    pub code: lzma_code_function,
-    pub end: lzma_end_function,
-    pub get_progress: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>,
-    pub get_check: Option<unsafe extern "C" fn(*const c_void) -> lzma_check>,
-    pub memconfig: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>,
-    pub update: Option<
-        unsafe extern "C" fn(
-            *mut c_void,
-            *const lzma_allocator,
-            *const lzma_filter,
-            *const lzma_filter,
-        ) -> lzma_ret,
-    >,
-    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_filter {
-    pub id: lzma_vli,
-    pub options: *mut c_void,
-}
-pub const LZMA_CHECK_SHA256: lzma_check = 10;
-pub const LZMA_CHECK_CRC64: lzma_check = 4;
-pub const LZMA_CHECK_CRC32: lzma_check = 1;
-pub const LZMA_CHECK_NONE: lzma_check = 0;
-pub type lzma_end_function = Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>;
-pub type lzma_code_function = Option<
-    unsafe extern "C" fn(
-        *mut c_void,
-        *const lzma_allocator,
-        *const u8,
-        *mut size_t,
-        size_t,
-        *mut u8,
-        *mut size_t,
-        size_t,
-        lzma_action,
-    ) -> lzma_ret,
->;
-pub type lzma_internal = lzma_internal_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream {
-    pub next_in: *const u8,
-    pub avail_in: size_t,
-    pub total_in: u64,
-    pub next_out: *mut u8,
-    pub avail_out: size_t,
-    pub total_out: u64,
-    pub allocator: *const lzma_allocator,
-    pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_ptr4: *mut c_void,
-    pub seek_pos: u64,
-    pub reserved_int2: u64,
-    pub reserved_int3: size_t,
-    pub reserved_int4: size_t,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_mt {
-    pub flags: u32,
-    pub threads: u32,
-    pub block_size: u64,
-    pub timeout: u32,
-    pub preset: u32,
-    pub filters: *const lzma_filter,
-    pub check: lzma_check,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_int1: u32,
-    pub reserved_int2: u32,
-    pub reserved_int3: u32,
-    pub reserved_int4: u32,
-    pub memlimit_threading: u64,
-    pub memlimit_stop: u64,
-    pub reserved_int7: u64,
-    pub reserved_int8: u64,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_ptr4: *mut c_void,
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_coder {
@@ -381,20 +232,6 @@ pub struct lzma_stream_coder {
     pub pos: size_t,
     pub buffer: [u8; LZMA_BLOCK_HEADER_SIZE_MAX as usize],
 }
-pub const LZMA_BLOCK_HEADER_SIZE_MAX: c_int = 1024;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_outq {
-    pub head: *mut lzma_outbuf,
-    pub tail: *mut lzma_outbuf,
-    pub read_pos: size_t,
-    pub cache: *mut lzma_outbuf,
-    pub mem_allocated: u64,
-    pub mem_in_use: u64,
-    pub bufs_in_use: u32,
-    pub bufs_allocated: u32,
-    pub bufs_limit: u32,
-}
 pub type lzma_outbuf = lzma_outbuf_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -434,66 +271,11 @@ pub struct worker_thread {
     pub cond: mythread_cond,
     pub thread_id: mythread,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_block {
-    pub version: u32,
-    pub header_size: u32,
-    pub check: lzma_check,
-    pub compressed_size: lzma_vli,
-    pub uncompressed_size: lzma_vli,
-    pub filters: *mut lzma_filter,
-    pub raw_check: [u8; 64],
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_int1: u32,
-    pub reserved_int2: u32,
-    pub reserved_int3: lzma_vli,
-    pub reserved_int4: lzma_vli,
-    pub reserved_int5: lzma_vli,
-    pub reserved_int6: lzma_vli,
-    pub reserved_int7: lzma_vli,
-    pub reserved_int8: lzma_vli,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub ignore_check: lzma_bool,
-    pub reserved_bool2: lzma_bool,
-    pub reserved_bool3: lzma_bool,
-    pub reserved_bool4: lzma_bool,
-    pub reserved_bool5: lzma_bool,
-    pub reserved_bool6: lzma_bool,
-    pub reserved_bool7: lzma_bool,
-    pub reserved_bool8: lzma_bool,
-}
 pub type worker_state = c_uint;
 pub const THR_EXIT: worker_state = 2;
 pub const THR_RUN: worker_state = 1;
 pub const THR_IDLE: worker_state = 0;
 pub type lzma_index_hash = lzma_index_hash_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream_flags {
-    pub version: u32,
-    pub backward_size: lzma_vli,
-    pub check: lzma_check,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_bool1: lzma_bool,
-    pub reserved_bool2: lzma_bool,
-    pub reserved_bool3: lzma_bool,
-    pub reserved_bool4: lzma_bool,
-    pub reserved_bool5: lzma_bool,
-    pub reserved_bool6: lzma_bool,
-    pub reserved_bool7: lzma_bool,
-    pub reserved_bool8: lzma_bool,
-    pub reserved_int1: u32,
-    pub reserved_int2: u32,
-}
 pub type C2RustUnnamed_0 = c_uint;
 pub const SEQ_ERROR: C2RustUnnamed_0 = 11;
 pub const SEQ_STREAM_PADDING: C2RustUnnamed_0 = 10;
@@ -507,14 +289,14 @@ pub const SEQ_BLOCK_THR_INIT: C2RustUnnamed_0 = 3;
 pub const SEQ_BLOCK_INIT: C2RustUnnamed_0 = 2;
 pub const SEQ_BLOCK_HEADER: C2RustUnnamed_0 = 1;
 pub const SEQ_STREAM_HEADER: C2RustUnnamed_0 = 0;
-pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
 pub const SIG_SETMASK: c_int = 3;
 pub const MYTHREAD_RET_VALUE: *mut c_void = core::ptr::null_mut();
 #[inline]
 extern "C" fn mythread_sigmask(how: c_int, set: *const sigset_t, oset: *mut sigset_t) {
-    let _ret: c_int = unsafe { pthread_sigmask(how, set as *const sigset_t, oset as *mut sigset_t) };
+    let _ret: c_int =
+        unsafe { pthread_sigmask(how, set as *const sigset_t, oset as *mut sigset_t) };
 }
 #[inline]
 extern "C" fn mythread_create(
@@ -582,9 +364,8 @@ extern "C" fn mythread_cond_signal(cond: *mut mythread_cond) {
 }
 #[inline]
 extern "C" fn mythread_cond_wait(cond: *mut mythread_cond, mutex: *mut mythread_mutex) {
-    let _ret: c_int = unsafe {
-        pthread_cond_wait(&raw mut (*cond).cond, mutex as *mut pthread_mutex_t)
-    };
+    let _ret: c_int =
+        unsafe { pthread_cond_wait(&raw mut (*cond).cond, mutex as *mut pthread_mutex_t) };
 }
 #[inline]
 extern "C" fn mythread_cond_timedwait(
@@ -623,22 +404,7 @@ extern "C" fn mythread_condtime_set(
         }
     }
 }
-pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_TELL_NO_CHECK: c_uint = 0x1;
-pub const LZMA_TELL_UNSUPPORTED_CHECK: c_uint = 0x2;
-pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4;
-pub const LZMA_IGNORE_CHECK: c_uint = 0x10;
-pub const LZMA_CONCATENATED: c_uint = 0x8;
-pub const LZMA_FAIL_FAST: c_uint = 0x20;
-pub const LZMA_STREAM_HEADER_SIZE: c_int = 12;
 pub const LZMA_THREADS_MAX: c_int = 16384;
-pub const LZMA_MEMUSAGE_BASE: c_ulonglong = 1 << 15;
-pub const LZMA_SUPPORTED_FLAGS: c_uint = LZMA_TELL_NO_CHECK
-    | LZMA_TELL_UNSUPPORTED_CHECK
-    | LZMA_TELL_ANY_CHECK
-    | LZMA_IGNORE_CHECK
-    | LZMA_CONCATENATED
-    | LZMA_FAIL_FAST;
 pub const INDEX_INDICATOR: c_int = 0;
 #[inline]
 extern "C" fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
@@ -700,7 +466,7 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
                 in_filled = (*thr).in_filled;
                 partial_update_enabled = (*thr).partial_update_enabled;
                 if !(in_filled == (*thr).in_pos
-                    && !(partial_update_enabled as c_int != 0 && !(*thr).partial_update_started))
+                    && !(partial_update_enabled && !(*thr).partial_update_started))
                 {
                     break;
                 }
@@ -882,8 +648,7 @@ unsafe extern "C" fn initialize_new_thread(
 ) -> lzma_ret {
     if (*coder).threads.is_null() {
         (*coder).threads = lzma_alloc(
-            ((*coder).threads_max as size_t)
-                .wrapping_mul(core::mem::size_of::<worker_thread>() as size_t),
+            ((*coder).threads_max as size_t).wrapping_mul(core::mem::size_of::<worker_thread>()),
             allocator,
         ) as *mut worker_thread;
         if (*coder).threads.is_null() {
@@ -904,7 +669,7 @@ unsafe extern "C" fn initialize_new_thread(
             (*thr).outbuf = core::ptr::null_mut();
             (*thr).block_decoder = lzma_next_coder_s {
                 coder: core::ptr::null_mut(),
-                id: LZMA_VLI_UNKNOWN as lzma_vli,
+                id: LZMA_VLI_UNKNOWN,
                 init: 0,
                 code: None,
                 end: None,
@@ -959,7 +724,7 @@ unsafe extern "C" fn get_thread(
         mythread_i_608 = 1;
     }
     if (*coder).thr.is_null() {
-        let ret_: lzma_ret = initialize_new_thread(coder, allocator) as lzma_ret;
+        let ret_: lzma_ret = initialize_new_thread(coder, allocator);
         if ret_ != LZMA_OK {
             return ret_;
         }
@@ -1041,7 +806,7 @@ unsafe extern "C" fn read_output_and_wait(
                         .wrapping_sub((*coder).mem_in_use)
                         .wrapping_sub((*coder).outq.mem_in_use)
                         >= (*coder).mem_next_block
-                    && lzma_outq_has_buf(&raw mut (*coder).outq) as c_int != 0
+                    && lzma_outq_has_buf(&raw mut (*coder).outq)
                     && ((*coder).threads_initialized < (*coder).threads_max
                         || !(*coder).threads_free.is_null())
                 {
@@ -1057,9 +822,7 @@ unsafe extern "C" fn read_output_and_wait(
                     if lzma_outq_is_readable(&raw mut (*coder).outq) {
                         break;
                     }
-                    if !(*coder).thr.is_null()
-                        && (*(*coder).thr).partial_update_enabled as c_int != 0
-                    {
+                    if !(*coder).thr.is_null() && (*(*coder).thr).partial_update_enabled {
                         if (*(*(*coder).thr).outbuf).decoder_in_pos == (*(*coder).thr).in_filled {
                             break;
                         }
@@ -1077,7 +840,7 @@ unsafe extern "C" fn read_output_and_wait(
                             &raw mut (*coder).cond,
                             &raw mut (*coder).mutex,
                             wait_abs,
-                        ) != 0 as c_int
+                        ) != 0
                         {
                             ret = LZMA_RET_INTERNAL1;
                             break;
@@ -1135,7 +898,7 @@ unsafe extern "C" fn decode_block_header(
         &raw mut (*coder).block_options,
         allocator,
         &raw mut (*coder).buffer as *mut u8,
-    ) as lzma_ret;
+    );
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -1150,8 +913,7 @@ extern "C" fn comp_blk_size(coder: *const lzma_stream_coder) -> size_t {
     };
 }
 extern "C" fn is_direct_mode_needed(size: lzma_vli) -> bool {
-    return size == LZMA_VLI_UNKNOWN as lzma_vli
-        || size > SIZE_MAX.wrapping_div(3 as c_ulong) as lzma_vli;
+    return size == LZMA_VLI_UNKNOWN || size > SIZE_MAX.wrapping_div(3 as c_ulong) as lzma_vli;
 }
 unsafe extern "C" fn stream_decoder_reset(
     coder: *mut lzma_stream_coder,
@@ -1208,23 +970,21 @@ unsafe extern "C" fn stream_decode_mt(
                 let ret: lzma_ret = lzma_stream_header_decode(
                     &raw mut (*coder).stream_flags,
                     &raw mut (*coder).buffer as *mut u8,
-                ) as lzma_ret;
+                );
                 if ret != LZMA_OK {
-                    return (if ret == LZMA_FORMAT_ERROR && !(*coder).first_stream {
+                    return if ret == LZMA_FORMAT_ERROR && !(*coder).first_stream {
                         LZMA_DATA_ERROR
                     } else {
                         ret
-                    }) as lzma_ret;
+                    };
                 }
                 (*coder).first_stream = false;
                 (*coder).block_options.check = (*coder).stream_flags.check;
                 (*coder).sequence = SEQ_BLOCK_HEADER;
-                if (*coder).tell_no_check as c_int != 0
-                    && (*coder).stream_flags.check == LZMA_CHECK_NONE
-                {
+                if (*coder).tell_no_check && (*coder).stream_flags.check == LZMA_CHECK_NONE {
                     return LZMA_NO_CHECK;
                 }
-                if (*coder).tell_unsupported_check as c_int != 0
+                if (*coder).tell_unsupported_check
                     && lzma_check_is_supported((*coder).stream_flags.check) == 0
                 {
                     return LZMA_UNSUPPORTED_CHECK;
@@ -1254,10 +1014,10 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     core::ptr::null_mut(),
-                    1 as c_int != 0,
+                    true,
                     &raw mut wait_abs,
                     &raw mut has_blocked,
-                ) as lzma_ret;
+                );
                 if ret__3 != LZMA_OK {
                     return ret__3;
                 }
@@ -1270,7 +1030,7 @@ unsafe extern "C" fn stream_decode_mt(
                     &raw mut (*coder).block_decoder,
                     allocator,
                     &raw mut (*coder).block_options,
-                ) as lzma_ret;
+                );
                 lzma_filters_free(&raw mut (*coder).filters as *mut lzma_filter, allocator);
                 (*coder).block_options.filters = core::ptr::null_mut();
                 if ret_3 != LZMA_OK {
@@ -1291,10 +1051,10 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     core::ptr::null_mut(),
-                    1 as c_int != 0,
+                    true,
                     &raw mut wait_abs,
                     &raw mut has_blocked,
-                ) as lzma_ret;
+                );
                 if ret__5 != LZMA_OK {
                     return ret__5;
                 }
@@ -1322,10 +1082,10 @@ unsafe extern "C" fn stream_decode_mt(
                         out_pos,
                         out_size,
                         core::ptr::null_mut(),
-                        1 as c_int != 0,
+                        true,
                         &raw mut wait_abs,
                         &raw mut has_blocked,
-                    ) as lzma_ret;
+                    );
                     if ret__8 != LZMA_OK {
                         return ret__8;
                     }
@@ -1354,7 +1114,7 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     action,
-                ) as lzma_ret;
+                );
                 (*coder).progress_in = (*coder)
                     .progress_in
                     .wrapping_add((*in_pos).wrapping_sub(in_old_1) as u64);
@@ -1368,7 +1128,7 @@ unsafe extern "C" fn stream_decode_mt(
                     (*coder).index_hash,
                     lzma_block_unpadded_size(&raw mut (*coder).block_options),
                     (*coder).block_options.uncompressed_size,
-                ) as lzma_ret;
+                );
                 if ret__4 != LZMA_OK {
                     return ret__4;
                 }
@@ -1377,13 +1137,12 @@ unsafe extern "C" fn stream_decode_mt(
             }
             7149356873433890176 => {
                 let in_old_0: size_t = *in_pos;
-                let ret_0: lzma_ret =
-                    decode_block_header(coder, allocator, in_0, in_pos, in_size) as lzma_ret;
+                let ret_0: lzma_ret = decode_block_header(coder, allocator, in_0, in_pos, in_size);
                 (*coder).progress_in = (*coder)
                     .progress_in
                     .wrapping_add((*in_pos).wrapping_sub(in_old_0) as u64);
                 if ret_0 == LZMA_OK {
-                    if action == LZMA_FINISH && (*coder).fail_fast as c_int != 0 {
+                    if action == LZMA_FINISH && (*coder).fail_fast {
                         threads_stop(coder);
                         return LZMA_DATA_ERROR;
                     }
@@ -1397,7 +1156,7 @@ unsafe extern "C" fn stream_decode_mt(
                         waiting_allowed,
                         &raw mut wait_abs,
                         &raw mut has_blocked,
-                    ) as lzma_ret;
+                    );
                     if ret_ != LZMA_OK {
                         return ret_;
                     }
@@ -1417,7 +1176,7 @@ unsafe extern "C" fn stream_decode_mt(
                 } else {
                     (*coder).mem_next_filters =
                         lzma_raw_decoder_memusage(&raw mut (*coder).filters as *mut lzma_filter);
-                    if (*coder).mem_next_filters == UINT64_MAX as u64 {
+                    if (*coder).mem_next_filters == UINT64_MAX {
                         (*coder).pending_error = LZMA_OPTIONS_ERROR;
                         (*coder).sequence = SEQ_ERROR;
                         current_block_239 = 11639917216603986996;
@@ -1433,7 +1192,7 @@ unsafe extern "C" fn stream_decode_mt(
                 }
                 let in_old_2: size_t = *in_pos;
                 let ret_5: lzma_ret =
-                    lzma_index_hash_decode((*coder).index_hash, in_0, in_pos, in_size) as lzma_ret;
+                    lzma_index_hash_decode((*coder).index_hash, in_0, in_pos, in_size);
                 (*coder).progress_in = (*coder)
                     .progress_in
                     .wrapping_add((*in_pos).wrapping_sub(in_old_2) as u64);
@@ -1455,10 +1214,10 @@ unsafe extern "C" fn stream_decode_mt(
                         out_pos,
                         out_size,
                         core::ptr::null_mut(),
-                        1 as c_int != 0,
+                        true,
                         &raw mut wait_abs,
                         &raw mut has_blocked,
-                    ) as lzma_ret;
+                    );
                     if ret__0 != LZMA_OK {
                         return ret__0;
                     }
@@ -1467,8 +1226,8 @@ unsafe extern "C" fn stream_decode_mt(
                     }
                     return LZMA_MEMLIMIT_ERROR;
                 }
-                if is_direct_mode_needed((*coder).block_options.compressed_size) as c_int != 0
-                    || is_direct_mode_needed((*coder).block_options.uncompressed_size) as c_int != 0
+                if is_direct_mode_needed((*coder).block_options.compressed_size)
+                    || is_direct_mode_needed((*coder).block_options.uncompressed_size)
                 {
                     (*coder).sequence = SEQ_BLOCK_DIRECT_INIT;
                     current_block_239 = 11639917216603986996;
@@ -1478,7 +1237,7 @@ unsafe extern "C" fn stream_decode_mt(
                         (*coder).mem_next_in.wrapping_add(lzma_outq_outbuf_memusage(
                             (*coder).block_options.uncompressed_size as size_t,
                         ) as u64);
-                    if (UINT64_MAX as u64).wrapping_sub(mem_buffers) < (*coder).mem_next_filters {
+                    if (UINT64_MAX).wrapping_sub(mem_buffers) < (*coder).mem_next_filters {
                         (*coder).sequence = SEQ_BLOCK_DIRECT_INIT;
                         current_block_239 = 11639917216603986996;
                     } else {
@@ -1494,7 +1253,7 @@ unsafe extern "C" fn stream_decode_mt(
                                 (*coder).index_hash,
                                 lzma_block_unpadded_size(&raw mut (*coder).block_options),
                                 (*coder).block_options.uncompressed_size,
-                            ) as lzma_ret;
+                            );
                             if ret_1 != LZMA_OK {
                                 (*coder).pending_error = ret_1;
                                 (*coder).sequence = SEQ_ERROR;
@@ -1546,13 +1305,13 @@ unsafe extern "C" fn stream_decode_mt(
                 let ret_6: lzma_ret = lzma_stream_footer_decode(
                     &raw mut footer_flags,
                     &raw mut (*coder).buffer as *mut u8,
-                ) as lzma_ret;
+                );
                 if ret_6 != LZMA_OK {
-                    return (if ret_6 == LZMA_FORMAT_ERROR {
+                    return if ret_6 == LZMA_FORMAT_ERROR {
                         LZMA_DATA_ERROR
                     } else {
                         ret_6
-                    }) as lzma_ret;
+                    };
                 }
                 if lzma_index_hash_size((*coder).index_hash) != footer_flags.backward_size {
                     return LZMA_DATA_ERROR;
@@ -1560,7 +1319,7 @@ unsafe extern "C" fn stream_decode_mt(
                 let ret__6: lzma_ret = lzma_stream_flags_compare(
                     &raw mut (*coder).stream_flags,
                     &raw mut footer_flags,
-                ) as lzma_ret;
+                );
                 if ret__6 != LZMA_OK {
                     return ret__6;
                 }
@@ -1579,13 +1338,13 @@ unsafe extern "C" fn stream_decode_mt(
                         if action != LZMA_FINISH {
                             return LZMA_OK;
                         }
-                        return (if (*coder).pos == 0 {
-                            LZMA_STREAM_END as c_int
+                        return if (*coder).pos == 0 {
+                            LZMA_STREAM_END
                         } else {
-                            LZMA_DATA_ERROR as c_int
-                        }) as lzma_ret;
+                            LZMA_DATA_ERROR
+                        };
                     }
-                    if *in_0.offset(*in_pos as isize) as c_int != 0 as c_int {
+                    if *in_0.offset(*in_pos as isize) != 0 {
                         break;
                     }
                     *in_pos = (*in_pos).wrapping_add(1);
@@ -1597,7 +1356,7 @@ unsafe extern "C" fn stream_decode_mt(
                     (*coder).progress_in = (*coder).progress_in.wrapping_add(1);
                     return LZMA_DATA_ERROR;
                 }
-                let ret__7: lzma_ret = stream_decoder_reset(coder, allocator) as lzma_ret;
+                let ret__7: lzma_ret = stream_decoder_reset(coder, allocator);
                 if ret__7 != LZMA_OK {
                     return ret__7;
                 }
@@ -1612,10 +1371,10 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     &raw mut block_can_start,
-                    1 as c_int != 0,
+                    true,
                     &raw mut wait_abs,
                     &raw mut has_blocked,
-                ) as lzma_ret;
+                );
                 if ret__1 != LZMA_OK {
                     return ret__1;
                 }
@@ -1782,7 +1541,7 @@ unsafe extern "C" fn stream_decode_mt(
         }
         match current_block_239 {
             7728257318064351663 => {
-                if action == LZMA_FINISH && (*coder).fail_fast as c_int != 0 {
+                if action == LZMA_FINISH && (*coder).fail_fast {
                     let in_avail: size_t = in_size.wrapping_sub(*in_pos);
                     let in_needed: size_t = (*(*coder).thr)
                         .in_size
@@ -1825,10 +1584,10 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     core::ptr::null_mut(),
-                    waiting_allowed as c_int != 0 && *in_pos == in_size,
+                    waiting_allowed && *in_pos == in_size,
                     &raw mut wait_abs,
                     &raw mut has_blocked,
-                ) as lzma_ret;
+                );
                 if ret__2 != LZMA_OK {
                     return ret__2;
                 }
@@ -1891,8 +1650,8 @@ unsafe extern "C" fn stream_decoder_mt_memconfig(
         }
         mythread_i_1829 = 1;
     }
-    if *memusage < LZMA_MEMUSAGE_BASE as u64 {
-        *memusage = LZMA_MEMUSAGE_BASE as u64;
+    if *memusage < LZMA_MEMUSAGE_BASE {
+        *memusage = LZMA_MEMUSAGE_BASE;
     }
     *old_memlimit = (*coder).memlimit_stop;
     if new_memlimit != 0 {
@@ -2003,10 +1762,8 @@ unsafe extern "C" fn stream_decoder_mt_init(
     ));
     coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
-        coder = lzma_alloc(
-            core::mem::size_of::<lzma_stream_coder>() as size_t,
-            allocator,
-        ) as *mut lzma_stream_coder;
+        coder = lzma_alloc(core::mem::size_of::<lzma_stream_coder>(), allocator)
+            as *mut lzma_stream_coder;
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -2050,15 +1807,15 @@ unsafe extern "C" fn stream_decoder_mt_init(
                 as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> (),
         )
             as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>;
-        (*coder).filters[0].id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*coder).filters[0].id = LZMA_VLI_UNKNOWN;
         memset(
             &raw mut (*coder).outq as *mut c_void,
             0 as c_int,
-            core::mem::size_of::<lzma_outq>() as size_t,
+            core::mem::size_of::<lzma_outq>(),
         );
         (*coder).block_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -2109,8 +1866,7 @@ unsafe extern "C" fn stream_decoder_mt_init(
     (*coder).out_was_filled = false;
     (*coder).pos = 0;
     (*coder).threads_max = (*options).threads;
-    let ret_: lzma_ret =
-        lzma_outq_init(&raw mut (*coder).outq, allocator, (*coder).threads_max) as lzma_ret;
+    let ret_: lzma_ret = lzma_outq_init(&raw mut (*coder).outq, allocator, (*coder).threads_max);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -2121,7 +1877,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_mt(
     strm: *mut lzma_stream,
     options: *const lzma_mt,
 ) -> lzma_ret {
-    let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
+    let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -2129,7 +1885,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_mt(
         &raw mut (*(*strm).internal).next,
         (*strm).allocator,
         options,
-    ) as lzma_ret;
+    );
     if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;

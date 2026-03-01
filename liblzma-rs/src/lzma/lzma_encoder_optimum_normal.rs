@@ -1,50 +1,10 @@
 use crate::types::*;
 use core::ffi::{c_int, c_uint, c_void};
 extern "C" {
-    fn memcpy(__dst: *mut c_void, __src: *const c_void, __n: size_t) -> *mut c_void;
     fn lzma_mf_find(mf: *mut lzma_mf, count: *mut u32, matches: *mut lzma_match) -> u32;
     static lzma_rc_prices: [u8; 128];
     static lzma_fastpos: [u8; 8192];
 }
-pub const LZMA_FINISH: lzma_action = 3;
-pub const LZMA_FULL_BARRIER: lzma_action = 4;
-pub const LZMA_FULL_FLUSH: lzma_action = 2;
-pub const LZMA_SYNC_FLUSH: lzma_action = 1;
-pub const LZMA_RUN: lzma_action = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_match {
-    pub len: u32,
-    pub dist: u32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_mf_s {
-    pub buffer: *mut u8,
-    pub size: u32,
-    pub keep_size_before: u32,
-    pub keep_size_after: u32,
-    pub offset: u32,
-    pub read_pos: u32,
-    pub read_ahead: u32,
-    pub read_limit: u32,
-    pub write_pos: u32,
-    pub pending: u32,
-    pub find: Option<unsafe extern "C" fn(*mut lzma_mf, *mut lzma_match) -> u32>,
-    pub skip: Option<unsafe extern "C" fn(*mut lzma_mf, u32) -> ()>,
-    pub hash: *mut u32,
-    pub son: *mut u32,
-    pub cyclic_pos: u32,
-    pub cyclic_size: u32,
-    pub hash_mask: u32,
-    pub depth: u32,
-    pub nice_len: u32,
-    pub match_len_max: u32,
-    pub action: lzma_action,
-    pub hash_count: u32,
-    pub sons_count: u32,
-}
-pub type lzma_mf = lzma_mf_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_range_encoder {
@@ -64,18 +24,6 @@ pub const RC_DIRECT_1: C2RustUnnamed = 3;
 pub const RC_DIRECT_0: C2RustUnnamed = 2;
 pub const RC_BIT_1: C2RustUnnamed = 1;
 pub const RC_BIT_0: C2RustUnnamed = 0;
-pub const STATE_NONLIT_REP: lzma_lzma_state = 11;
-pub const STATE_NONLIT_MATCH: lzma_lzma_state = 10;
-pub const STATE_LIT_SHORTREP: lzma_lzma_state = 9;
-pub const STATE_LIT_LONGREP: lzma_lzma_state = 8;
-pub const STATE_LIT_MATCH: lzma_lzma_state = 7;
-pub const STATE_SHORTREP_LIT: lzma_lzma_state = 6;
-pub const STATE_REP_LIT: lzma_lzma_state = 5;
-pub const STATE_MATCH_LIT: lzma_lzma_state = 4;
-pub const STATE_SHORTREP_LIT_LIT: lzma_lzma_state = 3;
-pub const STATE_REP_LIT_LIT: lzma_lzma_state = 2;
-pub const STATE_MATCH_LIT_LIT: lzma_lzma_state = 1;
-pub const STATE_LIT_LIT: lzma_lzma_state = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzma1_encoder_s {
@@ -144,7 +92,6 @@ pub struct lzma_length_encoder {
     pub counters: [u32; 16],
 }
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
-pub const UINT32_MAX: c_uint = 4294967295;
 #[inline]
 unsafe extern "C" fn mf_ptr(mf: *const lzma_mf) -> *const u8 {
     return (*mf).buffer.offset((*mf).read_pos as isize);
@@ -345,11 +292,7 @@ unsafe extern "C" fn get_literal_price(
     return price;
 }
 #[inline]
-extern "C" fn get_len_price(
-    lencoder: *const lzma_length_encoder,
-    len: u32,
-    pos_state: u32,
-) -> u32 {
+extern "C" fn get_len_price(lencoder: *const lzma_length_encoder, len: u32, pos_state: u32) -> u32 {
     return unsafe {
         (*lencoder).prices[pos_state as usize][len.wrapping_sub(MATCH_LEN_MIN as u32) as usize]
     };
@@ -811,9 +754,7 @@ unsafe extern "C" fn helper2(
         }
     } else {
         let mut pos: u32 = 0;
-        if (*coder).opts[cur as usize].prev_1_is_literal as c_int != 0
-            && (*coder).opts[cur as usize].prev_2 as c_int != 0
-        {
+        if (*coder).opts[cur as usize].prev_1_is_literal && (*coder).opts[cur as usize].prev_2 {
             pos_prev = (*coder).opts[cur as usize].pos_prev_2;
             pos = (*coder).opts[cur as usize].back_prev_2;
             state = (if (state as u32) < LIT_STATES as u32 {
@@ -1230,7 +1171,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_normal(
     memcpy(
         &raw mut reps as *mut u32 as *mut c_void,
         &raw mut (*coder).reps as *mut u32 as *const c_void,
-        core::mem::size_of::<[u32; 4]>() as size_t,
+        core::mem::size_of::<[u32; 4]>(),
     );
     let mut cur: u32 = 0;
     cur = 1;

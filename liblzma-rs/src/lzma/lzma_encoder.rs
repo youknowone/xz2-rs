@@ -1,7 +1,6 @@
 use crate::types::*;
-use core::ffi::{c_int, c_long, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_int, c_long, c_uint, c_void};
 extern "C" {
-    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
     fn lzma_lz_encoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
@@ -33,170 +32,6 @@ extern "C" {
     );
     static lzma_fastpos: [u8; 8192];
 }
-pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
-pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
-pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
-pub const LZMA_RET_INTERNAL5: lzma_ret = 105;
-pub const LZMA_RET_INTERNAL4: lzma_ret = 104;
-pub const LZMA_RET_INTERNAL3: lzma_ret = 103;
-pub const LZMA_RET_INTERNAL2: lzma_ret = 102;
-pub const LZMA_RET_INTERNAL1: lzma_ret = 101;
-pub const LZMA_SEEK_NEEDED: lzma_ret = 12;
-pub const LZMA_PROG_ERROR: lzma_ret = 11;
-pub const LZMA_BUF_ERROR: lzma_ret = 10;
-pub const LZMA_DATA_ERROR: lzma_ret = 9;
-pub const LZMA_OPTIONS_ERROR: lzma_ret = 8;
-pub const LZMA_FORMAT_ERROR: lzma_ret = 7;
-pub const LZMA_MEMLIMIT_ERROR: lzma_ret = 6;
-pub const LZMA_MEM_ERROR: lzma_ret = 5;
-pub const LZMA_GET_CHECK: lzma_ret = 4;
-pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
-pub const LZMA_NO_CHECK: lzma_ret = 2;
-pub const LZMA_STREAM_END: lzma_ret = 1;
-pub const LZMA_OK: lzma_ret = 0;
-pub const LZMA_FINISH: lzma_action = 3;
-pub const LZMA_FULL_BARRIER: lzma_action = 4;
-pub const LZMA_FULL_FLUSH: lzma_action = 2;
-pub const LZMA_SYNC_FLUSH: lzma_action = 1;
-pub const LZMA_RUN: lzma_action = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_allocator {
-    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
-    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
-    pub opaque: *mut c_void,
-}
-pub type lzma_next_coder = lzma_next_coder_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_next_coder_s {
-    pub coder: *mut c_void,
-    pub id: lzma_vli,
-    pub init: uintptr_t,
-    pub code: lzma_code_function,
-    pub end: lzma_end_function,
-    pub get_progress: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>,
-    pub get_check: Option<unsafe extern "C" fn(*const c_void) -> lzma_check>,
-    pub memconfig: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>,
-    pub update: Option<
-        unsafe extern "C" fn(
-            *mut c_void,
-            *const lzma_allocator,
-            *const lzma_filter,
-            *const lzma_filter,
-        ) -> lzma_ret,
-    >,
-    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_filter {
-    pub id: lzma_vli,
-    pub options: *mut c_void,
-}
-pub const LZMA_CHECK_SHA256: lzma_check = 10;
-pub const LZMA_CHECK_CRC64: lzma_check = 4;
-pub const LZMA_CHECK_CRC32: lzma_check = 1;
-pub const LZMA_CHECK_NONE: lzma_check = 0;
-pub type lzma_end_function = Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>;
-pub type lzma_code_function = Option<
-    unsafe extern "C" fn(
-        *mut c_void,
-        *const lzma_allocator,
-        *const u8,
-        *mut size_t,
-        size_t,
-        *mut u8,
-        *mut size_t,
-        size_t,
-        lzma_action,
-    ) -> lzma_ret,
->;
-pub const LZMA_MF_BT4: lzma_match_finder = 20;
-pub const LZMA_MF_BT3: lzma_match_finder = 19;
-pub const LZMA_MF_BT2: lzma_match_finder = 18;
-pub const LZMA_MF_HC4: lzma_match_finder = 4;
-pub const LZMA_MF_HC3: lzma_match_finder = 3;
-pub const LZMA_MODE_NORMAL: lzma_mode = 2;
-pub const LZMA_MODE_FAST: lzma_mode = 1;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_filter_info_s {
-    pub id: lzma_vli,
-    pub init: lzma_init_function,
-    pub options: *mut c_void,
-}
-pub type lzma_init_function = Option<
-    unsafe extern "C" fn(
-        *mut lzma_next_coder,
-        *const lzma_allocator,
-        *const lzma_filter_info,
-    ) -> lzma_ret,
->;
-pub type lzma_filter_info = lzma_filter_info_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_match {
-    pub len: u32,
-    pub dist: u32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_mf_s {
-    pub buffer: *mut u8,
-    pub size: u32,
-    pub keep_size_before: u32,
-    pub keep_size_after: u32,
-    pub offset: u32,
-    pub read_pos: u32,
-    pub read_ahead: u32,
-    pub read_limit: u32,
-    pub write_pos: u32,
-    pub pending: u32,
-    pub find: Option<unsafe extern "C" fn(*mut lzma_mf, *mut lzma_match) -> u32>,
-    pub skip: Option<unsafe extern "C" fn(*mut lzma_mf, u32) -> ()>,
-    pub hash: *mut u32,
-    pub son: *mut u32,
-    pub cyclic_pos: u32,
-    pub cyclic_size: u32,
-    pub hash_mask: u32,
-    pub depth: u32,
-    pub nice_len: u32,
-    pub match_len_max: u32,
-    pub action: lzma_action,
-    pub hash_count: u32,
-    pub sons_count: u32,
-}
-pub type lzma_mf = lzma_mf_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lz_options {
@@ -209,17 +44,6 @@ pub struct lzma_lz_options {
     pub depth: u32,
     pub preset_dict: *const u8,
     pub preset_dict_size: u32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_lz_encoder {
-    pub coder: *mut c_void,
-    pub code: Option<
-        unsafe extern "C" fn(*mut c_void, *mut lzma_mf, *mut u8, *mut size_t, size_t) -> lzma_ret,
-    >,
-    pub end: Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>,
-    pub options_update: Option<unsafe extern "C" fn(*mut c_void, *const lzma_filter) -> lzma_ret>,
-    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -240,18 +64,6 @@ pub const RC_DIRECT_1: C2RustUnnamed = 3;
 pub const RC_DIRECT_0: C2RustUnnamed = 2;
 pub const RC_BIT_1: C2RustUnnamed = 1;
 pub const RC_BIT_0: C2RustUnnamed = 0;
-pub const STATE_NONLIT_REP: lzma_lzma_state = 11;
-pub const STATE_NONLIT_MATCH: lzma_lzma_state = 10;
-pub const STATE_LIT_SHORTREP: lzma_lzma_state = 9;
-pub const STATE_LIT_LONGREP: lzma_lzma_state = 8;
-pub const STATE_LIT_MATCH: lzma_lzma_state = 7;
-pub const STATE_SHORTREP_LIT: lzma_lzma_state = 6;
-pub const STATE_REP_LIT: lzma_lzma_state = 5;
-pub const STATE_MATCH_LIT: lzma_lzma_state = 4;
-pub const STATE_SHORTREP_LIT_LIT: lzma_lzma_state = 3;
-pub const STATE_REP_LIT_LIT: lzma_lzma_state = 2;
-pub const STATE_MATCH_LIT_LIT: lzma_lzma_state = 1;
-pub const STATE_LIT_LIT: lzma_lzma_state = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzma1_encoder_s {
@@ -319,8 +131,6 @@ pub struct lzma_length_encoder {
     pub counters: [u32; 16],
 }
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
-pub const UINT32_MAX: c_uint = 4294967295;
-pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 #[inline]
 extern "C" fn write32le(buf: *mut u8, num: u32) {
     unsafe {
@@ -330,10 +140,6 @@ extern "C" fn write32le(buf: *mut u8, num: u32) {
         *buf.offset(3) = (num >> 24) as u8;
     }
 }
-pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001;
-pub const LZMA_FILTER_LZMA1EXT: c_ulonglong = 0x4000000000000002;
-pub const LZMA_LCLP_MAX: c_int = 4;
-pub const LZMA_PB_MAX: c_int = 4;
 pub const LZMA_LZMA1EXT_ALLOW_EOPM: c_uint = 0x1;
 pub const LZMA2_CHUNK_MAX: c_uint = 1u32 << 16;
 #[inline]
@@ -1150,9 +956,7 @@ pub unsafe extern "C" fn lzma_lzma_encode(
             );
         }
         encode_symbol(coder, mf, back, len, (*coder).uncomp_size as u32);
-        if (*coder).out_limit != 0
-            && rc_encode_dummy(&raw mut (*coder).rc, (*coder).out_limit) as c_int != 0
-        {
+        if (*coder).out_limit != 0 && rc_encode_dummy(&raw mut (*coder).rc, (*coder).out_limit) {
             rc_forget(&raw mut (*coder).rc);
             break;
         } else {
@@ -1210,16 +1014,13 @@ unsafe extern "C" fn lzma_lzma_set_out_limit(
 }
 extern "C" fn is_options_valid(options: *const lzma_options_lzma) -> bool {
     return unsafe {
-        is_lclppb_valid(options) as c_int != 0
+        is_lclppb_valid(options)
             && (*options).nice_len >= MATCH_LEN_MIN as u32
             && (*options).nice_len <= MATCH_LEN_MAX as u32
             && ((*options).mode == LZMA_MODE_FAST || (*options).mode == LZMA_MODE_NORMAL)
     };
 }
-extern "C" fn set_lz_options(
-    lz_options: *mut lzma_lz_options,
-    options: *const lzma_options_lzma,
-) {
+extern "C" fn set_lz_options(lz_options: *mut lzma_lz_options, options: *const lzma_options_lzma) {
     unsafe {
         (*lz_options).before_size = OPTS as size_t;
         (*lz_options).dict_size = (*options).dict_size as size_t;
@@ -1356,10 +1157,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
     lz_options: *mut lzma_lz_options,
 ) -> lzma_ret {
     if (*coder_ptr).is_null() {
-        *coder_ptr = lzma_alloc(
-            core::mem::size_of::<lzma_lzma1_encoder>() as size_t,
-            allocator,
-        );
+        *coder_ptr = lzma_alloc(core::mem::size_of::<lzma_lzma1_encoder>(), allocator);
         if (*coder_ptr).is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -1398,8 +1196,8 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
     (*coder).uncomp_size = 0;
     (*coder).uncomp_size_ptr = core::ptr::null_mut();
     (*coder).out_limit = 0;
-    (*coder).use_eopm = id == LZMA_FILTER_LZMA1 as lzma_vli;
-    if id == LZMA_FILTER_LZMA1EXT as lzma_vli {
+    (*coder).use_eopm = id == LZMA_FILTER_LZMA1;
+    if id == LZMA_FILTER_LZMA1EXT {
         if (*options).ext_flags & !(LZMA_LZMA1EXT_ALLOW_EOPM as u32) != 0 {
             return LZMA_OPTIONS_ERROR;
         }
@@ -1474,7 +1272,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_init(
 #[no_mangle]
 pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     if !is_options_valid(options as *const lzma_options_lzma) {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     let mut lz_options: lzma_lz_options = lzma_lz_options {
         before_size: 0,
@@ -1489,8 +1287,8 @@ pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     };
     set_lz_options(&raw mut lz_options, options as *const lzma_options_lzma);
     let lz_memusage: u64 = unsafe { lzma_lz_encoder_memusage(&raw mut lz_options) } as u64;
-    if lz_memusage == UINT64_MAX as u64 {
-        return UINT64_MAX as u64;
+    if lz_memusage == UINT64_MAX {
+        return UINT64_MAX;
     }
     return (core::mem::size_of::<lzma_lzma1_encoder>() as u64).wrapping_add(lz_memusage);
 }

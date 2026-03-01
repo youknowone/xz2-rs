@@ -1,7 +1,6 @@
 use crate::types::*;
 use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
 extern "C" {
-    fn memcmp(__s1: *const c_void, __s2: *const c_void, __n: size_t) -> c_int;
     fn lzma_vli_decode(
         vli: *mut lzma_vli,
         vli_pos: *mut size_t,
@@ -12,8 +11,6 @@ extern "C" {
     fn lzma_vli_size(vli: lzma_vli) -> u32;
     fn lzma_check_size(check: lzma_check) -> u32;
     fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
-    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
-    fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
     fn lzma_check_init(check: *mut lzma_check_state, type_0: lzma_check);
     fn lzma_check_update(
         check: *mut lzma_check_state,
@@ -23,38 +20,6 @@ extern "C" {
     );
     fn lzma_check_finish(check: *mut lzma_check_state, type_0: lzma_check);
 }
-pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
-pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
-pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
-pub const LZMA_RET_INTERNAL5: lzma_ret = 105;
-pub const LZMA_RET_INTERNAL4: lzma_ret = 104;
-pub const LZMA_RET_INTERNAL3: lzma_ret = 103;
-pub const LZMA_RET_INTERNAL2: lzma_ret = 102;
-pub const LZMA_RET_INTERNAL1: lzma_ret = 101;
-pub const LZMA_SEEK_NEEDED: lzma_ret = 12;
-pub const LZMA_PROG_ERROR: lzma_ret = 11;
-pub const LZMA_BUF_ERROR: lzma_ret = 10;
-pub const LZMA_DATA_ERROR: lzma_ret = 9;
-pub const LZMA_OPTIONS_ERROR: lzma_ret = 8;
-pub const LZMA_FORMAT_ERROR: lzma_ret = 7;
-pub const LZMA_MEMLIMIT_ERROR: lzma_ret = 6;
-pub const LZMA_MEM_ERROR: lzma_ret = 5;
-pub const LZMA_GET_CHECK: lzma_ret = 4;
-pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
-pub const LZMA_NO_CHECK: lzma_ret = 2;
-pub const LZMA_STREAM_END: lzma_ret = 1;
-pub const LZMA_OK: lzma_ret = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_allocator {
-    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
-    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
-    pub opaque: *mut c_void,
-}
-pub const LZMA_CHECK_SHA256: lzma_check = 10;
-pub const LZMA_CHECK_CRC64: lzma_check = 4;
-pub const LZMA_CHECK_CRC32: lzma_check = 1;
-pub const LZMA_CHECK_NONE: lzma_check = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_hash_s {
@@ -76,32 +41,6 @@ pub struct lzma_index_hash_info {
     pub index_list_size: lzma_vli,
     pub check: lzma_check_state,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_check_state {
-    pub buffer: C2RustUnnamed_0,
-    pub state: C2RustUnnamed,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub crc32: u32,
-    pub crc64: u64,
-    pub sha256: lzma_sha256_state,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_sha256_state {
-    pub state: [u32; 8],
-    pub size: u64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub u8_0: [u8; 64],
-    pub u32_0: [u32; 16],
-    pub u64_0: [u64; 8],
-}
 pub type C2RustUnnamed_1 = c_uint;
 pub const SEQ_CRC32: C2RustUnnamed_1 = 6;
 pub const SEQ_PADDING: C2RustUnnamed_1 = 5;
@@ -111,10 +50,6 @@ pub const SEQ_UNPADDED: C2RustUnnamed_1 = 2;
 pub const SEQ_COUNT: C2RustUnnamed_1 = 1;
 pub const SEQ_BLOCK: C2RustUnnamed_1 = 0;
 pub type lzma_index_hash = lzma_index_hash_s;
-pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
-pub const LZMA_VLI_MAX: c_ulonglong = UINT64_MAX.wrapping_div(2);
-pub const LZMA_STREAM_HEADER_SIZE: c_int = 12;
-pub const LZMA_BACKWARD_SIZE_MAX: c_ulonglong = 1 << 34;
 pub const UNPADDED_SIZE_MIN: c_ulonglong = 5;
 pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
 pub const INDEX_INDICATOR: c_int = 0;
@@ -149,8 +84,8 @@ pub unsafe extern "C" fn lzma_index_hash_init(
     allocator: *const lzma_allocator,
 ) -> *mut lzma_index_hash {
     if index_hash.is_null() {
-        index_hash = lzma_alloc(core::mem::size_of::<lzma_index_hash>() as size_t, allocator)
-            as *mut lzma_index_hash;
+        index_hash =
+            lzma_alloc(core::mem::size_of::<lzma_index_hash>(), allocator) as *mut lzma_index_hash;
         if index_hash.is_null() {
             return core::ptr::null_mut();
         }
@@ -180,11 +115,13 @@ pub unsafe extern "C" fn lzma_index_hash_end(
     lzma_free(index_hash as *mut c_void, allocator);
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_index_hash_size(index_hash: *const lzma_index_hash) -> lzma_vli {
-    return index_size(
-        (*index_hash).blocks.count,
-        (*index_hash).blocks.index_list_size,
-    );
+pub extern "C" fn lzma_index_hash_size(index_hash: *const lzma_index_hash) -> lzma_vli {
+    return unsafe {
+        index_size(
+            (*index_hash).blocks.count,
+            (*index_hash).blocks.index_list_size,
+        )
+    };
 }
 unsafe extern "C" fn hash_append(
     info: *mut lzma_index_hash_info,
@@ -202,7 +139,7 @@ unsafe extern "C" fn hash_append(
         &raw mut (*info).check,
         LZMA_CHECK_SHA256,
         &raw const sizes as *const lzma_vli as *const u8,
-        core::mem::size_of::<[lzma_vli; 2]>() as size_t,
+        core::mem::size_of::<[lzma_vli; 2]>(),
     );
 }
 #[no_mangle]
@@ -215,7 +152,7 @@ pub unsafe extern "C" fn lzma_index_hash_append(
         || (*index_hash).sequence != SEQ_BLOCK
         || unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
         || unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
-        || uncompressed_size > LZMA_VLI_MAX as lzma_vli
+        || uncompressed_size > LZMA_VLI_MAX
     {
         return LZMA_PROG_ERROR;
     }
@@ -224,8 +161,8 @@ pub unsafe extern "C" fn lzma_index_hash_append(
         unpadded_size,
         uncompressed_size,
     );
-    if (*index_hash).blocks.blocks_size > LZMA_VLI_MAX as lzma_vli
-        || (*index_hash).blocks.uncompressed_size > LZMA_VLI_MAX as lzma_vli
+    if (*index_hash).blocks.blocks_size > LZMA_VLI_MAX
+        || (*index_hash).blocks.uncompressed_size > LZMA_VLI_MAX
         || index_size(
             (*index_hash).blocks.count,
             (*index_hash).blocks.index_list_size,
@@ -234,7 +171,7 @@ pub unsafe extern "C" fn lzma_index_hash_append(
             (*index_hash).blocks.blocks_size,
             (*index_hash).blocks.count,
             (*index_hash).blocks.index_list_size,
-        ) > LZMA_VLI_MAX as lzma_vli
+        ) > LZMA_VLI_MAX
     {
         return LZMA_DATA_ERROR;
     }
@@ -351,7 +288,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                     (*index_hash).pos = (*index_hash).pos.wrapping_sub(1);
                     let fresh1 = *in_pos;
                     *in_pos = (*in_pos).wrapping_add(1);
-                    if *in_0.offset(fresh1 as isize) as c_int != 0 as c_int {
+                    if *in_0.offset(fresh1 as isize) != 0 {
                         return LZMA_DATA_ERROR;
                     }
                     continue;
@@ -371,7 +308,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                         &raw mut (*index_hash).records.check.buffer.u8_0 as *mut u8
                             as *const c_void,
                         lzma_check_size(LZMA_CHECK_SHA256) as size_t,
-                    ) != 0 as c_int
+                    ) != 0
                     {
                         return LZMA_DATA_ERROR;
                     }

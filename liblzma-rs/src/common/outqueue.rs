@@ -1,8 +1,6 @@
 use crate::types::*;
-use core::ffi::{c_int, c_ulong, c_ulonglong, c_void};
+use core::ffi::{c_int, c_ulong, c_void};
 extern "C" {
-    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
-    fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
     fn lzma_bufcpy(
         in_0: *const u8,
         in_pos: *mut size_t,
@@ -12,63 +10,6 @@ extern "C" {
         out_size: size_t,
     ) -> size_t;
 }
-pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
-pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
-pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
-pub const LZMA_RET_INTERNAL5: lzma_ret = 105;
-pub const LZMA_RET_INTERNAL4: lzma_ret = 104;
-pub const LZMA_RET_INTERNAL3: lzma_ret = 103;
-pub const LZMA_RET_INTERNAL2: lzma_ret = 102;
-pub const LZMA_RET_INTERNAL1: lzma_ret = 101;
-pub const LZMA_SEEK_NEEDED: lzma_ret = 12;
-pub const LZMA_PROG_ERROR: lzma_ret = 11;
-pub const LZMA_BUF_ERROR: lzma_ret = 10;
-pub const LZMA_DATA_ERROR: lzma_ret = 9;
-pub const LZMA_OPTIONS_ERROR: lzma_ret = 8;
-pub const LZMA_FORMAT_ERROR: lzma_ret = 7;
-pub const LZMA_MEMLIMIT_ERROR: lzma_ret = 6;
-pub const LZMA_MEM_ERROR: lzma_ret = 5;
-pub const LZMA_GET_CHECK: lzma_ret = 4;
-pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
-pub const LZMA_NO_CHECK: lzma_ret = 2;
-pub const LZMA_STREAM_END: lzma_ret = 1;
-pub const LZMA_OK: lzma_ret = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_allocator {
-    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
-    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
-    pub opaque: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_outbuf_s {
-    pub next: *mut lzma_outbuf,
-    pub worker: *mut c_void,
-    pub allocated: size_t,
-    pub pos: size_t,
-    pub decoder_in_pos: size_t,
-    pub finished: bool,
-    pub finish_ret: lzma_ret,
-    pub unpadded_size: lzma_vli,
-    pub uncompressed_size: lzma_vli,
-    pub buf: [u8; 0],
-}
-pub type lzma_outbuf = lzma_outbuf_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_outq {
-    pub head: *mut lzma_outbuf,
-    pub tail: *mut lzma_outbuf,
-    pub read_pos: size_t,
-    pub cache: *mut lzma_outbuf,
-    pub mem_allocated: u64,
-    pub mem_in_use: u64,
-    pub bufs_in_use: u32,
-    pub bufs_allocated: u32,
-    pub bufs_limit: u32,
-}
-pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
 pub const LZMA_THREADS_MAX: c_int = 16384;
@@ -78,11 +19,11 @@ extern "C" fn lzma_outq_outbuf_memusage(buf_size: size_t) -> u64 {
 }
 #[no_mangle]
 pub extern "C" fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64 {
-    let limit: u64 = (UINT64_MAX as u64)
+    let limit: u64 = (UINT64_MAX)
         .wrapping_div((2 as c_int * 16384 as c_int) as u64)
         .wrapping_div(2);
     if threads > LZMA_THREADS_MAX as u32 || buf_size_max > limit {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     return ((2u32).wrapping_mul(threads) as u64)
         .wrapping_mul(lzma_outq_outbuf_memusage(buf_size_max as size_t));
@@ -223,7 +164,7 @@ pub unsafe extern "C" fn lzma_outq_is_readable(outq: *const lzma_outq) -> bool {
     if (*outq).head.is_null() {
         return false;
     }
-    return (*outq).read_pos < (*(*outq).head).pos || (*(*outq).head).finished as c_int != 0;
+    return (*outq).read_pos < (*(*outq).head).pos || (*(*outq).head).finished;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_read(

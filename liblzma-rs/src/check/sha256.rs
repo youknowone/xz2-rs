@@ -1,34 +1,5 @@
 use crate::types::*;
 use core::ffi::{c_int, c_uint, c_void};
-extern "C" {
-    fn memcpy(__dst: *mut c_void, __src: *const c_void, __n: size_t) -> *mut c_void;
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_sha256_state {
-    pub state: [u32; 8],
-    pub size: u64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_check_state {
-    pub buffer: C2RustUnnamed_0,
-    pub state: C2RustUnnamed,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub crc32: u32,
-    pub crc64: u64,
-    pub sha256: lzma_sha256_state,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub u8_0: [u8; 64],
-    pub u32_0: [u32; 16],
-    pub u64_0: [u64; 8],
-}
 #[inline]
 extern "C" fn rotr_32(num: u32, amount: c_uint) -> u32 {
     return num >> amount | num << 32u32.wrapping_sub(amount);
@@ -49,7 +20,7 @@ unsafe extern "C" fn transform(state: *mut u32, data: *const u32) {
     memcpy(
         &raw mut T as *mut u32 as *mut c_void,
         state as *const c_void,
-        core::mem::size_of::<[u32; 8]>() as size_t,
+        core::mem::size_of::<[u32; 8]>(),
     );
     W[0] = (*data.offset(0) & 0xff) << 24
         | (*data.offset(0) & 0xff00) << 8
@@ -583,7 +554,7 @@ pub unsafe extern "C" fn lzma_sha256_init(check: *mut lzma_check_state) {
     memcpy(
         &raw mut (*check).state.sha256.state as *mut u32 as *mut c_void,
         &raw const s as *const u32 as *const c_void,
-        core::mem::size_of::<[u32; 8]>() as size_t,
+        core::mem::size_of::<[u32; 8]>(),
     );
     (*check).state.sha256.size = 0;
 }

@@ -1,50 +1,8 @@
 use crate::types::*;
-use core::ffi::{c_char, c_int, c_long, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_char, c_int, c_uint, c_void};
 extern "C" {
-    fn memchr(__s: *const c_void, __c: c_int, __n: size_t) -> *mut c_void;
-    fn memcmp(__s1: *const c_void, __s2: *const c_void, __n: size_t) -> c_int;
-    fn memcpy(__dst: *mut c_void, __src: *const c_void, __n: size_t) -> *mut c_void;
-    fn strlen(__s: *const c_char) -> size_t;
     fn lzma_lzma_preset(options: *mut lzma_options_lzma, preset: u32) -> lzma_bool;
-    fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
-    fn lzma_alloc_zero(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
-    fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
     fn lzma_validate_chain(filters: *const lzma_filter, count: *mut size_t) -> lzma_ret;
-}
-pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
-pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
-pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
-pub const LZMA_RET_INTERNAL5: lzma_ret = 105;
-pub const LZMA_RET_INTERNAL4: lzma_ret = 104;
-pub const LZMA_RET_INTERNAL3: lzma_ret = 103;
-pub const LZMA_RET_INTERNAL2: lzma_ret = 102;
-pub const LZMA_RET_INTERNAL1: lzma_ret = 101;
-pub const LZMA_SEEK_NEEDED: lzma_ret = 12;
-pub const LZMA_PROG_ERROR: lzma_ret = 11;
-pub const LZMA_BUF_ERROR: lzma_ret = 10;
-pub const LZMA_DATA_ERROR: lzma_ret = 9;
-pub const LZMA_OPTIONS_ERROR: lzma_ret = 8;
-pub const LZMA_FORMAT_ERROR: lzma_ret = 7;
-pub const LZMA_MEMLIMIT_ERROR: lzma_ret = 6;
-pub const LZMA_MEM_ERROR: lzma_ret = 5;
-pub const LZMA_GET_CHECK: lzma_ret = 4;
-pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
-pub const LZMA_NO_CHECK: lzma_ret = 2;
-pub const LZMA_STREAM_END: lzma_ret = 1;
-pub const LZMA_OK: lzma_ret = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_allocator {
-    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
-    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
-    pub opaque: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_filter {
-    pub id: lzma_vli,
-    pub options: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -87,62 +45,9 @@ pub struct name_value_map {
     pub name: [c_char; 12],
     pub value: u32,
 }
-pub const LZMA_MF_BT4: lzma_match_finder = 20;
-pub const LZMA_MF_BT3: lzma_match_finder = 19;
-pub const LZMA_MF_BT2: lzma_match_finder = 18;
-pub const LZMA_MF_HC4: lzma_match_finder = 4;
-pub const LZMA_MF_HC3: lzma_match_finder = 3;
 pub const OPTMAP_TYPE_LZMA_MATCH_FINDER: C2RustUnnamed_2 = 2;
-pub const LZMA_MODE_NORMAL: lzma_mode = 2;
-pub const LZMA_MODE_FAST: lzma_mode = 1;
 pub const OPTMAP_TYPE_LZMA_MODE: C2RustUnnamed_2 = 1;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
 pub const OPTMAP_TYPE_LZMA_PRESET: C2RustUnnamed_2 = 3;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_options_delta {
-    pub type_0: lzma_delta_type,
-    pub dist: u32,
-    pub reserved_int1: u32,
-    pub reserved_int2: u32,
-    pub reserved_int3: u32,
-    pub reserved_int4: u32,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
-pub const LZMA_DELTA_TYPE_BYTE: lzma_delta_type = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_options_bcj {
-    pub start_offset: u32,
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_str {
@@ -151,39 +56,19 @@ pub struct lzma_str {
 }
 pub type C2RustUnnamed_2 = c_uint;
 pub const OPTMAP_TYPE_UINT32: C2RustUnnamed_2 = 0;
-pub const UINT32_MAX: c_uint = 4294967295;
-pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const INT_MAX: c_int = c_int::MAX;
-pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
-pub const LZMA_FILTERS_MAX: c_int = 4;
 pub const LZMA_STR_ALL_FILTERS: c_uint = 0x1;
 pub const LZMA_STR_NO_VALIDATION: c_uint = 0x2;
 pub const LZMA_STR_ENCODER: c_uint = 0x10;
 pub const LZMA_STR_DECODER: c_uint = 0x20;
 pub const LZMA_STR_GETOPT_LONG: c_uint = 0x40;
 pub const LZMA_STR_NO_SPACES: c_uint = 0x80;
-pub const LZMA_FILTER_X86: c_ulonglong = 0x4;
-pub const LZMA_FILTER_POWERPC: c_ulonglong = 0x5;
-pub const LZMA_FILTER_IA64: c_ulonglong = 0x6;
-pub const LZMA_FILTER_ARM: c_ulonglong = 0x7;
-pub const LZMA_FILTER_ARMTHUMB: c_ulonglong = 0x8;
-pub const LZMA_FILTER_SPARC: c_ulonglong = 0x9;
-pub const LZMA_FILTER_ARM64: c_ulonglong = 0xa;
-pub const LZMA_FILTER_RISCV: c_ulonglong = 0xb;
-pub const LZMA_FILTER_DELTA: c_ulonglong = 0x3;
 pub const LZMA_DELTA_DIST_MIN: c_int = 1;
-pub const LZMA_DELTA_DIST_MAX: c_int = 256;
-pub const LZMA_FILTER_LZMA1: c_ulonglong = 0x4000000000000001;
-pub const LZMA_FILTER_LZMA2: c_ulonglong = 0x21;
-pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 pub const LZMA_DICT_SIZE_DEFAULT: c_uint = 1u32 << 23;
 pub const LZMA_LCLP_MIN: c_int = 0;
-pub const LZMA_LCLP_MAX: c_int = 4;
 pub const LZMA_PB_MIN: c_int = 0;
-pub const LZMA_PB_MAX: c_int = 4;
 pub const LZMA_PRESET_DEFAULT: c_uint = 6;
 pub const LZMA_PRESET_EXTREME: c_uint = 1u32 << 31;
-pub const LZMA_FILTER_RESERVED_START: c_ulonglong = 1 << 62;
 pub const STR_ALLOC_SIZE: c_int = 800;
 unsafe extern "C" fn str_init(str: *mut lzma_str, allocator: *const lzma_allocator) -> lzma_ret {
     (*str).buf = lzma_alloc(STR_ALLOC_SIZE as size_t, allocator) as *mut c_char;
@@ -250,7 +135,7 @@ unsafe extern "C" fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suf
         }
         let mut buf: [c_char; 16] =
             ::core::mem::transmute::<[u8; 16], [c_char; 16]>(*b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
-        let mut pos: size_t = (core::mem::size_of::<[c_char; 16]>() as size_t).wrapping_sub(1);
+        let mut pos: size_t = (core::mem::size_of::<[c_char; 16]>()).wrapping_sub(1);
         loop {
             pos = pos.wrapping_sub(1);
             buf[pos as usize] = ('0' as i32 as u32).wrapping_add(v.wrapping_rem(10)) as c_char;
@@ -296,8 +181,8 @@ extern "C" fn parse_bcj(
             str_end,
             filter_options,
             &raw const bcj_optmap as *const option_map,
-            (core::mem::size_of::<[option_map; 1]>() as size_t)
-                .wrapping_div(core::mem::size_of::<option_map>() as size_t),
+            (core::mem::size_of::<[option_map; 1]>())
+                .wrapping_div(core::mem::size_of::<option_map>()),
         )
     };
 }
@@ -329,8 +214,8 @@ extern "C" fn parse_delta(
             str_end,
             filter_options,
             &raw const delta_optmap as *const option_map,
-            (core::mem::size_of::<[option_map; 1]>() as size_t)
-                .wrapping_div(core::mem::size_of::<option_map>() as size_t),
+            (core::mem::size_of::<[option_map; 1]>())
+                .wrapping_div(core::mem::size_of::<option_map>()),
         )
     };
 }
@@ -442,8 +327,7 @@ unsafe extern "C" fn parse_lzma12(
         str_end,
         filter_options,
         &raw const lzma12_optmap as *const option_map,
-        (core::mem::size_of::<[option_map; 9]>() as size_t)
-            .wrapping_div(core::mem::size_of::<option_map>() as size_t),
+        (core::mem::size_of::<[option_map; 9]>()).wrapping_div(core::mem::size_of::<option_map>()),
     );
     if !errmsg.is_null() {
         return errmsg;
@@ -458,7 +342,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lzma1\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_lzma>() as u32,
-            id: LZMA_FILTER_LZMA1 as lzma_vli,
+            id: LZMA_FILTER_LZMA1,
             parse: Some(
                 parse_lzma12
                     as unsafe extern "C" fn(
@@ -475,7 +359,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lzma2\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_lzma>() as u32,
-            id: LZMA_FILTER_LZMA2 as lzma_vli,
+            id: LZMA_FILTER_LZMA2,
             parse: Some(
                 parse_lzma12
                     as unsafe extern "C" fn(
@@ -492,7 +376,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"x86\0\0\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_X86 as lzma_vli,
+            id: LZMA_FILTER_X86,
             parse: Some(
                 parse_bcj
                     as unsafe extern "C" fn(
@@ -509,7 +393,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"arm\0\0\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_ARM as lzma_vli,
+            id: LZMA_FILTER_ARM,
             parse: Some(
                 parse_bcj
                     as unsafe extern "C" fn(
@@ -526,7 +410,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"armthumb\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_ARMTHUMB as lzma_vli,
+            id: LZMA_FILTER_ARMTHUMB,
             parse: Some(
                 parse_bcj
                     as unsafe extern "C" fn(
@@ -543,7 +427,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"arm64\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_ARM64 as lzma_vli,
+            id: LZMA_FILTER_ARM64,
             parse: Some(
                 parse_bcj
                     as unsafe extern "C" fn(
@@ -560,7 +444,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"riscv\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_RISCV as lzma_vli,
+            id: LZMA_FILTER_RISCV,
             parse: Some(
                 parse_bcj
                     as unsafe extern "C" fn(
@@ -577,7 +461,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"powerpc\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_POWERPC as lzma_vli,
+            id: LZMA_FILTER_POWERPC,
             parse: Some(
                 parse_bcj
                     as unsafe extern "C" fn(
@@ -594,7 +478,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"ia64\0\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_IA64 as lzma_vli,
+            id: LZMA_FILTER_IA64,
             parse: Some(
                 parse_bcj
                     as unsafe extern "C" fn(
@@ -611,7 +495,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"sparc\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_SPARC as lzma_vli,
+            id: LZMA_FILTER_SPARC,
             parse: Some(
                 parse_bcj
                     as unsafe extern "C" fn(
@@ -628,7 +512,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
         C2RustUnnamed {
             name: ::core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"delta\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_delta>() as u32,
-            id: LZMA_FILTER_DELTA as lzma_vli,
+            id: LZMA_FILTER_DELTA,
             parse: Some(
                 parse_delta
                     as unsafe extern "C" fn(
@@ -655,7 +539,7 @@ unsafe extern "C" fn parse_options(
         if **str as c_int == ',' as i32 {
             *str = (*str).offset(1);
         } else {
-            let str_len: size_t = str_end.offset_from(*str) as c_long as size_t;
+            let str_len: size_t = str_end.offset_from(*str) as size_t;
             let mut name_eq_value_end: *const c_char =
                 memchr(*str as *const c_void, ',' as i32, str_len) as *const c_char;
             if name_eq_value_end.is_null() {
@@ -664,13 +548,13 @@ unsafe extern "C" fn parse_options(
             let equals_sign: *const c_char = memchr(
                 *str as *const c_void,
                 '=' as i32,
-                name_eq_value_end.offset_from(*str) as c_long as size_t,
+                name_eq_value_end.offset_from(*str) as size_t,
             ) as *const c_char;
             if equals_sign.is_null() || **str as c_int == '=' as i32 {
                 return b"Options must be 'name=value' pairs separated with commas\0" as *const u8
                     as *const c_char;
             }
-            let name_len: size_t = equals_sign.offset_from(*str) as c_long as size_t;
+            let name_len: size_t = equals_sign.offset_from(*str) as size_t;
             if name_len > NAME_LEN_MAX as size_t {
                 return b"Unknown option name\0" as *const u8 as *const c_char;
             }
@@ -691,7 +575,7 @@ unsafe extern "C" fn parse_options(
                 i = i.wrapping_add(1);
             }
             *str = equals_sign.offset(1);
-            let value_len: size_t = name_eq_value_end.offset_from(*str) as c_long as size_t;
+            let value_len: size_t = name_eq_value_end.offset_from(*str) as size_t;
             if value_len == 0 {
                 return b"Option value cannot be empty\0" as *const u8 as *const c_char;
             }
@@ -841,7 +725,7 @@ unsafe extern "C" fn parse_filter(
             p = p.offset(1);
         }
     }
-    let name_len: size_t = name_end.offset_from(*str) as c_long as size_t;
+    let name_len: size_t = name_end.offset_from(*str) as size_t;
     if name_len > NAME_LEN_MAX as size_t {
         return b"Unknown filter name\0" as *const u8 as *const c_char;
     }
@@ -858,9 +742,7 @@ unsafe extern "C" fn parse_filter(
         ) == 0 as c_int
             && filter_name_map[i as usize].name[name_len as usize] as c_int == '\0' as i32
         {
-            if only_xz as c_int != 0
-                && filter_name_map[i as usize].id >= LZMA_FILTER_RESERVED_START as lzma_vli
-            {
+            if only_xz && filter_name_map[i as usize].id >= LZMA_FILTER_RESERVED_START {
                 return b"This filter cannot be used in the .xz format\0" as *const u8
                     as *const c_char;
             }
@@ -928,10 +810,9 @@ unsafe extern "C" fn str_to_filters(
         if !errmsg.is_null() {
             return errmsg;
         }
-        let opts: *mut lzma_options_lzma = lzma_alloc(
-            core::mem::size_of::<lzma_options_lzma>() as size_t,
-            allocator,
-        ) as *mut lzma_options_lzma;
+        let opts: *mut lzma_options_lzma =
+            lzma_alloc(core::mem::size_of::<lzma_options_lzma>(), allocator)
+                as *mut lzma_options_lzma;
         if opts.is_null() {
             return b"Memory allocation failed\0" as *const u8 as *const c_char;
         }
@@ -939,10 +820,10 @@ unsafe extern "C" fn str_to_filters(
             lzma_free(opts as *mut c_void, allocator);
             return b"Unsupported preset\0" as *const u8 as *const c_char;
         }
-        (*filters.offset(0)).id = LZMA_FILTER_LZMA2 as lzma_vli;
+        (*filters.offset(0)).id = LZMA_FILTER_LZMA2;
         let ref mut fresh0 = (*filters.offset(0)).options;
         *fresh0 = opts as *mut c_void;
-        (*filters.offset(1)).id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*filters.offset(1)).id = LZMA_VLI_UNKNOWN;
         let ref mut fresh1 = (*filters.offset(1)).options;
         *fresh1 = core::ptr::null_mut();
         return ::core::ptr::null::<c_char>();
@@ -1003,13 +884,12 @@ unsafe extern "C" fn str_to_filters(
     }
     match current_block {
         15090052786889560393 => {
-            temp_filters[i_0 as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+            temp_filters[i_0 as usize].id = LZMA_VLI_UNKNOWN;
             temp_filters[i_0 as usize].options = core::ptr::null_mut();
             if flags & LZMA_STR_NO_VALIDATION as u32 == 0 {
                 let mut dummy: size_t = 0;
                 let ret: lzma_ret =
-                    lzma_validate_chain(&raw mut temp_filters as *mut lzma_filter, &raw mut dummy)
-                        as lzma_ret;
+                    lzma_validate_chain(&raw mut temp_filters as *mut lzma_filter, &raw mut dummy);
                 if ret != LZMA_OK {
                     errmsg = b"Invalid filter chain ('lzma2' missing at the end?)\0" as *const u8
                         as *const c_char;
@@ -1027,7 +907,7 @@ unsafe extern "C" fn str_to_filters(
                         filters as *mut c_void,
                         &raw mut temp_filters as *mut lzma_filter as *const c_void,
                         i_0.wrapping_add(1)
-                            .wrapping_mul(core::mem::size_of::<lzma_filter>() as size_t),
+                            .wrapping_mul(core::mem::size_of::<lzma_filter>()),
                     );
                     return ::core::ptr::null::<c_char>();
                 }
@@ -1067,7 +947,7 @@ pub unsafe extern "C" fn lzma_str_to_filters(
     let mut used: *const c_char = str;
     let errmsg: *const c_char = str_to_filters(&raw mut used, filters, flags, allocator);
     if !error_pos.is_null() {
-        let n: size_t = used.offset_from(str) as c_long as size_t;
+        let n: size_t = used.offset_from(str) as size_t;
         *error_pos = if n > INT_MAX as size_t {
             INT_MAX
         } else {
@@ -1160,14 +1040,14 @@ pub unsafe extern "C" fn lzma_str_from_filters(
     if flags & !supported_flags != 0 {
         return LZMA_OPTIONS_ERROR;
     }
-    if (*filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*filters.offset(0)).id == LZMA_VLI_UNKNOWN {
         return LZMA_OPTIONS_ERROR;
     }
     let mut dest: lzma_str = lzma_str {
         buf: core::ptr::null_mut(),
         pos: 0,
     };
-    let ret_: lzma_ret = str_init(&raw mut dest, allocator) as lzma_ret;
+    let ret_: lzma_ret = str_init(&raw mut dest, allocator);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -1178,7 +1058,7 @@ pub unsafe extern "C" fn lzma_str_from_filters(
         b":\0" as *const u8 as *const c_char
     };
     let mut i: size_t = 0;
-    while (*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli {
+    while (*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN {
         if i == LZMA_FILTERS_MAX as size_t {
             str_free(&raw mut dest, allocator);
             return LZMA_OPTIONS_ERROR;
@@ -1260,12 +1140,12 @@ pub unsafe extern "C" fn lzma_str_list_filters(
         buf: core::ptr::null_mut(),
         pos: 0,
     };
-    let ret_: lzma_ret = str_init(&raw mut dest, allocator) as lzma_ret;
+    let ret_: lzma_ret = str_init(&raw mut dest, allocator);
     if ret_ != LZMA_OK {
         return ret_;
     }
     let show_opts: bool = flags & (LZMA_STR_ENCODER as u32 | LZMA_STR_DECODER as u32) != 0;
-    let filter_delim: *const c_char = if show_opts as c_int != 0 {
+    let filter_delim: *const c_char = if show_opts {
         b"\n\0" as *const u8 as *const c_char
     } else {
         b" \0" as *const u8 as *const c_char
@@ -1281,12 +1161,10 @@ pub unsafe extern "C" fn lzma_str_list_filters(
         < (core::mem::size_of::<[C2RustUnnamed; 11]>() as usize)
             .wrapping_div(core::mem::size_of::<C2RustUnnamed>() as usize)
     {
-        if !(filter_id != LZMA_VLI_UNKNOWN as lzma_vli
-            && filter_id != filter_name_map[i as usize].id)
-        {
-            if !(filter_name_map[i as usize].id >= LZMA_FILTER_RESERVED_START as lzma_vli
+        if !(filter_id != LZMA_VLI_UNKNOWN && filter_id != filter_name_map[i as usize].id) {
+            if !(filter_name_map[i as usize].id >= LZMA_FILTER_RESERVED_START
                 && flags & LZMA_STR_ALL_FILTERS as u32 == 0
-                && filter_id == LZMA_VLI_UNKNOWN as lzma_vli)
+                && filter_id == LZMA_VLI_UNKNOWN)
             {
                 if first_filter_printed {
                     str_append_str(&raw mut dest, filter_delim);

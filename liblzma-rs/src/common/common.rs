@@ -1,148 +1,10 @@
 use crate::types::*;
-use core::ffi::{c_char, c_int, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_char, c_int, c_uint, c_void};
 extern "C" {
     fn malloc(__size: size_t) -> *mut c_void;
     fn calloc(__count: size_t, __size: size_t) -> *mut c_void;
     fn free(_: *mut c_void);
-    fn memcpy(__dst: *mut c_void, __src: *const c_void, __n: size_t) -> *mut c_void;
-    fn memset(__b: *mut c_void, __c: c_int, __len: size_t) -> *mut c_void;
 }
-pub const LZMA_RESERVED_ENUM: lzma_reserved_enum = 0;
-pub const LZMA_RET_INTERNAL8: lzma_ret = 108;
-pub const LZMA_RET_INTERNAL7: lzma_ret = 107;
-pub const LZMA_RET_INTERNAL6: lzma_ret = 106;
-pub const LZMA_RET_INTERNAL5: lzma_ret = 105;
-pub const LZMA_RET_INTERNAL4: lzma_ret = 104;
-pub const LZMA_RET_INTERNAL3: lzma_ret = 103;
-pub const LZMA_RET_INTERNAL2: lzma_ret = 102;
-pub const LZMA_RET_INTERNAL1: lzma_ret = 101;
-pub const LZMA_SEEK_NEEDED: lzma_ret = 12;
-pub const LZMA_PROG_ERROR: lzma_ret = 11;
-pub const LZMA_BUF_ERROR: lzma_ret = 10;
-pub const LZMA_DATA_ERROR: lzma_ret = 9;
-pub const LZMA_OPTIONS_ERROR: lzma_ret = 8;
-pub const LZMA_FORMAT_ERROR: lzma_ret = 7;
-pub const LZMA_MEMLIMIT_ERROR: lzma_ret = 6;
-pub const LZMA_MEM_ERROR: lzma_ret = 5;
-pub const LZMA_GET_CHECK: lzma_ret = 4;
-pub const LZMA_UNSUPPORTED_CHECK: lzma_ret = 3;
-pub const LZMA_NO_CHECK: lzma_ret = 2;
-pub const LZMA_STREAM_END: lzma_ret = 1;
-pub const LZMA_OK: lzma_ret = 0;
-pub const LZMA_FINISH: lzma_action = 3;
-pub const LZMA_FULL_BARRIER: lzma_action = 4;
-pub const LZMA_FULL_FLUSH: lzma_action = 2;
-pub const LZMA_SYNC_FLUSH: lzma_action = 1;
-pub const LZMA_RUN: lzma_action = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_allocator {
-    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
-    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
-    pub opaque: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_internal_s {
-    pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed,
-    pub avail_in: size_t,
-    pub supported_actions: [bool; 5],
-    pub allow_buf_error: bool,
-}
-pub type C2RustUnnamed = c_uint;
-pub const ISEQ_ERROR: C2RustUnnamed = 6;
-pub const ISEQ_END: C2RustUnnamed = 5;
-pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
-pub const ISEQ_FINISH: C2RustUnnamed = 3;
-pub const ISEQ_FULL_FLUSH: C2RustUnnamed = 2;
-pub const ISEQ_SYNC_FLUSH: C2RustUnnamed = 1;
-pub const ISEQ_RUN: C2RustUnnamed = 0;
-pub type lzma_next_coder = lzma_next_coder_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_next_coder_s {
-    pub coder: *mut c_void,
-    pub id: lzma_vli,
-    pub init: uintptr_t,
-    pub code: lzma_code_function,
-    pub end: lzma_end_function,
-    pub get_progress: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>,
-    pub get_check: Option<unsafe extern "C" fn(*const c_void) -> lzma_check>,
-    pub memconfig: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>,
-    pub update: Option<
-        unsafe extern "C" fn(
-            *mut c_void,
-            *const lzma_allocator,
-            *const lzma_filter,
-            *const lzma_filter,
-        ) -> lzma_ret,
-    >,
-    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_filter {
-    pub id: lzma_vli,
-    pub options: *mut c_void,
-}
-pub const LZMA_CHECK_SHA256: lzma_check = 10;
-pub const LZMA_CHECK_CRC64: lzma_check = 4;
-pub const LZMA_CHECK_CRC32: lzma_check = 1;
-pub const LZMA_CHECK_NONE: lzma_check = 0;
-pub type lzma_end_function = Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>;
-pub type lzma_code_function = Option<
-    unsafe extern "C" fn(
-        *mut c_void,
-        *const lzma_allocator,
-        *const u8,
-        *mut size_t,
-        size_t,
-        *mut u8,
-        *mut size_t,
-        size_t,
-        lzma_action,
-    ) -> lzma_ret,
->;
-pub type lzma_internal = lzma_internal_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream {
-    pub next_in: *const u8,
-    pub avail_in: size_t,
-    pub total_in: u64,
-    pub next_out: *mut u8,
-    pub avail_out: size_t,
-    pub total_out: u64,
-    pub allocator: *const lzma_allocator,
-    pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_ptr4: *mut c_void,
-    pub seek_pos: u64,
-    pub reserved_int2: u64,
-    pub reserved_int3: size_t,
-    pub reserved_int4: size_t,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_filter_info_s {
-    pub id: lzma_vli,
-    pub init: lzma_init_function,
-    pub options: *mut c_void,
-}
-pub type lzma_init_function = Option<
-    unsafe extern "C" fn(
-        *mut lzma_next_coder,
-        *const lzma_allocator,
-        *const lzma_filter_info,
-    ) -> lzma_ret,
->;
-pub type lzma_filter_info = lzma_filter_info_s;
-pub const UINT64_MAX: c_ulonglong = u64::MAX as c_ulonglong;
 pub const LZMA_VERSION_MAJOR: c_int = 5;
 pub const LZMA_VERSION_MINOR: c_int = 8;
 pub const LZMA_VERSION_PATCH: c_int = 2;
@@ -153,7 +15,6 @@ pub const LZMA_VERSION: c_uint = (LZMA_VERSION_MAJOR as u32)
     .wrapping_add((LZMA_VERSION_MINOR as u32).wrapping_mul(10000))
     .wrapping_add((LZMA_VERSION_PATCH as u32).wrapping_mul(10))
     .wrapping_add(LZMA_VERSION_STABILITY as u32);
-pub const LZMA_VLI_UNKNOWN: c_ulonglong = UINT64_MAX;
 pub const LZMA_TIMED_OUT: c_uint = 101;
 #[no_mangle]
 pub extern "C" fn lzma_version_number() -> u32 {
@@ -247,13 +108,13 @@ pub unsafe extern "C" fn lzma_next_filter_init(
     (*next).init =
         ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0)).init);
     (*next).id = (*filters.offset(0)).id;
-    return (if (*filters.offset(0)).init.is_none() {
+    return if (*filters.offset(0)).init.is_none() {
         LZMA_OK
     } else {
         (*filters.offset(0))
             .init
             .expect("non-null function pointer")(next, allocator, filters)
-    }) as lzma_ret;
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_next_filter_update(
@@ -264,7 +125,7 @@ pub unsafe extern "C" fn lzma_next_filter_update(
     if (*reversed_filters.offset(0)).id != (*next).id {
         return LZMA_PROG_ERROR;
     }
-    if (*reversed_filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*reversed_filters.offset(0)).id == LZMA_VLI_UNKNOWN {
         return LZMA_OK;
     }
     return (*next).update.expect("non-null function pointer")(
@@ -287,7 +148,7 @@ pub unsafe extern "C" fn lzma_next_end(
         }
         *next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -305,16 +166,14 @@ pub unsafe extern "C" fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
         return LZMA_PROG_ERROR;
     }
     if (*strm).internal.is_null() {
-        (*strm).internal = lzma_alloc(
-            core::mem::size_of::<lzma_internal>() as size_t,
-            (*strm).allocator,
-        ) as *mut lzma_internal;
+        (*strm).internal = lzma_alloc(core::mem::size_of::<lzma_internal>(), (*strm).allocator)
+            as *mut lzma_internal;
         if (*strm).internal.is_null() {
             return LZMA_MEM_ERROR;
         }
         (*(*strm).internal).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -328,7 +187,7 @@ pub unsafe extern "C" fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
     memset(
         &raw mut (*(*strm).internal).supported_actions as *mut bool as *mut c_void,
         0 as c_int,
-        core::mem::size_of::<[bool; 5]>() as size_t,
+        core::mem::size_of::<[bool; 5]>(),
     );
     (*(*strm).internal).sequence = ISEQ_RUN;
     (*(*strm).internal).allow_buf_error = false;
@@ -507,56 +366,62 @@ pub unsafe extern "C" fn lzma_get_progress(
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_get_check(strm: *const lzma_stream) -> lzma_check {
-    if (*(*strm).internal).next.get_check.is_none() {
-        return LZMA_CHECK_NONE;
-    }
-    return (*(*strm).internal)
-        .next
-        .get_check
-        .expect("non-null function pointer")((*(*strm).internal).next.coder);
+pub extern "C" fn lzma_get_check(strm: *const lzma_stream) -> lzma_check {
+    return unsafe {
+        if (*(*strm).internal).next.get_check.is_none() {
+            return LZMA_CHECK_NONE;
+        }
+        (*(*strm).internal)
+            .next
+            .get_check
+            .expect("non-null function pointer")((*(*strm).internal).next.coder)
+    };
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_memusage(strm: *const lzma_stream) -> u64 {
-    let mut memusage: u64 = 0;
-    let mut old_memlimit: u64 = 0;
-    if strm.is_null()
-        || (*strm).internal.is_null()
-        || (*(*strm).internal).next.memconfig.is_none()
-        || (*(*strm).internal)
-            .next
-            .memconfig
-            .expect("non-null function pointer")(
-            (*(*strm).internal).next.coder,
-            &raw mut memusage,
-            &raw mut old_memlimit,
-            0,
-        ) != LZMA_OK
-    {
-        return 0;
-    }
-    return memusage;
+pub extern "C" fn lzma_memusage(strm: *const lzma_stream) -> u64 {
+    return unsafe {
+        let mut memusage: u64 = 0;
+        let mut old_memlimit: u64 = 0;
+        if strm.is_null()
+            || (*strm).internal.is_null()
+            || (*(*strm).internal).next.memconfig.is_none()
+            || (*(*strm).internal)
+                .next
+                .memconfig
+                .expect("non-null function pointer")(
+                (*(*strm).internal).next.coder,
+                &raw mut memusage,
+                &raw mut old_memlimit,
+                0,
+            ) != LZMA_OK
+        {
+            return 0;
+        }
+        memusage
+    };
 }
 #[no_mangle]
-pub unsafe extern "C" fn lzma_memlimit_get(strm: *const lzma_stream) -> u64 {
-    let mut old_memlimit: u64 = 0;
-    let mut memusage: u64 = 0;
-    if strm.is_null()
-        || (*strm).internal.is_null()
-        || (*(*strm).internal).next.memconfig.is_none()
-        || (*(*strm).internal)
-            .next
-            .memconfig
-            .expect("non-null function pointer")(
-            (*(*strm).internal).next.coder,
-            &raw mut memusage,
-            &raw mut old_memlimit,
-            0,
-        ) != LZMA_OK
-    {
-        return 0;
-    }
-    return old_memlimit;
+pub extern "C" fn lzma_memlimit_get(strm: *const lzma_stream) -> u64 {
+    return unsafe {
+        let mut old_memlimit: u64 = 0;
+        let mut memusage: u64 = 0;
+        if strm.is_null()
+            || (*strm).internal.is_null()
+            || (*(*strm).internal).next.memconfig.is_none()
+            || (*(*strm).internal)
+                .next
+                .memconfig
+                .expect("non-null function pointer")(
+                (*(*strm).internal).next.coder,
+                &raw mut memusage,
+                &raw mut old_memlimit,
+                0,
+            ) != LZMA_OK
+        {
+            return 0;
+        }
+        old_memlimit
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_memlimit_set(
