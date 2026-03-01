@@ -20,7 +20,6 @@ extern "C" {
         >,
     ) -> lzma_ret;
     fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64;
-    fn lzma_lzma_lclppb_encode(options: *const lzma_options_lzma, byte: *mut u8) -> bool;
     fn lzma_lzma_encoder_create(
         coder_ptr: *mut *mut c_void,
         allocator: *const lzma_allocator,

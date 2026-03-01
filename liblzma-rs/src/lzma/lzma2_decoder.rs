@@ -15,8 +15,6 @@ extern "C" {
             ) -> lzma_ret,
         >,
     ) -> lzma_ret;
-    fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64;
-    fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, byte: u8) -> bool;
     fn lzma_lzma_decoder_create(
         lz: *mut lzma_lz_decoder,
         allocator: *const lzma_allocator,

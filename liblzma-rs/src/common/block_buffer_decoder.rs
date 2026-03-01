@@ -1,11 +1,4 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_block_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        block: *mut lzma_block,
-    ) -> lzma_ret;
-}
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_buffer_decode(
     block: *mut lzma_block,

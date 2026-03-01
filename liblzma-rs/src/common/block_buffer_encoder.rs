@@ -1,14 +1,5 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_ulonglong, c_void};
-extern "C" {
-    fn lzma_block_header_size(block: *mut lzma_block) -> lzma_ret;
-    fn lzma_block_header_encode(block: *const lzma_block, out: *mut u8) -> lzma_ret;
-    fn lzma_raw_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter,
-    ) -> lzma_ret;
-}
 pub const LZMA_CHECK_SIZE_MAX: u32 = 64;
 pub const COMPRESSED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX
     .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as u64)

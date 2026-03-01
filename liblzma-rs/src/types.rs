@@ -653,6 +653,56 @@ extern "C" {
         alignment: u32,
         is_encoder: bool,
     ) -> lzma_ret;
+    pub fn lzma_vli_encode(
+        vli: lzma_vli,
+        vli_pos: *mut size_t,
+        out: *mut u8,
+        out_pos: *mut size_t,
+        out_size: size_t,
+    ) -> lzma_ret;
+    pub fn lzma_stream_header_encode(
+        options: *const lzma_stream_flags,
+        out: *mut u8,
+    ) -> lzma_ret;
+    pub fn lzma_stream_header_decode(
+        options: *mut lzma_stream_flags,
+        in_0: *const u8,
+    ) -> lzma_ret;
+    pub fn lzma_stream_footer_encode(
+        options: *const lzma_stream_flags,
+        out: *mut u8,
+    ) -> lzma_ret;
+    pub fn lzma_stream_footer_decode(
+        options: *mut lzma_stream_flags,
+        in_0: *const u8,
+    ) -> lzma_ret;
+    pub fn lzma_block_header_size(block: *mut lzma_block) -> lzma_ret;
+    pub fn lzma_block_header_encode(block: *const lzma_block, out: *mut u8) -> lzma_ret;
+    pub fn lzma_block_decoder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        block: *mut lzma_block,
+    ) -> lzma_ret;
+    pub fn lzma_raw_encoder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        filters: *const lzma_filter,
+    ) -> lzma_ret;
+    pub fn lzma_raw_decoder_memusage(filters: *const lzma_filter) -> u64;
+    pub fn lzma_lzma_encoder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        filters: *const lzma_filter_info,
+    ) -> lzma_ret;
+    pub fn lzma_lzma_decoder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        filters: *const lzma_filter_info,
+    ) -> lzma_ret;
+    pub fn lzma_lzma_lclppb_encode(options: *const lzma_options_lzma, byte: *mut u8) -> bool;
+    pub fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, byte: u8) -> bool;
+    pub fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64;
+    pub fn lzma_delta_coder_memusage(options: *const c_void) -> u64;
     pub fn memcmp(s1: *const c_void, s2: *const c_void, n: size_t) -> c_int;
     pub fn memchr(s: *const c_void, c: c_int, n: size_t) -> *mut c_void;
     pub fn strlen(s: *const c_char) -> size_t;

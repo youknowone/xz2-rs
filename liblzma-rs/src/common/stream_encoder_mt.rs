@@ -31,10 +31,6 @@ extern "C" {
     ) -> lzma_ret;
     fn lzma_raw_encoder_memusage(filters: *const lzma_filter) -> u64;
     fn lzma_mt_block_size(filters: *const lzma_filter) -> u64;
-    fn lzma_stream_header_encode(options: *const lzma_stream_flags, out: *mut u8) -> lzma_ret;
-    fn lzma_stream_footer_encode(options: *const lzma_stream_flags, out: *mut u8) -> lzma_ret;
-    fn lzma_block_header_size(block: *mut lzma_block) -> lzma_ret;
-    fn lzma_block_header_encode(block: *const lzma_block, out: *mut u8) -> lzma_ret;
     fn lzma_block_uncomp_encode(
         block: *mut lzma_block,
         in_0: *const u8,

@@ -10,10 +10,6 @@ extern "C" {
         dest: *mut lzma_filter,
         allocator: *const lzma_allocator,
     ) -> lzma_ret;
-    fn lzma_stream_header_encode(options: *const lzma_stream_flags, out: *mut u8) -> lzma_ret;
-    fn lzma_stream_footer_encode(options: *const lzma_stream_flags, out: *mut u8) -> lzma_ret;
-    fn lzma_block_header_size(block: *mut lzma_block) -> lzma_ret;
-    fn lzma_block_header_encode(block: *const lzma_block, out: *mut u8) -> lzma_ret;
     fn lzma_index_init(allocator: *const lzma_allocator) -> *mut lzma_index;
     fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocator);
     fn lzma_index_append(

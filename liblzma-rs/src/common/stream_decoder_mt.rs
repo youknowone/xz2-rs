@@ -24,9 +24,6 @@ extern "C" {
     fn pthread_mutex_lock(_: *mut pthread_mutex_t) -> c_int;
     fn pthread_mutex_unlock(_: *mut pthread_mutex_t) -> c_int;
     fn pthread_sigmask(_: c_int, _: *const sigset_t, _: *mut sigset_t) -> c_int;
-    fn lzma_raw_decoder_memusage(filters: *const lzma_filter) -> u64;
-    fn lzma_stream_header_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> lzma_ret;
-    fn lzma_stream_footer_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> lzma_ret;
     fn lzma_block_header_decode(
         block: *mut lzma_block,
         allocator: *const lzma_allocator,
@@ -49,11 +46,6 @@ extern "C" {
         in_size: size_t,
     ) -> lzma_ret;
     fn lzma_index_hash_size(index_hash: *const lzma_index_hash) -> lzma_vli;
-    fn lzma_block_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        block: *mut lzma_block,
-    ) -> lzma_ret;
     fn lzma_outq_init(
         outq: *mut lzma_outq,
         allocator: *const lzma_allocator,

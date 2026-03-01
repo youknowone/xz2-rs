@@ -1,12 +1,5 @@
 use crate::types::*;
 extern "C" {
-    fn lzma_vli_encode(
-        vli: lzma_vli,
-        vli_pos: *mut size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> lzma_ret;
     fn lzma_filter_flags_size(size: *mut u32, filter: *const lzma_filter) -> lzma_ret;
     fn lzma_filter_flags_encode(
         filter: *const lzma_filter,

@@ -1,13 +1,5 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_void};
-extern "C" {
-    fn lzma_lzma_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64;
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzip_coder {

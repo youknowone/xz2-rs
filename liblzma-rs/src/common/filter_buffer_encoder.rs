@@ -1,11 +1,4 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_raw_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter,
-    ) -> lzma_ret;
-}
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_buffer_encode(
     filters: *const lzma_filter,
