@@ -12,5 +12,5 @@ pub extern "C" fn lzma_vli_size(mut vli: lzma_vli) -> u32 {
             break;
         }
     }
-    return i;
+    i
 }

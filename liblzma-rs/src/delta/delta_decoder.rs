@@ -48,7 +48,7 @@ unsafe extern "C" fn delta_decode(
     if size > 0 {
         decode_buffer(coder, out.offset(out_start as isize), size);
     }
-    return ret;
+    ret
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_decoder_init(
@@ -70,7 +70,7 @@ pub unsafe extern "C" fn lzma_delta_decoder_init(
                 lzma_action,
             ) -> lzma_ret,
     ) as lzma_code_function;
-    return lzma_delta_coder_init(next, allocator, filters);
+    lzma_delta_coder_init(next, allocator, filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_props_decode(
@@ -91,5 +91,5 @@ pub unsafe extern "C" fn lzma_delta_props_decode(
     (*opt).type_0 = LZMA_DELTA_TYPE_BYTE;
     (*opt).dist = u32::from(*props.offset(0)).wrapping_add(1);
     *options = opt as *mut c_void;
-    return LZMA_OK;
+    LZMA_OK
 }

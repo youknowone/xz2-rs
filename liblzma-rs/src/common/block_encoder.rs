@@ -161,7 +161,7 @@ unsafe extern "C" fn block_encode(
         );
         return LZMA_STREAM_END;
     }
-    return LZMA_PROG_ERROR;
+    LZMA_PROG_ERROR
 }
 unsafe extern "C" fn block_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_block_coder = coder_ptr as *mut lzma_block_coder;
@@ -178,7 +178,7 @@ unsafe extern "C" fn block_encoder_update(
     if (*coder).sequence != SEQ_CODE {
         return LZMA_PROG_ERROR;
     }
-    return lzma_next_filter_update(&raw mut (*coder).next, allocator, reversed_filters);
+    lzma_next_filter_update(&raw mut (*coder).next, allocator, reversed_filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_encoder_init(
@@ -296,7 +296,7 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
     (*coder).uncompressed_size = 0;
     (*coder).pos = 0;
     lzma_check_init(&raw mut (*coder).check, (*block).check);
-    return lzma_raw_encoder_init(&raw mut (*coder).next, allocator, (*block).filters);
+    lzma_raw_encoder_init(&raw mut (*coder).next, allocator, (*block).filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_encoder(
@@ -316,5 +316,5 @@ pub unsafe extern "C" fn lzma_block_encoder(
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

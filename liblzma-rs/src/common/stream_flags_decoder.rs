@@ -59,7 +59,7 @@ pub unsafe extern "C" fn lzma_stream_header_decode(
         return LZMA_OPTIONS_ERROR;
     }
     (*options).backward_size = LZMA_VLI_UNKNOWN;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_footer_decode(
@@ -92,5 +92,5 @@ pub unsafe extern "C" fn lzma_stream_footer_decode(
     (*options).backward_size =
         read32le(in_0.offset(core::mem::size_of::<u32>() as usize as isize)) as lzma_vli;
     (*options).backward_size = (*options).backward_size.wrapping_add(1).wrapping_mul(4);
-    return LZMA_OK;
+    LZMA_OK
 }

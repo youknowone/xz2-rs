@@ -2,7 +2,7 @@ use crate::types::*;
 use core::ffi::{c_uint, c_void};
 #[inline]
 extern "C" fn rotr_32(num: u32, amount: c_uint) -> u32 {
-    return num >> amount | num << 32u32.wrapping_sub(amount);
+    num >> amount | num << 32u32.wrapping_sub(amount)
 }
 static mut SHA256_K: [u32; 64] = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,

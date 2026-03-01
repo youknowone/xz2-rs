@@ -79,11 +79,11 @@ unsafe extern "C" fn block_encoder_init(
     if ret_ != LZMA_OK {
         return ret_;
     }
-    return lzma_block_encoder_init(
+    lzma_block_encoder_init(
         &raw mut (*coder).block_encoder,
         allocator,
         &raw mut (*coder).block_options,
-    );
+    )
 }
 unsafe extern "C" fn stream_encode(
     coder_ptr: *mut c_void,
@@ -242,7 +242,7 @@ unsafe extern "C" fn stream_encode(
             _ => return LZMA_PROG_ERROR,
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn stream_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
@@ -468,12 +468,12 @@ unsafe extern "C" fn stream_encoder_init(
     }
     (*coder).buffer_pos = 0;
     (*coder).buffer_size = LZMA_STREAM_HEADER_SIZE as size_t;
-    return stream_encoder_update(
+    stream_encoder_update(
         coder as *mut c_void,
         allocator,
         filters,
         ::core::ptr::null::<lzma_filter>(),
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_encoder(
@@ -500,5 +500,5 @@ pub unsafe extern "C" fn lzma_stream_encoder(
     (*(*strm).internal).supported_actions[LZMA_FULL_FLUSH as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FULL_BARRIER as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

@@ -310,7 +310,7 @@ unsafe extern "C" fn lzip_decoder_end(coder_ptr: *mut c_void, allocator: *const 
     lzma_free(coder as *mut c_void, allocator);
 }
 extern "C" fn lzip_decoder_get_check(_coder_ptr: *const c_void) -> lzma_check {
-    return LZMA_CHECK_CRC32;
+    LZMA_CHECK_CRC32
 }
 unsafe extern "C" fn lzip_decoder_memconfig(
     coder_ptr: *mut c_void,
@@ -327,7 +327,7 @@ unsafe extern "C" fn lzip_decoder_memconfig(
         }
         (*coder).memlimit = new_memlimit;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzip_decoder_init(
@@ -424,7 +424,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     (*coder).concatenated = flags & LZMA_CONCATENATED as u32 != 0;
     (*coder).first_member = true;
     (*coder).pos = 0;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzip_decoder(
@@ -448,5 +448,5 @@ pub unsafe extern "C" fn lzma_lzip_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

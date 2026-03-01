@@ -17,11 +17,11 @@ extern "C" fn write32le(buf: *mut u8, num: u32) {
 pub const LZMA_STREAM_FLAGS_SIZE: u32 = 2;
 #[inline]
 extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
-    return unsafe {
+    unsafe {
         (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
             && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
             && (*options).backward_size & 3 == 0
-    };
+    }
 }
 extern "C" fn stream_flags_encode(options: *const lzma_stream_flags, out: *mut u8) -> bool {
     return unsafe {
@@ -62,7 +62,7 @@ pub unsafe extern "C" fn lzma_stream_header_encode(
             .offset(LZMA_STREAM_FLAGS_SIZE as isize),
         crc,
     );
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_footer_encode(
@@ -90,5 +90,5 @@ pub unsafe extern "C" fn lzma_stream_footer_encode(
         &raw const lzma_footer_magic as *const u8 as *const c_void,
         core::mem::size_of::<[u8; 2]>(),
     );
-    return LZMA_OK;
+    LZMA_OK
 }

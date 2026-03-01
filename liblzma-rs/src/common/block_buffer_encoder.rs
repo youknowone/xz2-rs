@@ -42,7 +42,7 @@ extern "C" fn lzma2_bound(uncompressed_size: u64) -> u64 {
     if (COMPRESSED_SIZE_MAX as u64).wrapping_sub(overhead) < uncompressed_size {
         return 0;
     }
-    return uncompressed_size.wrapping_add(overhead);
+    uncompressed_size.wrapping_add(overhead)
 }
 #[no_mangle]
 pub extern "C" fn lzma_block_buffer_bound64(uncompressed_size: u64) -> u64 {
@@ -51,12 +51,12 @@ pub extern "C" fn lzma_block_buffer_bound64(uncompressed_size: u64) -> u64 {
         return 0;
     }
     lzma2_size = lzma2_size.wrapping_add(3) & !(3);
-    return (HEADERS_BOUND as u64).wrapping_add(lzma2_size);
+    (HEADERS_BOUND as u64).wrapping_add(lzma2_size)
 }
 #[no_mangle]
 pub extern "C" fn lzma_block_buffer_bound(uncompressed_size: size_t) -> size_t {
     let ret: u64 = lzma_block_buffer_bound64(uncompressed_size as u64);
-    return ret as size_t;
+    ret as size_t
 }
 unsafe extern "C" fn block_encode_uncompressed(
     block: *mut lzma_block,
@@ -146,7 +146,7 @@ unsafe extern "C" fn block_encode_uncompressed(
     let fresh4 = *out_pos;
     *out_pos = (*out_pos).wrapping_add(1);
     *out.offset(fresh4 as isize) = 0;
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn block_encode_normal(
     block: *mut lzma_block,
@@ -212,7 +212,7 @@ unsafe extern "C" fn block_encode_normal(
     if ret != LZMA_OK {
         *out_pos = out_start;
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn block_buffer_encode(
     block: *mut lzma_block,
@@ -293,7 +293,7 @@ unsafe extern "C" fn block_buffer_encode(
         );
         *out_pos = (*out_pos).wrapping_add(check_size);
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_buffer_encode(
@@ -305,9 +305,9 @@ pub unsafe extern "C" fn lzma_block_buffer_encode(
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    return block_buffer_encode(
+    block_buffer_encode(
         block, allocator, in_0, in_size, out, out_pos, out_size, true,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_uncomp_encode(
@@ -318,7 +318,7 @@ pub unsafe extern "C" fn lzma_block_uncomp_encode(
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    return block_buffer_encode(
+    block_buffer_encode(
         block,
         ::core::ptr::null::<lzma_allocator>(),
         in_0,
@@ -327,5 +327,5 @@ pub unsafe extern "C" fn lzma_block_uncomp_encode(
         out_pos,
         out_size,
         false,
-    );
+    )
 }

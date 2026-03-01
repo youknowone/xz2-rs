@@ -18,11 +18,11 @@ pub const LZMA_VERSION: c_uint = (LZMA_VERSION_MAJOR)
 pub const LZMA_TIMED_OUT: c_uint = 101;
 #[no_mangle]
 pub extern "C" fn lzma_version_number() -> u32 {
-    return LZMA_VERSION as u32;
+    LZMA_VERSION as u32
 }
 #[no_mangle]
 pub extern "C" fn lzma_version_string() -> *const c_char {
-    return b"5.8.2\0" as *const u8 as *const c_char;
+    b"5.8.2\0" as *const u8 as *const c_char
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_alloc(
@@ -38,7 +38,7 @@ pub unsafe extern "C" fn lzma_alloc(
     } else {
         ptr = malloc(size);
     }
-    return ptr;
+    ptr
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_alloc_zero(
@@ -57,7 +57,7 @@ pub unsafe extern "C" fn lzma_alloc_zero(
     } else {
         ptr = calloc(1, size);
     }
-    return ptr;
+    ptr
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
@@ -92,7 +92,7 @@ pub unsafe extern "C" fn lzma_bufcpy(
     }
     *in_pos = (*in_pos).wrapping_add(copy_size);
     *out_pos = (*out_pos).wrapping_add(copy_size);
-    return copy_size;
+    copy_size
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_next_filter_init(
@@ -108,13 +108,13 @@ pub unsafe extern "C" fn lzma_next_filter_init(
     (*next).init =
         ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0)).init);
     (*next).id = (*filters.offset(0)).id;
-    return if (*filters.offset(0)).init.is_none() {
+    if (*filters.offset(0)).init.is_none() {
         LZMA_OK
     } else {
         (*filters.offset(0))
             .init
             .expect("non-null function pointer")(next, allocator, filters)
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_next_filter_update(
@@ -128,12 +128,12 @@ pub unsafe extern "C" fn lzma_next_filter_update(
     if (*reversed_filters.offset(0)).id == LZMA_VLI_UNKNOWN {
         return LZMA_OK;
     }
-    return (*next).update.expect("non-null function pointer")(
+    (*next).update.expect("non-null function pointer")(
         (*next).coder,
         allocator,
         ::core::ptr::null::<lzma_filter>(),
         reversed_filters,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_next_end(
@@ -193,7 +193,7 @@ pub unsafe extern "C" fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
     (*(*strm).internal).allow_buf_error = false;
     (*strm).total_in = 0;
     (*strm).total_out = 0;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret {
@@ -335,7 +335,7 @@ pub unsafe extern "C" fn lzma_code(strm: *mut lzma_stream, action: lzma_action) 
         }
         _ => {}
     }
-    return ret;
+    ret
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_end(strm: *mut lzma_stream) {
@@ -437,7 +437,7 @@ pub unsafe extern "C" fn lzma_memlimit_set(
     if new_memlimit == 0 {
         new_memlimit = 1;
     }
-    return (*(*strm).internal)
+    (*(*strm).internal)
         .next
         .memconfig
         .expect("non-null function pointer")(
@@ -445,5 +445,5 @@ pub unsafe extern "C" fn lzma_memlimit_set(
         &raw mut memusage,
         &raw mut old_memlimit,
         new_memlimit,
-    );
+    )
 }

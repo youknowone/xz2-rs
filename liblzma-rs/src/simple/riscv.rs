@@ -125,7 +125,7 @@ unsafe extern "C" fn riscv_encode(
         }
         i = i.wrapping_add(2);
     }
-    return i;
+    i
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
@@ -133,7 +133,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return lzma_simple_coder_init(
+    lzma_simple_coder_init(
         next,
         allocator,
         filters,
@@ -144,7 +144,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
         8,
         2,
         true,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_riscv_encode(
@@ -153,7 +153,7 @@ pub unsafe extern "C" fn lzma_bcj_riscv_encode(
     size: size_t,
 ) -> size_t {
     start_offset = (start_offset & !1u32) as u32;
-    return riscv_encode(core::ptr::null_mut(), start_offset, true, buf, size);
+    riscv_encode(core::ptr::null_mut(), start_offset, true, buf, size)
 }
 unsafe extern "C" fn riscv_decode(
     _simple: *mut c_void,
@@ -227,7 +227,7 @@ unsafe extern "C" fn riscv_decode(
         }
         i = i.wrapping_add(2);
     }
-    return i;
+    i
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
@@ -235,7 +235,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return lzma_simple_coder_init(
+    lzma_simple_coder_init(
         next,
         allocator,
         filters,
@@ -246,7 +246,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
         8,
         2,
         false,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_riscv_decode(
@@ -255,5 +255,5 @@ pub unsafe extern "C" fn lzma_bcj_riscv_decode(
     size: size_t,
 ) -> size_t {
     start_offset = (start_offset & !1u32) as u32;
-    return riscv_decode(core::ptr::null_mut(), start_offset, false, buf, size);
+    riscv_decode(core::ptr::null_mut(), start_offset, false, buf, size)
 }

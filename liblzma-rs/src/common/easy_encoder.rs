@@ -48,5 +48,5 @@ pub unsafe extern "C" fn lzma_easy_encoder(
     if lzma_easy_preset(&raw mut opt_easy, preset) {
         return LZMA_OPTIONS_ERROR;
     }
-    return lzma_stream_encoder(strm, &raw mut opt_easy.filters as *mut lzma_filter, check);
+    lzma_stream_encoder(strm, &raw mut opt_easy.filters as *mut lzma_filter, check)
 }

@@ -205,7 +205,7 @@ unsafe extern "C" fn index_encode(
     if out_used > 0 {
         (*coder).crc32 = lzma_crc32(out.offset(out_start as isize), out_used, (*coder).crc32);
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn index_encoder_end(coder: *mut c_void, allocator: *const lzma_allocator) {
     lzma_free(coder, allocator);
@@ -287,7 +287,7 @@ pub unsafe extern "C" fn lzma_index_encoder_init(
         ) as lzma_end_function;
     }
     index_encoder_reset((*next).coder as *mut lzma_index_coder, i);
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_index_encoder(
@@ -306,7 +306,7 @@ pub unsafe extern "C" fn lzma_index_encoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_index_buffer_encode(
@@ -387,5 +387,5 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
         *out_pos = out_start;
         ret = LZMA_PROG_ERROR;
     }
-    return ret;
+    ret
 }

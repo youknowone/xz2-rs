@@ -51,7 +51,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
     (*coder).distance = (*opt).dist as size_t;
     (*coder).pos = 0;
     memset(&raw mut (*coder).history as *mut u8 as *mut c_void, 0, 256);
-    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
+    lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1))
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u64 {
@@ -63,5 +63,5 @@ pub unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u6
     {
         return UINT64_MAX;
     }
-    return core::mem::size_of::<lzma_delta_coder>() as u64;
+    core::mem::size_of::<lzma_delta_coder>() as u64
 }

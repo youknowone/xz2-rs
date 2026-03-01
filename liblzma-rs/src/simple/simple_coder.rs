@@ -55,7 +55,7 @@ unsafe extern "C" fn copy_or_code(
             return ret;
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn call_filter(
     coder: *mut lzma_simple_coder,
@@ -70,7 +70,7 @@ unsafe extern "C" fn call_filter(
         size,
     ) as size_t;
     (*coder).now_pos = ((*coder).now_pos as size_t).wrapping_add(filtered) as u32;
-    return filtered;
+    filtered
 }
 unsafe extern "C" fn simple_code(
     coder_ptr: *mut c_void,
@@ -182,7 +182,7 @@ unsafe extern "C" fn simple_code(
     if (*coder).end_was_reached && (*coder).pos == (*coder).size {
         return LZMA_STREAM_END;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn simple_coder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
@@ -197,11 +197,11 @@ unsafe extern "C" fn simple_coder_update(
     reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
     let coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
-    return lzma_next_filter_update(
+    lzma_next_filter_update(
         &raw mut (*coder).next,
         allocator,
         reversed_filters.offset(1),
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_coder_init(
@@ -297,5 +297,5 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
     (*coder).pos = 0;
     (*coder).filtered = 0;
     (*coder).size = 0;
-    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
+    lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1))
 }

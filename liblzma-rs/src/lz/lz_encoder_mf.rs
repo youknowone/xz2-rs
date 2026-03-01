@@ -5,11 +5,11 @@ extern "C" {
 }
 #[inline]
 unsafe extern "C" fn mf_ptr(mf: *const lzma_mf) -> *const u8 {
-    return (*mf).buffer.offset((*mf).read_pos as isize);
+    (*mf).buffer.offset((*mf).read_pos as isize)
 }
 #[inline]
 unsafe extern "C" fn mf_avail(mf: *const lzma_mf) -> u32 {
-    return (*mf).write_pos.wrapping_sub((*mf).read_pos);
+    (*mf).write_pos.wrapping_sub((*mf).read_pos)
 }
 pub const HASH_2_SIZE: c_uint = 1u32 << 10;
 pub const HASH_3_SIZE: c_uint = 1u32 << 16;
@@ -27,7 +27,7 @@ unsafe extern "C" fn lzma_memcmplen(
     while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
         len += 1;
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_find(
@@ -53,7 +53,7 @@ pub unsafe extern "C" fn lzma_mf_find(
     }
     *count_ptr = count;
     (*mf).read_ahead = (*mf).read_ahead.wrapping_add(1);
-    return len_best;
+    len_best
 }
 pub const EMPTY_HASH_VALUE: u32 = 0;
 pub const MUST_NORMALIZE_POS: c_uint = UINT32_MAX;
@@ -187,7 +187,7 @@ pub unsafe extern "C" fn lzma_mf_hc3_find(mf: *mut lzma_mf, matches: *mut lzma_m
     )
     .offset_from(matches) as u32;
     move_pos(mf);
-    return matches_count;
+    matches_count
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_hc3_skip(mf: *mut lzma_mf, mut amount: u32) {
@@ -290,7 +290,7 @@ pub unsafe extern "C" fn lzma_mf_hc4_find(mf: *mut lzma_mf, matches: *mut lzma_m
     )
     .offset_from(matches) as u32;
     move_pos(mf);
-    return matches_count;
+    matches_count
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_hc4_skip(mf: *mut lzma_mf, mut amount: u32) {
@@ -467,7 +467,7 @@ pub unsafe extern "C" fn lzma_mf_bt2_find(mf: *mut lzma_mf, matches: *mut lzma_m
     )
     .offset_from(matches) as u32;
     move_pos(mf);
-    return matches_count;
+    matches_count
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt2_skip(mf: *mut lzma_mf, mut amount: u32) {
@@ -568,7 +568,7 @@ pub unsafe extern "C" fn lzma_mf_bt3_find(mf: *mut lzma_mf, matches: *mut lzma_m
     )
     .offset_from(matches) as u32;
     move_pos(mf);
-    return matches_count;
+    matches_count
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt3_skip(mf: *mut lzma_mf, mut amount: u32) {
@@ -702,7 +702,7 @@ pub unsafe extern "C" fn lzma_mf_bt4_find(mf: *mut lzma_mf, matches: *mut lzma_m
     )
     .offset_from(matches) as u32;
     move_pos(mf);
-    return matches_count;
+    matches_count
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt4_skip(mf: *mut lzma_mf, mut amount: u32) {

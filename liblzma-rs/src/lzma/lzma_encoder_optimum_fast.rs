@@ -92,11 +92,11 @@ pub struct lzma_length_encoder {
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
 #[inline]
 unsafe extern "C" fn mf_ptr(mf: *const lzma_mf) -> *const u8 {
-    return (*mf).buffer.offset((*mf).read_pos as isize);
+    (*mf).buffer.offset((*mf).read_pos as isize)
 }
 #[inline]
 unsafe extern "C" fn mf_avail(mf: *const lzma_mf) -> u32 {
-    return (*mf).write_pos.wrapping_sub((*mf).read_pos);
+    (*mf).write_pos.wrapping_sub((*mf).read_pos)
 }
 #[inline]
 unsafe extern "C" fn mf_skip(mf: *mut lzma_mf, amount: u32) {
@@ -116,7 +116,7 @@ unsafe extern "C" fn lzma_memcmplen(
     while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
         len += 1;
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_optimum_fast(

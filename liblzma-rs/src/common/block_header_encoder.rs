@@ -66,7 +66,7 @@ pub unsafe extern "C" fn lzma_block_header_size(block: *mut lzma_block) -> lzma_
         i += 1;
     }
     (*block).header_size = size.wrapping_add(3) & !(3);
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_header_encode(
@@ -138,5 +138,5 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         out_size.wrapping_sub(out_pos),
     );
     write32le(out.offset(out_size as isize), lzma_crc32(out, out_size, 0));
-    return LZMA_OK;
+    LZMA_OK
 }

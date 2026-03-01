@@ -85,5 +85,5 @@ pub unsafe extern "C" fn lzma_stream_buffer_decode(
         }
     }
     lzma_next_end(&raw mut stream_decoder, allocator);
-    return ret;
+    ret
 }

@@ -332,14 +332,14 @@ extern "C" fn encoder_find(id: lzma_vli) -> *const lzma_filter_encoder {
         }
         i += 1;
     }
-    return ::core::ptr::null::<lzma_filter_encoder>();
+    ::core::ptr::null::<lzma_filter_encoder>()
 }
 extern "C" fn coder_find(id: lzma_vli) -> *const lzma_filter_coder {
-    return encoder_find(id) as *const lzma_filter_coder;
+    encoder_find(id) as *const lzma_filter_coder
 }
 #[no_mangle]
 pub extern "C" fn lzma_filter_encoder_is_supported(id: lzma_vli) -> lzma_bool {
-    return !encoder_find(id).is_null() as lzma_bool;
+    !encoder_find(id).is_null() as lzma_bool
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_filters_update(
@@ -367,7 +367,7 @@ pub unsafe extern "C" fn lzma_filters_update(
         i += 1;
     }
     reversed_filters[count as usize].id = LZMA_VLI_UNKNOWN;
-    return (*(*strm).internal)
+    (*(*strm).internal)
         .next
         .update
         .expect("non-null function pointer")(
@@ -375,7 +375,7 @@ pub unsafe extern "C" fn lzma_filters_update(
         (*strm).allocator,
         filters,
         &raw mut reversed_filters as *mut lzma_filter,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_encoder_init(
@@ -383,13 +383,13 @@ pub unsafe extern "C" fn lzma_raw_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter,
 ) -> lzma_ret {
-    return lzma_raw_coder_init(
+    lzma_raw_coder_init(
         next,
         allocator,
         filters,
         Some(coder_find as unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder),
         true,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_encoder(
@@ -414,14 +414,14 @@ pub unsafe extern "C" fn lzma_raw_encoder(
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_encoder_memusage(filters: *const lzma_filter) -> u64 {
-    return lzma_raw_coder_memusage(
+    lzma_raw_coder_memusage(
         Some(coder_find as unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder),
         filters,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_mt_block_size(filters: *const lzma_filter) -> u64 {
@@ -446,7 +446,7 @@ pub unsafe extern "C" fn lzma_mt_block_size(filters: *const lzma_filter) -> u64 
         }
         i += 1;
     }
-    return if max == 0 { UINT64_MAX } else { max };
+    if max == 0 { UINT64_MAX } else { max }
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_properties_size(
@@ -465,7 +465,7 @@ pub unsafe extern "C" fn lzma_properties_size(
         *size = (*fe).props_size_fixed;
         return LZMA_OK;
     }
-    return (*fe).props_size_get.expect("non-null function pointer")(size, (*filter).options);
+    (*fe).props_size_get.expect("non-null function pointer")(size, (*filter).options)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_properties_encode(
@@ -479,5 +479,5 @@ pub unsafe extern "C" fn lzma_properties_encode(
     if (*fe).props_encode.is_none() {
         return LZMA_OK;
     }
-    return (*fe).props_encode.expect("non-null function pointer")((*filter).options, props);
+    (*fe).props_encode.expect("non-null function pointer")((*filter).options, props)
 }

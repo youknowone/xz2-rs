@@ -108,11 +108,11 @@ unsafe extern "C" fn auto_decode(
     if *in_pos < in_size {
         return LZMA_DATA_ERROR;
     }
-    return if action == LZMA_FINISH {
+    if action == LZMA_FINISH {
         LZMA_STREAM_END
     } else {
         LZMA_OK
-    };
+    }
 }
 unsafe extern "C" fn auto_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
@@ -155,7 +155,7 @@ unsafe extern "C" fn auto_decoder_memconfig(
     if ret == LZMA_OK && new_memlimit != 0 {
         (*coder).memlimit = new_memlimit;
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn auto_decoder_init(
     next: *mut lzma_next_coder,
@@ -246,7 +246,7 @@ unsafe extern "C" fn auto_decoder_init(
     (*coder).memlimit = if 1 > memlimit { 1 } else { memlimit };
     (*coder).flags = flags;
     (*coder).sequence = SEQ_INIT;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_auto_decoder(
@@ -270,5 +270,5 @@ pub unsafe extern "C" fn lzma_auto_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

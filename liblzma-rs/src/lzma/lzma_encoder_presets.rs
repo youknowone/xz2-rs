@@ -52,5 +52,5 @@ pub unsafe extern "C" fn lzma_lzma_preset(
             (*options).depth = 512;
         }
     }
-    return false as lzma_bool;
+    false as lzma_bool
 }

@@ -1,7 +1,7 @@
 use crate::types::*;
 #[inline]
 unsafe extern "C" fn aligned_read32ne(buf: *const u8) -> u32 {
-    return *(buf as *const u32);
+    *(buf as *const u32)
 }
 #[no_mangle]
 pub static mut lzma_crc32_table: [[u32; 256]; 8] = [
@@ -355,9 +355,9 @@ unsafe extern "C" fn lzma_crc32_generic(mut buf: *const u8, mut size: size_t, mu
         buf = buf.offset(1);
         crc = lzma_crc32_table[0][(*fresh2 as u32 ^ crc & 0xff) as usize] ^ crc >> 8;
     }
-    return !crc;
+    !crc
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32 {
-    return lzma_crc32_generic(buf, size, crc);
+    lzma_crc32_generic(buf, size, crc)
 }

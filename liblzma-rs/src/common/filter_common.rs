@@ -245,7 +245,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
         return LZMA_OPTIONS_ERROR;
     }
     *count = i;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_coder_init(
@@ -302,7 +302,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
     if ret != LZMA_OK {
         lzma_next_end(next, allocator);
     }
-    return ret;
+    ret
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_coder_memusage(
@@ -338,5 +338,5 @@ pub unsafe extern "C" fn lzma_raw_coder_memusage(
             break;
         }
     }
-    return total.wrapping_add(LZMA_MEMUSAGE_BASE);
+    total.wrapping_add(LZMA_MEMUSAGE_BASE)
 }

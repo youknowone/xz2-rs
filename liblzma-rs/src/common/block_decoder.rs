@@ -49,7 +49,7 @@ pub const SEQ_PADDING: C2RustUnnamed_2 = 1;
 pub const SEQ_CODE: C2RustUnnamed_2 = 0;
 #[inline]
 extern "C" fn is_size_valid(size: lzma_vli, reference: lzma_vli) -> bool {
-    return reference == LZMA_VLI_UNKNOWN || reference == size;
+    reference == LZMA_VLI_UNKNOWN || reference == size
 }
 unsafe extern "C" fn block_decode(
     coder_ptr: *mut c_void,
@@ -209,7 +209,7 @@ unsafe extern "C" fn block_decode(
         }
         return LZMA_STREAM_END;
     }
-    return LZMA_PROG_ERROR;
+    LZMA_PROG_ERROR
 }
 unsafe extern "C" fn block_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_block_coder = coder_ptr as *mut lzma_block_coder;
@@ -326,7 +326,7 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     } else {
         false
     };
-    return lzma_raw_decoder_init(&raw mut (*coder).next, allocator, (*block).filters);
+    lzma_raw_decoder_init(&raw mut (*coder).next, allocator, (*block).filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_decoder(
@@ -345,5 +345,5 @@ pub unsafe extern "C" fn lzma_block_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

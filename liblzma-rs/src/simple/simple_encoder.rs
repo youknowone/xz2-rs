@@ -20,7 +20,7 @@ pub unsafe extern "C" fn lzma_simple_props_size(
     } else {
         4
     }) as u32;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_encode(
@@ -32,5 +32,5 @@ pub unsafe extern "C" fn lzma_simple_props_encode(
         return LZMA_OK;
     }
     write32le(out, (*opt).start_offset);
-    return LZMA_OK;
+    LZMA_OK
 }

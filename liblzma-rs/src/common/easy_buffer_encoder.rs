@@ -58,7 +58,7 @@ pub unsafe extern "C" fn lzma_easy_buffer_encode(
     if lzma_easy_preset(&raw mut opt_easy, preset) {
         return LZMA_OPTIONS_ERROR;
     }
-    return lzma_stream_buffer_encode(
+    lzma_stream_buffer_encode(
         &raw mut opt_easy.filters as *mut lzma_filter,
         check,
         allocator,
@@ -67,5 +67,5 @@ pub unsafe extern "C" fn lzma_easy_buffer_encode(
         out,
         out_pos,
         out_size,
-    );
+    )
 }

@@ -40,5 +40,5 @@ pub extern "C" fn lzma_easy_encoder_memusage(preset: u32) -> u64 {
     if unsafe { lzma_easy_preset(&raw mut opt_easy, preset) } {
         return UINT32_MAX as u64;
     }
-    return unsafe { lzma_raw_encoder_memusage(&raw mut opt_easy.filters as *mut lzma_filter) };
+    unsafe { lzma_raw_encoder_memusage(&raw mut opt_easy.filters as *mut lzma_filter) }
 }

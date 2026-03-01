@@ -52,7 +52,7 @@ unsafe extern "C" fn armthumb_code(
         }
         i = i.wrapping_add(2);
     }
-    return i;
+    i
 }
 extern "C" fn armthumb_coder_init(
     next: *mut lzma_next_coder,
@@ -60,7 +60,7 @@ extern "C" fn armthumb_coder_init(
     filters: *const lzma_filter_info,
     is_encoder: bool,
 ) -> lzma_ret {
-    return unsafe {
+    unsafe {
         lzma_simple_coder_init(
             next,
             allocator,
@@ -74,7 +74,7 @@ extern "C" fn armthumb_coder_init(
             2,
             is_encoder,
         )
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_armthumb_encoder_init(
@@ -82,7 +82,7 @@ pub unsafe extern "C" fn lzma_simple_armthumb_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return armthumb_coder_init(next, allocator, filters, true);
+    armthumb_coder_init(next, allocator, filters, true)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_armthumb_decoder_init(
@@ -90,5 +90,5 @@ pub unsafe extern "C" fn lzma_simple_armthumb_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return armthumb_coder_init(next, allocator, filters, false);
+    armthumb_coder_init(next, allocator, filters, false)
 }

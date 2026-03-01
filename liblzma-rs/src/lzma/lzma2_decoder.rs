@@ -237,7 +237,7 @@ unsafe extern "C" fn lzma2_decode(
             _ => return LZMA_PROG_ERROR,
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn lzma2_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_lzma2_coder = coder_ptr as *mut lzma_lzma2_coder;
@@ -289,7 +289,7 @@ unsafe extern "C" fn lzma2_decoder_init(
     (*coder).need_properties = true;
     (*coder).need_dictionary_reset =
         (*options).preset_dict.is_null() || (*options).preset_dict_size == 0;
-    return lzma_lzma_decoder_create(&raw mut (*coder).lzma, allocator, options, lz_options);
+    lzma_lzma_decoder_create(&raw mut (*coder).lzma, allocator, options, lz_options)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma2_decoder_init(
@@ -297,7 +297,7 @@ pub unsafe extern "C" fn lzma_lzma2_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return lzma_lz_decoder_init(
+    lzma_lz_decoder_init(
         next,
         allocator,
         filters,
@@ -311,12 +311,12 @@ pub unsafe extern "C" fn lzma_lzma2_decoder_init(
                     *mut lzma_lz_options,
                 ) -> lzma_ret,
         ),
-    );
+    )
 }
 #[no_mangle]
 pub extern "C" fn lzma_lzma2_decoder_memusage(options: *const c_void) -> u64 {
-    return (core::mem::size_of::<lzma_lzma2_coder>() as u64)
-        .wrapping_add(unsafe { lzma_lzma_decoder_memusage_nocheck(options) });
+    (core::mem::size_of::<lzma_lzma2_coder>() as u64)
+        .wrapping_add(unsafe { lzma_lzma_decoder_memusage_nocheck(options) })
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma2_props_decode(
@@ -348,5 +348,5 @@ pub unsafe extern "C" fn lzma_lzma2_props_decode(
     (*opt).preset_dict = ::core::ptr::null::<u8>();
     (*opt).preset_dict_size = 0;
     *options = opt as *mut c_void;
-    return LZMA_OK;
+    LZMA_OK
 }

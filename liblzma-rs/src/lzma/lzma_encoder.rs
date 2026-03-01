@@ -144,7 +144,7 @@ pub const LZMA_LZMA1EXT_ALLOW_EOPM: c_uint = 0x1;
 pub const LZMA2_CHUNK_MAX: c_uint = 1u32 << 16;
 #[inline]
 extern "C" fn mf_get_hash_bytes(match_finder: lzma_match_finder) -> u32 {
-    return match_finder as u32 & 0xf;
+    match_finder as u32 & 0xf
 }
 #[inline]
 unsafe extern "C" fn mf_skip(mf: *mut lzma_mf, amount: u32) {
@@ -162,23 +162,23 @@ pub const RC_MOVE_BITS: u32 = 5;
 pub const RC_MOVE_REDUCING_BITS: u32 = 4;
 #[inline]
 extern "C" fn rc_bit_price(prob: probability, bit: u32) -> u32 {
-    return unsafe {
+    unsafe {
         lzma_rc_prices[((prob as u32
             ^ 0u32.wrapping_sub(bit) & (RC_BIT_MODEL_TOTAL as u32).wrapping_sub(1))
             >> RC_MOVE_REDUCING_BITS) as usize] as u32
-    };
+    }
 }
 #[inline]
 extern "C" fn rc_bit_0_price(prob: probability) -> u32 {
-    return unsafe { lzma_rc_prices[(prob >> RC_MOVE_REDUCING_BITS) as usize] as u32 };
+    unsafe { lzma_rc_prices[(prob >> RC_MOVE_REDUCING_BITS) as usize] as u32 }
 }
 #[inline]
 extern "C" fn rc_bit_1_price(prob: probability) -> u32 {
-    return unsafe {
+    unsafe {
         lzma_rc_prices
             [((prob as u32 ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1)) >> RC_MOVE_REDUCING_BITS) as usize]
             as u32
-    };
+    }
 }
 #[inline]
 unsafe extern "C" fn rc_bittree_price(
@@ -196,7 +196,7 @@ unsafe extern "C" fn rc_bittree_price(
             break;
         }
     }
-    return price;
+    price
 }
 #[inline]
 unsafe extern "C" fn rc_reset(rc: *mut lzma_range_encoder) {
@@ -311,7 +311,7 @@ unsafe extern "C" fn rc_shift_low(
     }
     (*rc).cache_size = (*rc).cache_size.wrapping_add(1);
     (*rc).low = ((*rc).low & 0xffffff as u64) << RC_SHIFT_BITS;
-    return false;
+    false
 }
 #[inline]
 unsafe extern "C" fn rc_shift_low_dummy(
@@ -337,7 +337,7 @@ unsafe extern "C" fn rc_shift_low_dummy(
     }
     *cache_size = (*cache_size).wrapping_add(1);
     *low = (*low & 0xffffff as u64) << RC_SHIFT_BITS;
-    return false;
+    false
 }
 #[inline]
 unsafe extern "C" fn rc_encode(
@@ -398,7 +398,7 @@ unsafe extern "C" fn rc_encode(
     }
     (*rc).count = 0;
     (*rc).pos = 0;
-    return false;
+    false
 }
 #[inline]
 unsafe extern "C" fn rc_encode_dummy(rc: *const lzma_range_encoder, out_limit: u64) -> bool {
@@ -459,18 +459,18 @@ unsafe extern "C" fn rc_encode_dummy(rc: *const lzma_range_encoder, out_limit: u
         }
         pos += 1;
     }
-    return false;
+    false
 }
 #[inline]
 unsafe extern "C" fn rc_pending(rc: *const lzma_range_encoder) -> u64 {
-    return (*rc).cache_size.wrapping_add(5).wrapping_sub(1);
+    (*rc).cache_size.wrapping_add(5).wrapping_sub(1)
 }
 #[inline]
 unsafe extern "C" fn is_lclppb_valid(options: *const lzma_options_lzma) -> bool {
-    return (*options).lc <= LZMA_LCLP_MAX
+    (*options).lc <= LZMA_LCLP_MAX
         && (*options).lp <= LZMA_LCLP_MAX
         && (*options).lc.wrapping_add((*options).lp) <= LZMA_LCLP_MAX
-        && (*options).pb <= LZMA_PB_MAX;
+        && (*options).pb <= LZMA_PB_MAX
 }
 pub const STATES: u32 = 12;
 pub const LIT_STATES: u32 = 7;
@@ -514,8 +514,8 @@ unsafe extern "C" fn get_dist_slot(dist: u32) -> u32 {
         return (lzma_fastpos[(dist >> 0 + 1 * (FASTPOS_BITS - 1)) as usize] as u32)
             .wrapping_add((2 * (0 + 1 * (FASTPOS_BITS - 1))) as u32);
     }
-    return (lzma_fastpos[(dist >> 0 + 2 * (FASTPOS_BITS - 1)) as usize] as u32)
-        .wrapping_add((2 * (0 + 2 * (FASTPOS_BITS - 1))) as u32);
+    (lzma_fastpos[(dist >> 0 + 2 * (FASTPOS_BITS - 1)) as usize] as u32)
+        .wrapping_add((2 * (0 + 2 * (FASTPOS_BITS - 1))) as u32)
 }
 #[inline]
 unsafe extern "C" fn literal_matched(
@@ -885,7 +885,7 @@ unsafe extern "C" fn encode_init(coder: *mut lzma_lzma1_encoder, mf: *mut lzma_m
         (*coder).uncomp_size = (*coder).uncomp_size.wrapping_add(1);
     }
     (*coder).is_initialized = true;
-    return true;
+    true
 }
 unsafe extern "C" fn encode_eopm(coder: *mut lzma_lzma1_encoder, position: u32) {
     let pos_state: u32 = position & (*coder).pos_mask;
@@ -971,7 +971,7 @@ pub unsafe extern "C" fn lzma_lzma_encode(
         (*coder).is_flushed = true;
         return LZMA_OK;
     }
-    return LZMA_STREAM_END;
+    LZMA_STREAM_END
 }
 unsafe extern "C" fn lzma_encode(
     coder: *mut c_void,
@@ -983,14 +983,14 @@ unsafe extern "C" fn lzma_encode(
     if ((*mf).action == LZMA_SYNC_FLUSH) as c_long != 0 {
         return LZMA_OPTIONS_ERROR;
     }
-    return lzma_lzma_encode(
+    lzma_lzma_encode(
         coder as *mut lzma_lzma1_encoder,
         mf,
         out,
         out_pos,
         out_size,
         UINT32_MAX,
-    );
+    )
 }
 unsafe extern "C" fn lzma_lzma_set_out_limit(
     coder_ptr: *mut c_void,
@@ -1004,15 +1004,15 @@ unsafe extern "C" fn lzma_lzma_set_out_limit(
     (*coder).out_limit = out_limit;
     (*coder).uncomp_size_ptr = uncomp_size;
     (*coder).use_eopm = false;
-    return LZMA_OK;
+    LZMA_OK
 }
 extern "C" fn is_options_valid(options: *const lzma_options_lzma) -> bool {
-    return unsafe {
+    unsafe {
         is_lclppb_valid(options)
             && (*options).nice_len >= MATCH_LEN_MIN
             && (*options).nice_len <= MATCH_LEN_MAX
             && ((*options).mode == LZMA_MODE_FAST || (*options).mode == LZMA_MODE_NORMAL)
-    };
+    }
 }
 extern "C" fn set_lz_options(lz_options: *mut lzma_lz_options, options: *const lzma_options_lzma) {
     unsafe {
@@ -1139,7 +1139,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_reset(
     (*coder).align_price_count = UINT32_MAX.wrapping_div(2) as u32;
     (*coder).opts_end_index = 0;
     (*coder).opts_current_index = 0;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_encoder_create(
@@ -1195,7 +1195,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
         (*coder).use_eopm = (*options).ext_flags & LZMA_LZMA1EXT_ALLOW_EOPM as u32 != 0;
     }
     set_lz_options(lz_options, options);
-    return lzma_lzma_encoder_reset(coder, options);
+    lzma_lzma_encoder_reset(coder, options)
 }
 unsafe extern "C" fn lzma_encoder_init(
     lz: *mut lzma_lz_encoder,
@@ -1230,13 +1230,13 @@ unsafe extern "C" fn lzma_encoder_init(
         lzma_lzma_set_out_limit as unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret,
     )
         as Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>;
-    return lzma_lzma_encoder_create(
+    lzma_lzma_encoder_create(
         &raw mut (*lz).coder,
         allocator,
         id,
         options as *const lzma_options_lzma,
         lz_options,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_encoder_init(
@@ -1244,7 +1244,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return lzma_lz_encoder_init(
+    lzma_lz_encoder_init(
         next,
         allocator,
         filters,
@@ -1258,7 +1258,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_init(
                     *mut lzma_lz_options,
                 ) -> lzma_ret,
         ),
-    );
+    )
 }
 #[no_mangle]
 pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
@@ -1281,7 +1281,7 @@ pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     if lz_memusage == UINT64_MAX {
         return UINT64_MAX;
     }
-    return (core::mem::size_of::<lzma_lzma1_encoder>() as u64).wrapping_add(lz_memusage);
+    (core::mem::size_of::<lzma_lzma1_encoder>() as u64).wrapping_add(lz_memusage)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_lclppb_encode(
@@ -1297,7 +1297,7 @@ pub unsafe extern "C" fn lzma_lzma_lclppb_encode(
         .wrapping_add((*options).lp)
         .wrapping_mul(9)
         .wrapping_add((*options).lc) as u8;
-    return false;
+    false
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
@@ -1309,9 +1309,9 @@ pub unsafe extern "C" fn lzma_lzma_props_encode(options: *const c_void, out: *mu
         return LZMA_PROG_ERROR;
     }
     write32le(out.offset(1), (*opt).dict_size);
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub extern "C" fn lzma_mode_is_supported(mode: lzma_mode) -> lzma_bool {
-    return (mode == LZMA_MODE_FAST || mode == LZMA_MODE_NORMAL) as lzma_bool;
+    (mode == LZMA_MODE_FAST || mode == LZMA_MODE_NORMAL) as lzma_bool
 }

@@ -89,7 +89,7 @@ unsafe extern "C" fn fill_temp(
         &raw mut (*coder).temp_pos,
         (*coder).temp_size,
     ) as u64);
-    return (*coder).temp_pos < (*coder).temp_size;
+    (*coder).temp_pos < (*coder).temp_size
 }
 unsafe extern "C" fn seek_to_pos(
     coder: *mut lzma_file_info_coder,
@@ -114,7 +114,7 @@ unsafe extern "C" fn seek_to_pos(
         *in_pos = in_size;
     }
     (*coder).file_cur_pos = target_pos;
-    return external_seek_needed;
+    external_seek_needed
 }
 unsafe extern "C" fn reverse_seek(
     coder: *mut lzma_file_info_coder,
@@ -148,7 +148,7 @@ unsafe extern "C" fn reverse_seek(
     ) {
         return LZMA_SEEK_NEEDED;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn get_padding_size(buf: *const u8, mut buf_size: size_t) -> size_t {
     let mut padding: size_t = 0;
@@ -158,13 +158,13 @@ unsafe extern "C" fn get_padding_size(buf: *const u8, mut buf_size: size_t) -> s
     } {
         padding += 1;
     }
-    return padding;
+    padding
 }
 extern "C" fn hide_format_error(mut ret: lzma_ret) -> lzma_ret {
     if ret == LZMA_FORMAT_ERROR {
         ret = LZMA_DATA_ERROR;
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn decode_index(
     coder: *mut lzma_file_info_coder,
@@ -197,7 +197,7 @@ unsafe extern "C" fn decode_index(
             .file_cur_pos
             .wrapping_add((*in_pos).wrapping_sub(in_start) as u64);
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn file_info_decode(
     coder_ptr: *mut c_void,
@@ -574,7 +574,7 @@ unsafe extern "C" fn file_info_decoder_memconfig(
         }
         (*coder).memlimit = new_memlimit;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn file_info_decoder_end(
     coder_ptr: *mut c_void,
@@ -705,7 +705,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
     (*coder).memlimit = if 1 > memlimit { 1 } else { memlimit };
     (*coder).temp_pos = 0;
     (*coder).temp_size = LZMA_STREAM_HEADER_SIZE as size_t;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_file_info_decoder(
@@ -732,5 +732,5 @@ pub unsafe extern "C" fn lzma_file_info_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

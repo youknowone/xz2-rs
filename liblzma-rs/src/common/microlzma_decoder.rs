@@ -159,7 +159,7 @@ unsafe extern "C" fn microlzma_decode(
             ret = LZMA_STREAM_END;
         }
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn microlzma_decoder_end(
     coder_ptr: *mut c_void,
@@ -272,7 +272,7 @@ unsafe extern "C" fn microlzma_decoder_init(
     (*coder).uncomp_size_is_exact = uncomp_size_is_exact;
     (*coder).dict_size = dict_size;
     (*coder).props_decoded = false;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_microlzma_decoder(
@@ -300,5 +300,5 @@ pub unsafe extern "C" fn lzma_microlzma_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

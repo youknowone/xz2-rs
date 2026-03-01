@@ -29,7 +29,7 @@ pub extern "C" fn lzma_check_is_supported(type_0: lzma_check) -> lzma_bool {
         false as lzma_bool,
         false as lzma_bool,
     ];
-    return available_checks[type_0 as usize];
+    available_checks[type_0 as usize]
 }
 #[no_mangle]
 pub extern "C" fn lzma_check_size(type_0: lzma_check) -> u32 {
@@ -40,7 +40,7 @@ pub extern "C" fn lzma_check_size(type_0: lzma_check) -> u32 {
         0, 4 as u8, 4 as u8, 4 as u8, 8 as u8, 8 as u8, 8 as u8, 16 as u8, 16 as u8, 16 as u8,
         32 as u8, 32 as u8, 32 as u8, 64 as u8, 64 as u8, 64 as u8,
     ];
-    return check_sizes[type_0 as usize] as u32;
+    check_sizes[type_0 as usize] as u32
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_check_init(check: *mut lzma_check_state, type_0: lzma_check) {

@@ -89,5 +89,5 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
         *out_pos = out_start;
     }
     lzma_next_end(&raw mut next, allocator);
-    return ret;
+    ret
 }

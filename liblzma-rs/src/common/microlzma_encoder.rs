@@ -67,7 +67,7 @@ unsafe extern "C" fn microlzma_encode(
     }
     *out.offset(out_start as isize) = !(*coder).props;
     *in_pos = in_start.wrapping_add(uncomp_size as size_t);
-    return ret;
+    ret
 }
 unsafe extern "C" fn microlzma_encoder_end(
     coder_ptr: *mut c_void,
@@ -179,11 +179,11 @@ unsafe extern "C" fn microlzma_encoder_init(
             options: core::ptr::null_mut(),
         },
     ];
-    return lzma_next_filter_init(
+    lzma_next_filter_init(
         &raw mut (*coder).lzma,
         allocator,
         &raw const filters as *const lzma_filter_info,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_microlzma_encoder(
@@ -204,5 +204,5 @@ pub unsafe extern "C" fn lzma_microlzma_encoder(
         return ret__0;
     }
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

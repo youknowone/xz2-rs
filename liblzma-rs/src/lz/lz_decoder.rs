@@ -172,7 +172,7 @@ unsafe extern "C" fn lz_decode(
             return LZMA_DATA_ERROR;
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
@@ -299,12 +299,12 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
     (*coder).this_finished = false;
     (*coder).temp.pos = 0;
     (*coder).temp.size = 0;
-    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
+    lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1))
 }
 #[no_mangle]
 pub extern "C" fn lzma_lz_decoder_memusage(dictionary_size: size_t) -> u64 {
-    return (core::mem::size_of::<lzma_coder>() as u64)
+    (core::mem::size_of::<lzma_coder>() as u64)
         .wrapping_add(dictionary_size as u64)
         .wrapping_add((2 * LZ_DICT_REPEAT_MAX) as u64)
-        .wrapping_add(LZ_DICT_EXTRA as u64);
+        .wrapping_add(LZ_DICT_EXTRA as u64)
 }

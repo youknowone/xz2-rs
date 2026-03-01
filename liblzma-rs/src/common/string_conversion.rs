@@ -76,13 +76,13 @@ unsafe extern "C" fn str_init(str: *mut lzma_str, allocator: *const lzma_allocat
         return LZMA_MEM_ERROR;
     }
     (*str).pos = 0;
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn str_free(str: *mut lzma_str, allocator: *const lzma_allocator) {
     lzma_free((*str).buf as *mut c_void, allocator);
 }
 unsafe extern "C" fn str_is_full(str: *const lzma_str) -> bool {
-    return (*str).pos == (STR_ALLOC_SIZE - 1) as size_t;
+    (*str).pos == (STR_ALLOC_SIZE - 1) as size_t
 }
 unsafe extern "C" fn str_finish(
     dest: *mut *mut c_char,
@@ -96,7 +96,7 @@ unsafe extern "C" fn str_finish(
     }
     *(*str).buf.offset((*str).pos as isize) = '\0' as i32 as c_char;
     *dest = (*str).buf;
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn str_append_str(str: *mut lzma_str, s: *const c_char) {
     let len: size_t = strlen(s) as size_t;
@@ -244,7 +244,7 @@ unsafe extern "C" fn parse_lzma12_preset(
             }
         }
     }
-    return ::core::ptr::null::<c_char>();
+    ::core::ptr::null::<c_char>()
 }
 unsafe extern "C" fn set_lzma12_preset(
     str: *mut *const c_char,
@@ -260,7 +260,7 @@ unsafe extern "C" fn set_lzma12_preset(
     if lzma_lzma_preset(opts, preset) != 0 {
         return b"Unsupported preset\0" as *const u8 as *const c_char;
     }
-    return ::core::ptr::null::<c_char>();
+    ::core::ptr::null::<c_char>()
 }
 static lzma12_mode_map: [name_value_map; 3] = unsafe {
     [
@@ -335,7 +335,7 @@ unsafe extern "C" fn parse_lzma12(
     if (*opts).lc.wrapping_add((*opts).lp) > LZMA_LCLP_MAX {
         return b"The sum of lc and lp must not exceed 4\0" as *const u8 as *const c_char;
     }
-    return ::core::ptr::null::<c_char>();
+    ::core::ptr::null::<c_char>()
 }
 static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
     [
@@ -698,7 +698,7 @@ unsafe extern "C" fn parse_options(
             }
         }
     }
-    return ::core::ptr::null::<c_char>();
+    ::core::ptr::null::<c_char>()
 }
 unsafe extern "C" fn parse_filter(
     str: *mut *const c_char,
@@ -760,7 +760,7 @@ unsafe extern "C" fn parse_filter(
         }
         i += 1;
     }
-    return b"Unknown filter name\0" as *const u8 as *const c_char;
+    b"Unknown filter name\0" as *const u8 as *const c_char
 }
 unsafe extern "C" fn str_to_filters(
     str: *mut *const c_char,
@@ -912,7 +912,7 @@ unsafe extern "C" fn str_to_filters(
         }
         lzma_free(temp_filters[i_0 as usize].options, allocator);
     }
-    return errmsg;
+    errmsg
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_str_to_filters(
@@ -943,7 +943,7 @@ pub unsafe extern "C" fn lzma_str_to_filters(
             n as c_int
         };
     }
-    return errmsg;
+    errmsg
 }
 unsafe extern "C" fn strfy_filter(
     dest: *mut lzma_str,
@@ -1104,7 +1104,7 @@ pub unsafe extern "C" fn lzma_str_from_filters(
         }
         i += 1;
     }
-    return str_finish(output_str, &raw mut dest, allocator);
+    str_finish(output_str, &raw mut dest, allocator)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_str_list_filters(
@@ -1231,7 +1231,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
         str_free(&raw mut dest, allocator);
         return LZMA_OPTIONS_ERROR;
     }
-    return str_finish(output_str, &raw mut dest, allocator);
+    str_finish(output_str, &raw mut dest, allocator)
 }
 unsafe extern "C" fn run_static_initializers() {
     lzma12_optmap = [

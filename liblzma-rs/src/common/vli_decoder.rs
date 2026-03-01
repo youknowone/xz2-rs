@@ -47,9 +47,9 @@ pub unsafe extern "C" fn lzma_vli_decode(
             break;
         }
     }
-    return if vli_pos == &raw mut vli_pos_internal {
+    if vli_pos == &raw mut vli_pos_internal {
         LZMA_DATA_ERROR
     } else {
         LZMA_OK
-    };
+    }
 }

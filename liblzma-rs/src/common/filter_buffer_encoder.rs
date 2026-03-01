@@ -58,5 +58,5 @@ pub unsafe extern "C" fn lzma_raw_buffer_encode(
         }
         *out_pos = out_start;
     }
-    return ret;
+    ret
 }

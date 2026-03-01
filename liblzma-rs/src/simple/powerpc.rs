@@ -45,7 +45,7 @@ unsafe extern "C" fn powerpc_code(
         }
         i = i.wrapping_add(4);
     }
-    return i;
+    i
 }
 extern "C" fn powerpc_coder_init(
     next: *mut lzma_next_coder,
@@ -53,7 +53,7 @@ extern "C" fn powerpc_coder_init(
     filters: *const lzma_filter_info,
     is_encoder: bool,
 ) -> lzma_ret {
-    return unsafe {
+    unsafe {
         lzma_simple_coder_init(
             next,
             allocator,
@@ -67,7 +67,7 @@ extern "C" fn powerpc_coder_init(
             4,
             is_encoder,
         )
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_powerpc_encoder_init(
@@ -75,7 +75,7 @@ pub unsafe extern "C" fn lzma_simple_powerpc_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return powerpc_coder_init(next, allocator, filters, true);
+    powerpc_coder_init(next, allocator, filters, true)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_powerpc_decoder_init(
@@ -83,5 +83,5 @@ pub unsafe extern "C" fn lzma_simple_powerpc_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return powerpc_coder_init(next, allocator, filters, false);
+    powerpc_coder_init(next, allocator, filters, false)
 }

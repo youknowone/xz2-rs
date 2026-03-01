@@ -89,7 +89,7 @@ unsafe extern "C" fn alone_encode(
             _ => return LZMA_PROG_ERROR,
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn alone_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_alone_coder = coder_ptr as *mut lzma_alone_coder;
@@ -218,11 +218,11 @@ unsafe extern "C" fn alone_encoder_init(
             options: core::ptr::null_mut(),
         },
     ];
-    return lzma_next_filter_init(
+    lzma_next_filter_init(
         &raw mut (*coder).next,
         allocator,
         &raw const filters as *const lzma_filter_info,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_alone_encoder(
@@ -244,5 +244,5 @@ pub unsafe extern "C" fn lzma_alone_encoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

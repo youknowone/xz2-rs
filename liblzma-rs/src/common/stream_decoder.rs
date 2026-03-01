@@ -93,7 +93,7 @@ unsafe extern "C" fn stream_decoder_reset(
     }
     (*coder).sequence = SEQ_STREAM_HEADER;
     (*coder).pos = 0;
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn stream_decode(
     coder_ptr: *mut c_void,
@@ -411,7 +411,7 @@ unsafe extern "C" fn stream_decoder_memconfig(
         }
         (*coder).memlimit = new_memlimit;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_decoder_init(
@@ -509,7 +509,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
     (*coder).ignore_check = flags & LZMA_IGNORE_CHECK as u32 != 0;
     (*coder).concatenated = flags & LZMA_CONCATENATED as u32 != 0;
     (*coder).first_stream = true;
-    return stream_decoder_reset(coder, allocator);
+    stream_decoder_reset(coder, allocator)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_decoder(
@@ -533,5 +533,5 @@ pub unsafe extern "C" fn lzma_stream_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

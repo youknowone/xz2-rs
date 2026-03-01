@@ -112,7 +112,7 @@ pub const LZ_DICT_REPEAT_MAX: u32 = 288;
 pub const LZ_DICT_INIT_POS: u32 = 2 * LZ_DICT_REPEAT_MAX;
 #[inline]
 unsafe extern "C" fn dict_get(dict: *const lzma_dict, distance: u32) -> u8 {
-    return *(*dict).buf.offset(
+    *(*dict).buf.offset(
         (*dict)
             .pos
             .wrapping_sub(distance as size_t)
@@ -122,15 +122,15 @@ unsafe extern "C" fn dict_get(dict: *const lzma_dict, distance: u32) -> u8 {
             } else {
                 (*dict).size.wrapping_sub(LZ_DICT_REPEAT_MAX as size_t)
             }) as isize,
-    );
+    )
 }
 #[inline]
 unsafe extern "C" fn dict_get0(dict: *const lzma_dict) -> u8 {
-    return *(*dict).buf.offset((*dict).pos.wrapping_sub(1) as isize);
+    *(*dict).buf.offset((*dict).pos.wrapping_sub(1) as isize)
 }
 #[inline]
 unsafe extern "C" fn dict_is_distance_valid(dict: *const lzma_dict, distance: size_t) -> bool {
-    return (*dict).full > distance;
+    (*dict).full > distance
 }
 #[inline]
 unsafe extern "C" fn dict_repeat(dict: *mut lzma_dict, distance: u32, len: *mut u32) -> bool {
@@ -168,7 +168,7 @@ unsafe extern "C" fn dict_repeat(dict: *mut lzma_dict, distance: u32, len: *mut 
     if !(*dict).has_wrapped {
         (*dict).full = (*dict).pos.wrapping_sub(LZ_DICT_INIT_POS as size_t);
     }
-    return *len != 0;
+    *len != 0
 }
 #[inline]
 unsafe extern "C" fn dict_put(dict: *mut lzma_dict, byte: u8) {
@@ -185,7 +185,7 @@ unsafe extern "C" fn dict_put_safe(dict: *mut lzma_dict, byte: u8) -> bool {
         return true;
     }
     dict_put(dict, byte);
-    return false;
+    false
 }
 pub const RC_SHIFT_BITS: u32 = 8;
 pub const RC_TOP_BITS: u32 = 24;
@@ -195,10 +195,10 @@ pub const RC_BIT_MODEL_TOTAL: c_uint = 1u32 << RC_BIT_MODEL_TOTAL_BITS;
 pub const RC_MOVE_BITS: u32 = 5;
 #[inline]
 unsafe extern "C" fn is_lclppb_valid(options: *const lzma_options_lzma) -> bool {
-    return (*options).lc <= LZMA_LCLP_MAX
+    (*options).lc <= LZMA_LCLP_MAX
         && (*options).lp <= LZMA_LCLP_MAX
         && (*options).lc.wrapping_add((*options).lp) <= LZMA_LCLP_MAX
-        && (*options).pb <= LZMA_PB_MAX;
+        && (*options).pb <= LZMA_PB_MAX
 }
 pub const STATES: u32 = 12;
 pub const LIT_STATES: u32 = 7;
@@ -246,7 +246,7 @@ unsafe extern "C" fn rc_read_init(
         *in_pos = (*in_pos).wrapping_add(1);
         (*rc).init_bytes_left = (*rc).init_bytes_left.wrapping_sub(1);
     }
-    return LZMA_STREAM_END;
+    LZMA_STREAM_END
 }
 unsafe extern "C" fn lzma_decode(
     coder_ptr: *mut c_void,
@@ -3366,7 +3366,7 @@ unsafe extern "C" fn lzma_decode(
         (*coder).rc.init_bytes_left = 5;
         (*coder).sequence = SEQ_IS_MATCH;
     }
-    return ret_0;
+    ret_0
 }
 unsafe extern "C" fn lzma_decoder_uncompressed(
     coder_ptr: *mut c_void,
@@ -3524,7 +3524,7 @@ pub unsafe extern "C" fn lzma_lzma_decoder_create(
     (*lz_options).dict_size = (*options).dict_size as size_t;
     (*lz_options).preset_dict = (*options).preset_dict;
     (*lz_options).preset_dict_size = (*options).preset_dict_size as size_t;
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn lzma_decoder_init(
     lz: *mut lzma_lz_decoder,
@@ -3559,7 +3559,7 @@ unsafe extern "C" fn lzma_decoder_init(
     }
     lzma_decoder_reset((*lz).coder, options);
     lzma_decoder_uncompressed((*lz).coder, uncomp_size, allow_eopm);
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_decoder_init(
@@ -3567,7 +3567,7 @@ pub unsafe extern "C" fn lzma_lzma_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return lzma_lz_decoder_init(
+    lzma_lz_decoder_init(
         next,
         allocator,
         filters,
@@ -3581,7 +3581,7 @@ pub unsafe extern "C" fn lzma_lzma_decoder_init(
                     *mut lzma_lz_options,
                 ) -> lzma_ret,
         ),
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_lclppb_decode(
@@ -3595,7 +3595,7 @@ pub unsafe extern "C" fn lzma_lzma_lclppb_decode(
     byte = (byte as u32).wrapping_sub((*options).pb.wrapping_mul(9u32).wrapping_mul(5)) as u8;
     (*options).lp = (byte / 9) as u32;
     (*options).lc = (byte as u32).wrapping_sub((*options).lp.wrapping_mul(9));
-    return (*options).lc.wrapping_add((*options).lp) > LZMA_LCLP_MAX;
+    (*options).lc.wrapping_add((*options).lp) > LZMA_LCLP_MAX
 }
 #[no_mangle]
 pub extern "C" fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64 {
@@ -3610,7 +3610,7 @@ pub extern "C" fn lzma_lzma_decoder_memusage(options: *const c_void) -> u64 {
     if !unsafe { is_lclppb_valid(options as *const lzma_options_lzma) } {
         return UINT64_MAX;
     }
-    return lzma_lzma_decoder_memusage_nocheck(options);
+    lzma_lzma_decoder_memusage_nocheck(options)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_props_decode(

@@ -69,5 +69,5 @@ pub unsafe extern "C" fn lzma_block_buffer_decode(
         }
     }
     lzma_next_end(&raw mut block_decoder, allocator);
-    return ret;
+    ret
 }

@@ -100,7 +100,7 @@ unsafe extern "C" fn x86_code(
     }
     (*simple).prev_mask = prev_mask;
     (*simple).prev_pos = prev_pos;
-    return buffer_pos;
+    buffer_pos
 }
 extern "C" fn x86_coder_init(
     next: *mut lzma_next_coder,
@@ -136,7 +136,7 @@ pub unsafe extern "C" fn lzma_simple_x86_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return x86_coder_init(next, allocator, filters, true);
+    x86_coder_init(next, allocator, filters, true)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_x86_encode(
@@ -148,13 +148,13 @@ pub unsafe extern "C" fn lzma_bcj_x86_encode(
         prev_mask: 0,
         prev_pos: (-5_i32) as u32,
     };
-    return x86_code(
+    x86_code(
         &raw mut simple as *mut c_void,
         start_offset,
         true,
         buf,
         size,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_x86_decoder_init(
@@ -162,7 +162,7 @@ pub unsafe extern "C" fn lzma_simple_x86_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return x86_coder_init(next, allocator, filters, false);
+    x86_coder_init(next, allocator, filters, false)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_x86_decode(
@@ -174,11 +174,11 @@ pub unsafe extern "C" fn lzma_bcj_x86_decode(
         prev_mask: 0,
         prev_pos: (-5_i32) as u32,
     };
-    return x86_code(
+    x86_code(
         &raw mut simple as *mut c_void,
         start_offset,
         false,
         buf,
         size,
-    );
+    )
 }

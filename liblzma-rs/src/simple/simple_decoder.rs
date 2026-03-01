@@ -34,5 +34,5 @@ pub unsafe extern "C" fn lzma_simple_props_decode(
     } else {
         *options = opt as *mut c_void;
     }
-    return LZMA_OK;
+    LZMA_OK
 }

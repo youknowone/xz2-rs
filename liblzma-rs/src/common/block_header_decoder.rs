@@ -115,5 +115,5 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             return LZMA_OPTIONS_ERROR;
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
