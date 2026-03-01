@@ -218,7 +218,7 @@ unsafe extern "C" fn index_tree_append(tree: *mut index_tree, mut node: *mut ind
         up = ctz32((*tree).count).wrapping_add(2);
         loop {
             node = (*node).parent;
-            up = up.wrapping_sub(1);
+            up -= 1;
             if !(up > 0) {
                 break;
             }
@@ -926,7 +926,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
             group = (*stream).groups.leftmost as *const index_group;
             record = 0;
         } else if !group.is_null() && record < (*group).last {
-            record = record.wrapping_add(1);
+            record += 1;
         } else {
             record = 0;
             if !group.is_null() {

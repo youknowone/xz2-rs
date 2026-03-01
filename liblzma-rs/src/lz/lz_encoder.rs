@@ -274,7 +274,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         }
     }
     (*mf).hash_mask = hs;
-    hs = hs.wrapping_add(1);
+    hs += 1;
     if hash_bytes > 2 {
         hs = hs.wrapping_add(HASH_2_SIZE);
     }

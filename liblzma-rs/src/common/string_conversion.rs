@@ -130,14 +130,14 @@ unsafe extern "C" fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suf
                         .wrapping_sub(1 as usize)
             {
                 v >>= 10;
-                suf = suf.wrapping_add(1);
+                suf += 1;
             }
         }
         let mut buf: [c_char; 16] =
             ::core::mem::transmute::<[u8; 16], [c_char; 16]>(*b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
         let mut pos: size_t = (core::mem::size_of::<[c_char; 16]>()).wrapping_sub(1);
         loop {
-            pos = pos.wrapping_sub(1);
+            pos -= 1;
             buf[pos as usize] = ('0' as i32 as u32).wrapping_add(v.wrapping_rem(10)) as c_char;
             v = v.wrapping_div(10);
             if !(v != 0) {
@@ -572,7 +572,7 @@ unsafe extern "C" fn parse_options(
                 {
                     break;
                 }
-                i = i.wrapping_add(1);
+                i += 1;
             }
             *str = equals_sign.offset(1);
             let value_len: size_t = name_eq_value_end.offset_from(*str) as size_t;
@@ -608,7 +608,7 @@ unsafe extern "C" fn parse_options(
                             v = (*map.offset(j as isize)).value;
                             break;
                         } else {
-                            j = j.wrapping_add(1);
+                            j += 1;
                         }
                     }
                 } else if (**str as u8) < b'0' || **str as u8 > b'9' {
@@ -758,7 +758,7 @@ unsafe extern "C" fn parse_filter(
             (*filter).options = options;
             return ::core::ptr::null::<c_char>();
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     return b"Unknown filter name\0" as *const u8 as *const c_char;
 }
@@ -793,7 +793,7 @@ unsafe extern "C" fn str_to_filters(
                 if *str_end.offset(i as isize) as u8 != b' ' {
                     return b"Unsupported preset\0" as *const u8 as *const c_char;
                 }
-                i = i.wrapping_add(1);
+                i += 1;
             }
         } else {
             str_end = (*str).offset(str_len as isize);
@@ -863,7 +863,7 @@ unsafe extern "C" fn str_to_filters(
                 while **str as u8 == b' ' {
                     *str = (*str).offset(1);
                 }
-                i_0 = i_0.wrapping_add(1);
+                i_0 += 1;
                 if !(**str != 0) {
                     current_block = 15090052786889560393;
                     break;
@@ -992,7 +992,7 @@ unsafe extern "C" fn strfy_filter(
                             );
                             break;
                         } else {
-                            j = j.wrapping_add(1);
+                            j += 1;
                         }
                     }
                 } else {
@@ -1004,7 +1004,7 @@ unsafe extern "C" fn strfy_filter(
                 }
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 #[no_mangle]
@@ -1099,10 +1099,10 @@ pub unsafe extern "C" fn lzma_str_from_filters(
                     break;
                 }
             } else {
-                j = j.wrapping_add(1);
+                j += 1;
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     return str_finish(output_str, &raw mut dest, allocator);
 }
@@ -1202,7 +1202,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
                                     &raw mut dest,
                                     &raw const (*m.offset(k as isize)).name as *const c_char,
                                 );
-                                k = k.wrapping_add(1);
+                                k += 1;
                             }
                         } else {
                             let use_byte_suffix: bool =
@@ -1220,12 +1220,12 @@ pub unsafe extern "C" fn lzma_str_list_filters(
                             );
                         }
                         str_append_str(&raw mut dest, b">\0" as *const u8 as *const c_char);
-                        j = j.wrapping_add(1);
+                        j += 1;
                     }
                 }
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     if !first_filter_printed {
         str_free(&raw mut dest, allocator);

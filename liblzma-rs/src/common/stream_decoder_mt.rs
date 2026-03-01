@@ -606,12 +606,12 @@ unsafe extern "C" fn threads_end(coder: *mut lzma_stream_coder, allocator: *cons
             }
             mythread_i_502 = 1;
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     let mut i_0: u32 = 0;
     while i_0 < (*coder).threads_initialized {
         mythread_join((*(*coder).threads.offset(i_0 as isize)).thread_id);
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
     lzma_free((*coder).threads as *mut c_void, allocator);
     (*coder).threads_initialized = 0;
@@ -639,7 +639,7 @@ unsafe extern "C" fn threads_stop(coder: *mut lzma_stream_coder) {
             }
             mythread_i_538 = 1;
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 unsafe extern "C" fn initialize_new_thread(
@@ -1704,7 +1704,7 @@ unsafe extern "C" fn stream_decoder_mt_get_progress(
                     }
                     mythread_i_1867 = 1;
                 }
-                i = i.wrapping_add(1);
+                i += 1;
             }
             mythread_j_1862 = 1;
         }

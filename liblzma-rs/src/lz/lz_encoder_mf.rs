@@ -25,7 +25,7 @@ unsafe extern "C" fn lzma_memcmplen(
     limit: u32,
 ) -> u32 {
     while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
-        len = len.wrapping_add(1);
+        len += 1;
     }
     return len;
 }
@@ -67,7 +67,7 @@ unsafe extern "C" fn normalize(mf: *mut lzma_mf) {
             *(*mf).hash.offset(i as isize) =
                 (*(*mf).hash.offset(i as isize)).wrapping_sub(subvalue);
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     let mut i_0: u32 = 0;
     while i_0 < (*mf).sons_count {
@@ -77,7 +77,7 @@ unsafe extern "C" fn normalize(mf: *mut lzma_mf) {
             *(*mf).son.offset(i_0 as isize) =
                 (*(*mf).son.offset(i_0 as isize)).wrapping_sub(subvalue);
         }
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
     (*mf).offset = (*mf).offset.wrapping_sub(subvalue);
 }
@@ -210,7 +210,7 @@ pub unsafe extern "C" fn lzma_mf_hc3_skip(mf: *mut lzma_mf, mut amount: u32) {
             *(*mf).son.offset((*mf).cyclic_pos as isize) = cur_match;
             move_pos(mf);
         }
-        amount = amount.wrapping_sub(1);
+        amount -= 1;
         if !(amount != 0) {
             break;
         }
@@ -260,7 +260,7 @@ pub unsafe extern "C" fn lzma_mf_hc4_find(mf: *mut lzma_mf, matches: *mut lzma_m
     if delta2 != delta3 && delta3 < (*mf).cyclic_size && *cur.offset(-(delta3 as isize)) == *cur {
         len_best = 3;
         let fresh3 = matches_count;
-        matches_count = matches_count.wrapping_add(1);
+        matches_count += 1;
         (*matches.offset(fresh3 as isize)).dist = delta3.wrapping_sub(1);
         delta2 = delta3;
     }
@@ -320,7 +320,7 @@ pub unsafe extern "C" fn lzma_mf_hc4_skip(mf: *mut lzma_mf, mut amount: u32) {
             *(*mf).son.offset((*mf).cyclic_pos as isize) = cur_match;
             move_pos(mf);
         }
-        amount = amount.wrapping_sub(1);
+        amount -= 1;
         if !(amount != 0) {
             break;
         }
@@ -504,7 +504,7 @@ pub unsafe extern "C" fn lzma_mf_bt2_skip(mf: *mut lzma_mf, mut amount: u32) {
             }
             _ => {}
         }
-        amount = amount.wrapping_sub(1);
+        amount -= 1;
         if !(amount != 0) {
             break;
         }
@@ -613,7 +613,7 @@ pub unsafe extern "C" fn lzma_mf_bt3_skip(mf: *mut lzma_mf, mut amount: u32) {
             }
             _ => {}
         }
-        amount = amount.wrapping_sub(1);
+        amount -= 1;
         if !(amount != 0) {
             break;
         }
@@ -663,7 +663,7 @@ pub unsafe extern "C" fn lzma_mf_bt4_find(mf: *mut lzma_mf, matches: *mut lzma_m
     if delta2 != delta3 && delta3 < (*mf).cyclic_size && *cur.offset(-(delta3 as isize)) == *cur {
         len_best = 3;
         let fresh6 = matches_count;
-        matches_count = matches_count.wrapping_add(1);
+        matches_count += 1;
         (*matches.offset(fresh6 as isize)).dist = delta3.wrapping_sub(1);
         delta2 = delta3;
     }
@@ -754,7 +754,7 @@ pub unsafe extern "C" fn lzma_mf_bt4_skip(mf: *mut lzma_mf, mut amount: u32) {
             }
             _ => {}
         }
-        amount = amount.wrapping_sub(1);
+        amount -= 1;
         if !(amount != 0) {
             break;
         }

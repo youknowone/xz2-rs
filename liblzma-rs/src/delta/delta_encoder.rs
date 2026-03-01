@@ -29,7 +29,7 @@ unsafe extern "C" fn copy_and_encode(
         (*coder).pos = (*coder).pos.wrapping_sub(1);
         (*coder).history[(fresh2 & 0xff) as usize] = *in_0.offset(i as isize);
         *out.offset(i as isize) = (*in_0.offset(i as isize)).wrapping_sub(tmp);
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 unsafe extern "C" fn encode_in_place(coder: *mut lzma_delta_coder, buffer: *mut u8, size: size_t) {
@@ -42,7 +42,7 @@ unsafe extern "C" fn encode_in_place(coder: *mut lzma_delta_coder, buffer: *mut 
         (*coder).pos = (*coder).pos.wrapping_sub(1);
         (*coder).history[(fresh0 & 0xff) as usize] = *buffer.offset(i as isize);
         *buffer.offset(i as isize) = (*buffer.offset(i as isize)).wrapping_sub(tmp);
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 unsafe extern "C" fn delta_encode(

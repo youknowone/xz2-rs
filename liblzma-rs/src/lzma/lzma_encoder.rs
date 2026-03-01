@@ -227,7 +227,7 @@ unsafe extern "C" fn rc_bittree(
 ) {
     let mut model_index: u32 = 1;
     loop {
-        bit_count = bit_count.wrapping_sub(1);
+        bit_count -= 1;
         let bit: u32 = symbol >> bit_count & 1;
         rc_bit(
             rc,
@@ -257,7 +257,7 @@ unsafe extern "C" fn rc_bittree_reverse(
             bit,
         );
         model_index = (model_index << 1).wrapping_add(bit);
-        bit_count = bit_count.wrapping_sub(1);
+        bit_count -= 1;
         if !(bit_count != 0) {
             break;
         }
@@ -266,7 +266,7 @@ unsafe extern "C" fn rc_bittree_reverse(
 #[inline]
 unsafe extern "C" fn rc_direct(rc: *mut lzma_range_encoder, value: u32, mut bit_count: u32) {
     loop {
-        bit_count = bit_count.wrapping_sub(1);
+        bit_count -= 1;
         let fresh0 = (*rc).count;
         (*rc).count = (*rc).count.wrapping_add(1);
         (*rc).symbols[fresh0 as usize] =
@@ -283,7 +283,7 @@ unsafe extern "C" fn rc_flush(rc: *mut lzma_range_encoder) {
         let fresh1 = (*rc).count;
         (*rc).count = (*rc).count.wrapping_add(1);
         (*rc).symbols[fresh1 as usize] = RC_FLUSH;
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 #[inline]
@@ -444,7 +444,7 @@ unsafe extern "C" fn rc_encode_dummy(rc: *const lzma_range_encoder, out_limit: u
             }
             4 | _ => {}
         }
-        pos = pos.wrapping_add(1);
+        pos += 1;
     }
     pos = 0;
     while pos < 5 {
@@ -457,7 +457,7 @@ unsafe extern "C" fn rc_encode_dummy(rc: *const lzma_range_encoder, out_limit: u
         ) {
             return true;
         }
-        pos = pos.wrapping_add(1);
+        pos += 1;
     }
     return false;
 }
@@ -481,7 +481,7 @@ unsafe extern "C" fn literal_init(probs: *mut probability, lc: u32, lp: u32) {
     let mut i: size_t = 0;
     while i < coders {
         *probs.offset(i as isize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 pub const MATCH_LEN_MIN: u32 = 2;
@@ -607,7 +607,7 @@ unsafe extern "C" fn length_update_prices(lc: *mut lzma_length_encoder, pos_stat
             LEN_LOW_BITS,
             i,
         ));
-        i = i.wrapping_add(1);
+        i += 1;
     }
     while i < table_size && i < (LEN_LOW_SYMBOLS + LEN_MID_SYMBOLS) as u32 {
         *prices.offset(i as isize) = b0.wrapping_add(rc_bittree_price(
@@ -616,7 +616,7 @@ unsafe extern "C" fn length_update_prices(lc: *mut lzma_length_encoder, pos_stat
             LEN_MID_BITS,
             i.wrapping_sub(LEN_LOW_SYMBOLS),
         ));
-        i = i.wrapping_add(1);
+        i += 1;
     }
     while i < table_size {
         *prices.offset(i as isize) = b1.wrapping_add(rc_bittree_price(
@@ -625,7 +625,7 @@ unsafe extern "C" fn length_update_prices(lc: *mut lzma_length_encoder, pos_stat
             i.wrapping_sub(LEN_LOW_SYMBOLS)
                 .wrapping_sub(LEN_MID_SYMBOLS),
         ));
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 #[inline]
@@ -1044,26 +1044,26 @@ unsafe extern "C" fn length_encoder_reset(
         while bt_i < ((1) << 3) as u32 {
             (*lencoder).low[pos_state as usize][bt_i as usize] =
                 (RC_BIT_MODEL_TOTAL >> 1) as probability;
-            bt_i = bt_i.wrapping_add(1);
+            bt_i += 1;
         }
         let mut bt_i_0: u32 = 0;
         while bt_i_0 < ((1) << 3) as u32 {
             (*lencoder).mid[pos_state as usize][bt_i_0 as usize] =
                 (RC_BIT_MODEL_TOTAL >> 1) as probability;
-            bt_i_0 = bt_i_0.wrapping_add(1);
+            bt_i_0 += 1;
         }
-        pos_state = pos_state.wrapping_add(1);
+        pos_state += 1;
     }
     let mut bt_i_1: u32 = 0;
     while bt_i_1 < ((1) << 8) as u32 {
         (*lencoder).high[bt_i_1 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        bt_i_1 = bt_i_1.wrapping_add(1);
+        bt_i_1 += 1;
     }
     if !fast_mode {
         let mut pos_state_0: u32 = 0;
         while pos_state_0 < num_pos_states {
             length_update_prices(lencoder, pos_state_0);
-            pos_state_0 = pos_state_0.wrapping_add(1);
+            pos_state_0 += 1;
         }
     }
 }
@@ -1083,7 +1083,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_reset(
     let mut i: size_t = 0;
     while i < REPS as size_t {
         (*coder).reps[i as usize] = 0;
-        i = i.wrapping_add(1);
+        i += 1;
     }
     literal_init(
         &raw mut (*coder).literal as *mut probability,
@@ -1097,18 +1097,18 @@ pub unsafe extern "C" fn lzma_lzma_encoder_reset(
             (*coder).is_match[i_0 as usize][j as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
             (*coder).is_rep0_long[i_0 as usize][j as usize] =
                 (RC_BIT_MODEL_TOTAL >> 1) as probability;
-            j = j.wrapping_add(1);
+            j += 1;
         }
         (*coder).is_rep[i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
         (*coder).is_rep0[i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
         (*coder).is_rep1[i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
         (*coder).is_rep2[i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
     let mut i_1: size_t = 0;
     while i_1 < (FULL_DISTANCES - DIST_MODEL_END) as size_t {
         (*coder).dist_special[i_1 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        i_1 = i_1.wrapping_add(1);
+        i_1 += 1;
     }
     let mut i_2: size_t = 0;
     while i_2 < DIST_STATES as size_t {
@@ -1116,14 +1116,14 @@ pub unsafe extern "C" fn lzma_lzma_encoder_reset(
         while bt_i < ((1) << 6) as u32 {
             (*coder).dist_slot[i_2 as usize][bt_i as usize] =
                 (RC_BIT_MODEL_TOTAL >> 1) as probability;
-            bt_i = bt_i.wrapping_add(1);
+            bt_i += 1;
         }
-        i_2 = i_2.wrapping_add(1);
+        i_2 += 1;
     }
     let mut bt_i_0: u32 = 0;
     while bt_i_0 < ((1) << 4) as u32 {
         (*coder).dist_align[bt_i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        bt_i_0 = bt_i_0.wrapping_add(1);
+        bt_i_0 += 1;
     }
     length_encoder_reset(
         &raw mut (*coder).match_len_encoder,
@@ -1167,7 +1167,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
             }
             let mut log_size: u32 = 0;
             while (1) << log_size < (*options).dict_size {
-                log_size = log_size.wrapping_add(1);
+                log_size += 1;
             }
             (*coder).dist_table_size = log_size.wrapping_mul(2);
             let nice_len: u32 = if mf_get_hash_bytes((*options).mf) > (*options).nice_len {

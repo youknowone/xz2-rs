@@ -63,7 +63,7 @@ pub unsafe extern "C" fn lzma_block_header_size(block: *mut lzma_block) -> lzma_
             return ret_;
         }
         size = size.wrapping_add(add_1);
-        i = i.wrapping_add(1);
+        i += 1;
     }
     (*block).header_size = size.wrapping_add(3) & !(3);
     return LZMA_OK;
@@ -126,7 +126,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         if ret__1 != LZMA_OK {
             return ret__1;
         }
-        filter_count = filter_count.wrapping_add(1);
+        filter_count += 1;
         if !((*(*block).filters.offset(filter_count as isize)).id != LZMA_VLI_UNKNOWN) {
             break;
         }

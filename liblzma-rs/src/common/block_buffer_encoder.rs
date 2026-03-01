@@ -271,7 +271,7 @@ unsafe extern "C" fn block_buffer_encode(
         let fresh0 = *out_pos;
         *out_pos = (*out_pos).wrapping_add(1);
         *out.offset(fresh0 as isize) = 0;
-        i = i.wrapping_add(1);
+        i += 1;
     }
     if check_size > 0 {
         let mut check: lzma_check_state = lzma_check_state {

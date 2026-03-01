@@ -114,7 +114,7 @@ unsafe extern "C" fn lzma_memcmplen(
     limit: u32,
 ) -> u32 {
     while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
-        len = len.wrapping_add(1);
+        len += 1;
     }
     return len;
 }
@@ -168,7 +168,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
                 rep_len = len;
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     if len_main >= nice_len {
         *back_res = (*coder).matches[matches_count.wrapping_sub(1) as usize]
@@ -190,7 +190,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
             if !(back_main >> 7 > (*coder).matches[matches_count.wrapping_sub(2) as usize].dist) {
                 break;
             }
-            matches_count = matches_count.wrapping_sub(1);
+            matches_count -= 1;
             len_main = (*coder).matches[matches_count.wrapping_sub(1) as usize].len;
             back_main = (*coder).matches[matches_count.wrapping_sub(1) as usize].dist;
         }
@@ -253,7 +253,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
             *len_res = 1;
             return;
         }
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
     *back_res = back_main.wrapping_add(REPS);
     *len_res = len_main;
