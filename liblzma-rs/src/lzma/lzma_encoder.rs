@@ -473,7 +473,7 @@ unsafe extern "C" fn is_lclppb_valid(options: *const lzma_options_lzma) -> bool 
         && (*options).pb <= LZMA_PB_MAX as u32;
 }
 pub const STATES: c_int = 12;
-pub const LIT_STATES: c_int = 7;
+pub const LIT_STATES: u32 = 7;
 pub const LITERAL_CODER_SIZE: c_uint = 0x300;
 #[inline]
 unsafe extern "C" fn literal_init(probs: *mut probability, lc: u32, lp: u32) {
@@ -496,13 +496,13 @@ pub const MATCH_LEN_MAX: c_int = MATCH_LEN_MIN + LEN_SYMBOLS - 1;
 pub const DIST_STATES: c_int = 4;
 pub const DIST_SLOT_BITS: c_int = 6;
 pub const DIST_MODEL_START: c_int = 4;
-pub const DIST_MODEL_END: c_int = 14;
-pub const FULL_DISTANCES_BITS: c_int = DIST_MODEL_END / 2;
-pub const FULL_DISTANCES: c_int = (1) << FULL_DISTANCES_BITS;
-pub const ALIGN_BITS: c_int = 4;
+pub const DIST_MODEL_END: u32 = 14;
+pub const FULL_DISTANCES_BITS: u32 = DIST_MODEL_END / 2;
+pub const FULL_DISTANCES: u32 = 1 << FULL_DISTANCES_BITS;
+pub const ALIGN_BITS: u32 = 4;
 pub const ALIGN_SIZE: c_int = (1) << ALIGN_BITS;
 pub const ALIGN_MASK: c_int = ALIGN_SIZE - 1;
-pub const REPS: c_int = 4;
+pub const REPS: u32 = 4;
 pub const OPTS: c_int = (1) << 12;
 pub const FASTPOS_BITS: c_int = 13;
 #[inline]
@@ -561,7 +561,7 @@ unsafe extern "C" fn literal(coder: *mut lzma_lzma1_encoder, mf: *mut lzma_mf, p
                 << (*coder).literal_context_bits,
         ) as isize,
     );
-    if ((*coder).state as u32) < LIT_STATES as u32 {
+    if ((*coder).state as u32) < LIT_STATES {
         (*coder).state = (if (*coder).state <= STATE_SHORTREP_LIT_LIT {
             STATE_LIT_LIT
         } else {
@@ -683,7 +683,7 @@ unsafe extern "C" fn match_0(
     distance: u32,
     len: u32,
 ) {
-    (*coder).state = (if ((*coder).state as u32) < LIT_STATES as u32 {
+    (*coder).state = (if ((*coder).state as u32) < LIT_STATES {
         STATE_LIT_MATCH
     } else {
         STATE_NONLIT_MATCH
@@ -712,7 +712,7 @@ unsafe extern "C" fn match_0(
         let footer_bits: u32 = (dist_slot >> 1).wrapping_sub(1);
         let base: u32 = (2 | dist_slot & 1) << footer_bits;
         let dist_reduced: u32 = distance.wrapping_sub(base);
-        if dist_slot < DIST_MODEL_END as u32 {
+        if dist_slot < DIST_MODEL_END {
             rc_bittree_reverse(
                 &raw mut (*coder).rc,
                 (&raw mut (*coder).dist_special as *mut probability)
@@ -726,12 +726,12 @@ unsafe extern "C" fn match_0(
             rc_direct(
                 &raw mut (*coder).rc,
                 dist_reduced >> ALIGN_BITS,
-                footer_bits.wrapping_sub(ALIGN_BITS as u32),
+                footer_bits.wrapping_sub(ALIGN_BITS),
             );
             rc_bittree_reverse(
                 &raw mut (*coder).rc,
                 &raw mut (*coder).dist_align as *mut probability,
-                ALIGN_BITS as u32,
+                ALIGN_BITS,
                 dist_reduced & ALIGN_MASK as u32,
             );
             (*coder).align_price_count = (*coder).align_price_count.wrapping_add(1);
@@ -796,7 +796,7 @@ unsafe extern "C" fn rep_match(coder: *mut lzma_lzma1_encoder, pos_state: u32, r
         (*coder).reps[0] = distance;
     }
     if len == 1 {
-        (*coder).state = (if ((*coder).state as u32) < LIT_STATES as u32 {
+        (*coder).state = (if ((*coder).state as u32) < LIT_STATES {
             STATE_LIT_SHORTREP
         } else {
             STATE_NONLIT_REP
@@ -809,7 +809,7 @@ unsafe extern "C" fn rep_match(coder: *mut lzma_lzma1_encoder, pos_state: u32, r
             len,
             (*coder).fast_mode,
         );
-        (*coder).state = (if ((*coder).state as u32) < LIT_STATES as u32 {
+        (*coder).state = (if ((*coder).state as u32) < LIT_STATES {
             STATE_LIT_LONGREP
         } else {
             STATE_NONLIT_REP
@@ -841,7 +841,7 @@ unsafe extern "C" fn encode_symbol(
                 .offset(pos_state as isize) as *mut probability,
             1,
         );
-        if back < REPS as u32 {
+        if back < REPS {
             rc_bit(
                 &raw mut (*coder).rc,
                 (&raw mut (*coder).is_rep as *mut probability).offset((*coder).state as isize)
@@ -856,7 +856,7 @@ unsafe extern "C" fn encode_symbol(
                     as *mut probability,
                 0,
             );
-            match_0(coder, pos_state, back.wrapping_sub(REPS as u32), len);
+            match_0(coder, pos_state, back.wrapping_sub(REPS), len);
         }
     }
     (*mf).read_ahead = (*mf).read_ahead.wrapping_sub(len);
@@ -1077,8 +1077,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_reset(
     }
     (*coder).pos_mask = (1u32 << (*options).pb).wrapping_sub(1) as u32;
     (*coder).literal_context_bits = (*options).lc;
-    (*coder).literal_mask =
-        (0x100u32 << (*options).lp).wrapping_sub(0x100 >> (*options).lc);
+    (*coder).literal_mask = (0x100u32 << (*options).lp).wrapping_sub(0x100 >> (*options).lc);
     rc_reset(&raw mut (*coder).rc);
     (*coder).state = STATE_LIT_LIT;
     let mut i: size_t = 0;

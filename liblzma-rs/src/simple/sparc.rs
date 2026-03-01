@@ -40,9 +40,8 @@ unsafe extern "C" fn sparc_code(
                 dest = src.wrapping_sub(now_pos.wrapping_add(i as u32));
             }
             dest >>= 2;
-            dest = 0u32.wrapping_sub(dest >> 22 & 1) << 22 & 0x3fffffff
-                | dest & 0x3fffff
-                | 0x40000000;
+            dest =
+                0u32.wrapping_sub(dest >> 22 & 1) << 22 & 0x3fffffff | dest & 0x3fffff | 0x40000000;
             *buffer.offset(i as isize) = (dest >> 24) as u8;
             *buffer.offset(i.wrapping_add(1) as isize) = (dest >> 16) as u8;
             *buffer.offset(i.wrapping_add(2) as isize) = (dest >> 8) as u8;

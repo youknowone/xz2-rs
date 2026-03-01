@@ -105,7 +105,7 @@ unsafe extern "C" fn mf_skip(mf: *mut lzma_mf, amount: u32) {
         (*mf).read_ahead = (*mf).read_ahead.wrapping_add(amount);
     }
 }
-pub const REPS: c_int = 4;
+pub const REPS: u32 = 4;
 #[inline(always)]
 unsafe extern "C" fn lzma_memcmplen(
     buf1: *const u8,
@@ -153,7 +153,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
     let mut rep_len: u32 = 0;
     let mut rep_index: u32 = 0;
     let mut i: u32 = 0;
-    while i < REPS as u32 {
+    while i < REPS {
         let buf_back: *const u8 = buf.offset(-((*coder).reps[i as usize] as isize)).offset(-1);
         if !(*buf.offset(0) != *buf_back.offset(0) || *buf.offset(1) != *buf_back.offset(1)) {
             let len: u32 = lzma_memcmplen(buf, buf_back, 2, buf_avail) as u32;
@@ -173,7 +173,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
     if len_main >= nice_len {
         *back_res = (*coder).matches[matches_count.wrapping_sub(1) as usize]
             .dist
-            .wrapping_add(REPS as u32);
+            .wrapping_add(REPS);
         *len_res = len_main;
         mf_skip(mf, len_main.wrapping_sub(1));
         return;
@@ -241,7 +241,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         len_main.wrapping_sub(1)
     };
     let mut i_0: u32 = 0;
-    while i_0 < REPS as u32 {
+    while i_0 < REPS {
         if memcmp(
             buf as *const c_void,
             buf.offset(-((*coder).reps[i_0 as usize] as isize))
@@ -255,7 +255,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         }
         i_0 = i_0.wrapping_add(1);
     }
-    *back_res = back_main.wrapping_add(REPS as u32);
+    *back_res = back_main.wrapping_add(REPS);
     *len_res = len_main;
     mf_skip(mf, len_main.wrapping_sub(2));
 }

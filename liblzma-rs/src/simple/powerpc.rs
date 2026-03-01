@@ -36,8 +36,7 @@ unsafe extern "C" fn powerpc_code(
             } else {
                 dest = src.wrapping_sub(now_pos.wrapping_add(i as u32));
             }
-            *buffer.offset(i as isize) =
-                (0x48 | dest >> 24 & 0x3) as u8;
+            *buffer.offset(i as isize) = (0x48 | dest >> 24 & 0x3) as u8;
             *buffer.offset(i.wrapping_add(1) as isize) = (dest >> 16) as u8;
             *buffer.offset(i.wrapping_add(2) as isize) = (dest >> 8) as u8;
             *buffer.offset(i.wrapping_add(3) as isize) &= 0x3;
