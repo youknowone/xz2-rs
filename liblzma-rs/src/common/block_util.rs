@@ -46,7 +46,7 @@ pub unsafe extern "C" fn lzma_block_unpadded_size(block: *const lzma_block) -> l
         .compressed_size
         .wrapping_add((*block).header_size as lzma_vli)
         .wrapping_add(lzma_check_size((*block).check) as lzma_vli);
-    if unpadded_size > UNPADDED_SIZE_MAX as lzma_vli {
+    if unpadded_size > UNPADDED_SIZE_MAX {
         return 0;
     }
     unpadded_size

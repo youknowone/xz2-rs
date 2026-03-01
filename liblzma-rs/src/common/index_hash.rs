@@ -127,8 +127,8 @@ pub unsafe extern "C" fn lzma_index_hash_append(
 ) -> lzma_ret {
     if index_hash.is_null()
         || (*index_hash).sequence != SEQ_BLOCK
-        || unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
-        || unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
+        || unpadded_size < UNPADDED_SIZE_MIN
+        || unpadded_size > UNPADDED_SIZE_MAX
         || uncompressed_size > LZMA_VLI_MAX
     {
         return LZMA_PROG_ERROR;
@@ -143,7 +143,7 @@ pub unsafe extern "C" fn lzma_index_hash_append(
         || index_size(
             (*index_hash).blocks.count,
             (*index_hash).blocks.index_list_size,
-        ) > LZMA_BACKWARD_SIZE_MAX as lzma_vli
+        ) > LZMA_BACKWARD_SIZE_MAX
         || index_stream_size(
             (*index_hash).blocks.blocks_size,
             (*index_hash).blocks.count,
@@ -214,8 +214,8 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                 ret = LZMA_OK;
                 (*index_hash).pos = 0;
                 if (*index_hash).sequence == SEQ_UNPADDED {
-                    if (*index_hash).unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
-                        || (*index_hash).unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
+                    if (*index_hash).unpadded_size < UNPADDED_SIZE_MIN
+                        || (*index_hash).unpadded_size > UNPADDED_SIZE_MAX
                     {
                         return LZMA_DATA_ERROR;
                     }

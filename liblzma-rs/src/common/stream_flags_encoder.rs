@@ -16,7 +16,7 @@ extern "C" fn write32le(buf: *mut u8, num: u32) {
 extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
     unsafe {
         (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
-            && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
+            && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX
             && (*options).backward_size & 3 == 0
     }
 }

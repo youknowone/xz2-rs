@@ -51,7 +51,7 @@ unsafe extern "C" fn block_encode(
                 );
                 let in_used: size_t = (*in_pos).wrapping_sub(in_start);
                 let out_used: size_t = (*out_pos).wrapping_sub(out_start);
-                if (COMPRESSED_SIZE_MAX as lzma_vli).wrapping_sub((*coder).compressed_size)
+                if (COMPRESSED_SIZE_MAX).wrapping_sub((*coder).compressed_size)
                     < out_used as lzma_vli
                 {
                     return LZMA_DATA_ERROR;

@@ -96,8 +96,8 @@ unsafe extern "C" fn index_decode(
                 ret = LZMA_OK;
                 (*coder).pos = 0;
                 if (*coder).sequence == SEQ_UNPADDED {
-                    if (*coder).unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
-                        || (*coder).unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
+                    if (*coder).unpadded_size < UNPADDED_SIZE_MIN
+                        || (*coder).unpadded_size > UNPADDED_SIZE_MAX
                     {
                         return LZMA_DATA_ERROR;
                     }

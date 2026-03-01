@@ -489,8 +489,8 @@ pub unsafe extern "C" fn lzma_index_append(
     uncompressed_size: lzma_vli,
 ) -> lzma_ret {
     if i.is_null()
-        || unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
-        || unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
+        || unpadded_size < UNPADDED_SIZE_MIN
+        || unpadded_size > UNPADDED_SIZE_MAX
         || uncompressed_size > LZMA_VLI_MAX
     {
         return LZMA_PROG_ERROR;
@@ -514,7 +514,7 @@ pub unsafe extern "C" fn lzma_index_append(
     if uncompressed_base.wrapping_add(uncompressed_size) > LZMA_VLI_MAX {
         return LZMA_DATA_ERROR;
     }
-    if compressed_base.wrapping_add(unpadded_size) > UNPADDED_SIZE_MAX as lzma_vli {
+    if compressed_base.wrapping_add(unpadded_size) > UNPADDED_SIZE_MAX {
         return LZMA_DATA_ERROR;
     }
     if index_file_size(
@@ -532,7 +532,7 @@ pub unsafe extern "C" fn lzma_index_append(
         (*i).record_count.wrapping_add(1),
         (*i).index_list_size
             .wrapping_add(index_list_size_add as lzma_vli),
-    ) > LZMA_BACKWARD_SIZE_MAX as lzma_vli
+    ) > LZMA_BACKWARD_SIZE_MAX
     {
         return LZMA_DATA_ERROR;
     }
@@ -602,7 +602,7 @@ pub unsafe extern "C" fn lzma_index_cat(
     if dest.is_null() || src.is_null() {
         return LZMA_PROG_ERROR;
     }
-    let dest_file_size: lzma_vli = lzma_index_file_size(dest) as lzma_vli;
+    let dest_file_size: lzma_vli = lzma_index_file_size(dest);
     if dest_file_size.wrapping_add(lzma_index_file_size(src)) > LZMA_VLI_MAX
         || (*dest)
             .uncompressed_size
@@ -615,7 +615,7 @@ pub unsafe extern "C" fn lzma_index_cat(
         index_size_unpadded((*dest).record_count, (*dest).index_list_size) as lzma_vli;
     let src_size: lzma_vli =
         index_size_unpadded((*src).record_count, (*src).index_list_size) as lzma_vli;
-    if vli_ceil4(dest_size.wrapping_add(src_size)) > LZMA_BACKWARD_SIZE_MAX as lzma_vli {
+    if vli_ceil4(dest_size.wrapping_add(src_size)) > LZMA_BACKWARD_SIZE_MAX {
         return LZMA_DATA_ERROR;
     }
     let s: *mut index_stream = (*dest).streams.rightmost as *mut index_stream;
