@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_void;
 extern "C" {
     fn lzma_stream_buffer_encode(
         filters: *mut lzma_filter,
@@ -12,34 +11,6 @@ extern "C" {
         out_size: size_t,
     ) -> lzma_ret;
     fn lzma_easy_preset(easy: *mut lzma_options_easy, preset: u32) -> bool;
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]

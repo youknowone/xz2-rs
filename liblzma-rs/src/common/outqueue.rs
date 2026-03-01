@@ -47,11 +47,11 @@ extern "C" fn lzma_outq_outbuf_memusage(buf_size: size_t) -> u64 {
 }
 #[no_mangle]
 pub extern "C" fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64 {
-    let limit: u64 = (UINT64_MAX as u64)
+    let limit: u64 = (UINT64_MAX)
         .wrapping_div((2 as c_int * 16384 as c_int) as u64)
         .wrapping_div(2);
     if threads > LZMA_THREADS_MAX as u32 || buf_size_max > limit {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     return ((2u32).wrapping_mul(threads) as u64)
         .wrapping_mul(lzma_outq_outbuf_memusage(buf_size_max as size_t));

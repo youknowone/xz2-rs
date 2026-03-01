@@ -5,46 +5,6 @@ extern "C" {
     fn calloc(__count: size_t, __size: size_t) -> *mut c_void;
     fn free(_: *mut c_void);
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_internal_s {
-    pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed,
-    pub avail_in: size_t,
-    pub supported_actions: [bool; 5],
-    pub allow_buf_error: bool,
-}
-pub type C2RustUnnamed = c_uint;
-pub const ISEQ_ERROR: C2RustUnnamed = 6;
-pub const ISEQ_END: C2RustUnnamed = 5;
-pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
-pub const ISEQ_FINISH: C2RustUnnamed = 3;
-pub const ISEQ_FULL_FLUSH: C2RustUnnamed = 2;
-pub const ISEQ_SYNC_FLUSH: C2RustUnnamed = 1;
-pub const ISEQ_RUN: C2RustUnnamed = 0;
-pub type lzma_internal = lzma_internal_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream {
-    pub next_in: *const u8,
-    pub avail_in: size_t,
-    pub total_in: u64,
-    pub next_out: *mut u8,
-    pub avail_out: size_t,
-    pub total_out: u64,
-    pub allocator: *const lzma_allocator,
-    pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_ptr4: *mut c_void,
-    pub seek_pos: u64,
-    pub reserved_int2: u64,
-    pub reserved_int3: size_t,
-    pub reserved_int4: size_t,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-}
 pub const LZMA_VERSION_MAJOR: c_int = 5;
 pub const LZMA_VERSION_MINOR: c_int = 8;
 pub const LZMA_VERSION_PATCH: c_int = 2;
@@ -148,13 +108,13 @@ pub unsafe extern "C" fn lzma_next_filter_init(
     (*next).init =
         ::core::mem::transmute::<lzma_init_function, uintptr_t>((*filters.offset(0)).init);
     (*next).id = (*filters.offset(0)).id;
-    return (if (*filters.offset(0)).init.is_none() {
+    return if (*filters.offset(0)).init.is_none() {
         LZMA_OK
     } else {
         (*filters.offset(0))
             .init
             .expect("non-null function pointer")(next, allocator, filters)
-    }) as lzma_ret;
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_next_filter_update(
@@ -165,7 +125,7 @@ pub unsafe extern "C" fn lzma_next_filter_update(
     if (*reversed_filters.offset(0)).id != (*next).id {
         return LZMA_PROG_ERROR;
     }
-    if (*reversed_filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*reversed_filters.offset(0)).id == LZMA_VLI_UNKNOWN {
         return LZMA_OK;
     }
     return (*next).update.expect("non-null function pointer")(
@@ -188,7 +148,7 @@ pub unsafe extern "C" fn lzma_next_end(
         }
         *next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -213,7 +173,7 @@ pub unsafe extern "C" fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
         }
         (*(*strm).internal).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,

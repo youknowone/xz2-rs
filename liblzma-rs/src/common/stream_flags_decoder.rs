@@ -79,7 +79,7 @@ pub unsafe extern "C" fn lzma_stream_header_decode(
     ) {
         return LZMA_OPTIONS_ERROR;
     }
-    (*options).backward_size = LZMA_VLI_UNKNOWN as lzma_vli;
+    (*options).backward_size = LZMA_VLI_UNKNOWN;
     return LZMA_OK;
 }
 #[no_mangle]

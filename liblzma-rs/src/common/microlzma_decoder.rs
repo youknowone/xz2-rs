@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_int, c_void};
 extern "C" {
     fn lzma_end(strm: *mut lzma_stream);
     fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
@@ -15,74 +15,6 @@ extern "C" {
         filters: *const lzma_filter_info,
     ) -> lzma_ret;
     fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, byte: u8) -> bool;
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_internal_s {
-    pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed,
-    pub avail_in: size_t,
-    pub supported_actions: [bool; 5],
-    pub allow_buf_error: bool,
-}
-pub type C2RustUnnamed = c_uint;
-pub const ISEQ_ERROR: C2RustUnnamed = 6;
-pub const ISEQ_END: C2RustUnnamed = 5;
-pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
-pub const ISEQ_FINISH: C2RustUnnamed = 3;
-pub const ISEQ_FULL_FLUSH: C2RustUnnamed = 2;
-pub const ISEQ_SYNC_FLUSH: C2RustUnnamed = 1;
-pub const ISEQ_RUN: C2RustUnnamed = 0;
-pub type lzma_internal = lzma_internal_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream {
-    pub next_in: *const u8,
-    pub avail_in: size_t,
-    pub total_in: u64,
-    pub next_out: *mut u8,
-    pub avail_out: size_t,
-    pub total_out: u64,
-    pub allocator: *const lzma_allocator,
-    pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_ptr4: *mut c_void,
-    pub seek_pos: u64,
-    pub reserved_int2: u64,
-    pub reserved_int3: size_t,
-    pub reserved_int4: size_t,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -159,7 +91,7 @@ unsafe extern "C" fn microlzma_decode(
         *in_pos = (*in_pos).wrapping_add(1);
         let mut filters: [lzma_filter_info; 2] = [
             lzma_filter_info_s {
-                id: LZMA_FILTER_LZMA1EXT as lzma_vli,
+                id: LZMA_FILTER_LZMA1EXT,
                 init: Some(
                     lzma_lzma_decoder_init
                         as unsafe extern "C" fn(
@@ -180,7 +112,7 @@ unsafe extern "C" fn microlzma_decode(
             &raw mut (*coder).lzma,
             allocator,
             &raw mut filters as *mut lzma_filter_info,
-        ) as lzma_ret;
+        );
         if ret_ != LZMA_OK {
             return ret_;
         }
@@ -324,7 +256,7 @@ unsafe extern "C" fn microlzma_decoder_init(
         ) as lzma_end_function;
         (*coder).lzma = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -353,7 +285,7 @@ pub unsafe extern "C" fn lzma_microlzma_decoder(
     uncomp_size_is_exact: lzma_bool,
     dict_size: u32,
 ) -> lzma_ret {
-    let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
+    let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -364,7 +296,7 @@ pub unsafe extern "C" fn lzma_microlzma_decoder(
         uncomp_size,
         uncomp_size_is_exact != 0,
         dict_size,
-    ) as lzma_ret;
+    );
     if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;

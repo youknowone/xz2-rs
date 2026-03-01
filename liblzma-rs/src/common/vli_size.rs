@@ -2,7 +2,7 @@ use crate::types::*;
 use core::ffi::c_int;
 #[no_mangle]
 pub extern "C" fn lzma_vli_size(mut vli: lzma_vli) -> u32 {
-    if vli > LZMA_VLI_MAX as lzma_vli {
+    if vli > LZMA_VLI_MAX {
         return 0;
     }
     let mut i: u32 = 0;

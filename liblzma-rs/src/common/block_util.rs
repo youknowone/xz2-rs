@@ -58,9 +58,7 @@ pub unsafe extern "C" fn lzma_block_compressed_size(
         return LZMA_DATA_ERROR;
     }
     let compressed_size: lzma_vli = unpadded_size.wrapping_sub(container_size as lzma_vli);
-    if (*block).compressed_size != LZMA_VLI_UNKNOWN as lzma_vli
-        && (*block).compressed_size != compressed_size
-    {
+    if (*block).compressed_size != LZMA_VLI_UNKNOWN && (*block).compressed_size != compressed_size {
         return LZMA_DATA_ERROR;
     }
     (*block).compressed_size = compressed_size;
@@ -73,15 +71,15 @@ pub unsafe extern "C" fn lzma_block_unpadded_size(block: *const lzma_block) -> l
         || (*block).header_size < LZMA_BLOCK_HEADER_SIZE_MIN as u32
         || (*block).header_size > LZMA_BLOCK_HEADER_SIZE_MAX as u32
         || (*block).header_size & 3 != 0
-        || !((*block).compressed_size <= LZMA_VLI_MAX as lzma_vli
-            || (*block).compressed_size == LZMA_VLI_UNKNOWN as lzma_vli)
+        || !((*block).compressed_size <= LZMA_VLI_MAX
+            || (*block).compressed_size == LZMA_VLI_UNKNOWN)
         || (*block).compressed_size == 0 as lzma_vli
         || (*block).check > LZMA_CHECK_ID_MAX
     {
         return 0 as lzma_vli;
     }
-    if (*block).compressed_size == LZMA_VLI_UNKNOWN as lzma_vli {
-        return LZMA_VLI_UNKNOWN as lzma_vli;
+    if (*block).compressed_size == LZMA_VLI_UNKNOWN {
+        return LZMA_VLI_UNKNOWN;
     }
     let unpadded_size: lzma_vli = (*block)
         .compressed_size
@@ -95,7 +93,7 @@ pub unsafe extern "C" fn lzma_block_unpadded_size(block: *const lzma_block) -> l
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_total_size(block: *const lzma_block) -> lzma_vli {
     let mut unpadded_size: lzma_vli = lzma_block_unpadded_size(block);
-    if unpadded_size != LZMA_VLI_UNKNOWN as lzma_vli {
+    if unpadded_size != LZMA_VLI_UNKNOWN {
         unpadded_size = vli_ceil4(unpadded_size);
     }
     return unpadded_size;

@@ -68,33 +68,31 @@ pub unsafe extern "C" fn lzma_block_header_size(block: *mut lzma_block) -> lzma_
         return LZMA_OPTIONS_ERROR;
     }
     let mut size: u32 = (1 as c_int + 1 as c_int + 4 as c_int) as u32;
-    if (*block).compressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*block).compressed_size != LZMA_VLI_UNKNOWN {
         let add: u32 = lzma_vli_size((*block).compressed_size) as u32;
         if add == 0 || (*block).compressed_size == 0 as lzma_vli {
             return LZMA_PROG_ERROR;
         }
         size = size.wrapping_add(add);
     }
-    if (*block).uncompressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*block).uncompressed_size != LZMA_VLI_UNKNOWN {
         let add_0: u32 = lzma_vli_size((*block).uncompressed_size) as u32;
         if add_0 == 0 {
             return LZMA_PROG_ERROR;
         }
         size = size.wrapping_add(add_0);
     }
-    if (*block).filters.is_null()
-        || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli
-    {
+    if (*block).filters.is_null() || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN {
         return LZMA_PROG_ERROR;
     }
     let mut i: size_t = 0;
-    while (*(*block).filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli {
+    while (*(*block).filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN {
         if i == LZMA_FILTERS_MAX as size_t {
             return LZMA_PROG_ERROR;
         }
         let mut add_1: u32 = 0;
         let ret_: lzma_ret =
-            lzma_filter_flags_size(&raw mut add_1, (*block).filters.offset(i as isize)) as lzma_ret;
+            lzma_filter_flags_size(&raw mut add_1, (*block).filters.offset(i as isize));
         if ret_ != LZMA_OK {
             return ret_;
         }
@@ -110,8 +108,8 @@ pub unsafe extern "C" fn lzma_block_header_encode(
     out: *mut u8,
 ) -> lzma_ret {
     if lzma_block_unpadded_size(block) == 0 as lzma_vli
-        || !((*block).uncompressed_size <= LZMA_VLI_MAX as lzma_vli
-            || (*block).uncompressed_size == LZMA_VLI_UNKNOWN as lzma_vli)
+        || !((*block).uncompressed_size <= LZMA_VLI_MAX
+            || (*block).uncompressed_size == LZMA_VLI_UNKNOWN)
     {
         return LZMA_PROG_ERROR;
     }
@@ -119,37 +117,35 @@ pub unsafe extern "C" fn lzma_block_header_encode(
     *out.offset(0) = out_size.wrapping_div(4) as u8;
     *out.offset(1) = 0;
     let mut out_pos: size_t = 2;
-    if (*block).compressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*block).compressed_size != LZMA_VLI_UNKNOWN {
         let ret_: lzma_ret = lzma_vli_encode(
             (*block).compressed_size,
             core::ptr::null_mut(),
             out,
             &raw mut out_pos,
             out_size,
-        ) as lzma_ret;
+        );
         if ret_ != LZMA_OK {
             return ret_;
         }
         let ref mut fresh0 = *out.offset(1);
         *fresh0 = (*fresh0 as c_int | 0x40 as c_int) as u8;
     }
-    if (*block).uncompressed_size != LZMA_VLI_UNKNOWN as lzma_vli {
+    if (*block).uncompressed_size != LZMA_VLI_UNKNOWN {
         let ret__0: lzma_ret = lzma_vli_encode(
             (*block).uncompressed_size,
             core::ptr::null_mut(),
             out,
             &raw mut out_pos,
             out_size,
-        ) as lzma_ret;
+        );
         if ret__0 != LZMA_OK {
             return ret__0;
         }
         let ref mut fresh1 = *out.offset(1);
         *fresh1 = (*fresh1 as c_int | 0x80 as c_int) as u8;
     }
-    if (*block).filters.is_null()
-        || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli
-    {
+    if (*block).filters.is_null() || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN {
         return LZMA_PROG_ERROR;
     }
     let mut filter_count: size_t = 0;
@@ -162,12 +158,12 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             out,
             &raw mut out_pos,
             out_size,
-        ) as lzma_ret;
+        );
         if ret__1 != LZMA_OK {
             return ret__1;
         }
         filter_count = filter_count.wrapping_add(1);
-        if !((*(*block).filters.offset(filter_count as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli) {
+        if !((*(*block).filters.offset(filter_count as isize)).id != LZMA_VLI_UNKNOWN) {
             break;
         }
     }

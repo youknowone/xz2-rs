@@ -52,34 +52,6 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_match {
     pub len: u32,
     pub dist: u32,
@@ -285,17 +257,17 @@ unsafe extern "C" fn lzma2_encode(
                         *out_pos = (*out_pos).wrapping_add(1);
                         *out.offset(fresh0 as isize) = 0;
                     }
-                    return (if (*mf).action == LZMA_RUN {
-                        LZMA_OK as c_int
+                    return if (*mf).action == LZMA_RUN {
+                        LZMA_OK
                     } else {
-                        LZMA_STREAM_END as c_int
-                    }) as lzma_ret;
+                        LZMA_STREAM_END
+                    };
                 }
                 if (*coder).need_state_reset {
                     let ret_: lzma_ret = lzma_lzma_encoder_reset(
                         (*coder).lzma as *mut lzma_lzma1_encoder,
                         &raw mut (*coder).opt_cur,
-                    ) as lzma_ret;
+                    );
                     if ret_ != LZMA_OK {
                         return ret_;
                     }
@@ -370,7 +342,7 @@ unsafe extern "C" fn lzma2_encode(
                     &raw mut (*coder).compressed_size,
                     LZMA2_CHUNK_MAX as size_t,
                     limit,
-                ) as lzma_ret;
+                );
                 (*coder).uncompressed_size = (*coder).uncompressed_size.wrapping_add(
                     (*mf)
                         .read_pos
@@ -510,7 +482,7 @@ unsafe extern "C" fn lzma2_encoder_init(
         0x21 as lzma_vli,
         &raw mut (*coder).opt_cur,
         lz_options,
-    ) as lzma_ret;
+    );
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -549,8 +521,8 @@ pub unsafe extern "C" fn lzma_lzma2_encoder_init(
 #[no_mangle]
 pub extern "C" fn lzma_lzma2_encoder_memusage(options: *const c_void) -> u64 {
     let lzma_mem: u64 = unsafe { lzma_lzma_encoder_memusage(options) } as u64;
-    if lzma_mem == UINT64_MAX as u64 {
-        return UINT64_MAX as u64;
+    if lzma_mem == UINT64_MAX {
+        return UINT64_MAX;
     }
     return (core::mem::size_of::<lzma_lzma2_coder>() as u64).wrapping_add(lzma_mem);
 }
@@ -584,7 +556,7 @@ pub unsafe extern "C" fn lzma_lzma2_block_size(options: *const c_void) -> u64 {
     if !((*opt).dict_size >= LZMA_DICT_SIZE_MIN as u32
         && (*opt).dict_size <= (1u32 << 30).wrapping_add((1) << 29))
     {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     return if ((*opt).dict_size as u64).wrapping_mul(3) > (1) << 20 {
         ((*opt).dict_size as u64).wrapping_mul(3)

@@ -36,7 +36,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_decode(
     }
     let mut stream_decoder: lzma_next_coder = lzma_next_coder_s {
         coder: core::ptr::null_mut(),
-        id: LZMA_VLI_UNKNOWN as lzma_vli,
+        id: LZMA_VLI_UNKNOWN,
         init: 0,
         code: None,
         end: None,

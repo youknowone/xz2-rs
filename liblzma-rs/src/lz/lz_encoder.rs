@@ -138,11 +138,11 @@ unsafe extern "C" fn fill_window(
             &raw mut write_pos,
             (*coder).mf.size as size_t,
         );
-        ret = (if action != LZMA_RUN && *in_pos == in_size {
-            LZMA_STREAM_END as c_int
+        ret = if action != LZMA_RUN && *in_pos == in_size {
+            LZMA_STREAM_END
         } else {
-            LZMA_OK as c_int
-        }) as lzma_ret;
+            LZMA_OK
+        };
     } else {
         ret = (*coder).next.code.expect("non-null function pointer")(
             (*coder).next.coder,
@@ -194,8 +194,7 @@ unsafe extern "C" fn lz_encode(
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
     while *out_pos < out_size && (*in_pos < in_size || action != LZMA_RUN) {
         if (*coder).mf.action == LZMA_RUN && (*coder).mf.read_pos >= (*coder).mf.read_limit {
-            let ret_: lzma_ret =
-                fill_window(coder, allocator, in_0, in_pos, in_size, action) as lzma_ret;
+            let ret_: lzma_ret = fill_window(coder, allocator, in_0, in_pos, in_size, action);
             if ret_ != LZMA_OK {
                 return ret_;
             }
@@ -206,7 +205,7 @@ unsafe extern "C" fn lz_encode(
             out,
             out_pos,
             out_size,
-        ) as lzma_ret;
+        );
         if ret != LZMA_OK {
             (*coder).mf.action = LZMA_RUN;
             return ret;
@@ -453,7 +452,7 @@ pub extern "C" fn lzma_lz_encoder_memusage(lz_options: *const lzma_lz_options) -
             lz_options,
         )
     } {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     return (mf.hash_count as u64)
         .wrapping_add(mf.sons_count as u64)
@@ -484,12 +483,11 @@ unsafe extern "C" fn lz_encoder_update(
     if (*coder).lz.options_update.is_none() {
         return LZMA_PROG_ERROR;
     }
-    let ret_: lzma_ret = (*coder)
-        .lz
-        .options_update
-        .expect("non-null function pointer")(
-        (*coder).lz.coder, reversed_filters
-    ) as lzma_ret;
+    let ret_: lzma_ret =
+        (*coder)
+            .lz
+            .options_update
+            .expect("non-null function pointer")((*coder).lz.coder, reversed_filters);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -589,7 +587,7 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
         (*coder).mf.sons_count = 0;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -617,7 +615,7 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
         (*filters.offset(0)).id,
         (*filters.offset(0)).options,
         &raw mut lz_options,
-    ) as lzma_ret;
+    );
     if ret_ != LZMA_OK {
         return ret_;
     }

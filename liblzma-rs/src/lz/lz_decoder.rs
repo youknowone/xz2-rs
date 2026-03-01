@@ -121,7 +121,7 @@ unsafe extern "C" fn decode_buffer(
             in_0,
             in_pos,
             in_size,
-        ) as lzma_ret;
+        );
         let copy_size: size_t = (*coder).dict.pos.wrapping_sub(dict_start);
         if copy_size > 0 {
             memcpy(
@@ -170,7 +170,7 @@ unsafe extern "C" fn lz_decode(
                 &raw mut (*coder).temp.size,
                 LZMA_BUFFER_SIZE as size_t,
                 action,
-            ) as lzma_ret;
+            );
             if ret == LZMA_STREAM_END {
                 (*coder).next_finished = true;
             } else if ret != LZMA_OK || (*coder).temp.size == 0 {
@@ -194,7 +194,7 @@ unsafe extern "C" fn lz_decode(
             out,
             out_pos,
             out_size,
-        ) as lzma_ret;
+        );
         if ret_0 == LZMA_STREAM_END {
             (*coder).this_finished = true;
         } else if ret_0 != LZMA_OK {
@@ -260,7 +260,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
         (*coder).lz = LZMA_LZ_DECODER_INIT;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -282,7 +282,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
         (*filters.offset(0)).id,
         (*filters.offset(0)).options,
         &raw mut lz_options,
-    ) as lzma_ret;
+    );
     if ret_ != LZMA_OK {
         return ret_;
     }

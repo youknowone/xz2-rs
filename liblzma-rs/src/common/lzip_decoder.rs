@@ -27,74 +27,6 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_internal_s {
-    pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed,
-    pub avail_in: size_t,
-    pub supported_actions: [bool; 5],
-    pub allow_buf_error: bool,
-}
-pub type C2RustUnnamed = c_uint;
-pub const ISEQ_ERROR: C2RustUnnamed = 6;
-pub const ISEQ_END: C2RustUnnamed = 5;
-pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
-pub const ISEQ_FINISH: C2RustUnnamed = 3;
-pub const ISEQ_FULL_FLUSH: C2RustUnnamed = 2;
-pub const ISEQ_SYNC_FLUSH: C2RustUnnamed = 1;
-pub const ISEQ_RUN: C2RustUnnamed = 0;
-pub type lzma_internal = lzma_internal_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream {
-    pub next_in: *const u8,
-    pub avail_in: size_t,
-    pub total_in: u64,
-    pub next_out: *mut u8,
-    pub avail_out: size_t,
-    pub total_out: u64,
-    pub allocator: *const lzma_allocator,
-    pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_ptr4: *mut c_void,
-    pub seek_pos: u64,
-    pub reserved_int2: u64,
-    pub reserved_int3: size_t,
-    pub reserved_int4: size_t,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_lzip_coder {
     pub sequence: C2RustUnnamed_0,
     pub version: u32,
@@ -167,20 +99,20 @@ unsafe extern "C" fn lzip_decode(
                 let lzip_id_string: [u8; 4] = [0x4c as u8, 0x5a as u8, 0x49 as u8, 0x50 as u8];
                 while (*coder).pos < core::mem::size_of::<[u8; 4]>() as usize {
                     if *in_pos >= in_size {
-                        return (if !(*coder).first_member && action == LZMA_FINISH {
-                            LZMA_STREAM_END as c_int
+                        return if !(*coder).first_member && action == LZMA_FINISH {
+                            LZMA_STREAM_END
                         } else {
-                            LZMA_OK as c_int
-                        }) as lzma_ret;
+                            LZMA_OK
+                        };
                     }
                     if *in_0.offset(*in_pos as isize) as c_int
                         != lzip_id_string[(*coder).pos as usize] as c_int
                     {
-                        return (if !(*coder).first_member {
-                            LZMA_STREAM_END as c_int
+                        return if !(*coder).first_member {
+                            LZMA_STREAM_END
                         } else {
-                            LZMA_FORMAT_ERROR as c_int
-                        }) as lzma_ret;
+                            LZMA_FORMAT_ERROR
+                        };
                     }
                     *in_pos = (*in_pos).wrapping_add(1);
                     (*coder).pos = (*coder).pos.wrapping_add(1);
@@ -251,7 +183,7 @@ unsafe extern "C" fn lzip_decode(
                 (*coder).options.pb = LZIP_PB as u32;
                 (*coder).memusage =
                     lzma_lzma_decoder_memusage_nocheck(&raw mut (*coder).options as *const c_void)
-                        .wrapping_add(LZMA_MEMUSAGE_BASE as u64);
+                        .wrapping_add(LZMA_MEMUSAGE_BASE);
                 (*coder).sequence = SEQ_CODER_INIT;
                 current_block_80 = 15476230294461844687;
             }
@@ -264,7 +196,7 @@ unsafe extern "C" fn lzip_decode(
                 }
                 let filters: [lzma_filter_info; 2] = [
                     lzma_filter_info_s {
-                        id: LZMA_FILTER_LZMA1 as lzma_vli,
+                        id: LZMA_FILTER_LZMA1,
                         init: Some(
                             lzma_lzma_decoder_init
                                 as unsafe extern "C" fn(
@@ -286,7 +218,7 @@ unsafe extern "C" fn lzip_decode(
                     &raw mut (*coder).lzma_decoder,
                     allocator,
                     &raw const filters as *const lzma_filter_info,
-                ) as lzma_ret;
+                );
                 if ret_ != LZMA_OK {
                     return ret_;
                 }
@@ -313,7 +245,7 @@ unsafe extern "C" fn lzip_decode(
                     out_pos,
                     out_size,
                     action,
-                ) as lzma_ret;
+                );
                 let out_used: size_t = (*out_pos).wrapping_sub(out_start);
                 (*coder).member_size = (*coder)
                     .member_size
@@ -475,7 +407,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
             as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>;
         (*coder).lzma_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -488,7 +420,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     }
     (*coder).sequence = SEQ_ID_STRING;
     (*coder).memlimit = if 1 > memlimit { 1 } else { memlimit };
-    (*coder).memusage = LZMA_MEMUSAGE_BASE as u64;
+    (*coder).memusage = LZMA_MEMUSAGE_BASE;
     (*coder).tell_any_check = flags & LZMA_TELL_ANY_CHECK as u32 != 0;
     (*coder).ignore_check = flags & LZMA_IGNORE_CHECK as u32 != 0;
     (*coder).concatenated = flags & LZMA_CONCATENATED as u32 != 0;
@@ -502,7 +434,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder(
     memlimit: u64,
     flags: u32,
 ) -> lzma_ret {
-    let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
+    let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -511,7 +443,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder(
         (*strm).allocator,
         memlimit,
         flags,
-    ) as lzma_ret;
+    );
     if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;

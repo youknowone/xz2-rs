@@ -97,11 +97,11 @@ unsafe extern "C" fn delta_encode(
         }
         *in_pos = (*in_pos).wrapping_add(size);
         *out_pos = (*out_pos).wrapping_add(size);
-        ret = (if action != LZMA_RUN && *in_pos == in_size {
-            LZMA_STREAM_END as c_int
+        ret = if action != LZMA_RUN && *in_pos == in_size {
+            LZMA_STREAM_END
         } else {
-            LZMA_OK as c_int
-        }) as lzma_ret;
+            LZMA_OK
+        };
     } else {
         let out_start: size_t = *out_pos;
         ret = (*coder).next.code.expect("non-null function pointer")(
@@ -176,7 +176,7 @@ pub unsafe extern "C" fn lzma_delta_encoder_init(
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
-    if lzma_delta_coder_memusage(options) == UINT64_MAX as u64 {
+    if lzma_delta_coder_memusage(options) == UINT64_MAX {
         return LZMA_PROG_ERROR;
     }
     let opt: *const lzma_options_delta = options as *const lzma_options_delta;

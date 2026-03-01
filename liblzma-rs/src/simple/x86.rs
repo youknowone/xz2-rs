@@ -138,7 +138,7 @@ extern "C" fn x86_coder_init(
             5,
             1,
             is_encoder,
-        ) as lzma_ret;
+        );
         if ret == LZMA_OK {
             let coder: *mut lzma_simple_coder = (*next).coder as *mut lzma_simple_coder;
             let simple: *mut lzma_simple_x86 = (*coder).simple as *mut lzma_simple_x86;

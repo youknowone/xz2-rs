@@ -17,7 +17,7 @@ pub unsafe extern "C" fn lzma_vli_encode(
     } else if *out_pos >= out_size {
         return LZMA_BUF_ERROR;
     }
-    if *vli_pos >= LZMA_VLI_BYTES_MAX as size_t || vli > LZMA_VLI_MAX as lzma_vli {
+    if *vli_pos >= LZMA_VLI_BYTES_MAX as size_t || vli > LZMA_VLI_MAX {
         return LZMA_PROG_ERROR;
     }
     vli >>= (*vli_pos).wrapping_mul(7);
@@ -27,19 +27,19 @@ pub unsafe extern "C" fn lzma_vli_encode(
         vli >>= 7 as c_int;
         *out_pos = (*out_pos).wrapping_add(1);
         if *out_pos == out_size {
-            return (if vli_pos == &raw mut vli_pos_internal {
-                LZMA_PROG_ERROR as c_int
+            return if vli_pos == &raw mut vli_pos_internal {
+                LZMA_PROG_ERROR
             } else {
-                LZMA_OK as c_int
-            }) as lzma_ret;
+                LZMA_OK
+            };
         }
     }
     *out.offset(*out_pos as isize) = vli as u8;
     *out_pos = (*out_pos).wrapping_add(1);
     *vli_pos = (*vli_pos).wrapping_add(1);
-    return (if vli_pos == &raw mut vli_pos_internal {
-        LZMA_OK as c_int
+    return if vli_pos == &raw mut vli_pos_internal {
+        LZMA_OK
     } else {
-        LZMA_STREAM_END as c_int
-    }) as lzma_ret;
+        LZMA_STREAM_END
+    };
 }

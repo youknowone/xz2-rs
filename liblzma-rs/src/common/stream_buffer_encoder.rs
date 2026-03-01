@@ -201,7 +201,7 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
             out,
             &raw mut out_pos,
             out_size,
-        ) as lzma_ret;
+        );
         if ret_ != LZMA_OK {
             return ret_;
         }

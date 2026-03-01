@@ -65,7 +65,7 @@ unsafe extern "C" fn delta_decode(
         out_pos,
         out_size,
         action,
-    ) as lzma_ret;
+    );
     let size: size_t = (*out_pos).wrapping_sub(out_start);
     if size > 0 {
         decode_buffer(coder, out.offset(out_start as isize), size);

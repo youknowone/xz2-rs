@@ -29,7 +29,7 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
     }
     let mut next: lzma_next_coder = lzma_next_coder_s {
         coder: core::ptr::null_mut(),
-        id: LZMA_VLI_UNKNOWN as lzma_vli,
+        id: LZMA_VLI_UNKNOWN,
         init: 0,
         code: None,
         end: None,
@@ -39,7 +39,7 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
         update: None,
         set_out_limit: None,
     };
-    let ret_: lzma_ret = lzma_raw_decoder_init(&raw mut next, allocator, filters) as lzma_ret;
+    let ret_: lzma_ret = lzma_raw_decoder_init(&raw mut next, allocator, filters);
     if ret_ != LZMA_OK {
         return ret_;
     }

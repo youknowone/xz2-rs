@@ -86,6 +86,79 @@ pub struct lzma_filter_info_s {
 }
 pub type lzma_filter_info = lzma_filter_info_s;
 
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_options_lzma {
+    pub dict_size: u32,
+    pub preset_dict: *const u8,
+    pub preset_dict_size: u32,
+    pub lc: u32,
+    pub lp: u32,
+    pub pb: u32,
+    pub mode: lzma_mode,
+    pub nice_len: u32,
+    pub mf: lzma_match_finder,
+    pub depth: u32,
+    pub ext_flags: u32,
+    pub ext_size_low: u32,
+    pub ext_size_high: u32,
+    pub reserved_int4: u32,
+    pub reserved_int5: u32,
+    pub reserved_int6: u32,
+    pub reserved_int7: u32,
+    pub reserved_int8: u32,
+    pub reserved_enum1: lzma_reserved_enum,
+    pub reserved_enum2: lzma_reserved_enum,
+    pub reserved_enum3: lzma_reserved_enum,
+    pub reserved_enum4: lzma_reserved_enum,
+    pub reserved_ptr1: *mut c_void,
+    pub reserved_ptr2: *mut c_void,
+}
+
+// lzma_internal sequence enum (C2RustUnnamed in lzma_internal_s)
+pub type lzma_internal_sequence = c_uint;
+pub const ISEQ_RUN: lzma_internal_sequence = 0;
+pub const ISEQ_SYNC_FLUSH: lzma_internal_sequence = 1;
+pub const ISEQ_FULL_FLUSH: lzma_internal_sequence = 2;
+pub const ISEQ_FINISH: lzma_internal_sequence = 3;
+pub const ISEQ_FULL_BARRIER: lzma_internal_sequence = 4;
+pub const ISEQ_END: lzma_internal_sequence = 5;
+pub const ISEQ_ERROR: lzma_internal_sequence = 6;
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_internal_s {
+    pub next: lzma_next_coder,
+    pub sequence: lzma_internal_sequence,
+    pub avail_in: size_t,
+    pub supported_actions: [bool; 5],
+    pub allow_buf_error: bool,
+}
+pub type lzma_internal = lzma_internal_s;
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_stream {
+    pub next_in: *const u8,
+    pub avail_in: size_t,
+    pub total_in: u64,
+    pub next_out: *mut u8,
+    pub avail_out: size_t,
+    pub total_out: u64,
+    pub allocator: *const lzma_allocator,
+    pub internal: *mut lzma_internal,
+    pub reserved_ptr1: *mut c_void,
+    pub reserved_ptr2: *mut c_void,
+    pub reserved_ptr3: *mut c_void,
+    pub reserved_ptr4: *mut c_void,
+    pub seek_pos: u64,
+    pub reserved_int2: u64,
+    pub reserved_int3: size_t,
+    pub reserved_int4: size_t,
+    pub reserved_enum1: lzma_reserved_enum,
+    pub reserved_enum2: lzma_reserved_enum,
+}
+
 // lzma_ret constants
 pub const LZMA_OK: lzma_ret = 0;
 pub const LZMA_STREAM_END: lzma_ret = 1;

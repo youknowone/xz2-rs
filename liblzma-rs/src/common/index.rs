@@ -388,15 +388,15 @@ pub extern "C" fn lzma_index_memusage(streams: lzma_vli, blocks: lzma_vli) -> u6
     let groups_mem: u64 = (groups as u64).wrapping_mul(group_base as u64);
     let index_base: u64 =
         (core::mem::size_of::<lzma_index>() as usize).wrapping_add(alloc_overhead as usize) as u64;
-    let limit: u64 = (UINT64_MAX as u64).wrapping_sub(index_base);
+    let limit: u64 = (UINT64_MAX).wrapping_sub(index_base);
     if streams == 0 as lzma_vli
         || streams > UINT32_MAX as lzma_vli
-        || blocks > LZMA_VLI_MAX as lzma_vli
+        || blocks > LZMA_VLI_MAX
         || streams > limit.wrapping_div(stream_base as u64)
         || groups > limit.wrapping_div(group_base as u64)
         || limit.wrapping_sub(streams_mem) < groups_mem
     {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     return index_base
         .wrapping_add(streams_mem)
@@ -442,12 +442,12 @@ unsafe extern "C" fn index_file_size(
         .wrapping_add((2 as c_int * LZMA_STREAM_HEADER_SIZE) as lzma_vli)
         .wrapping_add(stream_padding)
         .wrapping_add(vli_ceil4(unpadded_sum));
-    if file_size > LZMA_VLI_MAX as lzma_vli {
-        return LZMA_VLI_UNKNOWN as lzma_vli;
+    if file_size > LZMA_VLI_MAX {
+        return LZMA_VLI_UNKNOWN;
     }
     file_size = file_size.wrapping_add(index_size(record_count, index_list_size));
-    if file_size > LZMA_VLI_MAX as lzma_vli {
-        return LZMA_VLI_UNKNOWN as lzma_vli;
+    if file_size > LZMA_VLI_MAX {
+        return LZMA_VLI_UNKNOWN;
     }
     return file_size;
 }
@@ -495,7 +495,7 @@ pub unsafe extern "C" fn lzma_index_stream_flags(
     if i.is_null() || stream_flags.is_null() {
         return LZMA_PROG_ERROR;
     }
-    let ret_: lzma_ret = lzma_stream_flags_compare(stream_flags, stream_flags) as lzma_ret;
+    let ret_: lzma_ret = lzma_stream_flags_compare(stream_flags, stream_flags);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -509,7 +509,7 @@ pub unsafe extern "C" fn lzma_index_stream_padding(
     stream_padding: lzma_vli,
 ) -> lzma_ret {
     if i.is_null()
-        || stream_padding > LZMA_VLI_MAX as lzma_vli
+        || stream_padding > LZMA_VLI_MAX
         || stream_padding & 3 as lzma_vli != 0 as lzma_vli
     {
         return LZMA_PROG_ERROR;
@@ -517,7 +517,7 @@ pub unsafe extern "C" fn lzma_index_stream_padding(
     let s: *mut index_stream = (*i).streams.rightmost as *mut index_stream;
     let old_stream_padding: lzma_vli = (*s).stream_padding;
     (*s).stream_padding = 0 as lzma_vli;
-    if lzma_index_file_size(i).wrapping_add(stream_padding) > LZMA_VLI_MAX as lzma_vli {
+    if lzma_index_file_size(i).wrapping_add(stream_padding) > LZMA_VLI_MAX {
         (*s).stream_padding = old_stream_padding;
         return LZMA_DATA_ERROR;
     }
@@ -534,7 +534,7 @@ pub unsafe extern "C" fn lzma_index_append(
     if i.is_null()
         || unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
         || unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
-        || uncompressed_size > LZMA_VLI_MAX as lzma_vli
+        || uncompressed_size > LZMA_VLI_MAX
     {
         return LZMA_PROG_ERROR;
     }
@@ -554,7 +554,7 @@ pub unsafe extern "C" fn lzma_index_append(
     };
     let index_list_size_add: u32 =
         (lzma_vli_size(unpadded_size) as u32).wrapping_add(lzma_vli_size(uncompressed_size) as u32);
-    if uncompressed_base.wrapping_add(uncompressed_size) > LZMA_VLI_MAX as lzma_vli {
+    if uncompressed_base.wrapping_add(uncompressed_size) > LZMA_VLI_MAX {
         return LZMA_DATA_ERROR;
     }
     if compressed_base.wrapping_add(unpadded_size) > UNPADDED_SIZE_MAX as lzma_vli {
@@ -567,7 +567,7 @@ pub unsafe extern "C" fn lzma_index_append(
         (*s).index_list_size
             .wrapping_add(index_list_size_add as lzma_vli),
         (*s).stream_padding,
-    ) == LZMA_VLI_UNKNOWN as lzma_vli
+    ) == LZMA_VLI_UNKNOWN
     {
         return LZMA_DATA_ERROR;
     }
@@ -646,11 +646,11 @@ pub unsafe extern "C" fn lzma_index_cat(
         return LZMA_PROG_ERROR;
     }
     let dest_file_size: lzma_vli = lzma_index_file_size(dest) as lzma_vli;
-    if dest_file_size.wrapping_add(lzma_index_file_size(src)) > LZMA_VLI_MAX as lzma_vli
+    if dest_file_size.wrapping_add(lzma_index_file_size(src)) > LZMA_VLI_MAX
         || (*dest)
             .uncompressed_size
             .wrapping_add((*src).uncompressed_size)
-            > LZMA_VLI_MAX as lzma_vli
+            > LZMA_VLI_MAX
     {
         return LZMA_DATA_ERROR;
     }

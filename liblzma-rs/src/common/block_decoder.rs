@@ -31,46 +31,6 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_internal_s {
-    pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed,
-    pub avail_in: size_t,
-    pub supported_actions: [bool; 5],
-    pub allow_buf_error: bool,
-}
-pub type C2RustUnnamed = c_uint;
-pub const ISEQ_ERROR: C2RustUnnamed = 6;
-pub const ISEQ_END: C2RustUnnamed = 5;
-pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
-pub const ISEQ_FINISH: C2RustUnnamed = 3;
-pub const ISEQ_FULL_FLUSH: C2RustUnnamed = 2;
-pub const ISEQ_SYNC_FLUSH: C2RustUnnamed = 1;
-pub const ISEQ_RUN: C2RustUnnamed = 0;
-pub type lzma_internal = lzma_internal_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream {
-    pub next_in: *const u8,
-    pub avail_in: size_t,
-    pub total_in: u64,
-    pub next_out: *mut u8,
-    pub avail_out: size_t,
-    pub total_out: u64,
-    pub allocator: *const lzma_allocator,
-    pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_ptr4: *mut c_void,
-    pub seek_pos: u64,
-    pub reserved_int2: u64,
-    pub reserved_int3: size_t,
-    pub reserved_int4: size_t,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_block {
     pub version: u32,
     pub header_size: u32,
@@ -149,7 +109,7 @@ pub const SEQ_PADDING: C2RustUnnamed_2 = 1;
 pub const SEQ_CODE: C2RustUnnamed_2 = 0;
 #[inline]
 extern "C" fn is_size_valid(size: lzma_vli, reference: lzma_vli) -> bool {
-    return reference == LZMA_VLI_UNKNOWN as lzma_vli || reference == size;
+    return reference == LZMA_VLI_UNKNOWN || reference == size;
 }
 unsafe extern "C" fn block_decode(
     coder_ptr: *mut c_void,
@@ -205,7 +165,7 @@ unsafe extern "C" fn block_decode(
                     out_pos,
                     out_stop,
                     action,
-                ) as lzma_ret;
+                );
                 let in_used: size_t = (*in_pos).wrapping_sub(in_start);
                 let out_used: size_t = (*out_pos).wrapping_sub(out_start);
                 (*coder).compressed_size =
@@ -360,8 +320,8 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
             ) -> lzma_ret,
     ));
     if lzma_block_unpadded_size(block) == 0 as lzma_vli
-        || !((*block).uncompressed_size <= LZMA_VLI_MAX as lzma_vli
-            || (*block).uncompressed_size == LZMA_VLI_UNKNOWN as lzma_vli)
+        || !((*block).uncompressed_size <= LZMA_VLI_MAX
+            || (*block).uncompressed_size == LZMA_VLI_UNKNOWN)
     {
         return LZMA_PROG_ERROR;
     }
@@ -392,7 +352,7 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
         ) as lzma_end_function;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -407,15 +367,15 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     (*coder).block = block;
     (*coder).compressed_size = 0 as lzma_vli;
     (*coder).uncompressed_size = 0 as lzma_vli;
-    (*coder).compressed_limit = if (*block).compressed_size == LZMA_VLI_UNKNOWN as lzma_vli {
-        (LZMA_VLI_MAX as lzma_vli & !(3 as lzma_vli))
+    (*coder).compressed_limit = if (*block).compressed_size == LZMA_VLI_UNKNOWN {
+        (LZMA_VLI_MAX & !(3 as lzma_vli))
             .wrapping_sub((*block).header_size as lzma_vli)
             .wrapping_sub(lzma_check_size((*block).check) as lzma_vli)
     } else {
         (*block).compressed_size
     };
-    (*coder).uncompressed_limit = if (*block).uncompressed_size == LZMA_VLI_UNKNOWN as lzma_vli {
-        LZMA_VLI_MAX as lzma_vli
+    (*coder).uncompressed_limit = if (*block).uncompressed_size == LZMA_VLI_UNKNOWN {
+        LZMA_VLI_MAX
     } else {
         (*block).uncompressed_size
     };
@@ -433,13 +393,12 @@ pub unsafe extern "C" fn lzma_block_decoder(
     strm: *mut lzma_stream,
     block: *mut lzma_block,
 ) -> lzma_ret {
-    let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
+    let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;
     }
     let ret__0: lzma_ret =
-        lzma_block_decoder_init(&raw mut (*(*strm).internal).next, (*strm).allocator, block)
-            as lzma_ret;
+        lzma_block_decoder_init(&raw mut (*(*strm).internal).next, (*strm).allocator, block);
     if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;

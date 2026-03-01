@@ -34,34 +34,6 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_match {
     pub len: u32,
     pub dist: u32,
@@ -1271,8 +1243,8 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
     (*coder).uncomp_size = 0;
     (*coder).uncomp_size_ptr = core::ptr::null_mut();
     (*coder).out_limit = 0;
-    (*coder).use_eopm = id == LZMA_FILTER_LZMA1 as lzma_vli;
-    if id == LZMA_FILTER_LZMA1EXT as lzma_vli {
+    (*coder).use_eopm = id == LZMA_FILTER_LZMA1;
+    if id == LZMA_FILTER_LZMA1EXT {
         if (*options).ext_flags & !(LZMA_LZMA1EXT_ALLOW_EOPM as u32) != 0 {
             return LZMA_OPTIONS_ERROR;
         }
@@ -1347,7 +1319,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_init(
 #[no_mangle]
 pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     if !is_options_valid(options as *const lzma_options_lzma) {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     let mut lz_options: lzma_lz_options = lzma_lz_options {
         before_size: 0,
@@ -1362,8 +1334,8 @@ pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     };
     set_lz_options(&raw mut lz_options, options as *const lzma_options_lzma);
     let lz_memusage: u64 = unsafe { lzma_lz_encoder_memusage(&raw mut lz_options) } as u64;
-    if lz_memusage == UINT64_MAX as u64 {
-        return UINT64_MAX as u64;
+    if lz_memusage == UINT64_MAX {
+        return UINT64_MAX;
     }
     return (core::mem::size_of::<lzma_lzma1_encoder>() as u64).wrapping_add(lz_memusage);
 }

@@ -74,7 +74,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     }
     let mut i: size_t = 0;
     while i <= LZMA_FILTERS_MAX as size_t {
-        (*(*block).filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*(*block).filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN;
         let ref mut fresh0 = (*(*block).filters.offset(i as isize)).options;
         *fresh0 = core::ptr::null_mut();
         i = i.wrapping_add(1);
@@ -103,7 +103,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             in_0,
             &raw mut in_pos,
             in_size,
-        ) as lzma_ret;
+        );
         if ret_ != LZMA_OK {
             return ret_;
         }
@@ -111,7 +111,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             return LZMA_DATA_ERROR;
         }
     } else {
-        (*block).compressed_size = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*block).compressed_size = LZMA_VLI_UNKNOWN;
     }
     if *in_0.offset(1) as c_int & 0x80 as c_int != 0 {
         let ret__0: lzma_ret = lzma_vli_decode(
@@ -120,12 +120,12 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             in_0,
             &raw mut in_pos,
             in_size,
-        ) as lzma_ret;
+        );
         if ret__0 != LZMA_OK {
             return ret__0;
         }
     } else {
-        (*block).uncompressed_size = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*block).uncompressed_size = LZMA_VLI_UNKNOWN;
     }
     let filter_count: size_t = (u32::from(*in_0.offset(1)) & 3).wrapping_add(1) as size_t;
     let mut i_0: size_t = 0;
@@ -136,7 +136,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             in_0,
             &raw mut in_pos,
             in_size,
-        ) as lzma_ret;
+        );
         if ret != LZMA_OK {
             lzma_filters_free((*block).filters, allocator);
             return ret;

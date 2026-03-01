@@ -36,34 +36,6 @@ pub struct lzma_options_bcj {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_filter_coder {
     pub id: lzma_vli,
     pub init: lzma_init_function,
@@ -72,91 +44,91 @@ pub struct lzma_filter_coder {
 pub type lzma_filter_find = Option<unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder>;
 static mut features: [C2RustUnnamed; 13] = [
     C2RustUnnamed {
-        id: LZMA_FILTER_LZMA1 as lzma_vli,
+        id: LZMA_FILTER_LZMA1,
         options_size: core::mem::size_of::<lzma_options_lzma>(),
         non_last_ok: false,
         last_ok: true,
         changes_size: true,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_LZMA1EXT as lzma_vli,
+        id: LZMA_FILTER_LZMA1EXT,
         options_size: core::mem::size_of::<lzma_options_lzma>(),
         non_last_ok: false,
         last_ok: true,
         changes_size: true,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_LZMA2 as lzma_vli,
+        id: LZMA_FILTER_LZMA2,
         options_size: core::mem::size_of::<lzma_options_lzma>(),
         non_last_ok: false,
         last_ok: true,
         changes_size: true,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_X86 as lzma_vli,
+        id: LZMA_FILTER_X86,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_POWERPC as lzma_vli,
+        id: LZMA_FILTER_POWERPC,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_IA64 as lzma_vli,
+        id: LZMA_FILTER_IA64,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_ARM as lzma_vli,
+        id: LZMA_FILTER_ARM,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_ARMTHUMB as lzma_vli,
+        id: LZMA_FILTER_ARMTHUMB,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_ARM64 as lzma_vli,
+        id: LZMA_FILTER_ARM64,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_SPARC as lzma_vli,
+        id: LZMA_FILTER_SPARC,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_RISCV as lzma_vli,
+        id: LZMA_FILTER_RISCV,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_FILTER_DELTA as lzma_vli,
+        id: LZMA_FILTER_DELTA,
         options_size: core::mem::size_of::<lzma_options_delta>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
     C2RustUnnamed {
-        id: LZMA_VLI_UNKNOWN as lzma_vli,
+        id: LZMA_VLI_UNKNOWN,
         options_size: 0,
         non_last_ok: false,
         last_ok: false,
@@ -181,7 +153,7 @@ pub unsafe extern "C" fn lzma_filters_copy(
     let mut i: size_t = 0;
     i = 0;
     's_15: loop {
-        if !((*src.offset(i as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli) {
+        if !((*src.offset(i as isize)).id != LZMA_VLI_UNKNOWN) {
             current_block = 7175849428784450219;
             break;
         }
@@ -197,7 +169,7 @@ pub unsafe extern "C" fn lzma_filters_copy(
                 let mut j: size_t = 0;
                 j = 0;
                 while (*src.offset(i as isize)).id != features[j as usize].id {
-                    if features[j as usize].id == LZMA_VLI_UNKNOWN as lzma_vli {
+                    if features[j as usize].id == LZMA_VLI_UNKNOWN {
                         ret = LZMA_OPTIONS_ERROR;
                         current_block = 6392083060350426025;
                         break 's_15;
@@ -230,7 +202,7 @@ pub unsafe extern "C" fn lzma_filters_copy(
             return ret;
         }
         _ => {
-            dest[i as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+            dest[i as usize].id = LZMA_VLI_UNKNOWN;
             dest[i as usize].options = core::ptr::null_mut();
             memcpy(
                 real_dest as *mut c_void,
@@ -251,14 +223,14 @@ pub unsafe extern "C" fn lzma_filters_free(
         return;
     }
     let mut i: size_t = 0;
-    while (*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli {
+    while (*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN {
         if i == LZMA_FILTERS_MAX as size_t {
             break;
         }
         lzma_free((*filters.offset(i as isize)).options, allocator);
         let ref mut fresh0 = (*filters.offset(i as isize)).options;
         *fresh0 = core::ptr::null_mut();
-        (*filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN as lzma_vli;
+        (*filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN;
         i = i.wrapping_add(1);
     }
 }
@@ -267,7 +239,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
     filters: *const lzma_filter,
     count: *mut size_t,
 ) -> lzma_ret {
-    if filters.is_null() || (*filters.offset(0)).id == LZMA_VLI_UNKNOWN as lzma_vli {
+    if filters.is_null() || (*filters.offset(0)).id == LZMA_VLI_UNKNOWN {
         return LZMA_PROG_ERROR;
     }
     let mut changes_size_count: size_t = 0;
@@ -278,7 +250,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
         let mut j: size_t = 0;
         j = 0;
         while (*filters.offset(i as isize)).id != features[j as usize].id {
-            if features[j as usize].id == LZMA_VLI_UNKNOWN as lzma_vli {
+            if features[j as usize].id == LZMA_VLI_UNKNOWN {
                 return LZMA_OPTIONS_ERROR;
             }
             j = j.wrapping_add(1);
@@ -291,7 +263,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
         changes_size_count =
             changes_size_count.wrapping_add(features[j as usize].changes_size as size_t);
         i = i.wrapping_add(1);
-        if !((*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli) {
+        if !((*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN) {
             break;
         }
     }
@@ -310,7 +282,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
     is_encoder: bool,
 ) -> lzma_ret {
     let mut count: size_t = 0;
-    let ret_: lzma_ret = lzma_validate_chain(options, &raw mut count) as lzma_ret;
+    let ret_: lzma_ret = lzma_validate_chain(options, &raw mut count);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -349,11 +321,10 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
             i_0 = i_0.wrapping_add(1);
         }
     }
-    filters[count as usize].id = LZMA_VLI_UNKNOWN as lzma_vli;
+    filters[count as usize].id = LZMA_VLI_UNKNOWN;
     filters[count as usize].init = None;
     let ret: lzma_ret =
-        lzma_next_filter_init(next, allocator, &raw mut filters as *mut lzma_filter_info)
-            as lzma_ret;
+        lzma_next_filter_init(next, allocator, &raw mut filters as *mut lzma_filter_info);
     if ret != LZMA_OK {
         lzma_next_end(next, allocator);
     }
@@ -366,7 +337,7 @@ pub unsafe extern "C" fn lzma_raw_coder_memusage(
 ) -> u64 {
     let mut tmp: size_t = 0;
     if lzma_validate_chain(filters, &raw mut tmp) != LZMA_OK {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     let mut total: u64 = 0;
     let mut i: size_t = 0;
@@ -375,7 +346,7 @@ pub unsafe extern "C" fn lzma_raw_coder_memusage(
             coder_find.expect("non-null function pointer")((*filters.offset(i as isize)).id)
                 as *const lzma_filter_coder;
         if fc.is_null() {
-            return UINT64_MAX as u64;
+            return UINT64_MAX;
         }
         if (*fc).memusage.is_none() {
             total = total.wrapping_add(1024 as u64);
@@ -383,15 +354,15 @@ pub unsafe extern "C" fn lzma_raw_coder_memusage(
             let usage: u64 = (*fc).memusage.expect("non-null function pointer")(
                 (*filters.offset(i as isize)).options,
             ) as u64;
-            if usage == UINT64_MAX as u64 {
-                return UINT64_MAX as u64;
+            if usage == UINT64_MAX {
+                return UINT64_MAX;
             }
             total = total.wrapping_add(usage);
         }
         i = i.wrapping_add(1);
-        if !((*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN as lzma_vli) {
+        if !((*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN) {
             break;
         }
     }
-    return total.wrapping_add(LZMA_MEMUSAGE_BASE as u64);
+    return total.wrapping_add(LZMA_MEMUSAGE_BASE);
 }

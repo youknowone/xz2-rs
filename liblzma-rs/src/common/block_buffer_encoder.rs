@@ -22,34 +22,6 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_options_lzma {
-    pub dict_size: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-    pub lc: u32,
-    pub lp: u32,
-    pub pb: u32,
-    pub mode: lzma_mode,
-    pub nice_len: u32,
-    pub mf: lzma_match_finder,
-    pub depth: u32,
-    pub ext_flags: u32,
-    pub ext_size_low: u32,
-    pub ext_size_high: u32,
-    pub reserved_int4: u32,
-    pub reserved_int5: u32,
-    pub reserved_int6: u32,
-    pub reserved_int7: u32,
-    pub reserved_int8: u32,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_block {
     pub version: u32,
     pub header_size: u32,
@@ -190,9 +162,9 @@ unsafe extern "C" fn block_encode_uncompressed(
         id: 0,
         options: core::ptr::null_mut(),
     }; 2];
-    filters[0].id = LZMA_FILTER_LZMA2 as lzma_vli;
+    filters[0].id = LZMA_FILTER_LZMA2;
     filters[0].options = &raw mut lzma2 as *mut c_void;
-    filters[1].id = LZMA_VLI_UNKNOWN as lzma_vli;
+    filters[1].id = LZMA_VLI_UNKNOWN;
     let filters_orig: *mut lzma_filter = (*block).filters;
     (*block).filters = &raw mut filters as *mut lzma_filter;
     if lzma_block_header_size(block) != LZMA_OK {
@@ -251,7 +223,7 @@ unsafe extern "C" fn block_encode_normal(
     out_pos: *mut size_t,
     mut out_size: size_t,
 ) -> lzma_ret {
-    let ret_: lzma_ret = lzma_block_header_size(block) as lzma_ret;
+    let ret_: lzma_ret = lzma_block_header_size(block);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -265,7 +237,7 @@ unsafe extern "C" fn block_encode_normal(
     }
     let mut raw_encoder: lzma_next_coder = lzma_next_coder_s {
         coder: core::ptr::null_mut(),
-        id: LZMA_VLI_UNKNOWN as lzma_vli,
+        id: LZMA_VLI_UNKNOWN,
         init: 0,
         code: None,
         end: None,
@@ -357,7 +329,7 @@ unsafe extern "C" fn block_buffer_encode(
             return ret;
         }
         let ret_: lzma_ret =
-            block_encode_uncompressed(block, in_0, in_size, out, out_pos, out_size) as lzma_ret;
+            block_encode_uncompressed(block, in_0, in_size, out, out_pos, out_size);
         if ret_ != LZMA_OK {
             return ret_;
         }

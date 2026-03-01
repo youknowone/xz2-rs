@@ -29,11 +29,11 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
         in_0,
         in_pos,
         in_size,
-    ) as lzma_ret;
+    );
     if ret_ != LZMA_OK {
         return ret_;
     }
-    if (*filter).id >= LZMA_FILTER_RESERVED_START as lzma_vli {
+    if (*filter).id >= LZMA_FILTER_RESERVED_START {
         return LZMA_DATA_ERROR;
     }
     let mut props_size: lzma_vli = 0;
@@ -43,7 +43,7 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
         in_0,
         in_pos,
         in_size,
-    ) as lzma_ret;
+    );
     if ret__0 != LZMA_OK {
         return ret__0;
     }
@@ -55,7 +55,7 @@ pub unsafe extern "C" fn lzma_filter_flags_decode(
         allocator,
         in_0.offset(*in_pos as isize),
         props_size as size_t,
-    ) as lzma_ret;
+    );
     *in_pos = (*in_pos as lzma_vli).wrapping_add(props_size) as size_t as size_t;
     return ret;
 }

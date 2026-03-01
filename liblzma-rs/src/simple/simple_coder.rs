@@ -68,7 +68,7 @@ unsafe extern "C" fn copy_or_code(
             out_pos,
             out_size,
             action,
-        ) as lzma_ret;
+        );
         if ret == LZMA_STREAM_END {
             (*coder).end_was_reached = true;
         } else if ret != LZMA_OK {
@@ -139,7 +139,7 @@ unsafe extern "C" fn simple_code(
         *out_pos = (*out_pos).wrapping_add(buf_avail);
         let ret: lzma_ret = copy_or_code(
             coder, allocator, in_0, in_pos, in_size, out, out_pos, out_size, action,
-        ) as lzma_ret;
+        );
         if ret != LZMA_OK {
             return ret;
         }
@@ -182,7 +182,7 @@ unsafe extern "C" fn simple_code(
             &raw mut (*coder).size,
             (*coder).allocated,
             action,
-        ) as lzma_ret;
+        );
         if ret_0 != LZMA_OK {
             return ret_0;
         }
@@ -281,7 +281,7 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
             >;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,

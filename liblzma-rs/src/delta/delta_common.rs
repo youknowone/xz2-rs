@@ -53,7 +53,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
                 as lzma_end_function;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -64,7 +64,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
             set_out_limit: None,
         };
     }
-    if lzma_delta_coder_memusage((*filters.offset(0)).options) == UINT64_MAX as u64 {
+    if lzma_delta_coder_memusage((*filters.offset(0)).options) == UINT64_MAX {
         return LZMA_OPTIONS_ERROR;
     }
     let opt: *const lzma_options_delta = (*filters.offset(0)).options as *const lzma_options_delta;
@@ -85,7 +85,7 @@ pub unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u6
         || (*opt).dist < LZMA_DELTA_DIST_MIN as u32
         || (*opt).dist > LZMA_DELTA_DIST_MAX as u32
     {
-        return UINT64_MAX as u64;
+        return UINT64_MAX;
     }
     return core::mem::size_of::<lzma_delta_coder>() as u64;
 }

@@ -39,11 +39,11 @@ pub unsafe extern "C" fn lzma_vli_decode(
             if byte as c_int == 0 as c_int && *vli_pos > 1 {
                 return LZMA_DATA_ERROR;
             }
-            return (if vli_pos == &raw mut vli_pos_internal {
-                LZMA_OK as c_int
+            return if vli_pos == &raw mut vli_pos_internal {
+                LZMA_OK
             } else {
-                LZMA_STREAM_END as c_int
-            }) as lzma_ret;
+                LZMA_STREAM_END
+            };
         }
         if *vli_pos == LZMA_VLI_BYTES_MAX as size_t {
             return LZMA_DATA_ERROR;
@@ -52,9 +52,9 @@ pub unsafe extern "C" fn lzma_vli_decode(
             break;
         }
     }
-    return (if vli_pos == &raw mut vli_pos_internal {
-        LZMA_DATA_ERROR as c_int
+    return if vli_pos == &raw mut vli_pos_internal {
+        LZMA_DATA_ERROR
     } else {
-        LZMA_OK as c_int
-    }) as lzma_ret;
+        LZMA_OK
+    };
 }

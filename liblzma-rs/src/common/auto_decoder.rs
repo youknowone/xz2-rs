@@ -17,46 +17,6 @@ extern "C" {
         picky: bool,
     ) -> lzma_ret;
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_internal_s {
-    pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed,
-    pub avail_in: size_t,
-    pub supported_actions: [bool; 5],
-    pub allow_buf_error: bool,
-}
-pub type C2RustUnnamed = c_uint;
-pub const ISEQ_ERROR: C2RustUnnamed = 6;
-pub const ISEQ_END: C2RustUnnamed = 5;
-pub const ISEQ_FULL_BARRIER: C2RustUnnamed = 4;
-pub const ISEQ_FINISH: C2RustUnnamed = 3;
-pub const ISEQ_FULL_FLUSH: C2RustUnnamed = 2;
-pub const ISEQ_SYNC_FLUSH: C2RustUnnamed = 1;
-pub const ISEQ_RUN: C2RustUnnamed = 0;
-pub type lzma_internal = lzma_internal_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream {
-    pub next_in: *const u8,
-    pub avail_in: size_t,
-    pub total_in: u64,
-    pub next_out: *mut u8,
-    pub avail_out: size_t,
-    pub total_out: u64,
-    pub allocator: *const lzma_allocator,
-    pub internal: *mut lzma_internal,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_ptr4: *mut c_void,
-    pub seek_pos: u64,
-    pub reserved_int2: u64,
-    pub reserved_int3: size_t,
-    pub reserved_int4: size_t,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-}
 pub type C2RustUnnamed_0 = c_uint;
 pub const SEQ_FINISH: C2RustUnnamed_0 = 2;
 pub const SEQ_CODE: C2RustUnnamed_0 = 1;
@@ -94,7 +54,7 @@ unsafe extern "C" fn auto_decode(
                     allocator,
                     (*coder).memlimit,
                     (*coder).flags,
-                ) as lzma_ret;
+                );
                 if ret_ != LZMA_OK {
                     return ret_;
                 }
@@ -104,7 +64,7 @@ unsafe extern "C" fn auto_decode(
                     allocator,
                     (*coder).memlimit,
                     1 as c_int != 0,
-                ) as lzma_ret;
+                );
                 if ret__0 != LZMA_OK {
                     return ret__0;
                 }
@@ -137,7 +97,7 @@ unsafe extern "C" fn auto_decode(
                 out_pos,
                 out_size,
                 action,
-            ) as lzma_ret;
+            );
             if ret != LZMA_STREAM_END || (*coder).flags & LZMA_CONCATENATED as u32 == 0 {
                 return ret;
             }
@@ -148,11 +108,11 @@ unsafe extern "C" fn auto_decode(
     if *in_pos < in_size {
         return LZMA_DATA_ERROR;
     }
-    return (if action == LZMA_FINISH {
-        LZMA_STREAM_END as c_int
+    return if action == LZMA_FINISH {
+        LZMA_STREAM_END
     } else {
-        LZMA_OK as c_int
-    }) as lzma_ret;
+        LZMA_OK
+    };
 }
 unsafe extern "C" fn auto_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
@@ -185,7 +145,7 @@ unsafe extern "C" fn auto_decoder_memconfig(
             new_memlimit,
         );
     } else {
-        *memusage = LZMA_MEMUSAGE_BASE as u64;
+        *memusage = LZMA_MEMUSAGE_BASE;
         *old_memlimit = (*coder).memlimit;
         ret = LZMA_OK;
         if new_memlimit != 0 && new_memlimit < *memusage {
@@ -272,7 +232,7 @@ unsafe extern "C" fn auto_decoder_init(
             as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN as lzma_vli,
+            id: LZMA_VLI_UNKNOWN,
             init: 0,
             code: None,
             end: None,
@@ -294,7 +254,7 @@ pub unsafe extern "C" fn lzma_auto_decoder(
     memlimit: u64,
     flags: u32,
 ) -> lzma_ret {
-    let ret_: lzma_ret = lzma_strm_init(strm) as lzma_ret;
+    let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -303,7 +263,7 @@ pub unsafe extern "C" fn lzma_auto_decoder(
         (*strm).allocator,
         memlimit,
         flags,
-    ) as lzma_ret;
+    );
     if ret__0 != LZMA_OK {
         lzma_end(strm);
         return ret__0;
