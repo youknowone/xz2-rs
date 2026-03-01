@@ -150,9 +150,8 @@ unsafe extern "C" fn index_encode(
             5 => {
                 if (*coder).pos > 0 {
                     (*coder).pos = (*coder).pos.wrapping_sub(1);
-                    let fresh0 = *out_pos;
-                    *out_pos = (*out_pos).wrapping_add(1);
-                    *out.offset(fresh0 as isize) = 0;
+                    *out.offset(*out_pos as isize) = 0;
+                    *out_pos += 1;
                     continue;
                 } else {
                     (*coder).crc32 = lzma_crc32(
@@ -193,7 +192,7 @@ unsafe extern "C" fn index_encode(
                         ((*coder).crc32 >> (*coder).pos.wrapping_mul(8) & 0xff) as u8;
                     *out_pos = (*out_pos).wrapping_add(1);
                     (*coder).pos = (*coder).pos.wrapping_add(1);
-                    if !((*coder).pos < 4) {
+                    if (*coder).pos >= 4 {
                         break;
                     }
                 }
@@ -205,7 +204,7 @@ unsafe extern "C" fn index_encode(
     if out_used > 0 {
         (*coder).crc32 = lzma_crc32(out.offset(out_start as isize), out_used, (*coder).crc32);
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn index_encoder_end(coder: *mut c_void, allocator: *const lzma_allocator) {
     lzma_free(coder, allocator);
@@ -223,7 +222,7 @@ pub unsafe extern "C" fn lzma_index_encoder_init(
     allocator: *const lzma_allocator,
     i: *const lzma_index,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -243,7 +242,7 @@ pub unsafe extern "C" fn lzma_index_encoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -281,13 +280,13 @@ pub unsafe extern "C" fn lzma_index_encoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             index_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
+        );
     }
     index_encoder_reset((*next).coder as *mut lzma_index_coder, i);
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_index_encoder(
@@ -306,7 +305,7 @@ pub unsafe extern "C" fn lzma_index_encoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_index_buffer_encode(
@@ -323,13 +322,13 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
     }
     let mut coder: lzma_index_coder = lzma_index_coder {
         sequence: SEQ_INDICATOR,
-        index: ::core::ptr::null::<lzma_index>(),
+        index: core::ptr::null(),
         iter: lzma_index_iter {
             stream: C2RustUnnamed_2 {
-                flags: ::core::ptr::null::<lzma_stream_flags>(),
-                reserved_ptr1: ::core::ptr::null::<c_void>(),
-                reserved_ptr2: ::core::ptr::null::<c_void>(),
-                reserved_ptr3: ::core::ptr::null::<c_void>(),
+                flags: core::ptr::null(),
+                reserved_ptr1: core::ptr::null(),
+                reserved_ptr2: core::ptr::null(),
+                reserved_ptr3: core::ptr::null(),
                 number: 0,
                 block_count: 0,
                 compressed_offset: 0,
@@ -356,13 +355,13 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
                 reserved_vli2: 0,
                 reserved_vli3: 0,
                 reserved_vli4: 0,
-                reserved_ptr1: ::core::ptr::null::<c_void>(),
-                reserved_ptr2: ::core::ptr::null::<c_void>(),
-                reserved_ptr3: ::core::ptr::null::<c_void>(),
-                reserved_ptr4: ::core::ptr::null::<c_void>(),
+                reserved_ptr1: core::ptr::null(),
+                reserved_ptr2: core::ptr::null(),
+                reserved_ptr3: core::ptr::null(),
+                reserved_ptr4: core::ptr::null(),
             },
             internal: [C2RustUnnamed_0 {
-                p: ::core::ptr::null::<c_void>(),
+                p: core::ptr::null(),
             }; 6],
         },
         pos: 0,
@@ -372,8 +371,8 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
     let out_start: size_t = *out_pos;
     let mut ret: lzma_ret = index_encode(
         &raw mut coder as *mut c_void,
-        ::core::ptr::null::<lzma_allocator>(),
-        ::core::ptr::null::<u8>(),
+        core::ptr::null(),
+        core::ptr::null(),
         core::ptr::null_mut(),
         0,
         out,
@@ -387,5 +386,5 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
         *out_pos = out_start;
         ret = LZMA_PROG_ERROR;
     }
-    return ret;
+    ret
 }

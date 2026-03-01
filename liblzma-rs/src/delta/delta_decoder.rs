@@ -14,9 +14,8 @@ unsafe extern "C" fn decode_buffer(coder: *mut lzma_delta_coder, buffer: *mut u8
         *buffer.offset(i as isize) = (*buffer.offset(i as isize)).wrapping_add(
             (*coder).history[(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize],
         );
-        let fresh1 = (*coder).pos;
+        (*coder).history[((*coder).pos & 0xff) as usize] = *buffer.offset(i as isize);
         (*coder).pos = (*coder).pos.wrapping_sub(1);
-        (*coder).history[(fresh1 & 0xff) as usize] = *buffer.offset(i as isize);
         i += 1;
     }
 }
@@ -33,7 +32,7 @@ unsafe extern "C" fn delta_decode(
 ) -> lzma_ret {
     let coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
     let out_start: size_t = *out_pos;
-    let ret: lzma_ret = (*coder).next.code.expect("non-null function pointer")(
+    let ret: lzma_ret = (*coder).next.code.unwrap()(
         (*coder).next.coder,
         allocator,
         in_0,
@@ -48,7 +47,7 @@ unsafe extern "C" fn delta_decode(
     if size > 0 {
         decode_buffer(coder, out.offset(out_start as isize), size);
     }
-    return ret;
+    ret
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_decoder_init(
@@ -69,8 +68,8 @@ pub unsafe extern "C" fn lzma_delta_decoder_init(
                 size_t,
                 lzma_action,
             ) -> lzma_ret,
-    ) as lzma_code_function;
-    return lzma_delta_coder_init(next, allocator, filters);
+    );
+    lzma_delta_coder_init(next, allocator, filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_props_decode(
@@ -89,7 +88,7 @@ pub unsafe extern "C" fn lzma_delta_props_decode(
         return LZMA_MEM_ERROR;
     }
     (*opt).type_0 = LZMA_DELTA_TYPE_BYTE;
-    (*opt).dist = u32::from(*props.offset(0)).wrapping_add(1);
+    (*opt).dist = u32::from(*props).wrapping_add(1);
     *options = opt as *mut c_void;
-    return LZMA_OK;
+    LZMA_OK
 }

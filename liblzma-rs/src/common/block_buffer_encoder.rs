@@ -42,7 +42,7 @@ extern "C" fn lzma2_bound(uncompressed_size: u64) -> u64 {
     if (COMPRESSED_SIZE_MAX as u64).wrapping_sub(overhead) < uncompressed_size {
         return 0;
     }
-    return uncompressed_size.wrapping_add(overhead);
+    uncompressed_size.wrapping_add(overhead)
 }
 #[no_mangle]
 pub extern "C" fn lzma_block_buffer_bound64(uncompressed_size: u64) -> u64 {
@@ -51,12 +51,12 @@ pub extern "C" fn lzma_block_buffer_bound64(uncompressed_size: u64) -> u64 {
         return 0;
     }
     lzma2_size = lzma2_size.wrapping_add(3) & !(3);
-    return (HEADERS_BOUND as u64).wrapping_add(lzma2_size);
+    (HEADERS_BOUND as u64).wrapping_add(lzma2_size)
 }
 #[no_mangle]
 pub extern "C" fn lzma_block_buffer_bound(uncompressed_size: size_t) -> size_t {
     let ret: u64 = lzma_block_buffer_bound64(uncompressed_size as u64);
-    return ret as size_t;
+    ret as size_t
 }
 unsafe extern "C" fn block_encode_uncompressed(
     block: *mut lzma_block,
@@ -68,14 +68,14 @@ unsafe extern "C" fn block_encode_uncompressed(
 ) -> lzma_ret {
     let mut lzma2: lzma_options_lzma = lzma_options_lzma {
         dict_size: LZMA_DICT_SIZE_MIN as u32,
-        preset_dict: ::core::ptr::null::<u8>(),
+        preset_dict: core::ptr::null(),
         preset_dict_size: 0,
         lc: 0,
         lp: 0,
         pb: 0,
-        mode: 0 as lzma_mode,
+        mode: 0,
         nice_len: 0,
-        mf: 0 as lzma_match_finder,
+        mf: 0,
         depth: 0,
         ext_flags: 0,
         ext_size_low: 0,
@@ -120,33 +120,25 @@ unsafe extern "C" fn block_encode_uncompressed(
     let mut in_pos: size_t = 0;
     let mut control: u8 = 0x1 as u8;
     while in_pos < in_size {
-        let fresh1 = *out_pos;
-        *out_pos = (*out_pos).wrapping_add(1);
-        *out.offset(fresh1 as isize) = control;
+        *out.offset(*out_pos as isize) = control;
+        *out_pos += 1;
         control = 0x2 as u8;
         let copy_size: size_t = if in_size.wrapping_sub(in_pos) < (1u32 << 16) as size_t {
             in_size.wrapping_sub(in_pos)
         } else {
             (1u32 << 16) as size_t
         };
-        let fresh2 = *out_pos;
-        *out_pos = (*out_pos).wrapping_add(1);
-        *out.offset(fresh2 as isize) = (copy_size.wrapping_sub(1) >> 8) as u8;
-        let fresh3 = *out_pos;
-        *out_pos = (*out_pos).wrapping_add(1);
-        *out.offset(fresh3 as isize) = (copy_size.wrapping_sub(1) & 0xff) as u8;
-        memcpy(
-            out.offset(*out_pos as isize) as *mut c_void,
-            in_0.offset(in_pos as isize) as *const c_void,
-            copy_size,
-        );
+        *out.offset(*out_pos as isize) = (copy_size.wrapping_sub(1) >> 8) as u8;
+        *out_pos += 1;
+        *out.offset(*out_pos as isize) = (copy_size.wrapping_sub(1) & 0xff) as u8;
+        *out_pos += 1;
+        core::ptr::copy_nonoverlapping(in_0.offset(in_pos as isize) as *const u8, out.offset(*out_pos as isize) as *mut u8, copy_size);
         in_pos = in_pos.wrapping_add(copy_size);
         *out_pos = (*out_pos).wrapping_add(copy_size);
     }
-    let fresh4 = *out_pos;
-    *out_pos = (*out_pos).wrapping_add(1);
-    *out.offset(fresh4 as isize) = 0;
-    return LZMA_OK;
+    *out.offset(*out_pos as isize) = 0;
+    *out_pos += 1;
+    LZMA_OK
 }
 unsafe extern "C" fn block_encode_normal(
     block: *mut lzma_block,
@@ -185,7 +177,7 @@ unsafe extern "C" fn block_encode_normal(
         lzma_raw_encoder_init(&raw mut raw_encoder, allocator, (*block).filters);
     if ret == LZMA_OK {
         let mut in_pos: size_t = 0;
-        ret = raw_encoder.code.expect("non-null function pointer")(
+        ret = raw_encoder.code.unwrap()(
             raw_encoder.coder,
             allocator,
             in_0,
@@ -212,7 +204,7 @@ unsafe extern "C" fn block_encode_normal(
     if ret != LZMA_OK {
         *out_pos = out_start;
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn block_buffer_encode(
     block: *mut lzma_block,
@@ -268,9 +260,8 @@ unsafe extern "C" fn block_buffer_encode(
     }
     let mut i: size_t = (*block).compressed_size as size_t;
     while i & 3 != 0 {
-        let fresh0 = *out_pos;
-        *out_pos = (*out_pos).wrapping_add(1);
-        *out.offset(fresh0 as isize) = 0;
+        *out.offset(*out_pos as isize) = 0;
+        *out_pos += 1;
         i += 1;
     }
     if check_size > 0 {
@@ -281,19 +272,11 @@ unsafe extern "C" fn block_buffer_encode(
         lzma_check_init(&raw mut check, (*block).check);
         lzma_check_update(&raw mut check, (*block).check, in_0, in_size);
         lzma_check_finish(&raw mut check, (*block).check);
-        memcpy(
-            &raw mut (*block).raw_check as *mut u8 as *mut c_void,
-            &raw mut check.buffer.u8_0 as *mut u8 as *const c_void,
-            check_size,
-        );
-        memcpy(
-            out.offset(*out_pos as isize) as *mut c_void,
-            &raw mut check.buffer.u8_0 as *mut u8 as *const c_void,
-            check_size,
-        );
+        core::ptr::copy_nonoverlapping(&raw mut check.buffer.u8_0 as *const u8, &raw mut (*block).raw_check as *mut u8, check_size);
+        core::ptr::copy_nonoverlapping(&raw mut check.buffer.u8_0 as *const u8, out.offset(*out_pos as isize) as *mut u8, check_size);
         *out_pos = (*out_pos).wrapping_add(check_size);
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_buffer_encode(
@@ -305,9 +288,9 @@ pub unsafe extern "C" fn lzma_block_buffer_encode(
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    return block_buffer_encode(
+    block_buffer_encode(
         block, allocator, in_0, in_size, out, out_pos, out_size, true,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_uncomp_encode(
@@ -318,14 +301,14 @@ pub unsafe extern "C" fn lzma_block_uncomp_encode(
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    return block_buffer_encode(
+    block_buffer_encode(
         block,
-        ::core::ptr::null::<lzma_allocator>(),
+        core::ptr::null(),
         in_0,
         in_size,
         out,
         out_pos,
         out_size,
         false,
-    );
+    )
 }

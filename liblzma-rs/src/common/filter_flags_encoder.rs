@@ -25,7 +25,7 @@ pub unsafe extern "C" fn lzma_filter_flags_size(
     }
     *size = (*size)
         .wrapping_add(lzma_vli_size((*filter).id).wrapping_add(lzma_vli_size(*size as lzma_vli)));
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_filter_flags_encode(
@@ -65,5 +65,5 @@ pub unsafe extern "C" fn lzma_filter_flags_encode(
         return ret__2;
     }
     *out_pos = (*out_pos).wrapping_add(props_size as size_t);
-    return LZMA_OK;
+    LZMA_OK
 }

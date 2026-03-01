@@ -49,7 +49,7 @@ pub const SEQ_PADDING: C2RustUnnamed_2 = 1;
 pub const SEQ_CODE: C2RustUnnamed_2 = 0;
 #[inline]
 extern "C" fn is_size_valid(size: lzma_vli, reference: lzma_vli) -> bool {
-    return reference == LZMA_VLI_UNKNOWN || reference == size;
+    reference == LZMA_VLI_UNKNOWN || reference == size
 }
 unsafe extern "C" fn block_decode(
     coder_ptr: *mut c_void,
@@ -95,7 +95,7 @@ unsafe extern "C" fn block_decode(
                             .wrapping_sub((*coder).uncompressed_size)
                     }) as size_t,
                 );
-                let ret: lzma_ret = (*coder).next.code.expect("non-null function pointer")(
+                let ret: lzma_ret = (*coder).next.code.unwrap()(
                     (*coder).next.coder,
                     allocator,
                     in_0,
@@ -169,9 +169,9 @@ unsafe extern "C" fn block_decode(
                         return LZMA_OK;
                     }
                     (*coder).compressed_size = (*coder).compressed_size.wrapping_add(1);
-                    let fresh0 = *in_pos;
-                    *in_pos = (*in_pos).wrapping_add(1);
-                    if *in_0.offset(fresh0 as isize) != 0 {
+                    let byte = *in_0.offset(*in_pos as isize);
+                    *in_pos += 1;
+                    if byte != 0 {
                         return LZMA_DATA_ERROR;
                     }
                 }
@@ -200,8 +200,8 @@ unsafe extern "C" fn block_decode(
         if !(*coder).ignore_check
             && lzma_check_is_supported((*(*coder).block).check) != 0
             && memcmp(
-                &raw mut (*(*coder).block).raw_check as *mut u8 as *const c_void,
-                &raw mut (*coder).check.buffer.u8_0 as *mut u8 as *const c_void,
+                &raw mut (*(*coder).block).raw_check as *const c_void,
+                &raw mut (*coder).check.buffer.u8_0 as *const c_void,
                 check_size,
             ) != 0
         {
@@ -209,7 +209,7 @@ unsafe extern "C" fn block_decode(
         }
         return LZMA_STREAM_END;
     }
-    return LZMA_PROG_ERROR;
+    LZMA_PROG_ERROR
 }
 unsafe extern "C" fn block_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_block_coder = coder_ptr as *mut lzma_block_coder;
@@ -222,7 +222,7 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     allocator: *const lzma_allocator,
     block: *mut lzma_block,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -242,7 +242,7 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -286,10 +286,10 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             block_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
+        );
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -326,7 +326,7 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     } else {
         false
     };
-    return lzma_raw_decoder_init(&raw mut (*coder).next, allocator, (*block).filters);
+    lzma_raw_decoder_init(&raw mut (*coder).next, allocator, (*block).filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_decoder(
@@ -345,5 +345,5 @@ pub unsafe extern "C" fn lzma_block_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

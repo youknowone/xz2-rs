@@ -43,13 +43,13 @@ pub unsafe extern "C" fn lzma_vli_decode(
         if *vli_pos == LZMA_VLI_BYTES_MAX as size_t {
             return LZMA_DATA_ERROR;
         }
-        if !(*in_pos < in_size) {
+        if *in_pos >= in_size {
             break;
         }
     }
-    return if vli_pos == &raw mut vli_pos_internal {
+    if vli_pos == &raw mut vli_pos_internal {
         LZMA_DATA_ERROR
     } else {
         LZMA_OK
-    };
+    }
 }

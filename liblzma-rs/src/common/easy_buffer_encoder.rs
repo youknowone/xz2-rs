@@ -30,14 +30,14 @@ pub unsafe extern "C" fn lzma_easy_buffer_encode(
         }; 5],
         opt_lzma: lzma_options_lzma {
             dict_size: 0,
-            preset_dict: ::core::ptr::null::<u8>(),
+            preset_dict: core::ptr::null(),
             preset_dict_size: 0,
             lc: 0,
             lp: 0,
             pb: 0,
-            mode: 0 as lzma_mode,
+            mode: 0,
             nice_len: 0,
-            mf: 0 as lzma_match_finder,
+            mf: 0,
             depth: 0,
             ext_flags: 0,
             ext_size_low: 0,
@@ -58,7 +58,7 @@ pub unsafe extern "C" fn lzma_easy_buffer_encode(
     if lzma_easy_preset(&raw mut opt_easy, preset) {
         return LZMA_OPTIONS_ERROR;
     }
-    return lzma_stream_buffer_encode(
+    lzma_stream_buffer_encode(
         &raw mut opt_easy.filters as *mut lzma_filter,
         check,
         allocator,
@@ -67,5 +67,5 @@ pub unsafe extern "C" fn lzma_easy_buffer_encode(
         out,
         out_pos,
         out_size,
-    );
+    )
 }

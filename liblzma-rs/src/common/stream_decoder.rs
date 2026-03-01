@@ -93,7 +93,7 @@ unsafe extern "C" fn stream_decoder_reset(
     }
     (*coder).sequence = SEQ_STREAM_HEADER;
     (*coder).pos = 0;
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn stream_decode(
     coder_ptr: *mut c_void,
@@ -353,10 +353,7 @@ unsafe extern "C" fn stream_decode(
         }
         match current_block_100 {
             721385680381463314 => {
-                let ret_1: lzma_ret = (*coder)
-                    .block_decoder
-                    .code
-                    .expect("non-null function pointer")(
+                let ret_1: lzma_ret = (*coder).block_decoder.code.unwrap()(
                     (*coder).block_decoder.coder,
                     allocator,
                     in_0,
@@ -411,7 +408,7 @@ unsafe extern "C" fn stream_decoder_memconfig(
         }
         (*coder).memlimit = new_memlimit;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_decoder_init(
@@ -420,7 +417,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
     memlimit: u64,
     flags: u32,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
         >,
@@ -437,7 +434,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
         >,
@@ -475,18 +472,13 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             stream_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
+        );
         (*next).get_check =
-            Some(stream_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check)
-                as Option<unsafe extern "C" fn(*const c_void) -> lzma_check>;
-        (*next).memconfig = Some(
-            stream_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
-        )
-            as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>;
+            Some(stream_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check);
+        (*next).memconfig = Some(stream_decoder_memconfig as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret);
         (*coder).block_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -509,7 +501,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
     (*coder).ignore_check = flags & LZMA_IGNORE_CHECK as u32 != 0;
     (*coder).concatenated = flags & LZMA_CONCATENATED as u32 != 0;
     (*coder).first_stream = true;
-    return stream_decoder_reset(coder, allocator);
+    stream_decoder_reset(coder, allocator)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_decoder(
@@ -533,5 +525,5 @@ pub unsafe extern "C" fn lzma_stream_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

@@ -38,7 +38,7 @@ pub const SEQ_HEADER: C2RustUnnamed_0 = 0;
 #[inline]
 extern "C" fn write32le(buf: *mut u8, num: u32) {
     unsafe {
-        *buf.offset(0) = num as u8;
+        *buf = num as u8;
         *buf.offset(1) = (num >> 8) as u8;
         *buf.offset(2) = (num >> 16) as u8;
         *buf.offset(3) = (num >> 24) as u8;
@@ -74,7 +74,7 @@ unsafe extern "C" fn alone_encode(
                 (*coder).sequence = SEQ_CODE;
             }
             1 => {
-                return (*coder).next.code.expect("non-null function pointer")(
+                return (*coder).next.code.unwrap()(
                     (*coder).next.coder,
                     allocator,
                     in_0,
@@ -89,7 +89,7 @@ unsafe extern "C" fn alone_encode(
             _ => return LZMA_PROG_ERROR,
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn alone_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_alone_coder = coder_ptr as *mut lzma_alone_coder;
@@ -101,7 +101,7 @@ unsafe extern "C" fn alone_encoder_init(
     allocator: *const lzma_allocator,
     options: *const lzma_options_lzma,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -121,7 +121,7 @@ unsafe extern "C" fn alone_encoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -159,10 +159,10 @@ unsafe extern "C" fn alone_encoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             alone_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
+        );
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -194,11 +194,7 @@ unsafe extern "C" fn alone_encoder_init(
         d += 1;
     }
     write32le((&raw mut (*coder).header as *mut u8).offset(1), d);
-    memset(
-        (&raw mut (*coder).header as *mut u8).offset(1).offset(4) as *mut c_void,
-        0xff,
-        8,
-    );
+    core::ptr::write_bytes((&raw mut (*coder).header as *mut u8).offset(1).offset(4) as *mut u8, 0xff as u8, 8);
     let filters: [lzma_filter_info; 2] = [
         lzma_filter_info_s {
             id: LZMA_FILTER_LZMA1,
@@ -218,11 +214,11 @@ unsafe extern "C" fn alone_encoder_init(
             options: core::ptr::null_mut(),
         },
     ];
-    return lzma_next_filter_init(
+    lzma_next_filter_init(
         &raw mut (*coder).next,
         allocator,
         &raw const filters as *const lzma_filter_info,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_alone_encoder(
@@ -244,5 +240,5 @@ pub unsafe extern "C" fn lzma_alone_encoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

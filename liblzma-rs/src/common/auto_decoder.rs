@@ -87,7 +87,7 @@ unsafe extern "C" fn auto_decode(
     }
     match current_block_28 {
         13935781298497728377 => {
-            let ret: lzma_ret = (*coder).next.code.expect("non-null function pointer")(
+            let ret: lzma_ret = (*coder).next.code.unwrap()(
                 (*coder).next.coder,
                 allocator,
                 in_0,
@@ -108,11 +108,11 @@ unsafe extern "C" fn auto_decode(
     if *in_pos < in_size {
         return LZMA_DATA_ERROR;
     }
-    return if action == LZMA_FINISH {
+    if action == LZMA_FINISH {
         LZMA_STREAM_END
     } else {
         LZMA_OK
-    };
+    }
 }
 unsafe extern "C" fn auto_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
@@ -125,7 +125,7 @@ extern "C" fn auto_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
         (if (*coder).next.get_check.is_none() {
             LZMA_CHECK_NONE
         } else {
-            (*coder).next.get_check.expect("non-null function pointer")((*coder).next.coder)
+            (*coder).next.get_check.unwrap()((*coder).next.coder)
         }) as lzma_check
     };
 }
@@ -138,7 +138,7 @@ unsafe extern "C" fn auto_decoder_memconfig(
     let coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
     let mut ret: lzma_ret = LZMA_OK;
     if (*coder).next.memconfig.is_some() {
-        ret = (*coder).next.memconfig.expect("non-null function pointer")(
+        ret = (*coder).next.memconfig.unwrap()(
             (*coder).next.coder,
             memusage,
             old_memlimit,
@@ -155,7 +155,7 @@ unsafe extern "C" fn auto_decoder_memconfig(
     if ret == LZMA_OK && new_memlimit != 0 {
         (*coder).memlimit = new_memlimit;
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn auto_decoder_init(
     next: *mut lzma_next_coder,
@@ -163,7 +163,7 @@ unsafe extern "C" fn auto_decoder_init(
     memlimit: u64,
     flags: u32,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
         >,
@@ -180,7 +180,7 @@ unsafe extern "C" fn auto_decoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
         >,
@@ -218,18 +218,13 @@ unsafe extern "C" fn auto_decoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             auto_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
+        );
         (*next).get_check =
-            Some(auto_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check)
-                as Option<unsafe extern "C" fn(*const c_void) -> lzma_check>;
-        (*next).memconfig = Some(
-            auto_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
-        )
-            as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>;
+            Some(auto_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check);
+        (*next).memconfig = Some(auto_decoder_memconfig as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret);
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -246,7 +241,7 @@ unsafe extern "C" fn auto_decoder_init(
     (*coder).memlimit = if 1 > memlimit { 1 } else { memlimit };
     (*coder).flags = flags;
     (*coder).sequence = SEQ_INIT;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_auto_decoder(
@@ -270,5 +265,5 @@ pub unsafe extern "C" fn lzma_auto_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

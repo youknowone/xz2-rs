@@ -12,14 +12,14 @@ pub extern "C" fn lzma_easy_decoder_memusage(preset: u32) -> u64 {
         }; 5],
         opt_lzma: lzma_options_lzma {
             dict_size: 0,
-            preset_dict: ::core::ptr::null::<u8>(),
+            preset_dict: core::ptr::null(),
             preset_dict_size: 0,
             lc: 0,
             lp: 0,
             pb: 0,
-            mode: 0 as lzma_mode,
+            mode: 0,
             nice_len: 0,
-            mf: 0 as lzma_match_finder,
+            mf: 0,
             depth: 0,
             ext_flags: 0,
             ext_size_low: 0,
@@ -40,5 +40,5 @@ pub extern "C" fn lzma_easy_decoder_memusage(preset: u32) -> u64 {
     if unsafe { lzma_easy_preset(&raw mut opt_easy, preset) } {
         return UINT32_MAX as u64;
     }
-    return unsafe { lzma_raw_decoder_memusage(&raw mut opt_easy.filters as *mut lzma_filter) };
+    unsafe { lzma_raw_decoder_memusage(&raw mut opt_easy.filters as *mut lzma_filter) }
 }

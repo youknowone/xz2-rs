@@ -54,14 +54,14 @@ unsafe extern "C" fn microlzma_decode(
         }
         let mut options: lzma_options_lzma = lzma_options_lzma {
             dict_size: (*coder).dict_size,
-            preset_dict: ::core::ptr::null::<u8>(),
+            preset_dict: core::ptr::null(),
             preset_dict_size: 0,
             lc: 0,
             lp: 0,
             pb: 0,
-            mode: 0 as lzma_mode,
+            mode: 0,
             nice_len: 0,
-            mf: 0 as lzma_match_finder,
+            mf: 0,
             depth: 0,
             ext_flags: 0,
             ext_size_low: UINT32_MAX,
@@ -115,7 +115,7 @@ unsafe extern "C" fn microlzma_decode(
         }
         let dummy_in: u8 = 0;
         let mut dummy_in_pos: size_t = 0;
-        if (*coder).lzma.code.expect("non-null function pointer")(
+        if (*coder).lzma.code.unwrap()(
             (*coder).lzma.coder,
             allocator,
             &raw const dummy_in,
@@ -131,7 +131,7 @@ unsafe extern "C" fn microlzma_decode(
         }
         (*coder).props_decoded = true;
     }
-    let mut ret: lzma_ret = (*coder).lzma.code.expect("non-null function pointer")(
+    let mut ret: lzma_ret = (*coder).lzma.code.unwrap()(
         (*coder).lzma.coder,
         allocator,
         in_0,
@@ -159,7 +159,7 @@ unsafe extern "C" fn microlzma_decode(
             ret = LZMA_STREAM_END;
         }
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn microlzma_decoder_end(
     coder_ptr: *mut c_void,
@@ -177,7 +177,7 @@ unsafe extern "C" fn microlzma_decoder_init(
     uncomp_size_is_exact: bool,
     dict_size: u32,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -203,7 +203,7 @@ unsafe extern "C" fn microlzma_decoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -247,10 +247,10 @@ unsafe extern "C" fn microlzma_decoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             microlzma_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
+        );
         (*coder).lzma = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -272,7 +272,7 @@ unsafe extern "C" fn microlzma_decoder_init(
     (*coder).uncomp_size_is_exact = uncomp_size_is_exact;
     (*coder).dict_size = dict_size;
     (*coder).props_decoded = false;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_microlzma_decoder(
@@ -300,5 +300,5 @@ pub unsafe extern "C" fn lzma_microlzma_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

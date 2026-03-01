@@ -15,7 +15,7 @@ extern "C" {
 #[inline]
 extern "C" fn read32le(buf: *const u8) -> u32 {
     return unsafe {
-        let mut num: u32 = *buf.offset(0) as u32;
+        let mut num: u32 = *buf as u32;
         num |= (*buf.offset(1) as u32) << 8;
         num |= (*buf.offset(2) as u32) << 16;
         num |= (*buf.offset(3) as u32) << 24;
@@ -25,7 +25,7 @@ extern "C" fn read32le(buf: *const u8) -> u32 {
 #[inline]
 extern "C" fn write32le(buf: *mut u8, num: u32) {
     unsafe {
-        *buf.offset(0) = num as u8;
+        *buf = num as u8;
         *buf.offset(1) = (num >> 8) as u8;
         *buf.offset(2) = (num >> 16) as u8;
         *buf.offset(3) = (num >> 24) as u8;
@@ -55,7 +55,7 @@ unsafe extern "C" fn arm64_code(
             write32le(buffer.offset(i as isize), instr);
         } else if instr & 0x9f000000 == 0x90000000 {
             let src_0: u32 = instr >> 29 & 3 | instr >> 3 & 0x1ffffc;
-            if !(src_0.wrapping_add(0x20000) & 0x1c0000 != 0) {
+            if src_0.wrapping_add(0x20000) & 0x1c0000 == 0 {
                 instr = (instr & 0x9000001f) as u32;
                 pc >>= 12;
                 if !is_encoder {
@@ -70,7 +70,7 @@ unsafe extern "C" fn arm64_code(
         }
         i = i.wrapping_add(4);
     }
-    return i;
+    i
 }
 extern "C" fn arm64_coder_init(
     next: *mut lzma_next_coder,
@@ -78,7 +78,7 @@ extern "C" fn arm64_coder_init(
     filters: *const lzma_filter_info,
     is_encoder: bool,
 ) -> lzma_ret {
-    return unsafe {
+    unsafe {
         lzma_simple_coder_init(
             next,
             allocator,
@@ -92,7 +92,7 @@ extern "C" fn arm64_coder_init(
             4,
             is_encoder,
         )
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_arm64_encoder_init(
@@ -100,7 +100,7 @@ pub unsafe extern "C" fn lzma_simple_arm64_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return arm64_coder_init(next, allocator, filters, true);
+    arm64_coder_init(next, allocator, filters, true)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_arm64_encode(
@@ -109,7 +109,7 @@ pub unsafe extern "C" fn lzma_bcj_arm64_encode(
     size: size_t,
 ) -> size_t {
     start_offset = (start_offset & !3u32) as u32;
-    return arm64_code(core::ptr::null_mut(), start_offset, true, buf, size);
+    arm64_code(core::ptr::null_mut(), start_offset, true, buf, size)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_arm64_decoder_init(
@@ -117,7 +117,7 @@ pub unsafe extern "C" fn lzma_simple_arm64_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return arm64_coder_init(next, allocator, filters, false);
+    arm64_coder_init(next, allocator, filters, false)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_arm64_decode(
@@ -126,5 +126,5 @@ pub unsafe extern "C" fn lzma_bcj_arm64_decode(
     size: size_t,
 ) -> size_t {
     start_offset = (start_offset & !3u32) as u32;
-    return arm64_code(core::ptr::null_mut(), start_offset, false, buf, size);
+    arm64_code(core::ptr::null_mut(), start_offset, false, buf, size)
 }

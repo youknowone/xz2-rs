@@ -3,7 +3,7 @@ use core::ffi::c_void;
 #[inline]
 extern "C" fn read32le(buf: *const u8) -> u32 {
     return unsafe {
-        let mut num: u32 = *buf.offset(0) as u32;
+        let mut num: u32 = *buf as u32;
         num |= (*buf.offset(1) as u32) << 8;
         num |= (*buf.offset(2) as u32) << 16;
         num |= (*buf.offset(3) as u32) << 24;
@@ -34,5 +34,5 @@ pub unsafe extern "C" fn lzma_simple_props_decode(
     } else {
         *options = opt as *mut c_void;
     }
-    return LZMA_OK;
+    LZMA_OK
 }

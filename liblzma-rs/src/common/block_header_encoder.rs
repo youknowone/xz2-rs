@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_void;
 extern "C" {
     fn lzma_vli_encode(
         vli: lzma_vli,
@@ -22,7 +21,7 @@ extern "C" {
 #[inline]
 extern "C" fn write32le(buf: *mut u8, num: u32) {
     unsafe {
-        *buf.offset(0) = num as u8;
+        *buf = num as u8;
         *buf.offset(1) = (num >> 8) as u8;
         *buf.offset(2) = (num >> 16) as u8;
         *buf.offset(3) = (num >> 24) as u8;
@@ -48,7 +47,7 @@ pub unsafe extern "C" fn lzma_block_header_size(block: *mut lzma_block) -> lzma_
         }
         size = size.wrapping_add(add_0);
     }
-    if (*block).filters.is_null() || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN {
+    if (*block).filters.is_null() || (*(*block).filters).id == LZMA_VLI_UNKNOWN {
         return LZMA_PROG_ERROR;
     }
     let mut i: size_t = 0;
@@ -66,7 +65,7 @@ pub unsafe extern "C" fn lzma_block_header_size(block: *mut lzma_block) -> lzma_
         i += 1;
     }
     (*block).header_size = size.wrapping_add(3) & !(3);
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_header_encode(
@@ -80,7 +79,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         return LZMA_PROG_ERROR;
     }
     let out_size: size_t = (*block).header_size.wrapping_sub(4) as size_t;
-    *out.offset(0) = out_size.wrapping_div(4) as u8;
+    *out = out_size.wrapping_div(4) as u8;
     *out.offset(1) = 0;
     let mut out_pos: size_t = 2;
     if (*block).compressed_size != LZMA_VLI_UNKNOWN {
@@ -109,7 +108,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         }
         *out.offset(1) |= 0x80;
     }
-    if (*block).filters.is_null() || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN {
+    if (*block).filters.is_null() || (*(*block).filters).id == LZMA_VLI_UNKNOWN {
         return LZMA_PROG_ERROR;
     }
     let mut filter_count: size_t = 0;
@@ -127,16 +126,12 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             return ret__1;
         }
         filter_count += 1;
-        if !((*(*block).filters.offset(filter_count as isize)).id != LZMA_VLI_UNKNOWN) {
+        if (*(*block).filters.offset(filter_count as isize)).id == LZMA_VLI_UNKNOWN {
             break;
         }
     }
     *out.offset(1) |= filter_count.wrapping_sub(1) as u8;
-    memset(
-        out.offset(out_pos as isize) as *mut c_void,
-        0,
-        out_size.wrapping_sub(out_pos),
-    );
+    core::ptr::write_bytes(out.offset(out_pos as isize) as *mut u8, 0 as u8, out_size.wrapping_sub(out_pos));
     write32le(out.offset(out_size as isize), lzma_crc32(out, out_size, 0));
-    return LZMA_OK;
+    LZMA_OK
 }

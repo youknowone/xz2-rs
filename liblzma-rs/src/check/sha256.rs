@@ -1,8 +1,8 @@
 use crate::types::*;
-use core::ffi::{c_uint, c_void};
+use core::ffi::c_uint;
 #[inline]
 extern "C" fn rotr_32(num: u32, amount: c_uint) -> u32 {
-    return num >> amount | num << 32u32.wrapping_sub(amount);
+    num >> amount | num << 32u32.wrapping_sub(amount)
 }
 static mut SHA256_K: [u32; 64] = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -17,15 +17,11 @@ static mut SHA256_K: [u32; 64] = [
 unsafe extern "C" fn transform(state: *mut u32, data: *const u32) {
     let mut W: [u32; 16] = [0; 16];
     let mut T: [u32; 8] = [0; 8];
-    memcpy(
-        &raw mut T as *mut u32 as *mut c_void,
-        state as *const c_void,
-        core::mem::size_of::<[u32; 8]>(),
-    );
-    W[0] = (*data.offset(0) & 0xff) << 24
-        | (*data.offset(0) & 0xff00) << 8
-        | (*data.offset(0) & 0xff0000) >> 8
-        | (*data.offset(0) & 0xff000000) >> 24;
+    core::ptr::copy_nonoverlapping(state as *const u8, &raw mut T as *mut u8, core::mem::size_of::<[u32; 8]>());
+    W[0] = (*data & 0xff) << 24
+        | (*data & 0xff00) << 8
+        | (*data & 0xff0000) >> 8
+        | (*data & 0xff000000) >> 24;
     T[7] = T[7].wrapping_add(
         rotr_32(T[4] ^ rotr_32(T[4] ^ rotr_32(T[4], 14), 5), 6)
             .wrapping_add(T[6] ^ T[4] & (T[5] ^ T[6]))
@@ -529,7 +525,7 @@ unsafe extern "C" fn transform(state: *mut u32, data: *const u32) {
 unsafe extern "C" fn process(check: *mut lzma_check_state) {
     transform(
         &raw mut (*check).state.sha256.state as *mut u32,
-        &raw mut (*check).buffer.u32_0 as *mut u32 as *const u32,
+        &raw mut (*check).buffer.u32_0 as *const u32,
     );
 }
 #[no_mangle]
@@ -538,11 +534,7 @@ pub unsafe extern "C" fn lzma_sha256_init(check: *mut lzma_check_state) {
         0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
         0x5be0cd19,
     ];
-    memcpy(
-        &raw mut (*check).state.sha256.state as *mut u32 as *mut c_void,
-        &raw const s as *const u32 as *const c_void,
-        core::mem::size_of::<[u32; 8]>(),
-    );
+    core::ptr::copy_nonoverlapping(&raw const s as *const u8, &raw mut (*check).state.sha256.state as *mut u8, core::mem::size_of::<[u32; 8]>());
     (*check).state.sha256.size = 0;
 }
 #[no_mangle]
@@ -557,11 +549,7 @@ pub unsafe extern "C" fn lzma_sha256_update(
         if copy_size > size {
             copy_size = size;
         }
-        memcpy(
-            (&raw mut (*check).buffer.u8_0 as *mut u8).offset(copy_start as isize) as *mut c_void,
-            buf as *const c_void,
-            copy_size,
-        );
+        core::ptr::copy_nonoverlapping(buf as *const u8, (&raw mut (*check).buffer.u8_0 as *mut u8).offset(copy_start as isize) as *mut u8, copy_size);
         buf = buf.offset(copy_size as isize);
         size = size.wrapping_sub(copy_size);
         (*check).state.sha256.size = (*check).state.sha256.size.wrapping_add(copy_size as u64);
@@ -573,17 +561,15 @@ pub unsafe extern "C" fn lzma_sha256_update(
 #[no_mangle]
 pub unsafe extern "C" fn lzma_sha256_finish(check: *mut lzma_check_state) {
     let mut pos: size_t = ((*check).state.sha256.size & 0x3f as u64) as size_t;
-    let fresh8 = pos;
+    (*check).buffer.u8_0[pos as usize] = 0x80 as u8;
     pos += 1;
-    (*check).buffer.u8_0[fresh8 as usize] = 0x80 as u8;
     while pos != (64 - 8) as size_t {
         if pos == 64 {
             process(check);
             pos = 0;
         }
-        let fresh9 = pos;
+        (*check).buffer.u8_0[pos as usize] = 0;
         pos += 1;
-        (*check).buffer.u8_0[fresh9 as usize] = 0;
     }
     (*check).state.sha256.size = (*check).state.sha256.size.wrapping_mul(8);
     (*check).buffer.u64_0[7] = ((*check).state.sha256.size & 0xff as u64) << 56

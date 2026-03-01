@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_void;
 extern "C" {
     fn lzma_next_filter_init(
         next: *mut lzma_next_coder,
@@ -128,7 +127,7 @@ pub unsafe extern "C" fn lzma_filters_copy(
     let mut i: size_t = 0;
     i = 0;
     's_15: loop {
-        if !((*src.offset(i as isize)).id != LZMA_VLI_UNKNOWN) {
+        if (*src.offset(i as isize)).id == LZMA_VLI_UNKNOWN {
             current_block = 7175849428784450219;
             break;
         }
@@ -158,9 +157,9 @@ pub unsafe extern "C" fn lzma_filters_copy(
                     current_block = 6392083060350426025;
                     break;
                 } else {
-                    memcpy(
-                        dest[i as usize].options,
-                        (*src.offset(i as isize)).options,
+                    core::ptr::copy_nonoverlapping(
+                        (*src.offset(i as isize)).options as *const u8,
+                        dest[i as usize].options as *mut u8,
                         features[j as usize].options_size,
                     );
                 }
@@ -179,12 +178,8 @@ pub unsafe extern "C" fn lzma_filters_copy(
         _ => {
             dest[i as usize].id = LZMA_VLI_UNKNOWN;
             dest[i as usize].options = core::ptr::null_mut();
-            memcpy(
-                real_dest as *mut c_void,
-                &raw mut dest as *mut lzma_filter as *const c_void,
-                i.wrapping_add(1)
-                    .wrapping_mul(core::mem::size_of::<lzma_filter>()),
-            );
+            core::ptr::copy_nonoverlapping(&raw mut dest as *const u8, real_dest as *mut u8, i.wrapping_add(1)
+                .wrapping_mul(core::mem::size_of::<lzma_filter>()));
             return LZMA_OK;
         }
     };
@@ -213,7 +208,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
     filters: *const lzma_filter,
     count: *mut size_t,
 ) -> lzma_ret {
-    if filters.is_null() || (*filters.offset(0)).id == LZMA_VLI_UNKNOWN {
+    if filters.is_null() || (*filters).id == LZMA_VLI_UNKNOWN {
         return LZMA_PROG_ERROR;
     }
     let mut changes_size_count: size_t = 0;
@@ -237,7 +232,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
         changes_size_count =
             changes_size_count.wrapping_add(features[j as usize].changes_size as size_t);
         i += 1;
-        if !((*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN) {
+        if (*filters.offset(i as isize)).id == LZMA_VLI_UNKNOWN {
             break;
         }
     }
@@ -245,7 +240,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
         return LZMA_OPTIONS_ERROR;
     }
     *count = i;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_coder_init(
@@ -270,8 +265,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
         while i < count {
             let j: size_t = count.wrapping_sub(i).wrapping_sub(1);
             let fc: *const lzma_filter_coder =
-                coder_find.expect("non-null function pointer")((*options.offset(i as isize)).id)
-                    as *const lzma_filter_coder;
+                coder_find.unwrap()((*options.offset(i as isize)).id) as *const lzma_filter_coder;
             if fc.is_null() || (*fc).init.is_none() {
                 return LZMA_OPTIONS_ERROR;
             }
@@ -284,8 +278,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
         let mut i_0: size_t = 0;
         while i_0 < count {
             let fc_0: *const lzma_filter_coder =
-                coder_find.expect("non-null function pointer")((*options.offset(i_0 as isize)).id)
-                    as *const lzma_filter_coder;
+                coder_find.unwrap()((*options.offset(i_0 as isize)).id) as *const lzma_filter_coder;
             if fc_0.is_null() || (*fc_0).init.is_none() {
                 return LZMA_OPTIONS_ERROR;
             }
@@ -302,7 +295,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
     if ret != LZMA_OK {
         lzma_next_end(next, allocator);
     }
-    return ret;
+    ret
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_raw_coder_memusage(
@@ -317,26 +310,23 @@ pub unsafe extern "C" fn lzma_raw_coder_memusage(
     let mut i: size_t = 0;
     loop {
         let fc: *const lzma_filter_coder =
-            coder_find.expect("non-null function pointer")((*filters.offset(i as isize)).id)
-                as *const lzma_filter_coder;
+            coder_find.unwrap()((*filters.offset(i as isize)).id) as *const lzma_filter_coder;
         if fc.is_null() {
             return UINT64_MAX;
         }
         if (*fc).memusage.is_none() {
             total = total.wrapping_add(1024);
         } else {
-            let usage: u64 = (*fc).memusage.expect("non-null function pointer")(
-                (*filters.offset(i as isize)).options,
-            ) as u64;
+            let usage: u64 = (*fc).memusage.unwrap()((*filters.offset(i as isize)).options) as u64;
             if usage == UINT64_MAX {
                 return UINT64_MAX;
             }
             total = total.wrapping_add(usage);
         }
         i += 1;
-        if !((*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN) {
+        if (*filters.offset(i as isize)).id == LZMA_VLI_UNKNOWN {
             break;
         }
     }
-    return total.wrapping_add(LZMA_MEMUSAGE_BASE);
+    total.wrapping_add(LZMA_MEMUSAGE_BASE)
 }

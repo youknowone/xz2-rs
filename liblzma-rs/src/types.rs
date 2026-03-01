@@ -596,9 +596,6 @@ extern "C" {
     pub fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
     pub fn lzma_alloc_zero(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
     pub fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
-    pub fn memcpy(dst: *mut c_void, src: *const c_void, n: size_t) -> *mut c_void;
-    pub fn memset(s: *mut c_void, c: c_int, n: size_t) -> *mut c_void;
-    pub fn memmove(dst: *mut c_void, src: *const c_void, n: size_t) -> *mut c_void;
     pub fn memcmp(s1: *const c_void, s2: *const c_void, n: size_t) -> c_int;
     pub fn memchr(s: *const c_void, c: c_int, n: size_t) -> *mut c_void;
     pub fn strlen(s: *const c_char) -> size_t;

@@ -54,7 +54,7 @@ pub const SEQ_ID_STRING: C2RustUnnamed_0 = 0;
 #[inline]
 extern "C" fn read32le(buf: *const u8) -> u32 {
     return unsafe {
-        let mut num: u32 = *buf.offset(0) as u32;
+        let mut num: u32 = *buf as u32;
         num |= (*buf.offset(1) as u32) << 8;
         num |= (*buf.offset(2) as u32) << 16;
         num |= (*buf.offset(3) as u32) << 24;
@@ -64,7 +64,7 @@ extern "C" fn read32le(buf: *const u8) -> u32 {
 #[inline]
 extern "C" fn read64le(buf: *const u8) -> u64 {
     return unsafe {
-        let mut num: u64 = *buf.offset(0) as u64;
+        let mut num: u64 = *buf as u64;
         num |= (*buf.offset(1) as u64) << 8;
         num |= (*buf.offset(2) as u64) << 16;
         num |= (*buf.offset(3) as u64) << 24;
@@ -97,7 +97,7 @@ unsafe extern "C" fn lzip_decode(
         match (*coder).sequence {
             0 => {
                 let lzip_id_string: [u8; 4] = [0x4c as u8, 0x5a as u8, 0x49 as u8, 0x50 as u8];
-                while (*coder).pos < core::mem::size_of::<[u8; 4]>() as usize {
+                while (*coder).pos < core::mem::size_of::<[u8; 4]>() {
                     if *in_pos >= in_size {
                         return if !(*coder).first_member && action == LZMA_FINISH {
                             LZMA_STREAM_END
@@ -144,9 +144,8 @@ unsafe extern "C" fn lzip_decode(
                 if *in_pos >= in_size {
                     return LZMA_OK;
                 }
-                let fresh0 = *in_pos;
-                *in_pos = (*in_pos).wrapping_add(1);
-                (*coder).version = *in_0.offset(fresh0 as isize) as u32;
+                (*coder).version = *in_0.offset(*in_pos as isize) as u32;
+                *in_pos += 1;
                 if (*coder).version > 1 {
                     return LZMA_OPTIONS_ERROR;
                 }
@@ -164,9 +163,8 @@ unsafe extern "C" fn lzip_decode(
                 if *in_pos >= in_size {
                     return LZMA_OK;
                 }
-                let fresh1 = *in_pos;
-                *in_pos = (*in_pos).wrapping_add(1);
-                let ds: u32 = *in_0.offset(fresh1 as isize) as u32;
+                let ds: u32 = *in_0.offset(*in_pos as isize) as u32;
+                *in_pos += 1;
                 (*coder).member_size = (*coder).member_size.wrapping_add(1);
                 let b2log: u32 = ds & 0x1f;
                 let fracnum: u32 = ds >> 5;
@@ -175,7 +173,7 @@ unsafe extern "C" fn lzip_decode(
                 }
                 (*coder).options.dict_size =
                     (1u32 << b2log).wrapping_sub(fracnum << b2log.wrapping_sub(4));
-                (*coder).options.preset_dict = ::core::ptr::null::<u8>();
+                (*coder).options.preset_dict = core::ptr::null();
                 (*coder).options.lc = LZIP_LC;
                 (*coder).options.lp = LZIP_LP;
                 (*coder).options.pb = LZIP_PB;
@@ -230,10 +228,7 @@ unsafe extern "C" fn lzip_decode(
             13394712405657322686 => {
                 let in_start: size_t = *in_pos;
                 let out_start: size_t = *out_pos;
-                let ret: lzma_ret = (*coder)
-                    .lzma_decoder
-                    .code
-                    .expect("non-null function pointer")(
+                let ret: lzma_ret = (*coder).lzma_decoder.code.unwrap()(
                     (*coder).lzma_decoder.coder,
                     allocator,
                     in_0,
@@ -281,7 +276,7 @@ unsafe extern "C" fn lzip_decode(
         (*coder).member_size = (*coder).member_size.wrapping_add(footer_size as u64);
         if !(*coder).ignore_check
             && (*coder).crc32
-                != read32le((&raw mut (*coder).buffer as *mut u8).offset(0) as *mut u8)
+                != read32le((&raw mut (*coder).buffer as *mut u8) as *mut u8)
         {
             return LZMA_DATA_ERROR;
         }
@@ -310,7 +305,7 @@ unsafe extern "C" fn lzip_decoder_end(coder_ptr: *mut c_void, allocator: *const 
     lzma_free(coder as *mut c_void, allocator);
 }
 extern "C" fn lzip_decoder_get_check(_coder_ptr: *const c_void) -> lzma_check {
-    return LZMA_CHECK_CRC32;
+    LZMA_CHECK_CRC32
 }
 unsafe extern "C" fn lzip_decoder_memconfig(
     coder_ptr: *mut c_void,
@@ -327,7 +322,7 @@ unsafe extern "C" fn lzip_decoder_memconfig(
         }
         (*coder).memlimit = new_memlimit;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzip_decoder_init(
@@ -336,7 +331,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     memlimit: u64,
     flags: u32,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
         >,
@@ -353,7 +348,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
         >,
@@ -391,18 +386,13 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             lzip_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
+        );
         (*next).get_check =
-            Some(lzip_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check)
-                as Option<unsafe extern "C" fn(*const c_void) -> lzma_check>;
-        (*next).memconfig = Some(
-            lzip_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
-        )
-            as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>;
+            Some(lzip_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check);
+        (*next).memconfig = Some(lzip_decoder_memconfig as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret);
         (*coder).lzma_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -424,7 +414,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     (*coder).concatenated = flags & LZMA_CONCATENATED as u32 != 0;
     (*coder).first_member = true;
     (*coder).pos = 0;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lzip_decoder(
@@ -448,5 +438,5 @@ pub unsafe extern "C" fn lzma_lzip_decoder(
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

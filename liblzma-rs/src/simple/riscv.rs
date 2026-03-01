@@ -15,7 +15,7 @@ extern "C" {
 #[inline]
 extern "C" fn read32be(buf: *const u8) -> u32 {
     return unsafe {
-        let mut num: u32 = (*buf.offset(0) as u32) << 24;
+        let mut num: u32 = (*buf as u32) << 24;
         num |= (*buf.offset(1) as u32) << 16;
         num |= (*buf.offset(2) as u32) << 8;
         num |= *buf.offset(3) as u32;
@@ -25,7 +25,7 @@ extern "C" fn read32be(buf: *const u8) -> u32 {
 #[inline]
 extern "C" fn read32le(buf: *const u8) -> u32 {
     return unsafe {
-        let mut num: u32 = *buf.offset(0) as u32;
+        let mut num: u32 = *buf as u32;
         num |= (*buf.offset(1) as u32) << 8;
         num |= (*buf.offset(2) as u32) << 16;
         num |= (*buf.offset(3) as u32) << 24;
@@ -35,7 +35,7 @@ extern "C" fn read32le(buf: *const u8) -> u32 {
 #[inline]
 extern "C" fn write32be(buf: *mut u8, num: u32) {
     unsafe {
-        *buf.offset(0) = (num >> 24) as u8;
+        *buf = (num >> 24) as u8;
         *buf.offset(1) = (num >> 16) as u8;
         *buf.offset(2) = (num >> 8) as u8;
         *buf.offset(3) = num as u8;
@@ -44,7 +44,7 @@ extern "C" fn write32be(buf: *mut u8, num: u32) {
 #[inline]
 extern "C" fn write32le(buf: *mut u8, num: u32) {
     unsafe {
-        *buf.offset(0) = num as u8;
+        *buf = num as u8;
         *buf.offset(1) = (num >> 8) as u8;
         *buf.offset(2) = (num >> 16) as u8;
         *buf.offset(3) = (num >> 24) as u8;
@@ -68,7 +68,7 @@ unsafe extern "C" fn riscv_encode(
         let mut inst: u32 = *buffer.offset(i as isize) as u32;
         if inst == 0xef {
             let b1: u32 = *buffer.offset(i.wrapping_add(1) as isize) as u32;
-            if !(b1 & 0xd != 0) {
+            if b1 & 0xd == 0 {
                 let b2: u32 = *buffer.offset(i.wrapping_add(2) as isize) as u32;
                 let b3: u32 = *buffer.offset(i.wrapping_add(3) as isize) as u32;
                 let pc: u32 = now_pos.wrapping_add(i as u32);
@@ -125,7 +125,7 @@ unsafe extern "C" fn riscv_encode(
         }
         i = i.wrapping_add(2);
     }
-    return i;
+    i
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
@@ -133,7 +133,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return lzma_simple_coder_init(
+    lzma_simple_coder_init(
         next,
         allocator,
         filters,
@@ -144,7 +144,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
         8,
         2,
         true,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_riscv_encode(
@@ -153,7 +153,7 @@ pub unsafe extern "C" fn lzma_bcj_riscv_encode(
     size: size_t,
 ) -> size_t {
     start_offset = (start_offset & !1u32) as u32;
-    return riscv_encode(core::ptr::null_mut(), start_offset, true, buf, size);
+    riscv_encode(core::ptr::null_mut(), start_offset, true, buf, size)
 }
 unsafe extern "C" fn riscv_decode(
     _simple: *mut c_void,
@@ -173,7 +173,7 @@ unsafe extern "C" fn riscv_decode(
         let mut inst: u32 = *buffer.offset(i as isize) as u32;
         if inst == 0xef {
             let b1: u32 = *buffer.offset(i.wrapping_add(1) as isize) as u32;
-            if !(b1 & 0xd != 0) {
+            if b1 & 0xd == 0 {
                 let b2: u32 = *buffer.offset(i.wrapping_add(2) as isize) as u32;
                 let b3: u32 = *buffer.offset(i.wrapping_add(3) as isize) as u32;
                 let pc: u32 = now_pos.wrapping_add(i as u32);
@@ -227,7 +227,7 @@ unsafe extern "C" fn riscv_decode(
         }
         i = i.wrapping_add(2);
     }
-    return i;
+    i
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
@@ -235,7 +235,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return lzma_simple_coder_init(
+    lzma_simple_coder_init(
         next,
         allocator,
         filters,
@@ -246,7 +246,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
         8,
         2,
         false,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_riscv_decode(
@@ -255,5 +255,5 @@ pub unsafe extern "C" fn lzma_bcj_riscv_decode(
     size: size_t,
 ) -> size_t {
     start_offset = (start_offset & !1u32) as u32;
-    return riscv_decode(core::ptr::null_mut(), start_offset, false, buf, size);
+    riscv_decode(core::ptr::null_mut(), start_offset, false, buf, size)
 }

@@ -25,9 +25,8 @@ unsafe extern "C" fn copy_and_encode(
     while i < size {
         let tmp: u8 =
             (*coder).history[(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize];
-        let fresh2 = (*coder).pos;
+        (*coder).history[((*coder).pos & 0xff) as usize] = *in_0.offset(i as isize);
         (*coder).pos = (*coder).pos.wrapping_sub(1);
-        (*coder).history[(fresh2 & 0xff) as usize] = *in_0.offset(i as isize);
         *out.offset(i as isize) = (*in_0.offset(i as isize)).wrapping_sub(tmp);
         i += 1;
     }
@@ -38,9 +37,8 @@ unsafe extern "C" fn encode_in_place(coder: *mut lzma_delta_coder, buffer: *mut 
     while i < size {
         let tmp: u8 =
             (*coder).history[(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize];
-        let fresh0 = (*coder).pos;
+        (*coder).history[((*coder).pos & 0xff) as usize] = *buffer.offset(i as isize);
         (*coder).pos = (*coder).pos.wrapping_sub(1);
-        (*coder).history[(fresh0 & 0xff) as usize] = *buffer.offset(i as isize);
         *buffer.offset(i as isize) = (*buffer.offset(i as isize)).wrapping_sub(tmp);
         i += 1;
     }
@@ -83,7 +81,7 @@ unsafe extern "C" fn delta_encode(
         };
     } else {
         let out_start: size_t = *out_pos;
-        ret = (*coder).next.code.expect("non-null function pointer")(
+        ret = (*coder).next.code.unwrap()(
             (*coder).next.coder,
             allocator,
             in_0,
@@ -99,7 +97,7 @@ unsafe extern "C" fn delta_encode(
             encode_in_place(coder, out.offset(out_start as isize), size_0);
         }
     }
-    return ret;
+    ret
 }
 unsafe extern "C" fn delta_encoder_update(
     coder_ptr: *mut c_void,
@@ -108,11 +106,11 @@ unsafe extern "C" fn delta_encoder_update(
     reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
     let coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
-    return lzma_next_filter_update(
+    lzma_next_filter_update(
         &raw mut (*coder).next,
         allocator,
         reversed_filters.offset(1),
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_encoder_init(
@@ -133,25 +131,14 @@ pub unsafe extern "C" fn lzma_delta_encoder_init(
                 size_t,
                 lzma_action,
             ) -> lzma_ret,
-    ) as lzma_code_function;
-    (*next).update = Some(
-        delta_encoder_update
-            as unsafe extern "C" fn(
-                *mut c_void,
-                *const lzma_allocator,
-                *const lzma_filter,
-                *const lzma_filter,
-            ) -> lzma_ret,
-    )
-        as Option<
-            unsafe extern "C" fn(
-                *mut c_void,
-                *const lzma_allocator,
-                *const lzma_filter,
-                *const lzma_filter,
-            ) -> lzma_ret,
-        >;
-    return lzma_delta_coder_init(next, allocator, filters);
+    );
+    (*next).update = Some(delta_encoder_update as unsafe extern "C" fn(
+        *mut c_void,
+        *const lzma_allocator,
+        *const lzma_filter,
+        *const lzma_filter,
+    ) -> lzma_ret);
+    lzma_delta_coder_init(next, allocator, filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
@@ -159,6 +146,6 @@ pub unsafe extern "C" fn lzma_delta_props_encode(options: *const c_void, out: *m
         return LZMA_PROG_ERROR;
     }
     let opt: *const lzma_options_delta = options as *const lzma_options_delta;
-    *out.offset(0) = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN) as u8;
-    return LZMA_OK;
+    *out = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN) as u8;
+    LZMA_OK
 }

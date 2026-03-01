@@ -30,7 +30,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
         (*next).coder = coder as *mut c_void;
         (*next).end =
             Some(delta_coder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ())
-                as lzma_end_function;
+               ;
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -44,14 +44,14 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
             set_out_limit: None,
         };
     }
-    if lzma_delta_coder_memusage((*filters.offset(0)).options) == UINT64_MAX {
+    if lzma_delta_coder_memusage((*filters).options) == UINT64_MAX {
         return LZMA_OPTIONS_ERROR;
     }
-    let opt: *const lzma_options_delta = (*filters.offset(0)).options as *const lzma_options_delta;
+    let opt: *const lzma_options_delta = (*filters).options as *const lzma_options_delta;
     (*coder).distance = (*opt).dist as size_t;
     (*coder).pos = 0;
-    memset(&raw mut (*coder).history as *mut u8 as *mut c_void, 0, 256);
-    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
+    core::ptr::write_bytes(&raw mut (*coder).history as *mut u8, 0 as u8, 256);
+    lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1))
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u64 {
@@ -63,5 +63,5 @@ pub unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u6
     {
         return UINT64_MAX;
     }
-    return core::mem::size_of::<lzma_delta_coder>() as u64;
+    core::mem::size_of::<lzma_delta_coder>() as u64
 }

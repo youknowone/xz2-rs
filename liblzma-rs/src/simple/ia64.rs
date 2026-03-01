@@ -32,7 +32,7 @@ unsafe extern "C" fn ia64_code(
         let mut bit_pos: u32 = 5;
         let mut slot: size_t = 0;
         while slot < 3 {
-            if !(mask >> slot & 1 == 0) {
+            if mask >> slot & 1 != 0 {
                 let byte_pos: size_t = (bit_pos >> 3) as size_t;
                 let bit_res: u32 = bit_pos & 0x7;
                 let mut instruction: u64 = 0;
@@ -74,7 +74,7 @@ unsafe extern "C" fn ia64_code(
         }
         i = i.wrapping_add(16);
     }
-    return i;
+    i
 }
 extern "C" fn ia64_coder_init(
     next: *mut lzma_next_coder,
@@ -82,7 +82,7 @@ extern "C" fn ia64_coder_init(
     filters: *const lzma_filter_info,
     is_encoder: bool,
 ) -> lzma_ret {
-    return unsafe {
+    unsafe {
         lzma_simple_coder_init(
             next,
             allocator,
@@ -96,7 +96,7 @@ extern "C" fn ia64_coder_init(
             16,
             is_encoder,
         )
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_ia64_encoder_init(
@@ -104,7 +104,7 @@ pub unsafe extern "C" fn lzma_simple_ia64_encoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return ia64_coder_init(next, allocator, filters, true);
+    ia64_coder_init(next, allocator, filters, true)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_ia64_decoder_init(
@@ -112,5 +112,5 @@ pub unsafe extern "C" fn lzma_simple_ia64_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
-    return ia64_coder_init(next, allocator, filters, false);
+    ia64_coder_init(next, allocator, filters, false)
 }

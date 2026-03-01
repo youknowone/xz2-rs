@@ -8,9 +8,9 @@ pub extern "C" fn lzma_vli_size(mut vli: lzma_vli) -> u32 {
     loop {
         vli >>= 7;
         i += 1;
-        if !(vli != 0) {
+        if vli == 0 {
             break;
         }
     }
-    return i;
+    i
 }

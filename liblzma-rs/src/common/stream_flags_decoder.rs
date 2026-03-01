@@ -8,7 +8,7 @@ extern "C" {
 #[inline]
 extern "C" fn read32le(buf: *const u8) -> u32 {
     return unsafe {
-        let mut num: u32 = *buf.offset(0) as u32;
+        let mut num: u32 = *buf as u32;
         num |= (*buf.offset(1) as u32) << 8;
         num |= (*buf.offset(2) as u32) << 16;
         num |= (*buf.offset(3) as u32) << 24;
@@ -18,7 +18,7 @@ extern "C" fn read32le(buf: *const u8) -> u32 {
 pub const LZMA_STREAM_FLAGS_SIZE: u32 = 2;
 extern "C" fn stream_flags_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> bool {
     return unsafe {
-        if *in_0.offset(0) != 0 || *in_0.offset(1) & 0xf0 != 0 {
+        if *in_0 != 0 || *in_0.offset(1) & 0xf0 != 0 {
             return true;
         }
         (*options).version = 0;
@@ -33,20 +33,20 @@ pub unsafe extern "C" fn lzma_stream_header_decode(
 ) -> lzma_ret {
     if memcmp(
         in_0 as *const c_void,
-        &raw const lzma_header_magic as *const u8 as *const c_void,
+        &raw const lzma_header_magic as *const c_void,
         core::mem::size_of::<[u8; 6]>(),
     ) != 0
     {
         return LZMA_FORMAT_ERROR;
     }
     let crc: u32 = lzma_crc32(
-        in_0.offset(core::mem::size_of::<[u8; 6]>() as usize as isize),
+        in_0.offset(core::mem::size_of::<[u8; 6]>() as isize),
         LZMA_STREAM_FLAGS_SIZE as size_t,
         0,
     ) as u32;
     if crc
         != read32le(
-            in_0.offset(core::mem::size_of::<[u8; 6]>() as usize as isize)
+            in_0.offset(core::mem::size_of::<[u8; 6]>() as isize)
                 .offset(LZMA_STREAM_FLAGS_SIZE as isize),
         )
     {
@@ -54,12 +54,12 @@ pub unsafe extern "C" fn lzma_stream_header_decode(
     }
     if stream_flags_decode(
         options,
-        in_0.offset(core::mem::size_of::<[u8; 6]>() as usize as isize),
+        in_0.offset(core::mem::size_of::<[u8; 6]>() as isize),
     ) {
         return LZMA_OPTIONS_ERROR;
     }
     (*options).backward_size = LZMA_VLI_UNKNOWN;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_footer_decode(
@@ -67,16 +67,16 @@ pub unsafe extern "C" fn lzma_stream_footer_decode(
     in_0: *const u8,
 ) -> lzma_ret {
     if memcmp(
-        in_0.offset((core::mem::size_of::<u32>() as usize).wrapping_mul(2 as usize) as isize)
+        in_0.offset((core::mem::size_of::<u32>()).wrapping_mul(2) as isize)
             .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *const c_void,
-        &raw const lzma_footer_magic as *const u8 as *const c_void,
+        &raw const lzma_footer_magic as *const c_void,
         core::mem::size_of::<[u8; 2]>(),
     ) != 0
     {
         return LZMA_FORMAT_ERROR;
     }
     let crc: u32 = lzma_crc32(
-        in_0.offset(core::mem::size_of::<u32>() as usize as isize),
+        in_0.offset(core::mem::size_of::<u32>() as isize),
         (core::mem::size_of::<u32>()).wrapping_add(LZMA_STREAM_FLAGS_SIZE as size_t),
         0,
     ) as u32;
@@ -85,12 +85,12 @@ pub unsafe extern "C" fn lzma_stream_footer_decode(
     }
     if stream_flags_decode(
         options,
-        in_0.offset((core::mem::size_of::<u32>() as usize).wrapping_mul(2 as usize) as isize),
+        in_0.offset((core::mem::size_of::<u32>()).wrapping_mul(2) as isize),
     ) {
         return LZMA_OPTIONS_ERROR;
     }
     (*options).backward_size =
-        read32le(in_0.offset(core::mem::size_of::<u32>() as usize as isize)) as lzma_vli;
+        read32le(in_0.offset(core::mem::size_of::<u32>() as isize)) as lzma_vli;
     (*options).backward_size = (*options).backward_size.wrapping_add(1).wrapping_mul(4);
-    return LZMA_OK;
+    LZMA_OK
 }

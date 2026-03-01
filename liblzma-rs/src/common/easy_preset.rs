@@ -11,5 +11,5 @@ pub unsafe extern "C" fn lzma_easy_preset(opt_easy: *mut lzma_options_easy, pres
     (*opt_easy).filters[0].id = LZMA_FILTER_LZMA2;
     (*opt_easy).filters[0].options = &raw mut (*opt_easy).opt_lzma as *mut c_void;
     (*opt_easy).filters[1].id = LZMA_VLI_UNKNOWN;
-    return false;
+    false
 }

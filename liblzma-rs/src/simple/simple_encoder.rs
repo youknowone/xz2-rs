@@ -3,7 +3,7 @@ use core::ffi::c_void;
 #[inline]
 extern "C" fn write32le(buf: *mut u8, num: u32) {
     unsafe {
-        *buf.offset(0) = num as u8;
+        *buf = num as u8;
         *buf.offset(1) = (num >> 8) as u8;
         *buf.offset(2) = (num >> 16) as u8;
         *buf.offset(3) = (num >> 24) as u8;
@@ -20,7 +20,7 @@ pub unsafe extern "C" fn lzma_simple_props_size(
     } else {
         4
     }) as u32;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_encode(
@@ -32,5 +32,5 @@ pub unsafe extern "C" fn lzma_simple_props_encode(
         return LZMA_OK;
     }
     write32le(out, (*opt).start_offset);
-    return LZMA_OK;
+    LZMA_OK
 }

@@ -96,7 +96,7 @@ unsafe extern "C" fn alone_decode(
                 } else {
                     if (*coder).picky
                         && (*coder).uncompressed_size != LZMA_VLI_UNKNOWN
-                        && (*coder).uncompressed_size >= (1) << 38
+                        && (*coder).uncompressed_size >= 1 << 38
                     {
                         return LZMA_FORMAT_ERROR;
                     }
@@ -116,7 +116,7 @@ unsafe extern "C" fn alone_decode(
                 current_block_42 = 14763689060501151050;
             }
             4 => {
-                return (*coder).next.code.expect("non-null function pointer")(
+                return (*coder).next.code.unwrap()(
                     (*coder).next.coder,
                     allocator,
                     in_0,
@@ -168,7 +168,7 @@ unsafe extern "C" fn alone_decode(
             _ => {}
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn alone_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_alone_coder = coder_ptr as *mut lzma_alone_coder;
@@ -190,7 +190,7 @@ unsafe extern "C" fn alone_decoder_memconfig(
         }
         (*coder).memlimit = new_memlimit;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_alone_decoder_init(
@@ -199,7 +199,7 @@ pub unsafe extern "C" fn lzma_alone_decoder_init(
     memlimit: u64,
     picky: bool,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -221,7 +221,7 @@ pub unsafe extern "C" fn lzma_alone_decoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -261,15 +261,11 @@ pub unsafe extern "C" fn lzma_alone_decoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             alone_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
-        (*next).memconfig = Some(
-            alone_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
-        )
-            as Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>;
+        );
+        (*next).memconfig = Some(alone_decoder_memconfig as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret);
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -287,12 +283,12 @@ pub unsafe extern "C" fn lzma_alone_decoder_init(
     (*coder).picky = picky;
     (*coder).pos = 0;
     (*coder).options.dict_size = 0;
-    (*coder).options.preset_dict = ::core::ptr::null::<u8>();
+    (*coder).options.preset_dict = core::ptr::null();
     (*coder).options.preset_dict_size = 0;
     (*coder).uncompressed_size = 0;
     (*coder).memlimit = if 1 > memlimit { 1 } else { memlimit };
     (*coder).memusage = LZMA_MEMUSAGE_BASE;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_alone_decoder(strm: *mut lzma_stream, memlimit: u64) -> lzma_ret {
@@ -312,5 +308,5 @@ pub unsafe extern "C" fn lzma_alone_decoder(strm: *mut lzma_stream, memlimit: u6
     }
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

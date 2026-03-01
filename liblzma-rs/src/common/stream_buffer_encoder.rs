@@ -49,7 +49,7 @@ pub extern "C" fn lzma_stream_buffer_bound(uncompressed_size: size_t) -> size_t 
     if stream_bound_max.wrapping_sub(block_bound) < HEADERS_BOUND as size_t {
         return 0;
     }
-    return block_bound.wrapping_add(HEADERS_BOUND as size_t);
+    block_bound.wrapping_add(HEADERS_BOUND as size_t)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_buffer_encode(
@@ -174,5 +174,5 @@ pub unsafe extern "C" fn lzma_stream_buffer_encode(
     }
     out_pos = out_pos.wrapping_add(LZMA_STREAM_HEADER_SIZE as size_t);
     *out_pos_ptr = out_pos;
-    return LZMA_OK;
+    LZMA_OK
 }

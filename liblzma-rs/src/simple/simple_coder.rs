@@ -38,7 +38,7 @@ unsafe extern "C" fn copy_or_code(
             (*coder).end_was_reached = true;
         }
     } else {
-        let ret: lzma_ret = (*coder).next.code.expect("non-null function pointer")(
+        let ret: lzma_ret = (*coder).next.code.unwrap()(
             (*coder).next.coder,
             allocator,
             in_0,
@@ -55,14 +55,14 @@ unsafe extern "C" fn copy_or_code(
             return ret;
         }
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn call_filter(
     coder: *mut lzma_simple_coder,
     buffer: *mut u8,
     size: size_t,
 ) -> size_t {
-    let filtered: size_t = (*coder).filter.expect("non-null function pointer")(
+    let filtered: size_t = (*coder).filter.unwrap()(
         (*coder).simple,
         (*coder).now_pos,
         (*coder).is_encoder,
@@ -70,7 +70,7 @@ unsafe extern "C" fn call_filter(
         size,
     ) as size_t;
     (*coder).now_pos = ((*coder).now_pos as size_t).wrapping_add(filtered) as u32;
-    return filtered;
+    filtered
 }
 unsafe extern "C" fn simple_code(
     coder_ptr: *mut c_void,
@@ -109,12 +109,7 @@ unsafe extern "C" fn simple_code(
     if out_avail > buf_avail || buf_avail == 0 {
         let out_start: size_t = *out_pos;
         if buf_avail > 0 {
-            memcpy(
-                out.offset(*out_pos as isize) as *mut c_void,
-                (&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize)
-                    as *const c_void,
-                buf_avail,
-            );
+            core::ptr::copy_nonoverlapping((&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize) as *const u8, out.offset(*out_pos as isize) as *mut u8, buf_avail);
         }
         *out_pos = (*out_pos).wrapping_add(buf_avail);
         let ret: lzma_ret = copy_or_code(
@@ -136,18 +131,10 @@ unsafe extern "C" fn simple_code(
             (*coder).size = 0;
         } else if unfiltered > 0 {
             *out_pos = (*out_pos).wrapping_sub(unfiltered);
-            memcpy(
-                &raw mut (*coder).buffer as *mut u8 as *mut c_void,
-                out.offset(*out_pos as isize) as *const c_void,
-                unfiltered,
-            );
+            core::ptr::copy_nonoverlapping(out.offset(*out_pos as isize) as *const u8, &raw mut (*coder).buffer as *mut u8, unfiltered);
         }
     } else if (*coder).pos > 0 {
-        memmove(
-            &raw mut (*coder).buffer as *mut u8 as *mut c_void,
-            (&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize) as *const c_void,
-            buf_avail,
-        );
+        core::ptr::copy((&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize) as *const u8, &raw mut (*coder).buffer as *mut u8, buf_avail);
         (*coder).size = (*coder).size.wrapping_sub((*coder).pos);
         (*coder).pos = 0;
     }
@@ -182,7 +169,7 @@ unsafe extern "C" fn simple_code(
     if (*coder).end_was_reached && (*coder).pos == (*coder).size {
         return LZMA_STREAM_END;
     }
-    return LZMA_OK;
+    LZMA_OK
 }
 unsafe extern "C" fn simple_coder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
@@ -197,11 +184,11 @@ unsafe extern "C" fn simple_coder_update(
     reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
     let coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
-    return lzma_next_filter_update(
+    lzma_next_filter_update(
         &raw mut (*coder).next,
         allocator,
         reversed_filters.offset(1),
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_simple_coder_init(
@@ -238,27 +225,16 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             simple_coder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
-        (*next).update = Some(
-            simple_coder_update
-                as unsafe extern "C" fn(
-                    *mut c_void,
-                    *const lzma_allocator,
-                    *const lzma_filter,
-                    *const lzma_filter,
-                ) -> lzma_ret,
-        )
-            as Option<
-                unsafe extern "C" fn(
-                    *mut c_void,
-                    *const lzma_allocator,
-                    *const lzma_filter,
-                    *const lzma_filter,
-                ) -> lzma_ret,
-            >;
+        );
+        (*next).update = Some(simple_coder_update as unsafe extern "C" fn(
+            *mut c_void,
+            *const lzma_allocator,
+            *const lzma_filter,
+            *const lzma_filter,
+        ) -> lzma_ret);
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -282,9 +258,9 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
             (*coder).simple = core::ptr::null_mut();
         }
     }
-    if !(*filters.offset(0)).options.is_null() {
+    if !(*filters).options.is_null() {
         let simple: *const lzma_options_bcj =
-            (*filters.offset(0)).options as *const lzma_options_bcj;
+            (*filters).options as *const lzma_options_bcj;
         (*coder).now_pos = (*simple).start_offset;
         if (*coder).now_pos & alignment.wrapping_sub(1) != 0 {
             return LZMA_OPTIONS_ERROR;
@@ -297,5 +273,5 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
     (*coder).pos = 0;
     (*coder).filtered = 0;
     (*coder).size = 0;
-    return lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1));
+    lzma_next_filter_init(&raw mut (*coder).next, allocator, filters.offset(1))
 }

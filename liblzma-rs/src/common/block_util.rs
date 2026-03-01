@@ -7,7 +7,7 @@ pub const LZMA_BLOCK_HEADER_SIZE_MIN: u32 = 8;
 pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
 #[inline]
 extern "C" fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
-    return vli.wrapping_add(3) & !(3);
+    vli.wrapping_add(3) & !(3)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_compressed_size(
@@ -28,7 +28,7 @@ pub unsafe extern "C" fn lzma_block_compressed_size(
         return LZMA_DATA_ERROR;
     }
     (*block).compressed_size = compressed_size;
-    return LZMA_OK;
+    LZMA_OK
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_unpadded_size(block: *const lzma_block) -> lzma_vli {
@@ -54,7 +54,7 @@ pub unsafe extern "C" fn lzma_block_unpadded_size(block: *const lzma_block) -> l
     if unpadded_size > UNPADDED_SIZE_MAX as lzma_vli {
         return 0;
     }
-    return unpadded_size;
+    unpadded_size
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_total_size(block: *const lzma_block) -> lzma_vli {
@@ -62,5 +62,5 @@ pub unsafe extern "C" fn lzma_block_total_size(block: *const lzma_block) -> lzma
     if unpadded_size != LZMA_VLI_UNKNOWN {
         unpadded_size = vli_ceil4(unpadded_size);
     }
-    return unpadded_size;
+    unpadded_size
 }

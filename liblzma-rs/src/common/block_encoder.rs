@@ -76,7 +76,7 @@ unsafe extern "C" fn block_encode(
             0 => {
                 let in_start: size_t = *in_pos;
                 let out_start: size_t = *out_pos;
-                let ret: lzma_ret = (*coder).next.code.expect("non-null function pointer")(
+                let ret: lzma_ret = (*coder).next.code.unwrap()(
                     (*coder).next.coder,
                     allocator,
                     in_0,
@@ -154,14 +154,10 @@ unsafe extern "C" fn block_encode(
         if (*coder).pos < check_size {
             return LZMA_OK;
         }
-        memcpy(
-            &raw mut (*(*coder).block).raw_check as *mut u8 as *mut c_void,
-            &raw mut (*coder).check.buffer.u8_0 as *mut u8 as *const c_void,
-            check_size,
-        );
+        core::ptr::copy_nonoverlapping(&raw mut (*coder).check.buffer.u8_0 as *const u8, &raw mut (*(*coder).block).raw_check as *mut u8, check_size);
         return LZMA_STREAM_END;
     }
-    return LZMA_PROG_ERROR;
+    LZMA_PROG_ERROR
 }
 unsafe extern "C" fn block_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_block_coder = coder_ptr as *mut lzma_block_coder;
@@ -178,7 +174,7 @@ unsafe extern "C" fn block_encoder_update(
     if (*coder).sequence != SEQ_CODE {
         return LZMA_PROG_ERROR;
     }
-    return lzma_next_filter_update(&raw mut (*coder).next, allocator, reversed_filters);
+    lzma_next_filter_update(&raw mut (*coder).next, allocator, reversed_filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_encoder_init(
@@ -186,7 +182,7 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
     allocator: *const lzma_allocator,
     block: *mut lzma_block,
 ) -> lzma_ret {
-    if ::core::mem::transmute::<
+    if core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -206,7 +202,7 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
     {
         lzma_next_end(next, allocator);
     }
-    (*next).init = ::core::mem::transmute::<
+    (*next).init = core::mem::transmute::<
         Option<
             unsafe extern "C" fn(
                 *mut lzma_next_coder,
@@ -256,27 +252,16 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
                     size_t,
                     lzma_action,
                 ) -> lzma_ret,
-        ) as lzma_code_function;
+        );
         (*next).end = Some(
             block_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        ) as lzma_end_function;
-        (*next).update = Some(
-            block_encoder_update
-                as unsafe extern "C" fn(
-                    *mut c_void,
-                    *const lzma_allocator,
-                    *const lzma_filter,
-                    *const lzma_filter,
-                ) -> lzma_ret,
-        )
-            as Option<
-                unsafe extern "C" fn(
-                    *mut c_void,
-                    *const lzma_allocator,
-                    *const lzma_filter,
-                    *const lzma_filter,
-                ) -> lzma_ret,
-            >;
+        );
+        (*next).update = Some(block_encoder_update as unsafe extern "C" fn(
+            *mut c_void,
+            *const lzma_allocator,
+            *const lzma_filter,
+            *const lzma_filter,
+        ) -> lzma_ret);
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -296,7 +281,7 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
     (*coder).uncompressed_size = 0;
     (*coder).pos = 0;
     lzma_check_init(&raw mut (*coder).check, (*block).check);
-    return lzma_raw_encoder_init(&raw mut (*coder).next, allocator, (*block).filters);
+    lzma_raw_encoder_init(&raw mut (*coder).next, allocator, (*block).filters)
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_block_encoder(
@@ -316,5 +301,5 @@ pub unsafe extern "C" fn lzma_block_encoder(
     (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true;
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
-    return LZMA_OK;
+    LZMA_OK
 }

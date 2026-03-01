@@ -36,9 +36,9 @@ pub unsafe extern "C" fn lzma_vli_encode(
     *out.offset(*out_pos as isize) = vli as u8;
     *out_pos = (*out_pos).wrapping_add(1);
     *vli_pos = (*vli_pos).wrapping_add(1);
-    return if vli_pos == &raw mut vli_pos_internal {
+    if vli_pos == &raw mut vli_pos_internal {
         LZMA_OK
     } else {
         LZMA_STREAM_END
-    };
+    }
 }
