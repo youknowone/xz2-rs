@@ -1,12 +1,5 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_void};
-extern "C" {
-    fn lzma_raw_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        options: *const lzma_filter,
-    ) -> lzma_ret;
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_block_coder {

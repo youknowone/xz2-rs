@@ -1,8 +1,5 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_void};
-extern "C" {
-    fn lzma_mf_find(mf: *mut lzma_mf, count: *mut u32, matches: *mut lzma_match) -> u32;
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_range_encoder {

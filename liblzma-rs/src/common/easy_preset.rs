@@ -1,8 +1,5 @@
 use crate::types::*;
 use core::ffi::c_void;
-extern "C" {
-    fn lzma_lzma_preset(options: *mut lzma_options_lzma, preset: u32) -> lzma_bool;
-}
 #[no_mangle]
 pub unsafe extern "C" fn lzma_easy_preset(opt_easy: *mut lzma_options_easy, preset: u32) -> bool {
     if lzma_lzma_preset(&raw mut (*opt_easy).opt_lzma, preset) != 0 {

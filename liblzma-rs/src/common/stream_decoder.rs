@@ -5,11 +5,6 @@ pub struct lzma_index_hash_s {
     _opaque: [u8; 0],
 }
 extern "C" {
-    fn lzma_block_header_decode(
-        block: *mut lzma_block,
-        allocator: *const lzma_allocator,
-        in_0: *const u8,
-    ) -> lzma_ret;
     fn lzma_index_hash_init(
         index_hash: *mut lzma_index_hash,
         allocator: *const lzma_allocator,

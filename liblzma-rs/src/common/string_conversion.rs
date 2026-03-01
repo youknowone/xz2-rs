@@ -1,7 +1,6 @@
 use crate::types::*;
 use core::ffi::{c_char, c_int, c_uint, c_void};
 extern "C" {
-    fn lzma_lzma_preset(options: *mut lzma_options_lzma, preset: u32) -> lzma_bool;
     fn lzma_validate_chain(filters: *const lzma_filter, count: *mut size_t) -> lzma_ret;
 }
 #[derive(Copy, Clone)]

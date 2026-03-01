@@ -1,7 +1,6 @@
 use crate::types::*;
 use core::ffi::c_uint;
 extern "C" {
-    fn lzma_mf_find(mf: *mut lzma_mf, count: *mut u32, matches: *mut lzma_match) -> u32;
     static lzma_rc_prices: [u8; 128];
     static lzma_fastpos: [u8; 8192];
 }

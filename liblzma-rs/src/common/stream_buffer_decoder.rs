@@ -1,12 +1,4 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_stream_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        memlimit: u64,
-        flags: u32,
-    ) -> lzma_ret;
-}
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_buffer_decode(
     memlimit: *mut u64,

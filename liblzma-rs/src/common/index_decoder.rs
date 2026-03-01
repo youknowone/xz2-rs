@@ -5,7 +5,6 @@ pub struct lzma_index_s {
     _opaque: [u8; 0],
 }
 extern "C" {
-    fn lzma_index_memusage(streams: lzma_vli, blocks: lzma_vli) -> u64;
     fn lzma_index_init(allocator: *const lzma_allocator) -> *mut lzma_index;
     fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocator);
     fn lzma_index_append(

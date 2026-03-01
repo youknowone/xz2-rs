@@ -24,11 +24,6 @@ extern "C" {
     fn pthread_mutex_lock(_: *mut pthread_mutex_t) -> c_int;
     fn pthread_mutex_unlock(_: *mut pthread_mutex_t) -> c_int;
     fn pthread_sigmask(_: c_int, _: *const sigset_t, _: *mut sigset_t) -> c_int;
-    fn lzma_block_header_decode(
-        block: *mut lzma_block,
-        allocator: *const lzma_allocator,
-        in_0: *const u8,
-    ) -> lzma_ret;
     fn lzma_index_hash_init(
         index_hash: *mut lzma_index_hash,
         allocator: *const lzma_allocator,

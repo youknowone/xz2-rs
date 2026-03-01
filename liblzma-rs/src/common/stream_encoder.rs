@@ -5,11 +5,6 @@ pub struct lzma_index_s {
     _opaque: [u8; 0],
 }
 extern "C" {
-    fn lzma_filters_copy(
-        src: *const lzma_filter,
-        dest: *mut lzma_filter,
-        allocator: *const lzma_allocator,
-    ) -> lzma_ret;
     fn lzma_index_init(allocator: *const lzma_allocator) -> *mut lzma_index;
     fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocator);
     fn lzma_index_append(
@@ -19,11 +14,6 @@ extern "C" {
         uncompressed_size: lzma_vli,
     ) -> lzma_ret;
     fn lzma_index_size(i: *const lzma_index) -> lzma_vli;
-    fn lzma_block_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        block: *mut lzma_block,
-    ) -> lzma_ret;
     fn lzma_index_encoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,

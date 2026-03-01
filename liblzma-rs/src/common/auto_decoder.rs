@@ -1,12 +1,6 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_void};
 extern "C" {
-    fn lzma_stream_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        memlimit: u64,
-        flags: u32,
-    ) -> lzma_ret;
     fn lzma_alone_decoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,

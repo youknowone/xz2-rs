@@ -24,12 +24,6 @@ extern "C" {
     fn pthread_mutex_lock(_: *mut pthread_mutex_t) -> c_int;
     fn pthread_mutex_unlock(_: *mut pthread_mutex_t) -> c_int;
     fn pthread_sigmask(_: c_int, _: *const sigset_t, _: *mut sigset_t) -> c_int;
-    fn lzma_filters_copy(
-        src: *const lzma_filter,
-        dest: *mut lzma_filter,
-        allocator: *const lzma_allocator,
-    ) -> lzma_ret;
-    fn lzma_raw_encoder_memusage(filters: *const lzma_filter) -> u64;
     fn lzma_mt_block_size(filters: *const lzma_filter) -> u64;
     fn lzma_block_uncomp_encode(
         block: *mut lzma_block,
@@ -48,11 +42,6 @@ extern "C" {
         uncompressed_size: lzma_vli,
     ) -> lzma_ret;
     fn lzma_index_size(i: *const lzma_index) -> lzma_vli;
-    fn lzma_block_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        block: *mut lzma_block,
-    ) -> lzma_ret;
     fn lzma_block_buffer_bound64(uncompressed_size: u64) -> u64;
     fn lzma_index_encoder_init(
         next: *mut lzma_next_coder,

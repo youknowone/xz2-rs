@@ -19,7 +19,6 @@ extern "C" {
             ) -> lzma_ret,
         >,
     ) -> lzma_ret;
-    fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64;
     fn lzma_lzma_encoder_create(
         coder_ptr: *mut *mut c_void,
         allocator: *const lzma_allocator,

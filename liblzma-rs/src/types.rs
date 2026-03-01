@@ -737,22 +737,10 @@ extern "C" {
         out_pos: *mut size_t,
         out_size: size_t,
     ) -> lzma_ret;
-    pub fn lzma_stream_header_encode(
-        options: *const lzma_stream_flags,
-        out: *mut u8,
-    ) -> lzma_ret;
-    pub fn lzma_stream_header_decode(
-        options: *mut lzma_stream_flags,
-        in_0: *const u8,
-    ) -> lzma_ret;
-    pub fn lzma_stream_footer_encode(
-        options: *const lzma_stream_flags,
-        out: *mut u8,
-    ) -> lzma_ret;
-    pub fn lzma_stream_footer_decode(
-        options: *mut lzma_stream_flags,
-        in_0: *const u8,
-    ) -> lzma_ret;
+    pub fn lzma_stream_header_encode(options: *const lzma_stream_flags, out: *mut u8) -> lzma_ret;
+    pub fn lzma_stream_header_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> lzma_ret;
+    pub fn lzma_stream_footer_encode(options: *const lzma_stream_flags, out: *mut u8) -> lzma_ret;
+    pub fn lzma_stream_footer_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> lzma_ret;
     pub fn lzma_block_header_size(block: *mut lzma_block) -> lzma_ret;
     pub fn lzma_block_header_encode(block: *const lzma_block, out: *mut u8) -> lzma_ret;
     pub fn lzma_block_decoder_init(
@@ -780,6 +768,53 @@ extern "C" {
     pub fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, byte: u8) -> bool;
     pub fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64;
     pub fn lzma_delta_coder_memusage(options: *const c_void) -> u64;
+    pub fn lzma_block_encoder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        block: *mut lzma_block,
+    ) -> lzma_ret;
+    pub fn lzma_block_header_decode(
+        block: *mut lzma_block,
+        allocator: *const lzma_allocator,
+        in_0: *const u8,
+    ) -> lzma_ret;
+    pub fn lzma_filters_copy(
+        src: *const lzma_filter,
+        dest: *mut lzma_filter,
+        allocator: *const lzma_allocator,
+    ) -> lzma_ret;
+    pub fn lzma_raw_encoder_memusage(filters: *const lzma_filter) -> u64;
+    pub fn lzma_raw_decoder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        options: *const lzma_filter,
+    ) -> lzma_ret;
+    pub fn lzma_raw_coder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        filters: *const lzma_filter,
+        coder_find: lzma_filter_find,
+        is_encoder: bool,
+    ) -> lzma_ret;
+    pub fn lzma_raw_coder_memusage(
+        coder_find: lzma_filter_find,
+        filters: *const lzma_filter,
+    ) -> u64;
+    pub fn lzma_stream_decoder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        memlimit: u64,
+        flags: u32,
+    ) -> lzma_ret;
+    pub fn lzma_delta_coder_init(
+        next: *mut lzma_next_coder,
+        allocator: *const lzma_allocator,
+        filters: *const lzma_filter_info,
+    ) -> lzma_ret;
+    pub fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64;
+    pub fn lzma_lzma_preset(options: *mut lzma_options_lzma, preset: u32) -> lzma_bool;
+    pub fn lzma_mf_find(mf: *mut lzma_mf, count: *mut u32, matches: *mut lzma_match) -> u32;
+    pub fn lzma_index_memusage(streams: lzma_vli, blocks: lzma_vli) -> u64;
     pub fn memcmp(s1: *const c_void, s2: *const c_void, n: size_t) -> c_int;
     pub fn memchr(s: *const c_void, c: c_int, n: size_t) -> *mut c_void;
     pub fn strlen(s: *const c_char) -> size_t;

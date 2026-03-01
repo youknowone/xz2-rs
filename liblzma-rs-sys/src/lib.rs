@@ -95,8 +95,7 @@ pub const LZMA_PRESET_DEFAULT: u32 =
     liblzma_rs::common::string_conversion::LZMA_PRESET_DEFAULT as u32;
 pub const LZMA_PRESET_LEVEL_MASK: u32 =
     liblzma_rs::lzma::lzma_encoder_presets::LZMA_PRESET_LEVEL_MASK as u32;
-pub const LZMA_PRESET_EXTREME: u32 =
-    liblzma_rs::types::LZMA_PRESET_EXTREME as u32;
+pub const LZMA_PRESET_EXTREME: u32 = liblzma_rs::types::LZMA_PRESET_EXTREME as u32;
 pub const LZMA_DICT_SIZE_MIN: u32 = liblzma_rs::types::LZMA_DICT_SIZE_MIN as u32;
 pub const LZMA_DICT_SIZE_DEFAULT: u32 =
     liblzma_rs::common::string_conversion::LZMA_DICT_SIZE_DEFAULT as u32;
