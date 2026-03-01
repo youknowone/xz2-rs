@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_void;
 extern "C" {
     fn lzma_vli_encode(
         vli: lzma_vli,
@@ -132,11 +131,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
         }
     }
     *out.offset(1) |= filter_count.wrapping_sub(1) as u8;
-    memset(
-        out.offset(out_pos as isize) as *mut c_void,
-        0,
-        out_size.wrapping_sub(out_pos),
-    );
+    core::ptr::write_bytes(out.offset(out_pos as isize) as *mut u8, 0 as u8, out_size.wrapping_sub(out_pos));
     write32le(out.offset(out_size as isize), lzma_crc32(out, out_size, 0));
     LZMA_OK
 }

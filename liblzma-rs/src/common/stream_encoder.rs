@@ -297,11 +297,7 @@ unsafe extern "C" fn stream_encoder_update(
         }
         _ => {
             lzma_filters_free(&raw mut (*coder).filters as *mut lzma_filter, allocator);
-            memcpy(
-                &raw mut (*coder).filters as *mut c_void,
-                &raw mut temp as *const c_void,
-                core::mem::size_of::<[lzma_filter; 5]>(),
-            );
+            core::ptr::copy_nonoverlapping(&raw mut temp as *const u8, &raw mut (*coder).filters as *mut u8, core::mem::size_of::<[lzma_filter; 5]>());
             return LZMA_OK;
         }
     };

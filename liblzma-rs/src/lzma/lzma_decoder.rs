@@ -156,11 +156,7 @@ unsafe extern "C" fn dict_repeat(dict: *mut lzma_dict, distance: u32, len: *mut 
             }
         }
     } else {
-        memcpy(
-            (*dict).buf.offset((*dict).pos as isize) as *mut c_void,
-            (*dict).buf.offset(back as isize) as *const c_void,
-            left as size_t,
-        );
+        core::ptr::copy_nonoverlapping((*dict).buf.offset(back as isize) as *const u8, (*dict).buf.offset((*dict).pos as isize) as *mut u8, left as size_t);
         (*dict).pos = (*dict).pos.wrapping_add(left as size_t);
     }
     if !(*dict).has_wrapped {

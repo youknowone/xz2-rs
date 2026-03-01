@@ -61,11 +61,7 @@ pub const LZMA_MEMCMPLEN_EXTRA: u32 = 0;
 unsafe extern "C" fn move_window(mf: *mut lzma_mf) {
     let move_offset: u32 = (*mf).read_pos.wrapping_sub((*mf).keep_size_before) & !(15);
     let move_size: size_t = (*mf).write_pos.wrapping_sub(move_offset) as size_t;
-    memmove(
-        (*mf).buffer as *mut c_void,
-        (*mf).buffer.offset(move_offset as isize) as *const c_void,
-        move_size,
-    );
+    core::ptr::copy((*mf).buffer.offset(move_offset as isize) as *const u8, (*mf).buffer as *mut u8, move_size);
     (*mf).offset = (*mf).offset.wrapping_add(move_offset);
     (*mf).read_pos = (*mf).read_pos.wrapping_sub(move_offset);
     (*mf).read_limit = (*mf).read_limit.wrapping_sub(move_offset);
@@ -112,11 +108,7 @@ unsafe extern "C" fn fill_window(
         );
     }
     (*coder).mf.write_pos = write_pos as u32;
-    memset(
-        (*coder).mf.buffer.offset(write_pos as isize) as *mut c_void,
-        0,
-        0,
-    );
+    core::ptr::write_bytes((*coder).mf.buffer.offset(write_pos as isize) as *mut u8, 0 as u8, 0);
     if ret == LZMA_STREAM_END {
         ret = LZMA_OK;
         (*coder).mf.action = action;
@@ -297,11 +289,7 @@ unsafe extern "C" fn lz_encoder_init(
         if (*mf).buffer.is_null() {
             return true;
         }
-        memset(
-            (*mf).buffer.offset((*mf).size as isize) as *mut c_void,
-            0,
-            0,
-        );
+        core::ptr::write_bytes((*mf).buffer.offset((*mf).size as isize) as *mut u8, 0 as u8, 0);
     }
     (*mf).offset = (*mf).cyclic_size;
     (*mf).read_pos = 0;
@@ -326,11 +314,7 @@ unsafe extern "C" fn lz_encoder_init(
             return true;
         }
     } else {
-        memset(
-            (*mf).hash as *mut c_void,
-            0,
-            ((*mf).hash_count as size_t).wrapping_mul(core::mem::size_of::<u32>()),
-        );
+        core::ptr::write_bytes((*mf).hash as *mut u8, 0 as u8, ((*mf).hash_count as size_t).wrapping_mul(core::mem::size_of::<u32>()));
     }
     (*mf).cyclic_pos = 0;
     if !(*lz_options).preset_dict.is_null() && (*lz_options).preset_dict_size > 0 {
@@ -339,14 +323,10 @@ unsafe extern "C" fn lz_encoder_init(
         } else {
             (*mf).size
         };
-        memcpy(
-            (*mf).buffer as *mut c_void,
-            (*lz_options)
-                .preset_dict
-                .offset((*lz_options).preset_dict_size as isize)
-                .offset(-((*mf).write_pos as isize)) as *const c_void,
-            (*mf).write_pos as size_t,
-        );
+        core::ptr::copy_nonoverlapping((*lz_options)
+            .preset_dict
+            .offset((*lz_options).preset_dict_size as isize)
+            .offset(-((*mf).write_pos as isize)) as *const u8, (*mf).buffer as *mut u8, (*mf).write_pos as size_t);
         (*mf).action = LZMA_SYNC_FLUSH;
         (*mf).skip.unwrap()(mf, (*mf).write_pos);
     }

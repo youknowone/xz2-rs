@@ -101,14 +101,10 @@ unsafe extern "C" fn mf_read(
 ) {
     let out_avail: size_t = out_size.wrapping_sub(*out_pos);
     let copy_size: size_t = if out_avail < *left { out_avail } else { *left };
-    memcpy(
-        out.offset(*out_pos as isize) as *mut c_void,
-        (*mf)
-            .buffer
-            .offset((*mf).read_pos as isize)
-            .offset(-(*left as isize)) as *const c_void,
-        copy_size,
-    );
+    core::ptr::copy_nonoverlapping((*mf)
+        .buffer
+        .offset((*mf).read_pos as isize)
+        .offset(-(*left as isize)) as *const u8, out.offset(*out_pos as isize) as *mut u8, copy_size);
     *out_pos = (*out_pos).wrapping_add(copy_size);
     *left = (*left).wrapping_sub(copy_size);
 }

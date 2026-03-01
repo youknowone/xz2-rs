@@ -154,11 +154,7 @@ unsafe extern "C" fn block_encode(
         if (*coder).pos < check_size {
             return LZMA_OK;
         }
-        memcpy(
-            &raw mut (*(*coder).block).raw_check as *mut c_void,
-            &raw mut (*coder).check.buffer.u8_0 as *const c_void,
-            check_size,
-        );
+        core::ptr::copy_nonoverlapping(&raw mut (*coder).check.buffer.u8_0 as *const u8, &raw mut (*(*coder).block).raw_check as *mut u8, check_size);
         return LZMA_STREAM_END;
     }
     LZMA_PROG_ERROR

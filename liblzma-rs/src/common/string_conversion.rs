@@ -102,11 +102,7 @@ unsafe extern "C" fn str_append_str(str: *mut lzma_str, s: *const c_char) {
     let len: size_t = strlen(s) as size_t;
     let limit: size_t = ((STR_ALLOC_SIZE - 1) as size_t).wrapping_sub((*str).pos);
     let copy_size: size_t = if len < limit { len } else { limit };
-    memcpy(
-        (*str).buf.offset((*str).pos as isize) as *mut c_void,
-        s as *const c_void,
-        copy_size,
-    );
+    core::ptr::copy_nonoverlapping(s as *const u8, (*str).buf.offset((*str).pos as isize) as *mut u8, copy_size);
     (*str).pos = (*str).pos.wrapping_add(copy_size);
 }
 unsafe extern "C" fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suffix: bool) {
@@ -889,12 +885,8 @@ unsafe extern "C" fn str_to_filters(
             match current_block {
                 6100283484465977373 => {}
                 _ => {
-                    memcpy(
-                        filters as *mut c_void,
-                        &raw mut temp_filters as *const c_void,
-                        i_0.wrapping_add(1)
-                            .wrapping_mul(core::mem::size_of::<lzma_filter>()),
-                    );
+                    core::ptr::copy_nonoverlapping(&raw mut temp_filters as *const u8, filters as *mut u8, i_0.wrapping_add(1)
+                        .wrapping_mul(core::mem::size_of::<lzma_filter>()));
                     return core::ptr::null();
                 }
             }

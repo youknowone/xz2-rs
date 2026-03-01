@@ -132,11 +132,7 @@ unsafe extern "C" fn block_encode_uncompressed(
         *out_pos += 1;
         *out.offset(*out_pos as isize) = (copy_size.wrapping_sub(1) & 0xff) as u8;
         *out_pos += 1;
-        memcpy(
-            out.offset(*out_pos as isize) as *mut c_void,
-            in_0.offset(in_pos as isize) as *const c_void,
-            copy_size,
-        );
+        core::ptr::copy_nonoverlapping(in_0.offset(in_pos as isize) as *const u8, out.offset(*out_pos as isize) as *mut u8, copy_size);
         in_pos = in_pos.wrapping_add(copy_size);
         *out_pos = (*out_pos).wrapping_add(copy_size);
     }
@@ -276,16 +272,8 @@ unsafe extern "C" fn block_buffer_encode(
         lzma_check_init(&raw mut check, (*block).check);
         lzma_check_update(&raw mut check, (*block).check, in_0, in_size);
         lzma_check_finish(&raw mut check, (*block).check);
-        memcpy(
-            &raw mut (*block).raw_check as *mut c_void,
-            &raw mut check.buffer.u8_0 as *const c_void,
-            check_size,
-        );
-        memcpy(
-            out.offset(*out_pos as isize) as *mut c_void,
-            &raw mut check.buffer.u8_0 as *const c_void,
-            check_size,
-        );
+        core::ptr::copy_nonoverlapping(&raw mut check.buffer.u8_0 as *const u8, &raw mut (*block).raw_check as *mut u8, check_size);
+        core::ptr::copy_nonoverlapping(&raw mut check.buffer.u8_0 as *const u8, out.offset(*out_pos as isize) as *mut u8, check_size);
         *out_pos = (*out_pos).wrapping_add(check_size);
     }
     LZMA_OK

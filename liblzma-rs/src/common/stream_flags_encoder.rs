@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_void;
 extern "C" {
     fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
     static lzma_header_magic: [u8; 6];
@@ -41,11 +40,7 @@ pub unsafe extern "C" fn lzma_stream_header_encode(
     if (*options).version != 0 {
         return LZMA_OPTIONS_ERROR;
     }
-    memcpy(
-        out as *mut c_void,
-        &raw const lzma_header_magic as *const c_void,
-        core::mem::size_of::<[u8; 6]>(),
-    );
+    core::ptr::copy_nonoverlapping(&raw const lzma_header_magic as *const u8, out as *mut u8, core::mem::size_of::<[u8; 6]>());
     if stream_flags_encode(
         options,
         out.offset(core::mem::size_of::<[u8; 6]>() as isize),
@@ -84,11 +79,7 @@ pub unsafe extern "C" fn lzma_stream_footer_encode(
     }
     let crc: u32 = lzma_crc32(out.offset(4), (4 + LZMA_STREAM_FLAGS_SIZE) as size_t, 0) as u32;
     write32le(out, crc);
-    memcpy(
-        out.offset((2 * 4) as isize)
-            .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *mut c_void,
-        &raw const lzma_footer_magic as *const c_void,
-        core::mem::size_of::<[u8; 2]>(),
-    );
+    core::ptr::copy_nonoverlapping(&raw const lzma_footer_magic as *const u8, out.offset((2 * 4) as isize)
+        .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *mut u8, core::mem::size_of::<[u8; 2]>());
     LZMA_OK
 }

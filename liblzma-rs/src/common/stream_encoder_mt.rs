@@ -868,11 +868,7 @@ unsafe extern "C" fn get_thread(
                 &raw mut (*(*coder).thr).filters as *mut lzma_filter,
                 allocator,
             );
-            memcpy(
-                &raw mut (*(*coder).thr).filters as *mut c_void,
-                &raw mut (*coder).filters_cache as *const c_void,
-                core::mem::size_of::<[lzma_filter; 5]>(),
-            );
+            core::ptr::copy_nonoverlapping(&raw mut (*coder).filters_cache as *const u8, &raw mut (*(*coder).thr).filters as *mut u8, core::mem::size_of::<[lzma_filter; 5]>());
             (*coder).filters_cache[0].id = LZMA_VLI_UNKNOWN;
             mythread_cond_signal(&raw mut (*(*coder).thr).cond);
             mythread_j_578 = 1;
@@ -1247,11 +1243,7 @@ unsafe extern "C" fn stream_encoder_mt_update(
         &raw mut (*coder).filters_cache as *mut lzma_filter,
         allocator,
     );
-    memcpy(
-        &raw mut (*coder).filters as *mut c_void,
-        &raw mut temp as *const c_void,
-        core::mem::size_of::<[lzma_filter; 5]>(),
-    );
+    core::ptr::copy_nonoverlapping(&raw mut temp as *const u8, &raw mut (*coder).filters as *mut u8, core::mem::size_of::<[lzma_filter; 5]>());
     LZMA_OK
 }
 unsafe extern "C" fn get_options(
@@ -1491,11 +1483,7 @@ unsafe extern "C" fn stream_encoder_mt_init(
             set_out_limit: None,
         };
         (*coder).index = core::ptr::null_mut();
-        memset(
-            &raw mut (*coder).outq as *mut c_void,
-            0,
-            core::mem::size_of::<lzma_outq>(),
-        );
+        core::ptr::write_bytes(&raw mut (*coder).outq as *mut u8, 0 as u8, core::mem::size_of::<lzma_outq>());
         (*coder).threads = core::ptr::null_mut();
         (*coder).threads_max = 0;
         (*coder).threads_initialized = 0;

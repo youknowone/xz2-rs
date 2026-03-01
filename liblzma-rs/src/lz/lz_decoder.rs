@@ -65,15 +65,11 @@ unsafe extern "C" fn decode_buffer(
         if (*coder).dict.pos == (*coder).dict.size {
             (*coder).dict.pos = LZ_DICT_REPEAT_MAX as size_t;
             (*coder).dict.has_wrapped = true;
-            memcpy(
-                (*coder).dict.buf as *mut c_void,
-                (*coder)
-                    .dict
-                    .buf
-                    .offset((*coder).dict.size as isize)
-                    .offset(-(LZ_DICT_REPEAT_MAX as isize)) as *const c_void,
-                LZ_DICT_REPEAT_MAX as size_t,
-            );
+            core::ptr::copy_nonoverlapping((*coder)
+                .dict
+                .buf
+                .offset((*coder).dict.size as isize)
+                .offset(-(LZ_DICT_REPEAT_MAX as isize)) as *const u8, (*coder).dict.buf as *mut u8, LZ_DICT_REPEAT_MAX as size_t);
         }
         let dict_start: size_t = (*coder).dict.pos;
         (*coder).dict.limit = (*coder).dict.pos.wrapping_add(
@@ -93,11 +89,7 @@ unsafe extern "C" fn decode_buffer(
         );
         let copy_size: size_t = (*coder).dict.pos.wrapping_sub(dict_start);
         if copy_size > 0 {
-            memcpy(
-                out.offset(*out_pos as isize) as *mut c_void,
-                (*coder).dict.buf.offset(dict_start as isize) as *const c_void,
-                copy_size,
-            );
+            core::ptr::copy_nonoverlapping((*coder).dict.buf.offset(dict_start as isize) as *const u8, out.offset(*out_pos as isize) as *mut u8, copy_size);
         }
         *out_pos = (*out_pos).wrapping_add(copy_size);
         if (*coder).dict.need_reset {
@@ -287,11 +279,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
             lz_options.dict_size
         };
         let offset: size_t = lz_options.preset_dict_size.wrapping_sub(copy_size);
-        memcpy(
-            (*coder).dict.buf.offset((*coder).dict.pos as isize) as *mut c_void,
-            lz_options.preset_dict.offset(offset as isize) as *const c_void,
-            copy_size,
-        );
+        core::ptr::copy_nonoverlapping(lz_options.preset_dict.offset(offset as isize) as *const u8, (*coder).dict.buf.offset((*coder).dict.pos as isize) as *mut u8, copy_size);
         (*coder).dict.pos = (*coder).dict.pos.wrapping_add(copy_size);
         (*coder).dict.full = copy_size;
     }

@@ -652,13 +652,9 @@ pub unsafe extern "C" fn lzma_index_cat(
         (*newg).allocated = (*g).last.wrapping_add(1);
         (*newg).last = (*g).last;
         (*newg).number_base = (*g).number_base;
-        memcpy(
-            &raw mut (*newg).records as *mut c_void,
-            &raw mut (*g).records as *const c_void,
-            (*newg)
-                .allocated
-                .wrapping_mul(core::mem::size_of::<index_record>()),
-        );
+        core::ptr::copy_nonoverlapping(&raw mut (*g).records as *const u8, &raw mut (*newg).records as *mut u8, (*newg)
+            .allocated
+            .wrapping_mul(core::mem::size_of::<index_record>()));
         if !(*g).node.parent.is_null() {
             (*(*g).node.parent).right = &raw mut (*newg).node;
         }
@@ -732,14 +728,10 @@ unsafe extern "C" fn index_dup_stream(
     let mut srcg: *const index_group = (*src).groups.leftmost as *const index_group;
     let mut i: size_t = 0;
     loop {
-        memcpy(
-            (&raw mut (*destg).records as *mut index_record).offset(i as isize) as *mut c_void,
-            &raw const (*srcg).records as *const c_void,
-            (*srcg)
-                .last
-                .wrapping_add(1)
-                .wrapping_mul(core::mem::size_of::<index_record>()),
-        );
+        core::ptr::copy_nonoverlapping(&raw const (*srcg).records as *const u8, (&raw mut (*destg).records as *mut index_record).offset(i as isize) as *mut u8, (*srcg)
+            .last
+            .wrapping_add(1)
+            .wrapping_mul(core::mem::size_of::<index_record>()));
         i = i.wrapping_add((*srcg).last.wrapping_add(1));
         srcg = index_tree_next(&raw const (*srcg).node) as *const index_group;
         if srcg.is_null() {

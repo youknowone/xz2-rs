@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_uint, c_void};
+use core::ffi::c_uint;
 extern "C" {
     fn lzma_mf_find(mf: *mut lzma_mf, count: *mut u32, matches: *mut lzma_match) -> u32;
     static lzma_rc_prices: [u8; 128];
@@ -1120,11 +1120,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_normal(
         return;
     }
     let mut reps: [u32; 4] = [0; 4];
-    memcpy(
-        &raw mut reps as *mut c_void,
-        &raw mut (*coder).reps as *const c_void,
-        core::mem::size_of::<[u32; 4]>(),
-    );
+    core::ptr::copy_nonoverlapping(&raw mut (*coder).reps as *const u8, &raw mut reps as *mut u8, core::mem::size_of::<[u32; 4]>());
     let mut cur: u32 = 0;
     cur = 1;
     while cur < len_end {

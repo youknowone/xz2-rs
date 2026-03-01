@@ -109,12 +109,7 @@ unsafe extern "C" fn simple_code(
     if out_avail > buf_avail || buf_avail == 0 {
         let out_start: size_t = *out_pos;
         if buf_avail > 0 {
-            memcpy(
-                out.offset(*out_pos as isize) as *mut c_void,
-                (&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize)
-                    as *const c_void,
-                buf_avail,
-            );
+            core::ptr::copy_nonoverlapping((&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize) as *const u8, out.offset(*out_pos as isize) as *mut u8, buf_avail);
         }
         *out_pos = (*out_pos).wrapping_add(buf_avail);
         let ret: lzma_ret = copy_or_code(
@@ -136,18 +131,10 @@ unsafe extern "C" fn simple_code(
             (*coder).size = 0;
         } else if unfiltered > 0 {
             *out_pos = (*out_pos).wrapping_sub(unfiltered);
-            memcpy(
-                &raw mut (*coder).buffer as *mut c_void,
-                out.offset(*out_pos as isize) as *const c_void,
-                unfiltered,
-            );
+            core::ptr::copy_nonoverlapping(out.offset(*out_pos as isize) as *const u8, &raw mut (*coder).buffer as *mut u8, unfiltered);
         }
     } else if (*coder).pos > 0 {
-        memmove(
-            &raw mut (*coder).buffer as *mut c_void,
-            (&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize) as *const c_void,
-            buf_avail,
-        );
+        core::ptr::copy((&raw mut (*coder).buffer as *mut u8).offset((*coder).pos as isize) as *const u8, &raw mut (*coder).buffer as *mut u8, buf_avail);
         (*coder).size = (*coder).size.wrapping_sub((*coder).pos);
         (*coder).pos = 0;
     }

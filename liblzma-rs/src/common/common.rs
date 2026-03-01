@@ -52,7 +52,7 @@ pub unsafe extern "C" fn lzma_alloc_zero(
     if !allocator.is_null() && (*allocator).alloc.is_some() {
         ptr = (*allocator).alloc.unwrap()((*allocator).opaque, 1, size);
         if !ptr.is_null() {
-            memset(ptr, 0, size);
+            core::ptr::write_bytes(ptr as *mut u8, 0, size);
         }
     } else {
         ptr = calloc(1, size);
@@ -84,11 +84,7 @@ pub unsafe extern "C" fn lzma_bufcpy(
         out_avail
     };
     if copy_size > 0 {
-        memcpy(
-            out.offset(*out_pos as isize) as *mut c_void,
-            in_0.offset(*in_pos as isize) as *const c_void,
-            copy_size,
-        );
+        core::ptr::copy_nonoverlapping(in_0.offset(*in_pos as isize) as *const u8, out.offset(*out_pos as isize) as *mut u8, copy_size);
     }
     *in_pos = (*in_pos).wrapping_add(copy_size);
     *out_pos = (*out_pos).wrapping_add(copy_size);
@@ -181,11 +177,7 @@ pub unsafe extern "C" fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
             set_out_limit: None,
         };
     }
-    memset(
-        &raw mut (*(*strm).internal).supported_actions as *mut c_void,
-        0,
-        core::mem::size_of::<[bool; 5]>(),
-    );
+    core::ptr::write_bytes(&raw mut (*(*strm).internal).supported_actions as *mut u8, 0 as u8, core::mem::size_of::<[bool; 5]>());
     (*(*strm).internal).sequence = ISEQ_RUN;
     (*(*strm).internal).allow_buf_error = false;
     (*strm).total_in = 0;

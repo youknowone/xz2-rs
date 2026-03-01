@@ -1793,11 +1793,7 @@ unsafe extern "C" fn stream_decoder_mt_init(
         (*next).memconfig = Some(stream_decoder_mt_memconfig as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret);
         (*next).get_progress = Some(stream_decoder_mt_get_progress as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ());
         (*coder).filters[0].id = LZMA_VLI_UNKNOWN;
-        memset(
-            &raw mut (*coder).outq as *mut c_void,
-            0,
-            core::mem::size_of::<lzma_outq>(),
-        );
+        core::ptr::write_bytes(&raw mut (*coder).outq as *mut u8, 0 as u8, core::mem::size_of::<lzma_outq>());
         (*coder).block_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,

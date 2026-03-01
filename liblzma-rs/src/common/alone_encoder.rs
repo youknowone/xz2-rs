@@ -194,11 +194,7 @@ unsafe extern "C" fn alone_encoder_init(
         d += 1;
     }
     write32le((&raw mut (*coder).header as *mut u8).offset(1), d);
-    memset(
-        (&raw mut (*coder).header as *mut u8).offset(1).offset(4) as *mut c_void,
-        0xff,
-        8,
-    );
+    core::ptr::write_bytes((&raw mut (*coder).header as *mut u8).offset(1).offset(4) as *mut u8, 0xff as u8, 8);
     let filters: [lzma_filter_info; 2] = [
         lzma_filter_info_s {
             id: LZMA_FILTER_LZMA1,
