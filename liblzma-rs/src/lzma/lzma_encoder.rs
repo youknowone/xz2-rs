@@ -202,7 +202,7 @@ unsafe extern "C" fn rc_bittree_price(
 unsafe extern "C" fn rc_reset(rc: *mut lzma_range_encoder) {
     (*rc).low = 0;
     (*rc).cache_size = 1;
-    (*rc).range = UINT32_MAX as u32;
+    (*rc).range = UINT32_MAX;
     (*rc).cache = 0;
     (*rc).out_total = 0;
     (*rc).count = 0;
@@ -301,7 +301,7 @@ unsafe extern "C" fn rc_shift_low(
             *out.offset(*out_pos as isize) = (*rc).cache.wrapping_add(((*rc).low >> 32) as u8);
             *out_pos = (*out_pos).wrapping_add(1);
             (*rc).out_total = (*rc).out_total.wrapping_add(1);
-            (*rc).cache = 0xff as u8;
+            (*rc).cache = 0xff;
             (*rc).cache_size = (*rc).cache_size.wrapping_sub(1);
             if !((*rc).cache_size != 0) {
                 break;
@@ -327,7 +327,7 @@ unsafe extern "C" fn rc_shift_low_dummy(
                 return true;
             }
             *out_pos = (*out_pos).wrapping_add(1);
-            *cache = 0xff as u8;
+            *cache = 0xff;
             *cache_size = (*cache_size).wrapping_sub(1);
             if !(*cache_size != 0) {
                 break;
@@ -359,7 +359,7 @@ unsafe extern "C" fn rc_encode(
                 (*rc).range = ((*rc).range >> RC_BIT_MODEL_TOTAL_BITS).wrapping_mul(prob as u32);
                 prob = (prob as u32)
                     .wrapping_add(RC_BIT_MODEL_TOTAL.wrapping_sub(prob as u32) >> RC_MOVE_BITS)
-                    as probability as probability;
+                    as probability;
                 *(*rc).probs[(*rc).pos as usize] = prob;
             }
             1 => {
@@ -379,7 +379,7 @@ unsafe extern "C" fn rc_encode(
                 (*rc).low = (*rc).low.wrapping_add((*rc).range as u64);
             }
             4 => {
-                (*rc).range = UINT32_MAX as u32;
+                (*rc).range = UINT32_MAX;
                 loop {
                     if rc_shift_low(rc, out, out_pos, out_size) {
                         return true;
@@ -824,7 +824,7 @@ unsafe extern "C" fn encode_symbol(
     position: u32,
 ) {
     let pos_state: u32 = position & (*coder).pos_mask;
-    if back == UINT32_MAX as u32 {
+    if back == UINT32_MAX {
         rc_bit(
             &raw mut (*coder).rc,
             (&raw mut *(&raw mut (*coder).is_match as *mut [probability; 16])
@@ -902,7 +902,7 @@ unsafe extern "C" fn encode_eopm(coder: *mut lzma_lzma1_encoder, position: u32) 
             as *mut probability,
         0,
     );
-    match_0(coder, pos_state, UINT32_MAX as u32, MATCH_LEN_MIN as u32);
+    match_0(coder, pos_state, UINT32_MAX, MATCH_LEN_MIN as u32);
 }
 pub const LOOP_INPUT_MAX: c_int = OPTS + 1;
 #[no_mangle]
@@ -923,7 +923,7 @@ pub unsafe extern "C" fn lzma_lzma_encode(
     if (*coder).is_flushed {
         return LZMA_STREAM_END;
     }
-    while !(limit != UINT32_MAX as u32
+    while !(limit != UINT32_MAX
         && ((*mf).read_pos.wrapping_sub((*mf).read_ahead) >= limit
             || (*out_pos as u64).wrapping_add(rc_pending(&raw mut (*coder).rc))
                 >= LZMA2_CHUNK_MAX.wrapping_sub(LOOP_INPUT_MAX as u32) as u64))
@@ -989,7 +989,7 @@ unsafe extern "C" fn lzma_encode(
         out,
         out_pos,
         out_size,
-        UINT32_MAX as u32,
+        UINT32_MAX,
     );
 }
 unsafe extern "C" fn lzma_lzma_set_out_limit(

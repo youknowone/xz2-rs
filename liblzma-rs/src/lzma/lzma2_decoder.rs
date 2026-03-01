@@ -340,7 +340,7 @@ pub unsafe extern "C" fn lzma_lzma2_props_decode(
         return LZMA_MEM_ERROR;
     }
     if *props.offset(0) == 40 {
-        (*opt).dict_size = UINT32_MAX as u32;
+        (*opt).dict_size = UINT32_MAX;
     } else {
         (*opt).dict_size = 2u32 | (u32::from(*props.offset(0)) & 1);
         (*opt).dict_size <<= u32::from(*props.offset(0)).wrapping_div(2).wrapping_add(11);

@@ -286,7 +286,7 @@ unsafe extern "C" fn index_stream_init(
     index_tree_init(&raw mut (*s).groups);
     (*s).record_count = 0;
     (*s).index_list_size = 0;
-    (*s).stream_flags.version = UINT32_MAX as u32;
+    (*s).stream_flags.version = UINT32_MAX;
     (*s).stream_padding = 0;
     return s;
 }
@@ -454,7 +454,7 @@ pub unsafe extern "C" fn lzma_index_uncompressed_size(i: *const lzma_index) -> l
 pub unsafe extern "C" fn lzma_index_checks(i: *const lzma_index) -> u32 {
     let mut checks: u32 = (*i).checks;
     let s: *const index_stream = (*i).streams.rightmost as *const index_stream;
-    if (*s).stream_flags.version != UINT32_MAX as u32 {
+    if (*s).stream_flags.version != UINT32_MAX {
         checks = (checks | 1u32 << (*s).stream_flags.check) as u32;
     }
     return checks;
@@ -801,7 +801,7 @@ unsafe extern "C" fn iter_set_info(iter: *mut lzma_index_iter) {
     (*iter).stream.block_count = (*stream).record_count;
     (*iter).stream.compressed_offset = (*stream).node.compressed_base;
     (*iter).stream.uncompressed_offset = (*stream).node.uncompressed_base;
-    (*iter).stream.flags = if (*stream).stream_flags.version == UINT32_MAX as u32 {
+    (*iter).stream.flags = if (*stream).stream_flags.version == UINT32_MAX {
         ::core::ptr::null::<lzma_stream_flags>()
     } else {
         &raw const (*stream).stream_flags

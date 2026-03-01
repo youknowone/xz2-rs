@@ -190,7 +190,7 @@ unsafe extern "C" fn alone_encoder_init(
     d |= d >> 4;
     d |= d >> 8;
     d |= d >> 16;
-    if d != UINT32_MAX as u32 {
+    if d != UINT32_MAX {
         d = d.wrapping_add(1);
     }
     write32le((&raw mut (*coder).header as *mut u8).offset(1), d);

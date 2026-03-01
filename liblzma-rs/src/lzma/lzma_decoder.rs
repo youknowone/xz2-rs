@@ -676,7 +676,7 @@ unsafe extern "C" fn lzma_decode(
                     continue;
                 }
                 rep0 = rep0.wrapping_add(symbol);
-                if rep0 == UINT32_MAX as u32 {
+                if rep0 == UINT32_MAX {
                     current_block = 12043253436139097694;
                 } else {
                     current_block = 13383302701878543647;
@@ -2607,7 +2607,7 @@ unsafe extern "C" fn lzma_decode(
                                     symbol = symbol.wrapping_add(8);
                                 }
                                 rep0 = rep0.wrapping_add(symbol);
-                                if rep0 == UINT32_MAX as u32 {
+                                if rep0 == UINT32_MAX {
                                     break;
                                 }
                             }
@@ -3373,7 +3373,7 @@ unsafe extern "C" fn lzma_decode(
         }
     }
     if ret_0 == LZMA_STREAM_END {
-        (*coder).rc.range = UINT32_MAX as u32;
+        (*coder).rc.range = UINT32_MAX;
         (*coder).rc.code = 0;
         (*coder).rc.init_bytes_left = 5;
         (*coder).sequence = SEQ_IS_MATCH;
@@ -3407,7 +3407,7 @@ unsafe extern "C" fn lzma_decoder_reset(coder_ptr: *mut c_void, opt: *const c_vo
     (*coder).rep2 = 0;
     (*coder).rep3 = 0;
     (*coder).pos_mask = (1u32 << (*options).pb).wrapping_sub(1) as u32;
-    (*coder).rc.range = UINT32_MAX as u32;
+    (*coder).rc.range = UINT32_MAX;
     (*coder).rc.code = 0;
     (*coder).rc.init_bytes_left = 5;
     let mut i: u32 = 0;

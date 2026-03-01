@@ -420,7 +420,7 @@ unsafe extern "C" fn fill_align_prices(coder: *mut lzma_lzma1_encoder) {
 }
 #[inline]
 unsafe extern "C" fn make_literal(optimal: *mut lzma_optimal) {
-    (*optimal).back_prev = UINT32_MAX as u32;
+    (*optimal).back_prev = UINT32_MAX;
     (*optimal).prev_1_is_literal = false;
 }
 #[inline]
@@ -495,9 +495,9 @@ unsafe extern "C" fn helper1(
             (2 + (((1) << 3) + ((1) << 3) + ((1) << 8)) - 1) as u32
         };
     if buf_avail < 2 {
-        *back_res = UINT32_MAX as u32;
+        *back_res = UINT32_MAX;
         *len_res = 1;
-        return UINT32_MAX as u32;
+        return UINT32_MAX;
     }
     let buf: *const u8 = mf_ptr(mf).offset(-1);
     let mut rep_lens: [u32; 4] = [0; 4];
@@ -519,7 +519,7 @@ unsafe extern "C" fn helper1(
         *back_res = rep_max_index;
         *len_res = rep_lens[rep_max_index as usize];
         mf_skip(mf, (*len_res).wrapping_sub(1));
-        return UINT32_MAX as u32;
+        return UINT32_MAX;
     }
     if len_main >= nice_len {
         *back_res = (*coder).matches[matches_count.wrapping_sub(1) as usize]
@@ -527,14 +527,14 @@ unsafe extern "C" fn helper1(
             .wrapping_add(REPS as u32);
         *len_res = len_main;
         mf_skip(mf, len_main.wrapping_sub(1));
-        return UINT32_MAX as u32;
+        return UINT32_MAX;
     }
     let current_byte: u8 = *buf;
     let match_byte: u8 = *buf.offset(-((*coder).reps[0] as isize)).offset(-1);
     if len_main < 2 && current_byte != match_byte && rep_lens[rep_max_index as usize] < 2 {
-        *back_res = UINT32_MAX as u32;
+        *back_res = UINT32_MAX;
         *len_res = 1;
-        return UINT32_MAX as u32;
+        return UINT32_MAX;
     }
     (*coder).opts[0].state = (*coder).state;
     let pos_state: u32 = position & (*coder).pos_mask;
@@ -572,7 +572,7 @@ unsafe extern "C" fn helper1(
     if len_end < 2 {
         *back_res = (*coder).opts[1].back_prev;
         *len_res = 1;
-        return UINT32_MAX as u32;
+        return UINT32_MAX;
     }
     (*coder).opts[1].pos_prev = 0;
     let mut i_0: u32 = 0;
@@ -1122,7 +1122,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_normal(
         }
     }
     let mut len_end: u32 = helper1(coder, mf, back_res, len_res, position);
-    if len_end == UINT32_MAX as u32 {
+    if len_end == UINT32_MAX {
         return;
     }
     let mut reps: [u32; 4] = [0; 4];

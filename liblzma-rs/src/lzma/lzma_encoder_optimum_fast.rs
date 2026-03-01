@@ -146,7 +146,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
             (2 + (((1) << 3) + ((1) << 3) + ((1) << 8)) - 1) as u32
         };
     if buf_avail < 2 {
-        *back_res = UINT32_MAX as u32;
+        *back_res = UINT32_MAX;
         *len_res = 1;
         return;
     }
@@ -210,7 +210,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         }
     }
     if len_main < 2 || buf_avail <= 2 {
-        *back_res = UINT32_MAX as u32;
+        *back_res = UINT32_MAX;
         *len_res = 1;
         return;
     }
@@ -229,7 +229,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
                 && len_main >= 3
                 && back_main >> 7 > new_dist
         {
-            *back_res = UINT32_MAX as u32;
+            *back_res = UINT32_MAX;
             *len_res = 1;
             return;
         }
@@ -249,7 +249,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
             limit as size_t,
         ) == 0
         {
-            *back_res = UINT32_MAX as u32;
+            *back_res = UINT32_MAX;
             *len_res = 1;
             return;
         }

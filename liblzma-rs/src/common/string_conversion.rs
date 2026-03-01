@@ -165,7 +165,7 @@ static mut bcj_optmap: [option_map; 1] = unsafe {
         u: C2RustUnnamed_0 {
             range: C2RustUnnamed_1 {
                 min: 0,
-                max: UINT32_MAX as u32,
+                max: UINT32_MAX,
             },
         },
     }]
@@ -618,12 +618,12 @@ unsafe extern "C" fn parse_options(
                     let mut p: *const c_char = *str;
                     v = 0;
                     loop {
-                        if v > (UINT32_MAX as u32).wrapping_div(10) {
+                        if v > (UINT32_MAX).wrapping_div(10) {
                             return b"Value out of range\0" as *const u8 as *const c_char;
                         }
                         v = v.wrapping_mul(10);
                         let add: u32 = (*p as u8 - b'0') as u32;
-                        if (UINT32_MAX as u32).wrapping_sub(add) < v {
+                        if (UINT32_MAX).wrapping_sub(add) < v {
                             return b"Value out of range\0" as *const u8 as *const c_char;
                         }
                         v = v.wrapping_add(add);
@@ -669,7 +669,7 @@ unsafe extern "C" fn parse_options(
                             return b"Invalid multiplier suffix (KiB, MiB, or GiB)\0" as *const u8
                                 as *const c_char;
                         }
-                        if v > UINT32_MAX as u32 >> shift {
+                        if v > UINT32_MAX >> shift {
                             return b"Value out of range\0" as *const u8 as *const c_char;
                         }
                         v <<= shift;
@@ -1329,7 +1329,7 @@ unsafe extern "C" fn run_static_initializers() {
             u: C2RustUnnamed_0 {
                 range: C2RustUnnamed_1 {
                     min: 0,
-                    max: UINT32_MAX as u32,
+                    max: UINT32_MAX,
                 },
             },
         },
