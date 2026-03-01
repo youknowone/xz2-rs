@@ -291,6 +291,119 @@ pub const LZMA_SUPPORTED_FLAGS: c_uint = LZMA_TELL_NO_CHECK
     | LZMA_CONCATENATED
     | LZMA_FAIL_FAST;
 
+// lzma_block struct (shared across 12 modules)
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_block {
+    pub version: u32,
+    pub header_size: u32,
+    pub check: lzma_check,
+    pub compressed_size: lzma_vli,
+    pub uncompressed_size: lzma_vli,
+    pub filters: *mut lzma_filter,
+    pub raw_check: [u8; 64],
+    pub reserved_ptr1: *mut c_void,
+    pub reserved_ptr2: *mut c_void,
+    pub reserved_ptr3: *mut c_void,
+    pub reserved_int1: u32,
+    pub reserved_int2: u32,
+    pub reserved_int3: lzma_vli,
+    pub reserved_int4: lzma_vli,
+    pub reserved_int5: lzma_vli,
+    pub reserved_int6: lzma_vli,
+    pub reserved_int7: lzma_vli,
+    pub reserved_int8: lzma_vli,
+    pub reserved_enum1: lzma_reserved_enum,
+    pub reserved_enum2: lzma_reserved_enum,
+    pub reserved_enum3: lzma_reserved_enum,
+    pub reserved_enum4: lzma_reserved_enum,
+    pub ignore_check: lzma_bool,
+    pub reserved_bool2: lzma_bool,
+    pub reserved_bool3: lzma_bool,
+    pub reserved_bool4: lzma_bool,
+    pub reserved_bool5: lzma_bool,
+    pub reserved_bool6: lzma_bool,
+    pub reserved_bool7: lzma_bool,
+    pub reserved_bool8: lzma_bool,
+}
+
+// lzma_stream_flags struct (shared across 11 modules)
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_stream_flags {
+    pub version: u32,
+    pub backward_size: lzma_vli,
+    pub check: lzma_check,
+    pub reserved_enum1: lzma_reserved_enum,
+    pub reserved_enum2: lzma_reserved_enum,
+    pub reserved_enum3: lzma_reserved_enum,
+    pub reserved_enum4: lzma_reserved_enum,
+    pub reserved_bool1: lzma_bool,
+    pub reserved_bool2: lzma_bool,
+    pub reserved_bool3: lzma_bool,
+    pub reserved_bool4: lzma_bool,
+    pub reserved_bool5: lzma_bool,
+    pub reserved_bool6: lzma_bool,
+    pub reserved_bool7: lzma_bool,
+    pub reserved_bool8: lzma_bool,
+    pub reserved_int1: u32,
+    pub reserved_int2: u32,
+}
+
+// lzma_sha256_state struct (shared across check modules)
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_sha256_state {
+    pub state: [u32; 8],
+    pub size: u64,
+}
+
+// lzma_check_state unions and struct (shared across check/block modules)
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union lzma_check_state_buffer {
+    pub u8_0: [u8; 64],
+    pub u32_0: [u32; 16],
+    pub u64_0: [u64; 8],
+}
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union lzma_check_state_inner {
+    pub crc32: u32,
+    pub crc64: u64,
+    pub sha256: lzma_sha256_state,
+}
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_check_state {
+    pub buffer: lzma_check_state_buffer,
+    pub state: lzma_check_state_inner,
+}
+
+// lzma_options_delta struct (shared across delta modules)
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_options_delta {
+    pub type_0: lzma_delta_type,
+    pub dist: u32,
+    pub reserved_int1: u32,
+    pub reserved_int2: u32,
+    pub reserved_int3: u32,
+    pub reserved_int4: u32,
+    pub reserved_ptr1: *mut c_void,
+    pub reserved_ptr2: *mut c_void,
+}
+
+// lzma_options_easy struct (shared across easy modules)
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_options_easy {
+    pub filters: [lzma_filter; 5],
+    pub opt_lzma: lzma_options_lzma,
+}
+
 // Common extern functions used across many modules
 extern "C" {
     pub fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;

@@ -31,40 +31,6 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_block {
-    pub version: u32,
-    pub header_size: u32,
-    pub check: lzma_check,
-    pub compressed_size: lzma_vli,
-    pub uncompressed_size: lzma_vli,
-    pub filters: *mut lzma_filter,
-    pub raw_check: [u8; 64],
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-    pub reserved_ptr3: *mut c_void,
-    pub reserved_int1: u32,
-    pub reserved_int2: u32,
-    pub reserved_int3: lzma_vli,
-    pub reserved_int4: lzma_vli,
-    pub reserved_int5: lzma_vli,
-    pub reserved_int6: lzma_vli,
-    pub reserved_int7: lzma_vli,
-    pub reserved_int8: lzma_vli,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub ignore_check: lzma_bool,
-    pub reserved_bool2: lzma_bool,
-    pub reserved_bool3: lzma_bool,
-    pub reserved_bool4: lzma_bool,
-    pub reserved_bool5: lzma_bool,
-    pub reserved_bool6: lzma_bool,
-    pub reserved_bool7: lzma_bool,
-    pub reserved_bool8: lzma_bool,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_block_coder {
     pub sequence: C2RustUnnamed_2,
     pub next: lzma_next_coder,
@@ -76,32 +42,6 @@ pub struct lzma_block_coder {
     pub check_pos: size_t,
     pub check: lzma_check_state,
     pub ignore_check: bool,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_check_state {
-    pub buffer: C2RustUnnamed_1,
-    pub state: C2RustUnnamed_0,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub crc32: u32,
-    pub crc64: u64,
-    pub sha256: lzma_sha256_state,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_sha256_state {
-    pub state: [u32; 8],
-    pub size: u64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_1 {
-    pub u8_0: [u8; 64],
-    pub u32_0: [u32; 16],
-    pub u64_0: [u64; 8],
 }
 pub type C2RustUnnamed_2 = c_uint;
 pub const SEQ_CHECK: C2RustUnnamed_2 = 2;

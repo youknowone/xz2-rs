@@ -3,12 +3,6 @@ extern "C" {
     fn lzma_raw_encoder_memusage(filters: *const lzma_filter) -> u64;
     fn lzma_easy_preset(easy: *mut lzma_options_easy, preset: u32) -> bool;
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_options_easy {
-    pub filters: [lzma_filter; 5],
-    pub opt_lzma: lzma_options_lzma,
-}
 #[no_mangle]
 pub extern "C" fn lzma_easy_encoder_memusage(preset: u32) -> u64 {
     let mut opt_easy: lzma_options_easy = lzma_options_easy {

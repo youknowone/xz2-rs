@@ -5,27 +5,6 @@ extern "C" {
     static lzma_header_magic: [u8; 6];
     static lzma_footer_magic: [u8; 2];
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_stream_flags {
-    pub version: u32,
-    pub backward_size: lzma_vli,
-    pub check: lzma_check,
-    pub reserved_enum1: lzma_reserved_enum,
-    pub reserved_enum2: lzma_reserved_enum,
-    pub reserved_enum3: lzma_reserved_enum,
-    pub reserved_enum4: lzma_reserved_enum,
-    pub reserved_bool1: lzma_bool,
-    pub reserved_bool2: lzma_bool,
-    pub reserved_bool3: lzma_bool,
-    pub reserved_bool4: lzma_bool,
-    pub reserved_bool5: lzma_bool,
-    pub reserved_bool6: lzma_bool,
-    pub reserved_bool7: lzma_bool,
-    pub reserved_bool8: lzma_bool,
-    pub reserved_int1: u32,
-    pub reserved_int2: u32,
-}
 #[inline]
 extern "C" fn write32le(buf: *mut u8, num: u32) {
     unsafe {

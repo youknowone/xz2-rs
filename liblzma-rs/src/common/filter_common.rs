@@ -19,18 +19,6 @@ pub struct C2RustUnnamed {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_options_delta {
-    pub type_0: lzma_delta_type,
-    pub dist: u32,
-    pub reserved_int1: u32,
-    pub reserved_int2: u32,
-    pub reserved_int3: u32,
-    pub reserved_int4: u32,
-    pub reserved_ptr1: *mut c_void,
-    pub reserved_ptr2: *mut c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_options_bcj {
     pub start_offset: u32,
 }
