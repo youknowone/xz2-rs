@@ -366,12 +366,12 @@ unsafe extern "C" fn fill_dist_prices(coder: *mut lzma_lzma1_encoder) {
         }
         let mut dist_slot_0: u32 = DIST_MODEL_END as u32;
         while dist_slot_0 < (*coder).dist_table_size {
-            let ref mut fresh1 = *dist_slot_prices.offset(dist_slot_0 as isize);
-            *fresh1 = (*fresh1).wrapping_add(rc_direct_price(
-                (dist_slot_0 >> 1)
-                    .wrapping_sub(1)
-                    .wrapping_sub(ALIGN_BITS as u32),
-            ));
+            *dist_slot_prices.offset(dist_slot_0 as isize) =
+                (*dist_slot_prices.offset(dist_slot_0 as isize)).wrapping_add(rc_direct_price(
+                    (dist_slot_0 >> 1)
+                        .wrapping_sub(1)
+                        .wrapping_sub(ALIGN_BITS as u32),
+                ));
             dist_slot_0 = dist_slot_0.wrapping_add(1);
         }
         let mut i: u32 = 0;

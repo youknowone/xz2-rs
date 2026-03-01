@@ -40,8 +40,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     let mut i: size_t = 0;
     while i <= LZMA_FILTERS_MAX as size_t {
         (*(*block).filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN;
-        let ref mut fresh0 = (*(*block).filters.offset(i as isize)).options;
-        *fresh0 = core::ptr::null_mut();
+        (*(*block).filters.offset(i as isize)).options = core::ptr::null_mut();
         i = i.wrapping_add(1);
     }
     if (*block).version > 1 {

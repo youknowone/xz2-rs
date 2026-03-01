@@ -41,8 +41,7 @@ unsafe extern "C" fn encode_in_place(coder: *mut lzma_delta_coder, buffer: *mut 
         let fresh0 = (*coder).pos;
         (*coder).pos = (*coder).pos.wrapping_sub(1);
         (*coder).history[(fresh0 & 0xff) as usize] = *buffer.offset(i as isize);
-        let ref mut fresh1 = *buffer.offset(i as isize);
-        *fresh1 = (*fresh1).wrapping_sub(tmp);
+        *buffer.offset(i as isize) = (*buffer.offset(i as isize)).wrapping_sub(tmp);
         i = i.wrapping_add(1);
     }
 }

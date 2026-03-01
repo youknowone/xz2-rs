@@ -40,10 +40,9 @@ unsafe extern "C" fn powerpc_code(
                 (0x48 | dest >> 24 & 0x3) as u8;
             *buffer.offset(i.wrapping_add(1) as isize) = (dest >> 16) as u8;
             *buffer.offset(i.wrapping_add(2) as isize) = (dest >> 8) as u8;
-            let ref mut fresh0 = *buffer.offset(i.wrapping_add(3) as isize);
-            *fresh0 = (*fresh0 & 0x3) as u8;
-            let ref mut fresh1 = *buffer.offset(i.wrapping_add(3) as isize);
-            *fresh1 = (*fresh1 as u32 | dest) as u8;
+            *buffer.offset(i.wrapping_add(3) as isize) &= 0x3;
+            *buffer.offset(i.wrapping_add(3) as isize) =
+                (*buffer.offset(i.wrapping_add(3) as isize) as u32 | dest) as u8;
         }
         i = i.wrapping_add(4);
     }

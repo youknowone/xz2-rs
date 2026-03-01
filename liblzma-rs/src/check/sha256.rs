@@ -522,22 +522,9 @@ unsafe extern "C" fn transform(state: *mut u32, data: *const u32) {
         );
         j = j.wrapping_add(16);
     }
-    let ref mut fresh0 = *state.offset(0);
-    *fresh0 = (*fresh0).wrapping_add(T[0]);
-    let ref mut fresh1 = *state.offset(1);
-    *fresh1 = (*fresh1).wrapping_add(T[1]);
-    let ref mut fresh2 = *state.offset(2);
-    *fresh2 = (*fresh2).wrapping_add(T[2]);
-    let ref mut fresh3 = *state.offset(3);
-    *fresh3 = (*fresh3).wrapping_add(T[3]);
-    let ref mut fresh4 = *state.offset(4);
-    *fresh4 = (*fresh4).wrapping_add(T[4]);
-    let ref mut fresh5 = *state.offset(5);
-    *fresh5 = (*fresh5).wrapping_add(T[5]);
-    let ref mut fresh6 = *state.offset(6);
-    *fresh6 = (*fresh6).wrapping_add(T[6]);
-    let ref mut fresh7 = *state.offset(7);
-    *fresh7 = (*fresh7).wrapping_add(T[7]);
+    for i in 0..8 {
+        *state.offset(i as isize) = (*state.offset(i as isize)).wrapping_add(T[i]);
+    }
 }
 unsafe extern "C" fn process(check: *mut lzma_check_state) {
     transform(

@@ -814,11 +814,9 @@ unsafe extern "C" fn str_to_filters(
             return b"Unsupported preset\0" as *const u8 as *const c_char;
         }
         (*filters.offset(0)).id = LZMA_FILTER_LZMA2;
-        let ref mut fresh0 = (*filters.offset(0)).options;
-        *fresh0 = opts as *mut c_void;
+        (*filters.offset(0)).options = opts as *mut c_void;
         (*filters.offset(1)).id = LZMA_VLI_UNKNOWN;
-        let ref mut fresh1 = (*filters.offset(1)).options;
-        *fresh1 = core::ptr::null_mut();
+        (*filters.offset(1)).options = core::ptr::null_mut();
         return ::core::ptr::null::<c_char>();
     }
     let only_xz: bool = flags & LZMA_STR_ALL_FILTERS as u32 == 0;

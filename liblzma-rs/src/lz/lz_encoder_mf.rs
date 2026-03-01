@@ -64,8 +64,8 @@ unsafe extern "C" fn normalize(mf: *mut lzma_mf) {
         if *(*mf).hash.offset(i as isize) <= subvalue {
             *(*mf).hash.offset(i as isize) = EMPTY_HASH_VALUE as u32;
         } else {
-            let ref mut fresh0 = *(*mf).hash.offset(i as isize);
-            *fresh0 = (*fresh0).wrapping_sub(subvalue);
+            *(*mf).hash.offset(i as isize) =
+                (*(*mf).hash.offset(i as isize)).wrapping_sub(subvalue);
         }
         i = i.wrapping_add(1);
     }
@@ -74,8 +74,8 @@ unsafe extern "C" fn normalize(mf: *mut lzma_mf) {
         if *(*mf).son.offset(i_0 as isize) <= subvalue {
             *(*mf).son.offset(i_0 as isize) = EMPTY_HASH_VALUE as u32;
         } else {
-            let ref mut fresh1 = *(*mf).son.offset(i_0 as isize);
-            *fresh1 = (*fresh1).wrapping_sub(subvalue);
+            *(*mf).son.offset(i_0 as isize) =
+                (*(*mf).son.offset(i_0 as isize)).wrapping_sub(subvalue);
         }
         i_0 = i_0.wrapping_add(1);
     }

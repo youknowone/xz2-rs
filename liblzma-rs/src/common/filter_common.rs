@@ -203,8 +203,7 @@ pub unsafe extern "C" fn lzma_filters_free(
             break;
         }
         lzma_free((*filters.offset(i as isize)).options, allocator);
-        let ref mut fresh0 = (*filters.offset(i as isize)).options;
-        *fresh0 = core::ptr::null_mut();
+        (*filters.offset(i as isize)).options = core::ptr::null_mut();
         (*filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN;
         i = i.wrapping_add(1);
     }
