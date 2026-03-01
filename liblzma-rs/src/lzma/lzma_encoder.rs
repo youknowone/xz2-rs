@@ -298,8 +298,7 @@ unsafe extern "C" fn rc_shift_low(
             if *out_pos == out_size {
                 return true;
             }
-            *out.offset(*out_pos as isize) =
-                (*rc).cache.wrapping_add(((*rc).low >> 32) as u8);
+            *out.offset(*out_pos as isize) = (*rc).cache.wrapping_add(((*rc).low >> 32) as u8);
             *out_pos = (*out_pos).wrapping_add(1);
             (*rc).out_total = (*rc).out_total.wrapping_add(1);
             (*rc).cache = 0xff as u8;

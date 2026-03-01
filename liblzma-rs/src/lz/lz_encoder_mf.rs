@@ -24,8 +24,7 @@ unsafe extern "C" fn lzma_memcmplen(
     mut len: u32,
     limit: u32,
 ) -> u32 {
-    while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize)
-    {
+    while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
         len = len.wrapping_add(1);
     }
     return len;
@@ -258,10 +257,7 @@ pub unsafe extern "C" fn lzma_mf_hc4_find(mf: *mut lzma_mf, matches: *mut lzma_m
         (*matches.offset(0)).dist = delta2.wrapping_sub(1);
         matches_count = 1;
     }
-    if delta2 != delta3
-        && delta3 < (*mf).cyclic_size
-        && *cur.offset(-(delta3 as isize)) == *cur
-    {
+    if delta2 != delta3 && delta3 < (*mf).cyclic_size && *cur.offset(-(delta3 as isize)) == *cur {
         len_best = 3;
         let fresh3 = matches_count;
         matches_count = matches_count.wrapping_add(1);
@@ -664,10 +660,7 @@ pub unsafe extern "C" fn lzma_mf_bt4_find(mf: *mut lzma_mf, matches: *mut lzma_m
         (*matches.offset(0)).dist = delta2.wrapping_sub(1);
         matches_count = 1;
     }
-    if delta2 != delta3
-        && delta3 < (*mf).cyclic_size
-        && *cur.offset(-(delta3 as isize)) == *cur
-    {
+    if delta2 != delta3 && delta3 < (*mf).cyclic_size && *cur.offset(-(delta3 as isize)) == *cur {
         len_best = 3;
         let fresh6 = matches_count;
         matches_count = matches_count.wrapping_add(1);

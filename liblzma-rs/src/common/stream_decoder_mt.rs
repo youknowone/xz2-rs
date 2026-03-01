@@ -314,7 +314,7 @@ extern "C" fn mythread_create(
             ::core::ptr::null::<pthread_attr_t>(),
             func as Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
             arg as *mut c_void,
-        ) as c_int
+        )
     };
     mythread_sigmask(SIG_SETMASK, &raw mut old, core::ptr::null_mut());
     return ret;

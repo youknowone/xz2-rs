@@ -82,10 +82,7 @@ unsafe extern "C" fn microlzma_decode(
             options.ext_size_low = (*coder).uncomp_size as u32;
             options.ext_size_high = ((*coder).uncomp_size >> 32) as u32;
         }
-        if lzma_lzma_lclppb_decode(
-            &raw mut options,
-            !*in_0.offset(*in_pos as isize),
-        ) {
+        if lzma_lzma_lclppb_decode(&raw mut options, !*in_0.offset(*in_pos as isize)) {
             return LZMA_OPTIONS_ERROR;
         }
         *in_pos = (*in_pos).wrapping_add(1);

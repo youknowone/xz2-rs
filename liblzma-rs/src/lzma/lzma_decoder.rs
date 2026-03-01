@@ -389,11 +389,11 @@ unsafe extern "C" fn lzma_decode(
                     .wrapping_mul((*coder).rep_len_decoder.choice as u32);
                 if rc.code < rc_bound {
                     rc.range = rc_bound;
-                    (*coder).rep_len_decoder.choice =
-                        ((*coder).rep_len_decoder.choice as u32).wrapping_add(
+                    (*coder).rep_len_decoder.choice = ((*coder).rep_len_decoder.choice as u32)
+                        .wrapping_add(
                             RC_BIT_MODEL_TOTAL.wrapping_sub((*coder).rep_len_decoder.choice as u32)
                                 >> RC_MOVE_BITS,
-                        ) as probability as probability;
+                        ) as probability;
                     probs = &raw mut *(&raw mut (*coder).rep_len_decoder.low
                         as *mut [probability; 8])
                         .offset(pos_state as isize) as *mut probability;
@@ -402,9 +402,8 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).rep_len_decoder.choice = ((*coder).rep_len_decoder.choice as c_int
-                        - ((*coder).rep_len_decoder.choice as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    (*coder).rep_len_decoder.choice = (*coder).rep_len_decoder.choice
+                        - ((*coder).rep_len_decoder.choice >> RC_MOVE_BITS);
                     current_block = 6834592846991627977;
                     continue;
                 }
@@ -427,12 +426,12 @@ unsafe extern "C" fn lzma_decode(
                     .wrapping_mul((*coder).is_rep2[state as usize] as u32);
                 if rc.code < rc_bound {
                     rc.range = rc_bound;
-                    (*coder).is_rep2[state as usize] =
-                        ((*coder).is_rep2[state as usize] as u32).wrapping_add(
+                    (*coder).is_rep2[state as usize] = ((*coder).is_rep2[state as usize] as u32)
+                        .wrapping_add(
                             RC_BIT_MODEL_TOTAL
                                 .wrapping_sub((*coder).is_rep2[state as usize] as u32)
                                 >> RC_MOVE_BITS,
-                        ) as probability as probability;
+                        ) as probability;
                     let distance_3: u32 = rep2;
                     rep2 = rep1;
                     rep1 = rep0;
@@ -440,9 +439,8 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).is_rep2[state as usize] = ((*coder).is_rep2[state as usize] as c_int
-                        - ((*coder).is_rep2[state as usize] as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    (*coder).is_rep2[state as usize] = (*coder).is_rep2[state as usize]
+                        - ((*coder).is_rep2[state as usize] >> RC_MOVE_BITS);
                     let distance_4: u32 = rep3;
                     rep3 = rep2;
                     rep2 = rep1;
@@ -468,21 +466,20 @@ unsafe extern "C" fn lzma_decode(
                     .wrapping_mul((*coder).is_rep1[state as usize] as u32);
                 if rc.code < rc_bound {
                     rc.range = rc_bound;
-                    (*coder).is_rep1[state as usize] =
-                        ((*coder).is_rep1[state as usize] as u32).wrapping_add(
+                    (*coder).is_rep1[state as usize] = ((*coder).is_rep1[state as usize] as u32)
+                        .wrapping_add(
                             RC_BIT_MODEL_TOTAL
                                 .wrapping_sub((*coder).is_rep1[state as usize] as u32)
                                 >> RC_MOVE_BITS,
-                        ) as probability as probability;
+                        ) as probability;
                     let distance_2: u32 = rep1;
                     rep1 = rep0;
                     rep0 = distance_2;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).is_rep1[state as usize] = ((*coder).is_rep1[state as usize] as c_int
-                        - ((*coder).is_rep1[state as usize] as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    (*coder).is_rep1[state as usize] = (*coder).is_rep1[state as usize]
+                        - ((*coder).is_rep1[state as usize] >> RC_MOVE_BITS);
                     current_block = 3996983927318648760;
                     continue;
                 }
@@ -521,7 +518,7 @@ unsafe extern "C" fn lzma_decode(
                                     (*coder).is_rep0_long[state as usize][pos_state as usize]
                                         as u32,
                                 ) >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                     state = (if state < LIT_STATES as u32 {
                         STATE_LIT_SHORTREP
                     } else {
@@ -532,10 +529,10 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).is_rep0_long[state as usize][pos_state as usize] =
-                        ((*coder).is_rep0_long[state as usize][pos_state as usize] as c_int
-                            - ((*coder).is_rep0_long[state as usize][pos_state as usize] as c_int
-                                >> RC_MOVE_BITS)) as probability;
+                    (*coder).is_rep0_long[state as usize][pos_state as usize] = (*coder)
+                        .is_rep0_long[state as usize][pos_state as usize]
+                        - ((*coder).is_rep0_long[state as usize][pos_state as usize]
+                            >> RC_MOVE_BITS);
                 }
                 current_block = 15498320742470848828;
             }
@@ -556,20 +553,19 @@ unsafe extern "C" fn lzma_decode(
                     .wrapping_mul((*coder).is_rep0[state as usize] as u32);
                 if rc.code < rc_bound {
                     rc.range = rc_bound;
-                    (*coder).is_rep0[state as usize] =
-                        ((*coder).is_rep0[state as usize] as u32).wrapping_add(
+                    (*coder).is_rep0[state as usize] = ((*coder).is_rep0[state as usize] as u32)
+                        .wrapping_add(
                             RC_BIT_MODEL_TOTAL
                                 .wrapping_sub((*coder).is_rep0[state as usize] as u32)
                                 >> RC_MOVE_BITS,
-                        ) as probability as probability;
+                        ) as probability;
                     current_block = 1698084742280242340;
                     continue;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).is_rep0[state as usize] = ((*coder).is_rep0[state as usize] as c_int
-                        - ((*coder).is_rep0[state as usize] as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    (*coder).is_rep0[state as usize] = (*coder).is_rep0[state as usize]
+                        - ((*coder).is_rep0[state as usize] >> RC_MOVE_BITS);
                     current_block = 11808118301119257848;
                     continue;
                 }
@@ -591,11 +587,11 @@ unsafe extern "C" fn lzma_decode(
                     .wrapping_mul((*coder).is_rep[state as usize] as u32);
                 if rc.code < rc_bound {
                     rc.range = rc_bound;
-                    (*coder).is_rep[state as usize] =
-                        ((*coder).is_rep[state as usize] as u32).wrapping_add(
+                    (*coder).is_rep[state as usize] = ((*coder).is_rep[state as usize] as u32)
+                        .wrapping_add(
                             RC_BIT_MODEL_TOTAL.wrapping_sub((*coder).is_rep[state as usize] as u32)
                                 >> RC_MOVE_BITS,
-                        ) as probability as probability;
+                        ) as probability;
                     state = (if state < LIT_STATES as u32 {
                         STATE_LIT_MATCH
                     } else {
@@ -609,9 +605,8 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).is_rep[state as usize] = ((*coder).is_rep[state as usize] as c_int
-                        - ((*coder).is_rep[state as usize] as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    (*coder).is_rep[state as usize] = (*coder).is_rep[state as usize]
+                        - ((*coder).is_rep[state as usize] >> RC_MOVE_BITS);
                     if !(!dict_is_distance_valid(&raw mut dict, 0)) {
                         current_block = 4420799852307653083;
                         continue;
@@ -665,14 +660,14 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL.wrapping_sub(
                                     (*coder).pos_align[offset.wrapping_add(symbol) as usize] as u32,
                                 ) >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).pos_align[offset.wrapping_add(symbol) as usize] =
-                        ((*coder).pos_align[offset.wrapping_add(symbol) as usize] as c_int
-                            - ((*coder).pos_align[offset.wrapping_add(symbol) as usize] as c_int
-                                >> RC_MOVE_BITS)) as probability;
+                    (*coder).pos_align[offset.wrapping_add(symbol) as usize] = (*coder).pos_align
+                        [offset.wrapping_add(symbol) as usize]
+                        - ((*coder).pos_align[offset.wrapping_add(symbol) as usize]
+                            >> RC_MOVE_BITS);
                     symbol = symbol.wrapping_add(offset);
                 }
                 offset <<= 1;
@@ -737,15 +732,13 @@ unsafe extern "C" fn lzma_decode(
                     *fresh133 = (*fresh133 as u32).wrapping_add(
                         RC_BIT_MODEL_TOTAL.wrapping_sub(*probs.offset(symbol as isize) as u32)
                             >> RC_MOVE_BITS,
-                    ) as probability as probability;
+                    ) as probability;
                     symbol <<= 1;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
                     let ref mut fresh134 = *probs.offset(symbol as isize);
-                    *fresh134 = (*fresh134 as c_int
-                        - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    *fresh134 = *fresh134 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                     symbol = (symbol << 1).wrapping_add(1);
                     rep0 = (rep0 as u32).wrapping_add(1u32 << offset) as u32;
                 }
@@ -777,15 +770,13 @@ unsafe extern "C" fn lzma_decode(
                     *fresh130 = (*fresh130 as u32).wrapping_add(
                         RC_BIT_MODEL_TOTAL.wrapping_sub(*probs.offset(symbol as isize) as u32)
                             >> RC_MOVE_BITS,
-                    ) as probability as probability;
+                    ) as probability;
                     symbol <<= 1;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
                     let ref mut fresh131 = *probs.offset(symbol as isize);
-                    *fresh131 = (*fresh131 as c_int
-                        - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    *fresh131 = *fresh131 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                     symbol = (symbol << 1).wrapping_add(1);
                 }
                 if symbol < DIST_SLOTS as u32 {
@@ -837,15 +828,13 @@ unsafe extern "C" fn lzma_decode(
                     *fresh127 = (*fresh127 as u32).wrapping_add(
                         RC_BIT_MODEL_TOTAL.wrapping_sub(*probs.offset(symbol as isize) as u32)
                             >> RC_MOVE_BITS,
-                    ) as probability as probability;
+                    ) as probability;
                     symbol <<= 1;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
                     let ref mut fresh128 = *probs.offset(symbol as isize);
-                    *fresh128 = (*fresh128 as c_int
-                        - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    *fresh128 = *fresh128 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                     symbol = (symbol << 1).wrapping_add(1);
                 }
                 if symbol < limit {
@@ -881,12 +870,12 @@ unsafe extern "C" fn lzma_decode(
                     .wrapping_mul((*coder).match_len_decoder.choice2 as u32);
                 if rc.code < rc_bound {
                     rc.range = rc_bound;
-                    (*coder).match_len_decoder.choice2 =
-                        ((*coder).match_len_decoder.choice2 as u32).wrapping_add(
+                    (*coder).match_len_decoder.choice2 = ((*coder).match_len_decoder.choice2 as u32)
+                        .wrapping_add(
                             RC_BIT_MODEL_TOTAL
                                 .wrapping_sub((*coder).match_len_decoder.choice2 as u32)
                                 >> RC_MOVE_BITS,
-                        ) as probability as probability;
+                        ) as probability;
                     probs = &raw mut *(&raw mut (*coder).match_len_decoder.mid
                         as *mut [probability; 8])
                         .offset(pos_state as isize) as *mut probability;
@@ -895,10 +884,8 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).match_len_decoder.choice2 = ((*coder).match_len_decoder.choice2
-                        as c_int
-                        - ((*coder).match_len_decoder.choice2 as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    (*coder).match_len_decoder.choice2 = (*coder).match_len_decoder.choice2
+                        - ((*coder).match_len_decoder.choice2 >> RC_MOVE_BITS);
                     probs = &raw mut (*coder).match_len_decoder.high as *mut probability;
                     limit = LEN_HIGH_SYMBOLS as u32;
                     len = (MATCH_LEN_MIN + LEN_LOW_SYMBOLS + LEN_MID_SYMBOLS) as u32;
@@ -922,12 +909,12 @@ unsafe extern "C" fn lzma_decode(
                     .wrapping_mul((*coder).match_len_decoder.choice as u32);
                 if rc.code < rc_bound {
                     rc.range = rc_bound;
-                    (*coder).match_len_decoder.choice =
-                        ((*coder).match_len_decoder.choice as u32).wrapping_add(
+                    (*coder).match_len_decoder.choice = ((*coder).match_len_decoder.choice as u32)
+                        .wrapping_add(
                             RC_BIT_MODEL_TOTAL
                                 .wrapping_sub((*coder).match_len_decoder.choice as u32)
                                 >> RC_MOVE_BITS,
-                        ) as probability as probability;
+                        ) as probability;
                     probs = &raw mut *(&raw mut (*coder).match_len_decoder.low
                         as *mut [probability; 8])
                         .offset(pos_state as isize) as *mut probability;
@@ -936,9 +923,8 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).match_len_decoder.choice = ((*coder).match_len_decoder.choice as c_int
-                        - ((*coder).match_len_decoder.choice as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    (*coder).match_len_decoder.choice = (*coder).match_len_decoder.choice
+                        - ((*coder).match_len_decoder.choice >> RC_MOVE_BITS);
                     current_block = 13912927785247575907;
                     continue;
                 }
@@ -977,16 +963,15 @@ unsafe extern "C" fn lzma_decode(
                         RC_BIT_MODEL_TOTAL
                             .wrapping_sub(*probs.offset(subcoder_index as isize) as u32)
                             >> RC_MOVE_BITS,
-                    ) as probability as probability;
+                    ) as probability;
                     symbol <<= 1;
                     offset &= !match_bit;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
                     let ref mut fresh122 = *probs.offset(subcoder_index as isize);
-                    *fresh122 = (*fresh122 as c_int
-                        - (*probs.offset(subcoder_index as isize) as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    *fresh122 =
+                        *fresh122 - (*probs.offset(subcoder_index as isize) >> RC_MOVE_BITS);
                     symbol = (symbol << 1).wrapping_add(1);
                     offset &= match_bit;
                 }
@@ -1081,10 +1066,9 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).is_match[state as usize][pos_state as usize] =
-                        ((*coder).is_match[state as usize][pos_state as usize] as c_int
-                            - ((*coder).is_match[state as usize][pos_state as usize] as c_int
-                                >> RC_MOVE_BITS)) as probability;
+                    (*coder).is_match[state as usize][pos_state as usize] = (*coder).is_match
+                        [state as usize][pos_state as usize]
+                        - ((*coder).is_match[state as usize][pos_state as usize] >> RC_MOVE_BITS);
                     current_block = 3469750012682708893;
                     continue;
                 }
@@ -1110,15 +1094,13 @@ unsafe extern "C" fn lzma_decode(
                     *fresh118 = (*fresh118 as u32).wrapping_add(
                         RC_BIT_MODEL_TOTAL.wrapping_sub(*probs.offset(symbol as isize) as u32)
                             >> RC_MOVE_BITS,
-                    ) as probability as probability;
+                    ) as probability;
                     symbol <<= 1;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
                     let ref mut fresh119 = *probs.offset(symbol as isize);
-                    *fresh119 = (*fresh119 as c_int
-                        - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    *fresh119 = *fresh119 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                     symbol = (symbol << 1).wrapping_add(1);
                 }
                 if symbol < ((1) << 8) as u32 {
@@ -1150,15 +1132,13 @@ unsafe extern "C" fn lzma_decode(
                     *fresh145 = (*fresh145 as u32).wrapping_add(
                         RC_BIT_MODEL_TOTAL.wrapping_sub(*probs.offset(symbol as isize) as u32)
                             >> RC_MOVE_BITS,
-                    ) as probability as probability;
+                    ) as probability;
                     symbol <<= 1;
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
                     let ref mut fresh146 = *probs.offset(symbol as isize);
-                    *fresh146 = (*fresh146 as c_int
-                        - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    *fresh146 = *fresh146 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                     symbol = (symbol << 1).wrapping_add(1);
                 }
                 if symbol < limit {
@@ -1195,12 +1175,12 @@ unsafe extern "C" fn lzma_decode(
                     .wrapping_mul((*coder).rep_len_decoder.choice2 as u32);
                 if rc.code < rc_bound {
                     rc.range = rc_bound;
-                    (*coder).rep_len_decoder.choice2 =
-                        ((*coder).rep_len_decoder.choice2 as u32).wrapping_add(
+                    (*coder).rep_len_decoder.choice2 = ((*coder).rep_len_decoder.choice2 as u32)
+                        .wrapping_add(
                             RC_BIT_MODEL_TOTAL
                                 .wrapping_sub((*coder).rep_len_decoder.choice2 as u32)
                                 >> RC_MOVE_BITS,
-                        ) as probability as probability;
+                        ) as probability;
                     probs = &raw mut *(&raw mut (*coder).rep_len_decoder.mid
                         as *mut [probability; 8])
                         .offset(pos_state as isize) as *mut probability;
@@ -1209,9 +1189,8 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).rep_len_decoder.choice2 = ((*coder).rep_len_decoder.choice2 as c_int
-                        - ((*coder).rep_len_decoder.choice2 as c_int >> RC_MOVE_BITS))
-                        as probability;
+                    (*coder).rep_len_decoder.choice2 = (*coder).rep_len_decoder.choice2
+                        - ((*coder).rep_len_decoder.choice2 >> RC_MOVE_BITS);
                     probs = &raw mut (*coder).rep_len_decoder.high as *mut probability;
                     limit = LEN_HIGH_SYMBOLS as u32;
                     len = (MATCH_LEN_MIN + LEN_LOW_SYMBOLS + LEN_MID_SYMBOLS) as u32;
@@ -1284,15 +1263,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh6 = *probs.offset(symbol as isize);
-                            *fresh6 = (*fresh6 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh6 = *fresh6 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -1310,15 +1287,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh9 = *probs.offset(symbol as isize);
-                            *fresh9 = (*fresh9 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh9 = *fresh9 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -1336,15 +1311,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh12 = *probs.offset(symbol as isize);
-                            *fresh12 = (*fresh12 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh12 = *fresh12 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -1362,15 +1335,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh15 = *probs.offset(symbol as isize);
-                            *fresh15 = (*fresh15 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh15 = *fresh15 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -1388,15 +1359,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh18 = *probs.offset(symbol as isize);
-                            *fresh18 = (*fresh18 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh18 = *fresh18 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -1414,15 +1383,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh21 = *probs.offset(symbol as isize);
-                            *fresh21 = (*fresh21 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh21 = *fresh21 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -1440,15 +1407,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh24 = *probs.offset(symbol as isize);
-                            *fresh24 = (*fresh24 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh24 = *fresh24 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -1466,15 +1431,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh27 = *probs.offset(symbol as isize);
-                            *fresh27 = (*fresh27 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh27 = *fresh27 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         symbol = symbol.wrapping_add(0);
@@ -1507,17 +1470,15 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(t_subcoder_index as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                             t_offset &= !t_match_bit;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh30 = *probs.offset(t_subcoder_index as isize);
-                            *fresh30 = (*fresh30 as c_int
-                                - (*probs.offset(t_subcoder_index as isize) as c_int
-                                    >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh30 = *fresh30
+                                - (*probs.offset(t_subcoder_index as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                             t_offset &= t_match_bit;
                         }
@@ -1539,17 +1500,15 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(t_subcoder_index as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                             t_offset &= !t_match_bit;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh33 = *probs.offset(t_subcoder_index as isize);
-                            *fresh33 = (*fresh33 as c_int
-                                - (*probs.offset(t_subcoder_index as isize) as c_int
-                                    >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh33 = *fresh33
+                                - (*probs.offset(t_subcoder_index as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                             t_offset &= t_match_bit;
                         }
@@ -1571,17 +1530,15 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(t_subcoder_index as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                             t_offset &= !t_match_bit;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh36 = *probs.offset(t_subcoder_index as isize);
-                            *fresh36 = (*fresh36 as c_int
-                                - (*probs.offset(t_subcoder_index as isize) as c_int
-                                    >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh36 = *fresh36
+                                - (*probs.offset(t_subcoder_index as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                             t_offset &= t_match_bit;
                         }
@@ -1603,17 +1560,15 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(t_subcoder_index as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                             t_offset &= !t_match_bit;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh39 = *probs.offset(t_subcoder_index as isize);
-                            *fresh39 = (*fresh39 as c_int
-                                - (*probs.offset(t_subcoder_index as isize) as c_int
-                                    >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh39 = *fresh39
+                                - (*probs.offset(t_subcoder_index as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                             t_offset &= t_match_bit;
                         }
@@ -1635,17 +1590,15 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(t_subcoder_index as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                             t_offset &= !t_match_bit;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh42 = *probs.offset(t_subcoder_index as isize);
-                            *fresh42 = (*fresh42 as c_int
-                                - (*probs.offset(t_subcoder_index as isize) as c_int
-                                    >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh42 = *fresh42
+                                - (*probs.offset(t_subcoder_index as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                             t_offset &= t_match_bit;
                         }
@@ -1667,17 +1620,15 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(t_subcoder_index as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                             t_offset &= !t_match_bit;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh45 = *probs.offset(t_subcoder_index as isize);
-                            *fresh45 = (*fresh45 as c_int
-                                - (*probs.offset(t_subcoder_index as isize) as c_int
-                                    >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh45 = *fresh45
+                                - (*probs.offset(t_subcoder_index as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                             t_offset &= t_match_bit;
                         }
@@ -1699,17 +1650,15 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(t_subcoder_index as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                             t_offset &= !t_match_bit;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh48 = *probs.offset(t_subcoder_index as isize);
-                            *fresh48 = (*fresh48 as c_int
-                                - (*probs.offset(t_subcoder_index as isize) as c_int
-                                    >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh48 = *fresh48
+                                - (*probs.offset(t_subcoder_index as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                             t_offset &= t_match_bit;
                         }
@@ -1731,17 +1680,15 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(t_subcoder_index as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                             t_offset &= !t_match_bit;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh51 = *probs.offset(t_subcoder_index as isize);
-                            *fresh51 = (*fresh51 as c_int
-                                - (*probs.offset(t_subcoder_index as isize) as c_int
-                                    >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh51 = *fresh51
+                                - (*probs.offset(t_subcoder_index as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                             t_offset &= t_match_bit;
                         }
@@ -1750,10 +1697,9 @@ unsafe extern "C" fn lzma_decode(
                 } else {
                     rc.range = rc.range.wrapping_sub(rc_bound);
                     rc.code = rc.code.wrapping_sub(rc_bound);
-                    (*coder).is_match[state as usize][pos_state as usize] =
-                        ((*coder).is_match[state as usize][pos_state as usize] as c_int
-                            - ((*coder).is_match[state as usize][pos_state as usize] as c_int
-                                >> RC_MOVE_BITS)) as probability;
+                    (*coder).is_match[state as usize][pos_state as usize] = (*coder).is_match
+                        [state as usize][pos_state as usize]
+                        - ((*coder).is_match[state as usize][pos_state as usize] >> RC_MOVE_BITS);
                     if rc.range < RC_TOP_VALUE as u32 {
                         rc.range <<= RC_SHIFT_BITS;
                         let fresh52 = rc_in_ptr;
@@ -1769,7 +1715,7 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub((*coder).is_rep[state as usize] as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                         state = (if state < LIT_STATES as u32 {
                             STATE_LIT_MATCH
                         } else {
@@ -1794,7 +1740,7 @@ unsafe extern "C" fn lzma_decode(
                                     RC_BIT_MODEL_TOTAL
                                         .wrapping_sub((*coder).match_len_decoder.choice as u32)
                                         >> RC_MOVE_BITS,
-                                ) as probability as probability;
+                                ) as probability;
                             symbol = 1;
                             if rc.range < RC_TOP_VALUE as u32 {
                                 rc.range <<= RC_SHIFT_BITS;
@@ -1826,14 +1772,11 @@ unsafe extern "C" fn lzma_decode(
                                 rc.range = rc.range.wrapping_sub(rc_bound);
                                 rc.code = rc.code.wrapping_sub(rc_bound);
                                 (*coder).match_len_decoder.low[pos_state as usize]
-                                    [symbol as usize] = ((*coder).match_len_decoder.low
+                                    [symbol as usize] = (*coder).match_len_decoder.low
                                     [pos_state as usize][symbol as usize]
-                                    as c_int
                                     - ((*coder).match_len_decoder.low[pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
-                                        >> RC_MOVE_BITS))
-                                    as probability;
+                                        >> RC_MOVE_BITS);
                                 symbol = (symbol << 1).wrapping_add(1);
                             }
                             if rc.range < RC_TOP_VALUE as u32 {
@@ -1866,14 +1809,11 @@ unsafe extern "C" fn lzma_decode(
                                 rc.range = rc.range.wrapping_sub(rc_bound);
                                 rc.code = rc.code.wrapping_sub(rc_bound);
                                 (*coder).match_len_decoder.low[pos_state as usize]
-                                    [symbol as usize] = ((*coder).match_len_decoder.low
+                                    [symbol as usize] = (*coder).match_len_decoder.low
                                     [pos_state as usize][symbol as usize]
-                                    as c_int
                                     - ((*coder).match_len_decoder.low[pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
-                                        >> RC_MOVE_BITS))
-                                    as probability;
+                                        >> RC_MOVE_BITS);
                                 symbol = (symbol << 1).wrapping_add(1);
                             }
                             if rc.range < RC_TOP_VALUE as u32 {
@@ -1906,14 +1846,11 @@ unsafe extern "C" fn lzma_decode(
                                 rc.range = rc.range.wrapping_sub(rc_bound);
                                 rc.code = rc.code.wrapping_sub(rc_bound);
                                 (*coder).match_len_decoder.low[pos_state as usize]
-                                    [symbol as usize] = ((*coder).match_len_decoder.low
+                                    [symbol as usize] = (*coder).match_len_decoder.low
                                     [pos_state as usize][symbol as usize]
-                                    as c_int
                                     - ((*coder).match_len_decoder.low[pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
-                                        >> RC_MOVE_BITS))
-                                    as probability;
+                                        >> RC_MOVE_BITS);
                                 symbol = (symbol << 1).wrapping_add(1);
                             }
                             symbol = symbol.wrapping_add((-((1_i32) << 3) + 2) as u32);
@@ -1921,10 +1858,8 @@ unsafe extern "C" fn lzma_decode(
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
-                            (*coder).match_len_decoder.choice = ((*coder).match_len_decoder.choice
-                                as c_int
-                                - ((*coder).match_len_decoder.choice as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            (*coder).match_len_decoder.choice = (*coder).match_len_decoder.choice
+                                - ((*coder).match_len_decoder.choice >> RC_MOVE_BITS);
                             if rc.range < RC_TOP_VALUE as u32 {
                                 rc.range <<= RC_SHIFT_BITS;
                                 let fresh57 = rc_in_ptr;
@@ -1975,15 +1910,12 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.mid[pos_state as usize]
-                                        [symbol as usize] = ((*coder).match_len_decoder.mid
+                                        [symbol as usize] = (*coder).match_len_decoder.mid
                                         [pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
                                         - ((*coder).match_len_decoder.mid[pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
-                                            >> RC_MOVE_BITS))
-                                        as probability;
+                                            >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2018,15 +1950,12 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.mid[pos_state as usize]
-                                        [symbol as usize] = ((*coder).match_len_decoder.mid
+                                        [symbol as usize] = (*coder).match_len_decoder.mid
                                         [pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
                                         - ((*coder).match_len_decoder.mid[pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
-                                            >> RC_MOVE_BITS))
-                                        as probability;
+                                            >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2061,15 +1990,12 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.mid[pos_state as usize]
-                                        [symbol as usize] = ((*coder).match_len_decoder.mid
+                                        [symbol as usize] = (*coder).match_len_decoder.mid
                                         [pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
                                         - ((*coder).match_len_decoder.mid[pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
-                                            >> RC_MOVE_BITS))
-                                        as probability;
+                                            >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 symbol =
@@ -2079,10 +2005,8 @@ unsafe extern "C" fn lzma_decode(
                                 rc.range = rc.range.wrapping_sub(rc_bound);
                                 rc.code = rc.code.wrapping_sub(rc_bound);
                                 (*coder).match_len_decoder.choice2 =
-                                    ((*coder).match_len_decoder.choice2 as c_int
-                                        - ((*coder).match_len_decoder.choice2 as c_int
-                                            >> RC_MOVE_BITS))
-                                        as probability;
+                                    (*coder).match_len_decoder.choice2
+                                        - ((*coder).match_len_decoder.choice2 >> RC_MOVE_BITS);
                                 symbol = 1;
                                 if rc.range < RC_TOP_VALUE as u32 {
                                     rc.range <<= RC_SHIFT_BITS;
@@ -2109,11 +2033,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.high[symbol as usize] =
-                                        ((*coder).match_len_decoder.high[symbol as usize] as c_int
+                                        (*coder).match_len_decoder.high[symbol as usize]
                                             - ((*coder).match_len_decoder.high[symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2141,11 +2063,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.high[symbol as usize] =
-                                        ((*coder).match_len_decoder.high[symbol as usize] as c_int
+                                        (*coder).match_len_decoder.high[symbol as usize]
                                             - ((*coder).match_len_decoder.high[symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2173,11 +2093,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.high[symbol as usize] =
-                                        ((*coder).match_len_decoder.high[symbol as usize] as c_int
+                                        (*coder).match_len_decoder.high[symbol as usize]
                                             - ((*coder).match_len_decoder.high[symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2205,11 +2123,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.high[symbol as usize] =
-                                        ((*coder).match_len_decoder.high[symbol as usize] as c_int
+                                        (*coder).match_len_decoder.high[symbol as usize]
                                             - ((*coder).match_len_decoder.high[symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2237,11 +2153,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.high[symbol as usize] =
-                                        ((*coder).match_len_decoder.high[symbol as usize] as c_int
+                                        (*coder).match_len_decoder.high[symbol as usize]
                                             - ((*coder).match_len_decoder.high[symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2269,11 +2183,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.high[symbol as usize] =
-                                        ((*coder).match_len_decoder.high[symbol as usize] as c_int
+                                        (*coder).match_len_decoder.high[symbol as usize]
                                             - ((*coder).match_len_decoder.high[symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2301,11 +2213,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.high[symbol as usize] =
-                                        ((*coder).match_len_decoder.high[symbol as usize] as c_int
+                                        (*coder).match_len_decoder.high[symbol as usize]
                                             - ((*coder).match_len_decoder.high[symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2333,11 +2243,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).match_len_decoder.high[symbol as usize] =
-                                        ((*coder).match_len_decoder.high[symbol as usize] as c_int
+                                        (*coder).match_len_decoder.high[symbol as usize]
                                             - ((*coder).match_len_decoder.high[symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 symbol = symbol.wrapping_add(
@@ -2370,15 +2278,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh71 = *probs.offset(symbol as isize);
-                            *fresh71 = (*fresh71 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh71 = *fresh71 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -2396,15 +2302,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh74 = *probs.offset(symbol as isize);
-                            *fresh74 = (*fresh74 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh74 = *fresh74 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -2422,15 +2326,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh77 = *probs.offset(symbol as isize);
-                            *fresh77 = (*fresh77 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh77 = *fresh77 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -2448,15 +2350,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh80 = *probs.offset(symbol as isize);
-                            *fresh80 = (*fresh80 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh80 = *fresh80 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -2474,15 +2374,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh83 = *probs.offset(symbol as isize);
-                            *fresh83 = (*fresh83 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh83 = *fresh83 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         if rc.range < RC_TOP_VALUE as u32 {
@@ -2500,15 +2398,13 @@ unsafe extern "C" fn lzma_decode(
                                 RC_BIT_MODEL_TOTAL
                                     .wrapping_sub(*probs.offset(symbol as isize) as u32)
                                     >> RC_MOVE_BITS,
-                            ) as probability as probability;
+                            ) as probability;
                             symbol <<= 1;
                         } else {
                             rc.range = rc.range.wrapping_sub(rc_bound);
                             rc.code = rc.code.wrapping_sub(rc_bound);
                             let ref mut fresh86 = *probs.offset(symbol as isize);
-                            *fresh86 = (*fresh86 as c_int
-                                - (*probs.offset(symbol as isize) as c_int >> RC_MOVE_BITS))
-                                as probability;
+                            *fresh86 = *fresh86 - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                             symbol = (symbol << 1).wrapping_add(1);
                         }
                         symbol = symbol.wrapping_add(-((1_i32) << 6) as u32);
@@ -2549,10 +2445,8 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         let ref mut fresh89 = *probs.offset(symbol as isize);
-                                        *fresh89 = (*fresh89 as c_int
-                                            - (*probs.offset(symbol as isize) as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                        *fresh89 = *fresh89
+                                            - (*probs.offset(symbol as isize) >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                         rep0 = rep0.wrapping_add(offset);
                                     }
@@ -2611,12 +2505,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).pos_align[symbol.wrapping_add(1) as usize] =
-                                        ((*coder).pos_align[symbol.wrapping_add(1) as usize]
-                                            as c_int
+                                        (*coder).pos_align[symbol.wrapping_add(1) as usize]
                                             - ((*coder).pos_align[symbol.wrapping_add(1) as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = symbol.wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2646,12 +2537,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).pos_align[symbol.wrapping_add(2) as usize] =
-                                        ((*coder).pos_align[symbol.wrapping_add(2) as usize]
-                                            as c_int
+                                        (*coder).pos_align[symbol.wrapping_add(2) as usize]
                                             - ((*coder).pos_align[symbol.wrapping_add(2) as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = symbol.wrapping_add(2);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2681,12 +2569,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).pos_align[symbol.wrapping_add(4) as usize] =
-                                        ((*coder).pos_align[symbol.wrapping_add(4) as usize]
-                                            as c_int
+                                        (*coder).pos_align[symbol.wrapping_add(4) as usize]
                                             - ((*coder).pos_align[symbol.wrapping_add(4) as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = symbol.wrapping_add(4);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2716,12 +2601,9 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).pos_align[symbol.wrapping_add(8) as usize] =
-                                        ((*coder).pos_align[symbol.wrapping_add(8) as usize]
-                                            as c_int
+                                        (*coder).pos_align[symbol.wrapping_add(8) as usize]
                                             - ((*coder).pos_align[symbol.wrapping_add(8) as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                     symbol = symbol.wrapping_add(8);
                                 }
                                 rep0 = rep0.wrapping_add(symbol);
@@ -2738,9 +2620,8 @@ unsafe extern "C" fn lzma_decode(
                     } else {
                         rc.range = rc.range.wrapping_sub(rc_bound);
                         rc.code = rc.code.wrapping_sub(rc_bound);
-                        (*coder).is_rep[state as usize] = ((*coder).is_rep[state as usize] as c_int
-                            - ((*coder).is_rep[state as usize] as c_int >> RC_MOVE_BITS))
-                            as probability;
+                        (*coder).is_rep[state as usize] = (*coder).is_rep[state as usize]
+                            - ((*coder).is_rep[state as usize] >> RC_MOVE_BITS);
                         if !dict_is_distance_valid(&raw mut dict, 0) {
                             ret_0 = LZMA_DATA_ERROR;
                             current_block = 4609795085482299213;
@@ -2797,21 +2678,16 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).is_rep0_long[state as usize][pos_state as usize] =
-                                        ((*coder).is_rep0_long[state as usize][pos_state as usize]
-                                            as c_int
+                                        (*coder).is_rep0_long[state as usize][pos_state as usize]
                                             - ((*coder).is_rep0_long[state as usize]
                                                 [pos_state as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                 }
                             } else {
                                 rc.range = rc.range.wrapping_sub(rc_bound);
                                 rc.code = rc.code.wrapping_sub(rc_bound);
-                                (*coder).is_rep0[state as usize] = ((*coder).is_rep0[state as usize]
-                                    as c_int
-                                    - ((*coder).is_rep0[state as usize] as c_int >> RC_MOVE_BITS))
-                                    as probability;
+                                (*coder).is_rep0[state as usize] = (*coder).is_rep0[state as usize]
+                                    - ((*coder).is_rep0[state as usize] >> RC_MOVE_BITS);
                                 if rc.range < RC_TOP_VALUE as u32 {
                                     rc.range <<= RC_SHIFT_BITS;
                                     let fresh97 = rc_in_ptr;
@@ -2835,11 +2711,9 @@ unsafe extern "C" fn lzma_decode(
                                 } else {
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
-                                    (*coder).is_rep1[state as usize] =
-                                        ((*coder).is_rep1[state as usize] as c_int
-                                            - ((*coder).is_rep1[state as usize] as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                    (*coder).is_rep1[state as usize] = (*coder).is_rep1
+                                        [state as usize]
+                                        - ((*coder).is_rep1[state as usize] >> RC_MOVE_BITS);
                                     if rc.range < RC_TOP_VALUE as u32 {
                                         rc.range <<= RC_SHIFT_BITS;
                                         let fresh98 = rc_in_ptr;
@@ -2865,11 +2739,9 @@ unsafe extern "C" fn lzma_decode(
                                     } else {
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
-                                        (*coder).is_rep2[state as usize] =
-                                            ((*coder).is_rep2[state as usize] as c_int
-                                                - ((*coder).is_rep2[state as usize] as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                        (*coder).is_rep2[state as usize] = (*coder).is_rep2
+                                            [state as usize]
+                                            - ((*coder).is_rep2[state as usize] >> RC_MOVE_BITS);
                                         let distance_1: u32 = rep3;
                                         rep3 = rep2;
                                         rep2 = rep1;
@@ -2933,15 +2805,12 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).rep_len_decoder.low[pos_state as usize]
-                                        [symbol as usize] = ((*coder).rep_len_decoder.low
+                                        [symbol as usize] = (*coder).rep_len_decoder.low
                                         [pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
                                         - ((*coder).rep_len_decoder.low[pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
-                                            >> RC_MOVE_BITS))
-                                        as probability;
+                                            >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -2975,15 +2844,12 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).rep_len_decoder.low[pos_state as usize]
-                                        [symbol as usize] = ((*coder).rep_len_decoder.low
+                                        [symbol as usize] = (*coder).rep_len_decoder.low
                                         [pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
                                         - ((*coder).rep_len_decoder.low[pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
-                                            >> RC_MOVE_BITS))
-                                        as probability;
+                                            >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 if rc.range < RC_TOP_VALUE as u32 {
@@ -3017,15 +2883,12 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).rep_len_decoder.low[pos_state as usize]
-                                        [symbol as usize] = ((*coder).rep_len_decoder.low
+                                        [symbol as usize] = (*coder).rep_len_decoder.low
                                         [pos_state as usize]
                                         [symbol as usize]
-                                        as c_int
                                         - ((*coder).rep_len_decoder.low[pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
-                                            >> RC_MOVE_BITS))
-                                        as probability;
+                                            >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
                                 symbol = symbol.wrapping_add((-((1_i32) << 3) + 2) as u32);
@@ -3033,10 +2896,8 @@ unsafe extern "C" fn lzma_decode(
                             } else {
                                 rc.range = rc.range.wrapping_sub(rc_bound);
                                 rc.code = rc.code.wrapping_sub(rc_bound);
-                                (*coder).rep_len_decoder.choice = ((*coder).rep_len_decoder.choice
-                                    as c_int
-                                    - ((*coder).rep_len_decoder.choice as c_int >> RC_MOVE_BITS))
-                                    as probability;
+                                (*coder).rep_len_decoder.choice = (*coder).rep_len_decoder.choice
+                                    - ((*coder).rep_len_decoder.choice >> RC_MOVE_BITS);
                                 if rc.range < RC_TOP_VALUE as u32 {
                                     rc.range <<= RC_SHIFT_BITS;
                                     let fresh103 = rc_in_ptr;
@@ -3087,15 +2948,12 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.mid[pos_state as usize]
-                                            [symbol as usize] = ((*coder).rep_len_decoder.mid
+                                            [symbol as usize] = (*coder).rep_len_decoder.mid
                                             [pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
                                             - ((*coder).rep_len_decoder.mid[pos_state as usize]
                                                 [symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3130,15 +2988,12 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.mid[pos_state as usize]
-                                            [symbol as usize] = ((*coder).rep_len_decoder.mid
+                                            [symbol as usize] = (*coder).rep_len_decoder.mid
                                             [pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
                                             - ((*coder).rep_len_decoder.mid[pos_state as usize]
                                                 [symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3173,15 +3028,12 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.mid[pos_state as usize]
-                                            [symbol as usize] = ((*coder).rep_len_decoder.mid
+                                            [symbol as usize] = (*coder).rep_len_decoder.mid
                                             [pos_state as usize]
                                             [symbol as usize]
-                                            as c_int
                                             - ((*coder).rep_len_decoder.mid[pos_state as usize]
                                                 [symbol as usize]
-                                                as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                                >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     symbol = symbol
@@ -3191,10 +3043,8 @@ unsafe extern "C" fn lzma_decode(
                                     rc.range = rc.range.wrapping_sub(rc_bound);
                                     rc.code = rc.code.wrapping_sub(rc_bound);
                                     (*coder).rep_len_decoder.choice2 =
-                                        ((*coder).rep_len_decoder.choice2 as c_int
-                                            - ((*coder).rep_len_decoder.choice2 as c_int
-                                                >> RC_MOVE_BITS))
-                                            as probability;
+                                        (*coder).rep_len_decoder.choice2
+                                            - ((*coder).rep_len_decoder.choice2 >> RC_MOVE_BITS);
                                     symbol = 1;
                                     if rc.range < RC_TOP_VALUE as u32 {
                                         rc.range <<= RC_SHIFT_BITS;
@@ -3223,12 +3073,9 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.high[symbol as usize] =
-                                            ((*coder).rep_len_decoder.high[symbol as usize]
-                                                as c_int
+                                            (*coder).rep_len_decoder.high[symbol as usize]
                                                 - ((*coder).rep_len_decoder.high[symbol as usize]
-                                                    as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                                    >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3258,12 +3105,9 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.high[symbol as usize] =
-                                            ((*coder).rep_len_decoder.high[symbol as usize]
-                                                as c_int
+                                            (*coder).rep_len_decoder.high[symbol as usize]
                                                 - ((*coder).rep_len_decoder.high[symbol as usize]
-                                                    as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                                    >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3293,12 +3137,9 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.high[symbol as usize] =
-                                            ((*coder).rep_len_decoder.high[symbol as usize]
-                                                as c_int
+                                            (*coder).rep_len_decoder.high[symbol as usize]
                                                 - ((*coder).rep_len_decoder.high[symbol as usize]
-                                                    as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                                    >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3328,12 +3169,9 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.high[symbol as usize] =
-                                            ((*coder).rep_len_decoder.high[symbol as usize]
-                                                as c_int
+                                            (*coder).rep_len_decoder.high[symbol as usize]
                                                 - ((*coder).rep_len_decoder.high[symbol as usize]
-                                                    as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                                    >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3363,12 +3201,9 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.high[symbol as usize] =
-                                            ((*coder).rep_len_decoder.high[symbol as usize]
-                                                as c_int
+                                            (*coder).rep_len_decoder.high[symbol as usize]
                                                 - ((*coder).rep_len_decoder.high[symbol as usize]
-                                                    as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                                    >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3398,12 +3233,9 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.high[symbol as usize] =
-                                            ((*coder).rep_len_decoder.high[symbol as usize]
-                                                as c_int
+                                            (*coder).rep_len_decoder.high[symbol as usize]
                                                 - ((*coder).rep_len_decoder.high[symbol as usize]
-                                                    as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                                    >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3433,12 +3265,9 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.high[symbol as usize] =
-                                            ((*coder).rep_len_decoder.high[symbol as usize]
-                                                as c_int
+                                            (*coder).rep_len_decoder.high[symbol as usize]
                                                 - ((*coder).rep_len_decoder.high[symbol as usize]
-                                                    as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                                    >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     if rc.range < RC_TOP_VALUE as u32 {
@@ -3468,12 +3297,9 @@ unsafe extern "C" fn lzma_decode(
                                         rc.range = rc.range.wrapping_sub(rc_bound);
                                         rc.code = rc.code.wrapping_sub(rc_bound);
                                         (*coder).rep_len_decoder.high[symbol as usize] =
-                                            ((*coder).rep_len_decoder.high[symbol as usize]
-                                                as c_int
+                                            (*coder).rep_len_decoder.high[symbol as usize]
                                                 - ((*coder).rep_len_decoder.high[symbol as usize]
-                                                    as c_int
-                                                    >> RC_MOVE_BITS))
-                                                as probability;
+                                                    >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
                                     symbol = symbol.wrapping_add(
@@ -3775,12 +3601,12 @@ pub unsafe extern "C" fn lzma_lzma_lclppb_decode(
     options: *mut lzma_options_lzma,
     mut byte: u8,
 ) -> bool {
-    if byte as c_int > (4 * 5 + 4) * 9 + 8 {
+    if byte > (4 * 5 + 4) * 9 + 8 {
         return true;
     }
-    (*options).pb = (byte as c_int / (9 * 5)) as u32;
+    (*options).pb = (byte / (9 * 5)) as u32;
     byte = (byte as u32).wrapping_sub((*options).pb.wrapping_mul(9u32).wrapping_mul(5)) as u8 as u8;
-    (*options).lp = (byte as c_int / 9) as u32;
+    (*options).lp = (byte / 9) as u32;
     (*options).lc = (byte as u32).wrapping_sub((*options).lp.wrapping_mul(9));
     return (*options).lc.wrapping_add((*options).lp) > LZMA_LCLP_MAX as u32;
 }
