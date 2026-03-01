@@ -314,7 +314,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                     (*index_hash).pos = (*index_hash).pos.wrapping_sub(1);
                     let fresh1 = *in_pos;
                     *in_pos = (*in_pos).wrapping_add(1);
-                    if *in_0.offset(fresh1 as isize) as c_int != 0 as c_int {
+                    if *in_0.offset(fresh1 as isize) != 0 {
                         return LZMA_DATA_ERROR;
                     }
                     continue;
@@ -334,7 +334,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                         &raw mut (*index_hash).records.check.buffer.u8_0 as *mut u8
                             as *const c_void,
                         lzma_check_size(LZMA_CHECK_SHA256) as size_t,
-                    ) != 0 as c_int
+                    ) != 0
                     {
                         return LZMA_DATA_ERROR;
                     }

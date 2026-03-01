@@ -192,12 +192,12 @@ unsafe extern "C" fn stream_decode(
                 (*coder).first_stream = false;
                 (*coder).block_options.check = (*coder).stream_flags.check;
                 (*coder).sequence = SEQ_BLOCK_HEADER;
-                if (*coder).tell_no_check as c_int != 0
+                if (*coder).tell_no_check
                     && (*coder).stream_flags.check == LZMA_CHECK_NONE
                 {
                     return LZMA_NO_CHECK;
                 }
-                if (*coder).tell_unsupported_check as c_int != 0
+                if (*coder).tell_unsupported_check
                     && lzma_check_is_supported((*coder).stream_flags.check) == 0
                 {
                     return LZMA_UNSUPPORTED_CHECK;
@@ -349,7 +349,7 @@ unsafe extern "C" fn stream_decode(
                             LZMA_DATA_ERROR
                         };
                     }
-                    if *in_0.offset(*in_pos as isize) as c_int != 0 as c_int {
+                    if *in_0.offset(*in_pos as isize) != 0 {
                         break;
                     }
                     *in_pos = (*in_pos).wrapping_add(1);

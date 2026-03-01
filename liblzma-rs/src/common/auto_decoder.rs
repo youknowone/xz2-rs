@@ -63,7 +63,7 @@ unsafe extern "C" fn auto_decode(
                     &raw mut (*coder).next,
                     allocator,
                     (*coder).memlimit,
-                    1 as c_int != 0,
+                    true,
                 );
                 if ret__0 != LZMA_OK {
                     return ret__0;

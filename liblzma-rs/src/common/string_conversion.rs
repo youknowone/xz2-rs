@@ -759,7 +759,7 @@ unsafe extern "C" fn parse_filter(
         ) == 0 as c_int
             && filter_name_map[i as usize].name[name_len as usize] as c_int == '\0' as i32
         {
-            if only_xz as c_int != 0 && filter_name_map[i as usize].id >= LZMA_FILTER_RESERVED_START
+            if only_xz && filter_name_map[i as usize].id >= LZMA_FILTER_RESERVED_START
             {
                 return b"This filter cannot be used in the .xz format\0" as *const u8
                     as *const c_char;
@@ -1163,7 +1163,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
         return ret_;
     }
     let show_opts: bool = flags & (LZMA_STR_ENCODER as u32 | LZMA_STR_DECODER as u32) != 0;
-    let filter_delim: *const c_char = if show_opts as c_int != 0 {
+    let filter_delim: *const c_char = if show_opts {
         b"\n\0" as *const u8 as *const c_char
     } else {
         b" \0" as *const u8 as *const c_char

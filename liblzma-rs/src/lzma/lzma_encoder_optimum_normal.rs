@@ -788,8 +788,8 @@ unsafe extern "C" fn helper2(
         }
     } else {
         let mut pos: u32 = 0;
-        if (*coder).opts[cur as usize].prev_1_is_literal as c_int != 0
-            && (*coder).opts[cur as usize].prev_2 as c_int != 0
+        if (*coder).opts[cur as usize].prev_1_is_literal
+            && (*coder).opts[cur as usize].prev_2
         {
             pos_prev = (*coder).opts[cur as usize].pos_prev_2;
             pos = (*coder).opts[cur as usize].back_prev_2;

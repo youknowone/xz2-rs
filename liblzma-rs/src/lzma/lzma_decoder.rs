@@ -267,7 +267,7 @@ unsafe extern "C" fn rc_read_init(
         if *in_pos == in_size {
             return LZMA_OK;
         }
-        if (*rc).init_bytes_left == 5 && *in_0.offset(*in_pos as isize) as c_int != 0 as c_int {
+        if (*rc).init_bytes_left == 5 && *in_0.offset(*in_pos as isize) != 0 {
             return LZMA_DATA_ERROR;
         }
         (*rc).code = (*rc).code << 8 | *in_0.offset(*in_pos as isize) as u32;
@@ -640,7 +640,7 @@ unsafe extern "C" fn lzma_decode(
                     (*coder).is_rep[state as usize] = ((*coder).is_rep[state as usize] as c_int
                         - ((*coder).is_rep[state as usize] as c_int >> RC_MOVE_BITS))
                         as probability;
-                    if !(!dict_is_distance_valid(&raw mut dict, 0) as c_int != 0) {
+                    if !(!dict_is_distance_valid(&raw mut dict, 0)) {
                         current_block = 4420799852307653083;
                         continue;
                     }
@@ -1028,7 +1028,7 @@ unsafe extern "C" fn lzma_decode(
                 }
             }
             5979571030476392895 => {
-                if (might_finish_without_eopm as c_int != 0 && dict.pos == dict.limit) as c_long
+                if (might_finish_without_eopm && dict.pos == dict.limit) as c_long
                     != 0
                 {
                     if rc.range < RC_TOP_VALUE as u32 {
@@ -1251,7 +1251,7 @@ unsafe extern "C" fn lzma_decode(
         }
         match current_block {
             13383302701878543647 => {
-                if !(!dict_is_distance_valid(&raw mut dict, rep0 as size_t) as c_int != 0) {
+                if !(!dict_is_distance_valid(&raw mut dict, rep0 as size_t)) {
                     current_block = 17340485688450593529;
                     continue;
                 }
@@ -1261,7 +1261,7 @@ unsafe extern "C" fn lzma_decode(
             }
             4956146061682418353 => loop {
                 pos_state = (dict.pos & pos_mask as size_t) as u32;
-                if (!(rc_in_ptr < rc_in_fast_end) || dict.pos == dict.limit) as c_int != 0 {
+                if !(rc_in_ptr < rc_in_fast_end) || dict.pos == dict.limit  {
                     current_block = 5979571030476392895;
                     continue 'c_9380;
                 }
@@ -2778,7 +2778,7 @@ unsafe extern "C" fn lzma_decode(
                         (*coder).is_rep[state as usize] = ((*coder).is_rep[state as usize] as c_int
                             - ((*coder).is_rep[state as usize] as c_int >> RC_MOVE_BITS))
                             as probability;
-                        if !dict_is_distance_valid(&raw mut dict, 0) as c_int != 0 {
+                        if !dict_is_distance_valid(&raw mut dict, 0) {
                             ret_0 = LZMA_DATA_ERROR;
                             current_block = 4609795085482299213;
                             continue 'c_9380;

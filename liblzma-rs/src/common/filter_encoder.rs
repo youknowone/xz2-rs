@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_void};
+use core::ffi::c_void;
 extern "C" {
     fn lzma_end(strm: *mut lzma_stream);
     fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
@@ -413,7 +413,7 @@ pub unsafe extern "C" fn lzma_raw_encoder(
         (*strm).allocator,
         filters,
         Some(coder_find as unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder),
-        1 as c_int != 0,
+        true,
     );
     if ret__0 != LZMA_OK {
         lzma_end(strm);

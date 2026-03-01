@@ -302,7 +302,7 @@ unsafe extern "C" fn block_buffer_encode(
         return LZMA_OPTIONS_ERROR;
     }
     if (*block).check > LZMA_CHECK_ID_MAX
-        || try_to_compress as c_int != 0 && (*block).filters.is_null()
+        || try_to_compress && (*block).filters.is_null()
     {
         return LZMA_PROG_ERROR;
     }

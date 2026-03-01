@@ -155,7 +155,7 @@ unsafe extern "C" fn index_decode(
                     (*coder).pos = (*coder).pos.wrapping_sub(1);
                     let fresh1 = *in_pos;
                     *in_pos = (*in_pos).wrapping_add(1);
-                    if *in_0.offset(fresh1 as isize) as c_int != 0 as c_int {
+                    if *in_0.offset(fresh1 as isize) != 0 {
                         return LZMA_DATA_ERROR;
                     }
                     continue;

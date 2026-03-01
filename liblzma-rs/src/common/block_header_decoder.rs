@@ -92,11 +92,11 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     if lzma_crc32(in_0, in_size, 0) != read32le(in_0.offset(in_size as isize)) {
         return LZMA_DATA_ERROR;
     }
-    if *in_0.offset(1) as c_int & 0x3c as c_int != 0 {
+    if *in_0.offset(1) as c_int & 0x3c != 0 {
         return LZMA_OPTIONS_ERROR;
     }
     let mut in_pos: size_t = 2;
-    if *in_0.offset(1) as c_int & 0x40 as c_int != 0 {
+    if *in_0.offset(1) as c_int & 0x40 != 0 {
         let ret_: lzma_ret = lzma_vli_decode(
             &raw mut (*block).compressed_size,
             core::ptr::null_mut(),
@@ -113,7 +113,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     } else {
         (*block).compressed_size = LZMA_VLI_UNKNOWN;
     }
-    if *in_0.offset(1) as c_int & 0x80 as c_int != 0 {
+    if *in_0.offset(1) as c_int & 0x80 != 0 {
         let ret__0: lzma_ret = lzma_vli_decode(
             &raw mut (*block).uncompressed_size,
             core::ptr::null_mut(),
@@ -146,7 +146,7 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     while in_pos < in_size {
         let fresh1 = in_pos;
         in_pos = in_pos.wrapping_add(1);
-        if *in_0.offset(fresh1 as isize) as c_int != 0 as c_int {
+        if *in_0.offset(fresh1 as isize) != 0 {
             lzma_filters_free((*block).filters, allocator);
             return LZMA_OPTIONS_ERROR;
         }

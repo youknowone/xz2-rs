@@ -1002,7 +1002,7 @@ pub unsafe extern "C" fn lzma_lzma_encode(
         }
         encode_symbol(coder, mf, back, len, (*coder).uncomp_size as u32);
         if (*coder).out_limit != 0
-            && rc_encode_dummy(&raw mut (*coder).rc, (*coder).out_limit) as c_int != 0
+            && rc_encode_dummy(&raw mut (*coder).rc, (*coder).out_limit)
         {
             rc_forget(&raw mut (*coder).rc);
             break;
@@ -1061,7 +1061,7 @@ unsafe extern "C" fn lzma_lzma_set_out_limit(
 }
 extern "C" fn is_options_valid(options: *const lzma_options_lzma) -> bool {
     return unsafe {
-        is_lclppb_valid(options) as c_int != 0
+        is_lclppb_valid(options)
             && (*options).nice_len >= MATCH_LEN_MIN as u32
             && (*options).nice_len <= MATCH_LEN_MAX as u32
             && ((*options).mode == LZMA_MODE_FAST || (*options).mode == LZMA_MODE_NORMAL)

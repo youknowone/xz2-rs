@@ -199,7 +199,7 @@ unsafe extern "C" fn lz_decode(
             (*coder).this_finished = true;
         } else if ret_0 != LZMA_OK {
             return ret_0;
-        } else if (*coder).next_finished as c_int != 0 && *out_pos < out_size {
+        } else if (*coder).next_finished && *out_pos < out_size {
             return LZMA_DATA_ERROR;
         }
     }

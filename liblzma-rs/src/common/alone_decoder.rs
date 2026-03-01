@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_uint, c_void};
 extern "C" {
     fn lzma_end(strm: *mut lzma_stream);
     fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
@@ -68,7 +68,7 @@ unsafe extern "C" fn alone_decode(
                     as u32;
                 (*coder).pos = (*coder).pos.wrapping_add(1);
                 if (*coder).pos == 4 {
-                    if (*coder).picky as c_int != 0
+                    if (*coder).picky
                         && (*coder).options.dict_size != UINT32_MAX as u32
                     {
                         let mut d: u32 = (*coder).options.dict_size.wrapping_sub(1);
@@ -96,7 +96,7 @@ unsafe extern "C" fn alone_decode(
                 if (*coder).pos < 8 {
                     current_block_42 = 11048769245176032998;
                 } else {
-                    if (*coder).picky as c_int != 0
+                    if (*coder).picky
                         && (*coder).uncompressed_size != LZMA_VLI_UNKNOWN
                         && (*coder).uncompressed_size >= (1 as lzma_vli) << 38
                     {
@@ -306,7 +306,7 @@ pub unsafe extern "C" fn lzma_alone_decoder(strm: *mut lzma_stream, memlimit: u6
         &raw mut (*(*strm).internal).next,
         (*strm).allocator,
         memlimit,
-        0 as c_int != 0,
+        false,
     );
     if ret__0 != LZMA_OK {
         lzma_end(strm);

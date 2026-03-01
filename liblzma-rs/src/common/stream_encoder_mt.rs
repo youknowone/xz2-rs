@@ -1095,7 +1095,7 @@ unsafe extern "C" fn wait_for_work(
                         &raw mut (*coder).cond,
                         &raw mut (*coder).mutex,
                         wait_abs,
-                    ) != 0 as c_int;
+                    ) != 0;
                 } else {
                     mythread_cond_wait(&raw mut (*coder).cond, &raw mut (*coder).mutex);
                 }

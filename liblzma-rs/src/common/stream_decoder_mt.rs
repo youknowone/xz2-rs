@@ -560,7 +560,7 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
                 in_filled = (*thr).in_filled;
                 partial_update_enabled = (*thr).partial_update_enabled;
                 if !(in_filled == (*thr).in_pos
-                    && !(partial_update_enabled as c_int != 0 && !(*thr).partial_update_started))
+                    && !(partial_update_enabled && !(*thr).partial_update_started))
                 {
                     break;
                 }
@@ -900,7 +900,7 @@ unsafe extern "C" fn read_output_and_wait(
                         .wrapping_sub((*coder).mem_in_use)
                         .wrapping_sub((*coder).outq.mem_in_use)
                         >= (*coder).mem_next_block
-                    && lzma_outq_has_buf(&raw mut (*coder).outq) as c_int != 0
+                    && lzma_outq_has_buf(&raw mut (*coder).outq)
                     && ((*coder).threads_initialized < (*coder).threads_max
                         || !(*coder).threads_free.is_null())
                 {
@@ -917,7 +917,7 @@ unsafe extern "C" fn read_output_and_wait(
                         break;
                     }
                     if !(*coder).thr.is_null()
-                        && (*(*coder).thr).partial_update_enabled as c_int != 0
+                        && (*(*coder).thr).partial_update_enabled
                     {
                         if (*(*(*coder).thr).outbuf).decoder_in_pos == (*(*coder).thr).in_filled {
                             break;
@@ -936,7 +936,7 @@ unsafe extern "C" fn read_output_and_wait(
                             &raw mut (*coder).cond,
                             &raw mut (*coder).mutex,
                             wait_abs,
-                        ) != 0 as c_int
+                        ) != 0
                         {
                             ret = LZMA_RET_INTERNAL1;
                             break;
@@ -1077,12 +1077,12 @@ unsafe extern "C" fn stream_decode_mt(
                 (*coder).first_stream = false;
                 (*coder).block_options.check = (*coder).stream_flags.check;
                 (*coder).sequence = SEQ_BLOCK_HEADER;
-                if (*coder).tell_no_check as c_int != 0
+                if (*coder).tell_no_check
                     && (*coder).stream_flags.check == LZMA_CHECK_NONE
                 {
                     return LZMA_NO_CHECK;
                 }
-                if (*coder).tell_unsupported_check as c_int != 0
+                if (*coder).tell_unsupported_check
                     && lzma_check_is_supported((*coder).stream_flags.check) == 0
                 {
                     return LZMA_UNSUPPORTED_CHECK;
@@ -1112,7 +1112,7 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     core::ptr::null_mut(),
-                    1 as c_int != 0,
+                    true,
                     &raw mut wait_abs,
                     &raw mut has_blocked,
                 );
@@ -1149,7 +1149,7 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     core::ptr::null_mut(),
-                    1 as c_int != 0,
+                    true,
                     &raw mut wait_abs,
                     &raw mut has_blocked,
                 );
@@ -1180,7 +1180,7 @@ unsafe extern "C" fn stream_decode_mt(
                         out_pos,
                         out_size,
                         core::ptr::null_mut(),
-                        1 as c_int != 0,
+                        true,
                         &raw mut wait_abs,
                         &raw mut has_blocked,
                     );
@@ -1240,7 +1240,7 @@ unsafe extern "C" fn stream_decode_mt(
                     .progress_in
                     .wrapping_add((*in_pos).wrapping_sub(in_old_0) as u64);
                 if ret_0 == LZMA_OK {
-                    if action == LZMA_FINISH && (*coder).fail_fast as c_int != 0 {
+                    if action == LZMA_FINISH && (*coder).fail_fast {
                         threads_stop(coder);
                         return LZMA_DATA_ERROR;
                     }
@@ -1312,7 +1312,7 @@ unsafe extern "C" fn stream_decode_mt(
                         out_pos,
                         out_size,
                         core::ptr::null_mut(),
-                        1 as c_int != 0,
+                        true,
                         &raw mut wait_abs,
                         &raw mut has_blocked,
                     );
@@ -1324,8 +1324,8 @@ unsafe extern "C" fn stream_decode_mt(
                     }
                     return LZMA_MEMLIMIT_ERROR;
                 }
-                if is_direct_mode_needed((*coder).block_options.compressed_size) as c_int != 0
-                    || is_direct_mode_needed((*coder).block_options.uncompressed_size) as c_int != 0
+                if is_direct_mode_needed((*coder).block_options.compressed_size)
+                    || is_direct_mode_needed((*coder).block_options.uncompressed_size)
                 {
                     (*coder).sequence = SEQ_BLOCK_DIRECT_INIT;
                     current_block_239 = 11639917216603986996;
@@ -1442,7 +1442,7 @@ unsafe extern "C" fn stream_decode_mt(
                             LZMA_DATA_ERROR
                         };
                     }
-                    if *in_0.offset(*in_pos as isize) as c_int != 0 as c_int {
+                    if *in_0.offset(*in_pos as isize) != 0 {
                         break;
                     }
                     *in_pos = (*in_pos).wrapping_add(1);
@@ -1469,7 +1469,7 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     &raw mut block_can_start,
-                    1 as c_int != 0,
+                    true,
                     &raw mut wait_abs,
                     &raw mut has_blocked,
                 );
@@ -1639,7 +1639,7 @@ unsafe extern "C" fn stream_decode_mt(
         }
         match current_block_239 {
             7728257318064351663 => {
-                if action == LZMA_FINISH && (*coder).fail_fast as c_int != 0 {
+                if action == LZMA_FINISH && (*coder).fail_fast {
                     let in_avail: size_t = in_size.wrapping_sub(*in_pos);
                     let in_needed: size_t = (*(*coder).thr)
                         .in_size
@@ -1682,7 +1682,7 @@ unsafe extern "C" fn stream_decode_mt(
                     out_pos,
                     out_size,
                     core::ptr::null_mut(),
-                    waiting_allowed as c_int != 0 && *in_pos == in_size,
+                    waiting_allowed && *in_pos == in_size,
                     &raw mut wait_abs,
                     &raw mut has_blocked,
                 );

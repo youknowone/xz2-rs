@@ -39,7 +39,7 @@ extern "C" fn read32le(buf: *const u8) -> u32 {
 pub const LZMA_STREAM_FLAGS_SIZE: c_int = 2;
 extern "C" fn stream_flags_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> bool {
     return unsafe {
-        if *in_0.offset(0) as c_int != 0 as c_int || *in_0.offset(1) as c_int & 0xf0 as c_int != 0 {
+        if *in_0.offset(0) != 0 || *in_0.offset(1) as c_int & 0xf0 != 0 {
             return true;
         }
         (*options).version = 0;
@@ -56,7 +56,7 @@ pub unsafe extern "C" fn lzma_stream_header_decode(
         in_0 as *const c_void,
         &raw const lzma_header_magic as *const u8 as *const c_void,
         core::mem::size_of::<[u8; 6]>(),
-    ) != 0 as c_int
+    ) != 0
     {
         return LZMA_FORMAT_ERROR;
     }
@@ -92,7 +92,7 @@ pub unsafe extern "C" fn lzma_stream_footer_decode(
             .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *const c_void,
         &raw const lzma_footer_magic as *const u8 as *const c_void,
         core::mem::size_of::<[u8; 2]>(),
-    ) != 0 as c_int
+    ) != 0
     {
         return LZMA_FORMAT_ERROR;
     }

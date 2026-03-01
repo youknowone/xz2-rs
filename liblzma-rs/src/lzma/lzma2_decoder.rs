@@ -356,7 +356,7 @@ pub unsafe extern "C" fn lzma_lzma2_props_decode(
     if props_size != 1 {
         return LZMA_OPTIONS_ERROR;
     }
-    if *props.offset(0) as c_int & 0xc0 as c_int != 0 {
+    if *props.offset(0) as c_int & 0xc0 != 0 {
         return LZMA_OPTIONS_ERROR;
     }
     if *props.offset(0) as c_int > 40 as c_int {

@@ -192,7 +192,7 @@ pub unsafe extern "C" fn lzma_outq_is_readable(outq: *const lzma_outq) -> bool {
     if (*outq).head.is_null() {
         return false;
     }
-    return (*outq).read_pos < (*(*outq).head).pos || (*(*outq).head).finished as c_int != 0;
+    return (*outq).read_pos < (*(*outq).head).pos || (*(*outq).head).finished;
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_read(

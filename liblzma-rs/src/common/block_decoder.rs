@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_uint, c_void};
 extern "C" {
     fn lzma_end(strm: *mut lzma_stream);
     fn lzma_check_is_supported(check: lzma_check) -> lzma_bool;
@@ -178,13 +178,13 @@ unsafe extern "C" fn block_decode(
                         (*coder).compressed_size == (*(*coder).block).compressed_size;
                     let uncomp_done: bool =
                         (*coder).uncompressed_size == (*(*coder).block).uncompressed_size;
-                    if comp_done as c_int != 0 && uncomp_done as c_int != 0 {
+                    if comp_done && uncomp_done {
                         return LZMA_DATA_ERROR;
                     }
-                    if comp_done as c_int != 0 && *out_pos < out_size {
+                    if comp_done && *out_pos < out_size {
                         return LZMA_DATA_ERROR;
                     }
-                    if uncomp_done as c_int != 0 && *in_pos < in_size {
+                    if uncomp_done && *in_pos < in_size {
                         return LZMA_DATA_ERROR;
                     }
                 }
@@ -231,7 +231,7 @@ unsafe extern "C" fn block_decode(
                     (*coder).compressed_size = (*coder).compressed_size.wrapping_add(1);
                     let fresh0 = *in_pos;
                     *in_pos = (*in_pos).wrapping_add(1);
-                    if *in_0.offset(fresh0 as isize) as c_int != 0 as c_int {
+                    if *in_0.offset(fresh0 as isize) != 0 {
                         return LZMA_DATA_ERROR;
                     }
                 }
@@ -258,12 +258,12 @@ unsafe extern "C" fn block_decode(
             return LZMA_OK;
         }
         if !(*coder).ignore_check
-            && lzma_check_is_supported((*(*coder).block).check) as c_int != 0
+            && lzma_check_is_supported((*(*coder).block).check) != 0
             && memcmp(
                 &raw mut (*(*coder).block).raw_check as *mut u8 as *const c_void,
                 &raw mut (*coder).check.buffer.u8_0 as *mut u8 as *const c_void,
                 check_size,
-            ) != 0 as c_int
+            ) != 0
         {
             return LZMA_DATA_ERROR;
         }
@@ -382,7 +382,7 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     (*coder).check_pos = 0;
     lzma_check_init(&raw mut (*coder).check, (*block).check);
     (*coder).ignore_check = if (*block).version >= 1 {
-        (*block).ignore_check as c_int != 0
+        (*block).ignore_check != 0
     } else {
         false
     };
