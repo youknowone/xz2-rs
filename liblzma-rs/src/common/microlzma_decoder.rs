@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_void};
+use core::ffi::c_void;
 extern "C" {
     fn lzma_end(strm: *mut lzma_stream);
     fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
@@ -84,7 +84,7 @@ unsafe extern "C" fn microlzma_decode(
         }
         if lzma_lzma_lclppb_decode(
             &raw mut options,
-            !(*in_0.offset(*in_pos as isize) as c_int) as u8,
+            !*in_0.offset(*in_pos as isize),
         ) {
             return LZMA_OPTIONS_ERROR;
         }

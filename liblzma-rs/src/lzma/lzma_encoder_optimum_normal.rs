@@ -122,7 +122,7 @@ extern "C" fn rc_bit_price(prob: probability, bit: u32) -> u32 {
 }
 #[inline]
 extern "C" fn rc_bit_0_price(prob: probability) -> u32 {
-    return unsafe { lzma_rc_prices[(prob as c_int >> RC_MOVE_REDUCING_BITS) as usize] as u32 };
+    return unsafe { lzma_rc_prices[(prob >> RC_MOVE_REDUCING_BITS) as usize] as u32 };
 }
 #[inline]
 extern "C" fn rc_bit_1_price(prob: probability) -> u32 {
@@ -219,7 +219,7 @@ unsafe extern "C" fn lzma_memcmplen(
     mut len: u32,
     limit: u32,
 ) -> u32 {
-    while len < limit && *buf1.offset(len as isize) as c_int == *buf2.offset(len as isize) as c_int
+    while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize)
     {
         len = len.wrapping_add(1);
     }

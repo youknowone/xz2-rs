@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_void};
+use core::ffi::c_void;
 extern "C" {
     fn lzma_simple_coder_init(
         next: *mut lzma_next_coder,
@@ -23,8 +23,8 @@ unsafe extern "C" fn powerpc_code(
     let mut i: size_t = 0;
     i = 0;
     while i < size {
-        if *buffer.offset(i as isize) as c_int >> 2 == 0x12
-            && *buffer.offset(i.wrapping_add(3) as isize) as c_int & 3 == 1
+        if *buffer.offset(i as isize) >> 2 == 0x12
+            && *buffer.offset(i.wrapping_add(3) as isize) & 3 == 1
         {
             let src: u32 = (*buffer.offset(i.wrapping_add(0) as isize) as u32 & 3) << 24
                 | (*buffer.offset(i.wrapping_add(1) as isize) as u32) << 16

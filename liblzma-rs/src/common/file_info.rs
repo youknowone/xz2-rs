@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_uint, c_void};
 #[repr(C)]
 pub struct lzma_index_s {
     _opaque: [u8; 0],
@@ -154,7 +154,7 @@ unsafe extern "C" fn get_padding_size(buf: *const u8, mut buf_size: size_t) -> s
     let mut padding: size_t = 0;
     while buf_size > 0 && {
         buf_size = buf_size.wrapping_sub(1);
-        *buf.offset(buf_size as isize) as c_int == 0
+        *buf.offset(buf_size as isize) == 0
     } {
         padding = padding.wrapping_add(1);
     }

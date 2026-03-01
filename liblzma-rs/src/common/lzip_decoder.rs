@@ -105,8 +105,8 @@ unsafe extern "C" fn lzip_decode(
                             LZMA_OK
                         };
                     }
-                    if *in_0.offset(*in_pos as isize) as c_int
-                        != lzip_id_string[(*coder).pos as usize] as c_int
+                    if *in_0.offset(*in_pos as isize)
+                        != lzip_id_string[(*coder).pos as usize]
                     {
                         return if !(*coder).first_member {
                             LZMA_STREAM_END

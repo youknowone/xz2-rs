@@ -405,7 +405,7 @@ extern "C" fn mythread_condtime_set(
     }
 }
 pub const LZMA_THREADS_MAX: c_int = 16384;
-pub const INDEX_INDICATOR: c_int = 0;
+pub const INDEX_INDICATOR: u8 = 0;
 #[inline]
 extern "C" fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
     return vli.wrapping_add(3) & !(3);
@@ -873,7 +873,7 @@ unsafe extern "C" fn decode_block_header(
         return LZMA_OK;
     }
     if (*coder).pos == 0 {
-        if *in_0.offset(*in_pos as isize) as c_int == INDEX_INDICATOR {
+        if *in_0.offset(*in_pos as isize) == INDEX_INDICATOR {
             return LZMA_RET_INTERNAL2;
         }
         (*coder).block_options.header_size = (*in_0.offset(*in_pos as isize) as u32)

@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_void};
+use core::ffi::c_void;
 extern "C" {
     fn lzma_vli_encode(
         vli: lzma_vli,
@@ -95,7 +95,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             return ret_;
         }
         let ref mut fresh0 = *out.offset(1);
-        *fresh0 = (*fresh0 as c_int | 0x40) as u8;
+        *fresh0 |= 0x40;
     }
     if (*block).uncompressed_size != LZMA_VLI_UNKNOWN {
         let ret__0: lzma_ret = lzma_vli_encode(
@@ -109,7 +109,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             return ret__0;
         }
         let ref mut fresh1 = *out.offset(1);
-        *fresh1 = (*fresh1 as c_int | 0x80) as u8;
+        *fresh1 |= 0x80;
     }
     if (*block).filters.is_null() || (*(*block).filters.offset(0)).id == LZMA_VLI_UNKNOWN {
         return LZMA_PROG_ERROR;

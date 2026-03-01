@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_int;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_vli_decode(
     vli: *mut lzma_vli,
@@ -33,7 +32,7 @@ pub unsafe extern "C" fn lzma_vli_decode(
             (*vli).wrapping_add(((byte & 0x7f) as lzma_vli) << (*vli_pos).wrapping_mul(7));
         *vli_pos = (*vli_pos).wrapping_add(1);
         if byte & 0x80 == 0 {
-            if byte as c_int == 0 && *vli_pos > 1 {
+            if byte == 0 && *vli_pos > 1 {
                 return LZMA_DATA_ERROR;
             }
             return if vli_pos == &raw mut vli_pos_internal {

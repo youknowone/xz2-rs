@@ -22,7 +22,7 @@ pub unsafe extern "C" fn lzma_lzma_preset(
     (*options).lp = LZMA_LP_DEFAULT as u32;
     (*options).pb = LZMA_PB_DEFAULT as u32;
     static mut dict_pow2: [u8; 10] = [18, 20, 21, 22, 22, 23, 23, 24, 25, 26];
-    (*options).dict_size = (1u32 << dict_pow2[level as usize] as c_int) as u32;
+    (*options).dict_size = 1u32 << dict_pow2[level as usize];
     if level <= 3 {
         (*options).mode = LZMA_MODE_FAST;
         (*options).mf = (if level == 0 { LZMA_MF_HC3 } else { LZMA_MF_HC4 }) as lzma_match_finder;

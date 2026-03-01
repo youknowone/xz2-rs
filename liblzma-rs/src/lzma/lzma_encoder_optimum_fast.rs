@@ -113,7 +113,7 @@ unsafe extern "C" fn lzma_memcmplen(
     mut len: u32,
     limit: u32,
 ) -> u32 {
-    while len < limit && *buf1.offset(len as isize) as c_int == *buf2.offset(len as isize) as c_int
+    while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize)
     {
         len = len.wrapping_add(1);
     }

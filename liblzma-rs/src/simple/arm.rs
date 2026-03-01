@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_void};
+use core::ffi::c_void;
 extern "C" {
     fn lzma_simple_coder_init(
         next: *mut lzma_next_coder,
@@ -23,7 +23,7 @@ unsafe extern "C" fn arm_code(
     let mut i: size_t = 0;
     i = 0;
     while i < size {
-        if *buffer.offset(i.wrapping_add(3) as isize) as c_int == 0xeb {
+        if *buffer.offset(i.wrapping_add(3) as isize) == 0xeb {
             let mut src: u32 = (*buffer.offset(i.wrapping_add(2) as isize) as u32) << 16
                 | (*buffer.offset(i.wrapping_add(1) as isize) as u32) << 8
                 | *buffer.offset(i.wrapping_add(0) as isize) as u32;

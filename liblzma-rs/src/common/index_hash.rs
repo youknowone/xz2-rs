@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_uint, c_ulonglong, c_void};
 extern "C" {
     fn lzma_vli_decode(
         vli: *mut lzma_vli,
@@ -52,7 +52,7 @@ pub const SEQ_BLOCK: C2RustUnnamed_1 = 0;
 pub type lzma_index_hash = lzma_index_hash_s;
 pub const UNPADDED_SIZE_MIN: c_ulonglong = 5;
 pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
-pub const INDEX_INDICATOR: c_int = 0;
+pub const INDEX_INDICATOR: u8 = 0;
 #[inline]
 extern "C" fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
     return vli.wrapping_add(3) & !(3);
@@ -195,7 +195,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
             0 => {
                 let fresh0 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
-                if *in_0.offset(fresh0 as isize) as c_int != INDEX_INDICATOR {
+                if *in_0.offset(fresh0 as isize) != INDEX_INDICATOR {
                     return LZMA_DATA_ERROR;
                 }
                 (*index_hash).sequence = SEQ_COUNT;

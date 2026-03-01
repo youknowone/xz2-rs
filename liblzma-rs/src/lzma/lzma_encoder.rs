@@ -170,7 +170,7 @@ extern "C" fn rc_bit_price(prob: probability, bit: u32) -> u32 {
 }
 #[inline]
 extern "C" fn rc_bit_0_price(prob: probability) -> u32 {
-    return unsafe { lzma_rc_prices[(prob as c_int >> RC_MOVE_REDUCING_BITS) as usize] as u32 };
+    return unsafe { lzma_rc_prices[(prob >> RC_MOVE_REDUCING_BITS) as usize] as u32 };
 }
 #[inline]
 extern "C" fn rc_bit_1_price(prob: probability) -> u32 {
@@ -299,7 +299,7 @@ unsafe extern "C" fn rc_shift_low(
                 return true;
             }
             *out.offset(*out_pos as isize) =
-                ((*rc).cache as c_int + ((*rc).low >> 32) as u8 as c_int) as u8;
+                (*rc).cache.wrapping_add(((*rc).low >> 32) as u8);
             *out_pos = (*out_pos).wrapping_add(1);
             (*rc).out_total = (*rc).out_total.wrapping_add(1);
             (*rc).cache = 0xff as u8;
@@ -369,7 +369,7 @@ unsafe extern "C" fn rc_encode(
                     (prob_0 as u32).wrapping_mul((*rc).range >> RC_BIT_MODEL_TOTAL_BITS);
                 (*rc).low = (*rc).low.wrapping_add(bound as u64);
                 (*rc).range = (*rc).range.wrapping_sub(bound);
-                prob_0 = (prob_0 as c_int - (prob_0 as c_int >> RC_MOVE_BITS)) as probability;
+                prob_0 -= prob_0 >> RC_MOVE_BITS;
                 *(*rc).probs[(*rc).pos as usize] = prob_0;
             }
             2 => {

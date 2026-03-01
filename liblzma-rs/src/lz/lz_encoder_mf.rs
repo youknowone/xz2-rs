@@ -24,7 +24,7 @@ unsafe extern "C" fn lzma_memcmplen(
     mut len: u32,
     limit: u32,
 ) -> u32 {
-    while len < limit && *buf1.offset(len as isize) as c_int == *buf2.offset(len as isize) as c_int
+    while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize)
     {
         len = len.wrapping_add(1);
     }
@@ -123,7 +123,7 @@ unsafe extern "C" fn hc_find_func(
                 .wrapping_add(if delta > cyclic_pos { cyclic_size } else { 0 })
                 as isize,
         );
-        if *pb.offset(len_best as isize) as c_int == *cur.offset(len_best as isize) as c_int
+        if *pb.offset(len_best as isize) == *cur.offset(len_best as isize)
             && *pb.offset(0) == *cur.offset(0)
         {
             let len: u32 = lzma_memcmplen(pb, cur, 1, len_limit);
@@ -363,7 +363,7 @@ unsafe extern "C" fn bt_find_func(
         );
         let pb: *const u8 = cur.offset(-(delta as isize));
         let mut len: u32 = if len0 < len1 { len0 } else { len1 };
-        if *pb.offset(len as isize) as c_int == *cur.offset(len as isize) as c_int {
+        if *pb.offset(len as isize) == *cur.offset(len as isize) {
             len = lzma_memcmplen(pb, cur, len.wrapping_add(1), len_limit);
             if len_best < len {
                 len_best = len;
@@ -377,7 +377,7 @@ unsafe extern "C" fn bt_find_func(
                 }
             }
         }
-        if (*pb.offset(len as isize) as c_int) < *cur.offset(len as isize) as c_int {
+        if (*pb.offset(len as isize)) < *cur.offset(len as isize) {
             *ptr1 = cur_match;
             ptr1 = pair.offset(1);
             cur_match = *ptr1;
@@ -421,7 +421,7 @@ unsafe extern "C" fn bt_skip_func(
         );
         let pb: *const u8 = cur.offset(-(delta as isize));
         let mut len: u32 = if len0 < len1 { len0 } else { len1 };
-        if *pb.offset(len as isize) as c_int == *cur.offset(len as isize) as c_int {
+        if *pb.offset(len as isize) == *cur.offset(len as isize) {
             len = lzma_memcmplen(pb, cur, len.wrapping_add(1), len_limit);
             if len == len_limit {
                 *ptr1 = *pair.offset(0);
@@ -429,7 +429,7 @@ unsafe extern "C" fn bt_skip_func(
                 return;
             }
         }
-        if (*pb.offset(len as isize) as c_int) < *cur.offset(len as isize) as c_int {
+        if (*pb.offset(len as isize)) < *cur.offset(len as isize) {
             *ptr1 = cur_match;
             ptr1 = pair.offset(1);
             cur_match = *ptr1;

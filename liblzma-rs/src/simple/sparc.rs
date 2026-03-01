@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_void};
+use core::ffi::c_void;
 extern "C" {
     fn lzma_simple_coder_init(
         next: *mut lzma_next_coder,
@@ -24,9 +24,9 @@ unsafe extern "C" fn sparc_code(
     i = 0;
     while i < size {
         if *buffer.offset(i as isize) == 0x40
-            && *buffer.offset(i.wrapping_add(1) as isize) as c_int & 0xc0 == 0
+            && *buffer.offset(i.wrapping_add(1) as isize) & 0xc0 == 0
             || *buffer.offset(i as isize) == 0x7f
-                && *buffer.offset(i.wrapping_add(1) as isize) as c_int & 0xc0 == 0xc0
+                && *buffer.offset(i.wrapping_add(1) as isize) & 0xc0 == 0xc0
         {
             let mut src: u32 = (*buffer.offset(i.wrapping_add(0) as isize) as u32) << 24
                 | (*buffer.offset(i.wrapping_add(1) as isize) as u32) << 16

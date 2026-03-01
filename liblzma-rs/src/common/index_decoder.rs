@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_ulonglong, c_void};
+use core::ffi::{c_uint, c_ulonglong, c_void};
 #[repr(C)]
 pub struct lzma_index_s {
     _opaque: [u8; 0],
@@ -53,7 +53,7 @@ pub const SEQ_COUNT: C2RustUnnamed_0 = 1;
 pub const SEQ_INDICATOR: C2RustUnnamed_0 = 0;
 pub const UNPADDED_SIZE_MIN: c_ulonglong = 5;
 pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
-pub const INDEX_INDICATOR: c_int = 0;
+pub const INDEX_INDICATOR: u8 = 0;
 unsafe extern "C" fn index_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
@@ -74,7 +74,7 @@ unsafe extern "C" fn index_decode(
             0 => {
                 let fresh0 = *in_pos;
                 *in_pos = (*in_pos).wrapping_add(1);
-                if *in_0.offset(fresh0 as isize) as c_int != INDEX_INDICATOR {
+                if *in_0.offset(fresh0 as isize) != INDEX_INDICATOR {
                     return LZMA_DATA_ERROR;
                 }
                 (*coder).sequence = SEQ_COUNT;
