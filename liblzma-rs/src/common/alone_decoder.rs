@@ -1,22 +1,5 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_void};
-extern "C" {
-    fn lzma_end(strm: *mut lzma_stream);
-    fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
-    fn lzma_next_filter_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
-    fn lzma_lzma_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64;
-    fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, byte: u8) -> bool;
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_alone_coder {
@@ -35,7 +18,6 @@ pub const SEQ_CODER_INIT: C2RustUnnamed_0 = 3;
 pub const SEQ_UNCOMPRESSED_SIZE: C2RustUnnamed_0 = 2;
 pub const SEQ_DICTIONARY_SIZE: C2RustUnnamed_0 = 1;
 pub const SEQ_PROPERTIES: C2RustUnnamed_0 = 0;
-pub const LZMA_LZMA1EXT_ALLOW_EOPM: c_uint = 0x1;
 unsafe extern "C" fn alone_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
@@ -265,7 +247,10 @@ pub unsafe extern "C" fn lzma_alone_decoder_init(
         (*next).end = Some(
             alone_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
         );
-        (*next).memconfig = Some(alone_decoder_memconfig as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret);
+        (*next).memconfig = Some(
+            alone_decoder_memconfig
+                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+        );
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,

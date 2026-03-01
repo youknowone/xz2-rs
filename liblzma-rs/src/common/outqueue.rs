@@ -1,22 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_ulong, c_void};
-extern "C" {
-    fn lzma_bufcpy(
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> size_t;
-}
-pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
-pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
-pub const LZMA_THREADS_MAX: u32 = 16384;
-#[inline]
-extern "C" fn lzma_outq_outbuf_memusage(buf_size: size_t) -> u64 {
-    (core::mem::size_of::<lzma_outbuf>()).wrapping_add(buf_size as usize) as u64
-}
+use core::ffi::c_void;
 #[no_mangle]
 pub extern "C" fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64 {
     let limit: u64 = (UINT64_MAX)

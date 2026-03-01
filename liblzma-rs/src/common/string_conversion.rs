@@ -1,7 +1,6 @@
 use crate::types::*;
 use core::ffi::{c_char, c_int, c_uint, c_void};
 extern "C" {
-    fn lzma_lzma_preset(options: *mut lzma_options_lzma, preset: u32) -> lzma_bool;
     fn lzma_validate_chain(filters: *const lzma_filter, count: *mut size_t) -> lzma_ret;
 }
 #[derive(Copy, Clone)]
@@ -63,12 +62,10 @@ pub const LZMA_STR_ENCODER: c_uint = 0x10;
 pub const LZMA_STR_DECODER: c_uint = 0x20;
 pub const LZMA_STR_GETOPT_LONG: c_uint = 0x40;
 pub const LZMA_STR_NO_SPACES: c_uint = 0x80;
-pub const LZMA_DELTA_DIST_MIN: u32 = 1;
 pub const LZMA_DICT_SIZE_DEFAULT: c_uint = 1u32 << 23;
 pub const LZMA_LCLP_MIN: u32 = 0;
 pub const LZMA_PB_MIN: u32 = 0;
 pub const LZMA_PRESET_DEFAULT: c_uint = 6;
-pub const LZMA_PRESET_EXTREME: c_uint = 1u32 << 31;
 pub const STR_ALLOC_SIZE: u32 = 800;
 unsafe extern "C" fn str_init(str: *mut lzma_str, allocator: *const lzma_allocator) -> lzma_ret {
     (*str).buf = lzma_alloc(STR_ALLOC_SIZE as size_t, allocator) as *mut c_char;
@@ -102,7 +99,11 @@ unsafe extern "C" fn str_append_str(str: *mut lzma_str, s: *const c_char) {
     let len: size_t = strlen(s) as size_t;
     let limit: size_t = ((STR_ALLOC_SIZE - 1) as size_t).wrapping_sub((*str).pos);
     let copy_size: size_t = if len < limit { len } else { limit };
-    core::ptr::copy_nonoverlapping(s as *const u8, (*str).buf.offset((*str).pos as isize) as *mut u8, copy_size);
+    core::ptr::copy_nonoverlapping(
+        s as *const u8,
+        (*str).buf.offset((*str).pos as isize) as *mut u8,
+        copy_size,
+    );
     (*str).pos = (*str).pos.wrapping_add(copy_size);
 }
 unsafe extern "C" fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suffix: bool) {
@@ -885,8 +886,12 @@ unsafe extern "C" fn str_to_filters(
             match current_block {
                 6100283484465977373 => {}
                 _ => {
-                    core::ptr::copy_nonoverlapping(&raw mut temp_filters as *const u8, filters as *mut u8, i_0.wrapping_add(1)
-                        .wrapping_mul(core::mem::size_of::<lzma_filter>()));
+                    core::ptr::copy_nonoverlapping(
+                        &raw mut temp_filters as *const u8,
+                        filters as *mut u8,
+                        i_0.wrapping_add(1)
+                            .wrapping_mul(core::mem::size_of::<lzma_filter>()),
+                    );
                     return core::ptr::null();
                 }
             }

@@ -1,59 +1,5 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_void};
-#[repr(C)]
-pub struct lzma_index_hash_s {
-    _opaque: [u8; 0],
-}
-extern "C" {
-    fn lzma_end(strm: *mut lzma_stream);
-    fn lzma_check_is_supported(check: lzma_check) -> lzma_bool;
-    fn lzma_filters_free(filters: *mut lzma_filter, allocator: *const lzma_allocator);
-    fn lzma_raw_decoder_memusage(filters: *const lzma_filter) -> u64;
-    fn lzma_stream_header_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> lzma_ret;
-    fn lzma_stream_footer_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> lzma_ret;
-    fn lzma_stream_flags_compare(
-        a: *const lzma_stream_flags,
-        b: *const lzma_stream_flags,
-    ) -> lzma_ret;
-    fn lzma_block_header_decode(
-        block: *mut lzma_block,
-        allocator: *const lzma_allocator,
-        in_0: *const u8,
-    ) -> lzma_ret;
-    fn lzma_block_unpadded_size(block: *const lzma_block) -> lzma_vli;
-    fn lzma_index_hash_init(
-        index_hash: *mut lzma_index_hash,
-        allocator: *const lzma_allocator,
-    ) -> *mut lzma_index_hash;
-    fn lzma_index_hash_end(index_hash: *mut lzma_index_hash, allocator: *const lzma_allocator);
-    fn lzma_index_hash_append(
-        index_hash: *mut lzma_index_hash,
-        unpadded_size: lzma_vli,
-        uncompressed_size: lzma_vli,
-    ) -> lzma_ret;
-    fn lzma_index_hash_decode(
-        index_hash: *mut lzma_index_hash,
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-    ) -> lzma_ret;
-    fn lzma_index_hash_size(index_hash: *const lzma_index_hash) -> lzma_vli;
-    fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
-    fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
-    fn lzma_bufcpy(
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> size_t;
-    fn lzma_block_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        block: *mut lzma_block,
-    ) -> lzma_ret;
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_coder {
@@ -73,7 +19,6 @@ pub struct lzma_stream_coder {
     pub pos: size_t,
     pub buffer: [u8; LZMA_BLOCK_HEADER_SIZE_MAX as usize],
 }
-pub type lzma_index_hash = lzma_index_hash_s;
 pub type C2RustUnnamed_0 = c_uint;
 pub const SEQ_STREAM_PADDING: C2RustUnnamed_0 = 6;
 pub const SEQ_STREAM_FOOTER: C2RustUnnamed_0 = 5;
@@ -82,7 +27,6 @@ pub const SEQ_BLOCK_RUN: C2RustUnnamed_0 = 3;
 pub const SEQ_BLOCK_INIT: C2RustUnnamed_0 = 2;
 pub const SEQ_BLOCK_HEADER: C2RustUnnamed_0 = 1;
 pub const SEQ_STREAM_HEADER: C2RustUnnamed_0 = 0;
-pub const INDEX_INDICATOR: u8 = 0;
 unsafe extern "C" fn stream_decoder_reset(
     coder: *mut lzma_stream_coder,
     allocator: *const lzma_allocator,
@@ -478,7 +422,10 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
         );
         (*next).get_check =
             Some(stream_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check);
-        (*next).memconfig = Some(stream_decoder_memconfig as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret);
+        (*next).memconfig = Some(
+            stream_decoder_memconfig
+                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+        );
         (*coder).block_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,

@@ -98,19 +98,6 @@ pub struct lzma_length_decoder {
     pub high: [probability; 256],
 }
 #[inline]
-extern "C" fn read32le(buf: *const u8) -> u32 {
-    return unsafe {
-        let mut num: u32 = *buf as u32;
-        num |= (*buf.offset(1) as u32) << 8;
-        num |= (*buf.offset(2) as u32) << 16;
-        num |= (*buf.offset(3) as u32) << 24;
-        num
-    };
-}
-pub const LZMA_LZMA1EXT_ALLOW_EOPM: c_uint = 0x1;
-pub const LZ_DICT_REPEAT_MAX: u32 = 288;
-pub const LZ_DICT_INIT_POS: u32 = 2 * LZ_DICT_REPEAT_MAX;
-#[inline]
 unsafe extern "C" fn dict_get(dict: *const lzma_dict, distance: u32) -> u8 {
     *(*dict).buf.offset(
         (*dict)
@@ -156,7 +143,11 @@ unsafe extern "C" fn dict_repeat(dict: *mut lzma_dict, distance: u32, len: *mut 
             }
         }
     } else {
-        core::ptr::copy_nonoverlapping((*dict).buf.offset(back as isize) as *const u8, (*dict).buf.offset((*dict).pos as isize) as *mut u8, left as size_t);
+        core::ptr::copy_nonoverlapping(
+            (*dict).buf.offset(back as isize) as *const u8,
+            (*dict).buf.offset((*dict).pos as isize) as *mut u8,
+            left as size_t,
+        );
         (*dict).pos = (*dict).pos.wrapping_add(left as size_t);
     }
     if !(*dict).has_wrapped {
@@ -180,47 +171,7 @@ unsafe extern "C" fn dict_put_safe(dict: *mut lzma_dict, byte: u8) -> bool {
     dict_put(dict, byte);
     false
 }
-pub const RC_SHIFT_BITS: u32 = 8;
-pub const RC_TOP_BITS: u32 = 24;
-pub const RC_TOP_VALUE: c_uint = 1u32 << RC_TOP_BITS;
-pub const RC_BIT_MODEL_TOTAL_BITS: u32 = 11;
-pub const RC_BIT_MODEL_TOTAL: c_uint = 1u32 << RC_BIT_MODEL_TOTAL_BITS;
-pub const RC_MOVE_BITS: u32 = 5;
-#[inline]
-unsafe extern "C" fn is_lclppb_valid(options: *const lzma_options_lzma) -> bool {
-    (*options).lc <= LZMA_LCLP_MAX
-        && (*options).lp <= LZMA_LCLP_MAX
-        && (*options).lc.wrapping_add((*options).lp) <= LZMA_LCLP_MAX
-        && (*options).pb <= LZMA_PB_MAX
-}
-pub const STATES: u32 = 12;
-pub const LIT_STATES: u32 = 7;
-pub const LITERAL_CODER_SIZE: c_uint = 0x300;
-#[inline]
-unsafe extern "C" fn literal_init(probs: *mut probability, lc: u32, lp: u32) {
-    let coders: size_t = (LITERAL_CODER_SIZE << lc.wrapping_add(lp)) as size_t;
-    let mut i: size_t = 0;
-    while i < coders {
-        *probs.offset(i as isize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        i += 1;
-    }
-}
-pub const MATCH_LEN_MIN: u32 = 2;
-pub const LEN_LOW_BITS: u32 = 3;
-pub const LEN_LOW_SYMBOLS: u32 = 1 << LEN_LOW_BITS;
-pub const LEN_MID_BITS: u32 = 3;
-pub const LEN_MID_SYMBOLS: u32 = 1 << LEN_MID_BITS;
-pub const LEN_HIGH_BITS: u32 = 8;
-pub const LEN_HIGH_SYMBOLS: u32 = 1 << LEN_HIGH_BITS;
-pub const DIST_STATES: u32 = 4;
-pub const DIST_SLOT_BITS: u32 = 6;
 pub const DIST_SLOTS: u32 = 1 << DIST_SLOT_BITS;
-pub const DIST_MODEL_START: u32 = 4;
-pub const DIST_MODEL_END: u32 = 14;
-pub const FULL_DISTANCES_BITS: u32 = DIST_MODEL_END / 2;
-pub const FULL_DISTANCES: u32 = 1 << FULL_DISTANCES_BITS;
-pub const ALIGN_BITS: u32 = 4;
-pub const ALIGN_SIZE: u32 = 1 << ALIGN_BITS;
 #[inline]
 unsafe extern "C" fn rc_read_init(
     rc: *mut lzma_range_decoder,
@@ -1935,8 +1886,7 @@ unsafe extern "C" fn lzma_decode(
                                             >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
-                                symbol =
-                                    symbol.wrapping_add((-(1_i32 << 3) + 2 + (1 << 3)) as u32);
+                                symbol = symbol.wrapping_add((-(1_i32 << 3) + 2 + (1 << 3)) as u32);
                                 len = symbol;
                             } else {
                                 rc.range = rc.range.wrapping_sub(rc_bound);
@@ -2177,9 +2127,8 @@ unsafe extern "C" fn lzma_decode(
                                                 >> RC_MOVE_BITS);
                                     symbol = (symbol << 1).wrapping_add(1);
                                 }
-                                symbol = symbol.wrapping_add(
-                                    (-(1_i32 << 8) + 2 + (1 << 3) + (1 << 3)) as u32,
-                                );
+                                symbol = symbol
+                                    .wrapping_add((-(1_i32 << 8) + 2 + (1 << 3) + (1 << 3)) as u32);
                                 len = symbol;
                             }
                         }
@@ -2939,8 +2888,8 @@ unsafe extern "C" fn lzma_decode(
                                                 >> RC_MOVE_BITS);
                                         symbol = (symbol << 1).wrapping_add(1);
                                     }
-                                    symbol = symbol
-                                        .wrapping_add((-(1_i32 << 3) + 2 + (1 << 3)) as u32);
+                                    symbol =
+                                        symbol.wrapping_add((-(1_i32 << 3) + 2 + (1 << 3)) as u32);
                                     len = symbol;
                                 } else {
                                     rc.range = rc.range.wrapping_sub(rc_bound);
@@ -3401,16 +3350,21 @@ pub unsafe extern "C" fn lzma_lzma_decoder_create(
         if (*lz).coder.is_null() {
             return LZMA_MEM_ERROR;
         }
-        (*lz).code = Some(lzma_decode as unsafe extern "C" fn(
-            *mut c_void,
-            *mut lzma_dict,
-            *const u8,
-            *mut size_t,
-            size_t,
-        ) -> lzma_ret);
+        (*lz).code = Some(
+            lzma_decode
+                as unsafe extern "C" fn(
+                    *mut c_void,
+                    *mut lzma_dict,
+                    *const u8,
+                    *mut size_t,
+                    size_t,
+                ) -> lzma_ret,
+        );
         (*lz).reset =
             Some(lzma_decoder_reset as unsafe extern "C" fn(*mut c_void, *const c_void) -> ());
-        (*lz).set_uncompressed = Some(lzma_decoder_uncompressed as unsafe extern "C" fn(*mut c_void, lzma_vli, bool) -> ());
+        (*lz).set_uncompressed = Some(
+            lzma_decoder_uncompressed as unsafe extern "C" fn(*mut c_void, lzma_vli, bool) -> (),
+        );
     }
     (*lz_options).dict_size = (*options).dict_size as size_t;
     (*lz_options).preset_dict = (*options).preset_dict;

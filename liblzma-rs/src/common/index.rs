@@ -1,12 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_uint, c_ulong, c_ulonglong, c_void};
-extern "C" {
-    fn lzma_vli_size(vli: lzma_vli) -> u32;
-    fn lzma_stream_flags_compare(
-        a: *const lzma_stream_flags,
-        b: *const lzma_stream_flags,
-    ) -> lzma_ret;
-}
+use core::ffi::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_s {
@@ -91,11 +84,6 @@ pub struct C2RustUnnamed_1 {
     pub reserved_vli3: lzma_vli,
     pub reserved_vli4: lzma_vli,
 }
-pub type lzma_index_iter_mode = c_uint;
-pub const LZMA_INDEX_ITER_NONEMPTY_BLOCK: lzma_index_iter_mode = 3;
-pub const LZMA_INDEX_ITER_BLOCK: lzma_index_iter_mode = 2;
-pub const LZMA_INDEX_ITER_STREAM: lzma_index_iter_mode = 1;
-pub const LZMA_INDEX_ITER_ANY: lzma_index_iter_mode = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct index_record {
@@ -142,8 +130,6 @@ pub struct index_cat_info {
 }
 pub type C2RustUnnamed_2 = c_uint;
 pub type C2RustUnnamed_3 = c_uint;
-pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
-pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
 #[inline]
 extern "C" fn bsr32(n: u32) -> u32 {
     n.leading_zeros() as i32 as u32 ^ 31
@@ -151,22 +137,6 @@ extern "C" fn bsr32(n: u32) -> u32 {
 #[inline]
 extern "C" fn ctz32(n: u32) -> u32 {
     n.trailing_zeros() as i32 as u32
-}
-pub const UNPADDED_SIZE_MIN: c_ulonglong = 5;
-pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
-#[inline]
-extern "C" fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
-    vli.wrapping_add(3) & !(3)
-}
-#[inline]
-extern "C" fn index_size_unpadded(count: lzma_vli, index_list_size: lzma_vli) -> lzma_vli {
-    (1u32.wrapping_add(unsafe { lzma_vli_size(count) }) as lzma_vli)
-        .wrapping_add(index_list_size)
-        .wrapping_add(4)
-}
-#[inline]
-extern "C" fn index_size(count: lzma_vli, index_list_size: lzma_vli) -> lzma_vli {
-    vli_ceil4(index_size_unpadded(count, index_list_size))
 }
 pub const INDEX_GROUP_SIZE: u32 = 512;
 pub const PREALLOC_MAX: usize = (SIZE_MAX as usize)
@@ -505,8 +475,8 @@ pub unsafe extern "C" fn lzma_index_append(
     uncompressed_size: lzma_vli,
 ) -> lzma_ret {
     if i.is_null()
-        || unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
-        || unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
+        || unpadded_size < UNPADDED_SIZE_MIN
+        || unpadded_size > UNPADDED_SIZE_MAX
         || uncompressed_size > LZMA_VLI_MAX
     {
         return LZMA_PROG_ERROR;
@@ -530,7 +500,7 @@ pub unsafe extern "C" fn lzma_index_append(
     if uncompressed_base.wrapping_add(uncompressed_size) > LZMA_VLI_MAX {
         return LZMA_DATA_ERROR;
     }
-    if compressed_base.wrapping_add(unpadded_size) > UNPADDED_SIZE_MAX as lzma_vli {
+    if compressed_base.wrapping_add(unpadded_size) > UNPADDED_SIZE_MAX {
         return LZMA_DATA_ERROR;
     }
     if index_file_size(
@@ -548,7 +518,7 @@ pub unsafe extern "C" fn lzma_index_append(
         (*i).record_count.wrapping_add(1),
         (*i).index_list_size
             .wrapping_add(index_list_size_add as lzma_vli),
-    ) > LZMA_BACKWARD_SIZE_MAX as lzma_vli
+    ) > LZMA_BACKWARD_SIZE_MAX
     {
         return LZMA_DATA_ERROR;
     }
@@ -618,7 +588,7 @@ pub unsafe extern "C" fn lzma_index_cat(
     if dest.is_null() || src.is_null() {
         return LZMA_PROG_ERROR;
     }
-    let dest_file_size: lzma_vli = lzma_index_file_size(dest) as lzma_vli;
+    let dest_file_size: lzma_vli = lzma_index_file_size(dest);
     if dest_file_size.wrapping_add(lzma_index_file_size(src)) > LZMA_VLI_MAX
         || (*dest)
             .uncompressed_size
@@ -631,7 +601,7 @@ pub unsafe extern "C" fn lzma_index_cat(
         index_size_unpadded((*dest).record_count, (*dest).index_list_size) as lzma_vli;
     let src_size: lzma_vli =
         index_size_unpadded((*src).record_count, (*src).index_list_size) as lzma_vli;
-    if vli_ceil4(dest_size.wrapping_add(src_size)) > LZMA_BACKWARD_SIZE_MAX as lzma_vli {
+    if vli_ceil4(dest_size.wrapping_add(src_size)) > LZMA_BACKWARD_SIZE_MAX {
         return LZMA_DATA_ERROR;
     }
     let s: *mut index_stream = (*dest).streams.rightmost as *mut index_stream;
@@ -652,9 +622,13 @@ pub unsafe extern "C" fn lzma_index_cat(
         (*newg).allocated = (*g).last.wrapping_add(1);
         (*newg).last = (*g).last;
         (*newg).number_base = (*g).number_base;
-        core::ptr::copy_nonoverlapping(&raw mut (*g).records as *const u8, &raw mut (*newg).records as *mut u8, (*newg)
-            .allocated
-            .wrapping_mul(core::mem::size_of::<index_record>()));
+        core::ptr::copy_nonoverlapping(
+            &raw mut (*g).records as *const u8,
+            &raw mut (*newg).records as *mut u8,
+            (*newg)
+                .allocated
+                .wrapping_mul(core::mem::size_of::<index_record>()),
+        );
         if !(*g).node.parent.is_null() {
             (*(*g).node.parent).right = &raw mut (*newg).node;
         }
@@ -728,10 +702,14 @@ unsafe extern "C" fn index_dup_stream(
     let mut srcg: *const index_group = (*src).groups.leftmost as *const index_group;
     let mut i: size_t = 0;
     loop {
-        core::ptr::copy_nonoverlapping(&raw const (*srcg).records as *const u8, (&raw mut (*destg).records as *mut index_record).offset(i as isize) as *mut u8, (*srcg)
-            .last
-            .wrapping_add(1)
-            .wrapping_mul(core::mem::size_of::<index_record>()));
+        core::ptr::copy_nonoverlapping(
+            &raw const (*srcg).records as *const u8,
+            (&raw mut (*destg).records as *mut index_record).offset(i as isize) as *mut u8,
+            (*srcg)
+                .last
+                .wrapping_add(1)
+                .wrapping_mul(core::mem::size_of::<index_record>()),
+        );
         i = i.wrapping_add((*srcg).last.wrapping_add(1));
         srcg = index_tree_next(&raw const (*srcg).node) as *const index_group;
         if srcg.is_null() {
@@ -941,8 +919,7 @@ pub unsafe extern "C" fn lzma_index_iter_next(
         }
         if record == 0 {
             if (*group).node.uncompressed_base
-                != (*(&raw const (*group).records as *const index_record))
-                    .uncompressed_sum
+                != (*(&raw const (*group).records as *const index_record)).uncompressed_sum
             {
                 break;
             }

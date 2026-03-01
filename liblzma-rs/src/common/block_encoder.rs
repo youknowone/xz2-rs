@@ -1,38 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_uint, c_ulonglong, c_void};
-extern "C" {
-    fn lzma_end(strm: *mut lzma_stream);
-    fn lzma_check_is_supported(check: lzma_check) -> lzma_bool;
-    fn lzma_check_size(check: lzma_check) -> u32;
-    fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
-    fn lzma_next_filter_update(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        reversed_filters: *const lzma_filter,
-    ) -> lzma_ret;
-    fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
-    fn lzma_bufcpy(
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> size_t;
-    fn lzma_raw_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter,
-    ) -> lzma_ret;
-    fn lzma_check_init(check: *mut lzma_check_state, type_0: lzma_check);
-    fn lzma_check_update(
-        check: *mut lzma_check_state,
-        type_0: lzma_check,
-        buf: *const u8,
-        size: size_t,
-    );
-    fn lzma_check_finish(check: *mut lzma_check_state, type_0: lzma_check);
-}
+use core::ffi::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_block_coder {
@@ -48,11 +15,6 @@ pub type C2RustUnnamed_2 = c_uint;
 pub const SEQ_CHECK: C2RustUnnamed_2 = 2;
 pub const SEQ_PADDING: C2RustUnnamed_2 = 1;
 pub const SEQ_CODE: C2RustUnnamed_2 = 0;
-pub const LZMA_CHECK_SIZE_MAX: u32 = 64;
-pub const COMPRESSED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX
-    .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as u64)
-    .wrapping_sub(LZMA_CHECK_SIZE_MAX as u64)
-    & !3;
 unsafe extern "C" fn block_encode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
@@ -89,7 +51,7 @@ unsafe extern "C" fn block_encode(
                 );
                 let in_used: size_t = (*in_pos).wrapping_sub(in_start);
                 let out_used: size_t = (*out_pos).wrapping_sub(out_start);
-                if (COMPRESSED_SIZE_MAX as lzma_vli).wrapping_sub((*coder).compressed_size)
+                if (COMPRESSED_SIZE_MAX).wrapping_sub((*coder).compressed_size)
                     < out_used as lzma_vli
                 {
                     return LZMA_DATA_ERROR;
@@ -154,7 +116,11 @@ unsafe extern "C" fn block_encode(
         if (*coder).pos < check_size {
             return LZMA_OK;
         }
-        core::ptr::copy_nonoverlapping(&raw mut (*coder).check.buffer.u8_0 as *const u8, &raw mut (*(*coder).block).raw_check as *mut u8, check_size);
+        core::ptr::copy_nonoverlapping(
+            &raw mut (*coder).check.buffer.u8_0 as *const u8,
+            &raw mut (*(*coder).block).raw_check as *mut u8,
+            check_size,
+        );
         return LZMA_STREAM_END;
     }
     LZMA_PROG_ERROR
@@ -256,12 +222,15 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
         (*next).end = Some(
             block_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
         );
-        (*next).update = Some(block_encoder_update as unsafe extern "C" fn(
-            *mut c_void,
-            *const lzma_allocator,
-            *const lzma_filter,
-            *const lzma_filter,
-        ) -> lzma_ret);
+        (*next).update = Some(
+            block_encoder_update
+                as unsafe extern "C" fn(
+                    *mut c_void,
+                    *const lzma_allocator,
+                    *const lzma_filter,
+                    *const lzma_filter,
+                ) -> lzma_ret,
+        );
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,

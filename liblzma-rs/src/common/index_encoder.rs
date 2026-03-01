@@ -1,28 +1,10 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_void};
-#[repr(C)]
-pub struct lzma_index_s {
-    _opaque: [u8; 0],
-}
 extern "C" {
-    fn lzma_end(strm: *mut lzma_stream);
-    fn lzma_vli_encode(
-        vli: lzma_vli,
-        vli_pos: *mut size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> lzma_ret;
-    fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
     fn lzma_index_block_count(i: *const lzma_index) -> lzma_vli;
-    fn lzma_index_size(i: *const lzma_index) -> lzma_vli;
     fn lzma_index_iter_init(iter: *mut lzma_index_iter, i: *const lzma_index);
     fn lzma_index_iter_next(iter: *mut lzma_index_iter, mode: lzma_index_iter_mode) -> lzma_bool;
-    fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
-    fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
-    fn lzma_index_padding_size(i: *const lzma_index) -> u32;
 }
-pub type lzma_index = lzma_index_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_iter {
@@ -77,11 +59,6 @@ pub struct C2RustUnnamed_2 {
     pub reserved_vli3: lzma_vli,
     pub reserved_vli4: lzma_vli,
 }
-pub type lzma_index_iter_mode = c_uint;
-pub const LZMA_INDEX_ITER_NONEMPTY_BLOCK: lzma_index_iter_mode = 3;
-pub const LZMA_INDEX_ITER_BLOCK: lzma_index_iter_mode = 2;
-pub const LZMA_INDEX_ITER_STREAM: lzma_index_iter_mode = 1;
-pub const LZMA_INDEX_ITER_ANY: lzma_index_iter_mode = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_coder {
@@ -99,7 +76,6 @@ pub const SEQ_UNCOMPRESSED: C2RustUnnamed_3 = 3;
 pub const SEQ_UNPADDED: C2RustUnnamed_3 = 2;
 pub const SEQ_COUNT: C2RustUnnamed_3 = 1;
 pub const SEQ_INDICATOR: C2RustUnnamed_3 = 0;
-pub const INDEX_INDICATOR: u8 = 0;
 unsafe extern "C" fn index_encode(
     coder_ptr: *mut c_void,
     _allocator: *const lzma_allocator,

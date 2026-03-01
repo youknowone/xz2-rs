@@ -1,21 +1,9 @@
 use crate::types::*;
 use core::ffi::c_void;
 extern "C" {
-    fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
     static lzma_header_magic: [u8; 6];
     static lzma_footer_magic: [u8; 2];
 }
-#[inline]
-extern "C" fn read32le(buf: *const u8) -> u32 {
-    return unsafe {
-        let mut num: u32 = *buf as u32;
-        num |= (*buf.offset(1) as u32) << 8;
-        num |= (*buf.offset(2) as u32) << 16;
-        num |= (*buf.offset(3) as u32) << 24;
-        num
-    };
-}
-pub const LZMA_STREAM_FLAGS_SIZE: u32 = 2;
 extern "C" fn stream_flags_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> bool {
     return unsafe {
         if *in_0 != 0 || *in_0.offset(1) & 0xf0 != 0 {

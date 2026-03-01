@@ -1,14 +1,6 @@
 use crate::types::*;
 use core::ffi::{c_uint, c_void};
 extern "C" {
-    fn lzma_bufcpy(
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> size_t;
     fn lzma_lz_decoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
@@ -23,8 +15,6 @@ extern "C" {
             ) -> lzma_ret,
         >,
     ) -> lzma_ret;
-    fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64;
-    fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, byte: u8) -> bool;
     fn lzma_lzma_decoder_create(
         lz: *mut lzma_lz_decoder,
         allocator: *const lzma_allocator,
@@ -60,8 +50,6 @@ pub const SEQ_COMPRESSED_0: sequence = 3;
 pub const SEQ_UNCOMPRESSED_2: sequence = 2;
 pub const SEQ_UNCOMPRESSED_1: sequence = 1;
 pub const SEQ_CONTROL: sequence = 0;
-pub const LZ_DICT_REPEAT_MAX: u32 = 288;
-pub const LZ_DICT_INIT_POS: u32 = 2 * LZ_DICT_REPEAT_MAX;
 pub const LZMA_LZ_DECODER_INIT: lzma_lz_decoder = lzma_lz_decoder {
     coder: core::ptr::null_mut(),
     code: None,
@@ -246,14 +234,19 @@ unsafe extern "C" fn lzma2_decoder_init(
             return LZMA_MEM_ERROR;
         }
         (*lz).coder = coder as *mut c_void;
-        (*lz).code = Some(lzma2_decode as unsafe extern "C" fn(
-            *mut c_void,
-            *mut lzma_dict,
-            *const u8,
-            *mut size_t,
-            size_t,
-        ) -> lzma_ret);
-        (*lz).end = Some(lzma2_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ());
+        (*lz).code = Some(
+            lzma2_decode
+                as unsafe extern "C" fn(
+                    *mut c_void,
+                    *mut lzma_dict,
+                    *const u8,
+                    *mut size_t,
+                    size_t,
+                ) -> lzma_ret,
+        );
+        (*lz).end = Some(
+            lzma2_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
+        );
         (*coder).lzma = LZMA_LZ_DECODER_INIT;
     }
     let options: *const lzma_options_lzma = opt as *const lzma_options_lzma;

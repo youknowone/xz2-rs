@@ -1,34 +1,8 @@
 use crate::types::*;
-use core::ffi::{c_uint, c_ulonglong, c_void};
-#[repr(C)]
-pub struct lzma_index_s {
-    _opaque: [u8; 0],
-}
+use core::ffi::{c_uint, c_void};
 extern "C" {
-    fn lzma_end(strm: *mut lzma_stream);
-    fn lzma_vli_decode(
-        vli: *mut lzma_vli,
-        vli_pos: *mut size_t,
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-    ) -> lzma_ret;
-    fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
-    fn lzma_index_memusage(streams: lzma_vli, blocks: lzma_vli) -> u64;
-    fn lzma_index_init(allocator: *const lzma_allocator) -> *mut lzma_index;
-    fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocator);
-    fn lzma_index_append(
-        i: *mut lzma_index,
-        allocator: *const lzma_allocator,
-        unpadded_size: lzma_vli,
-        uncompressed_size: lzma_vli,
-    ) -> lzma_ret;
-    fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
-    fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
-    fn lzma_index_padding_size(i: *const lzma_index) -> u32;
     fn lzma_index_prealloc(i: *mut lzma_index, records: lzma_vli);
 }
-pub type lzma_index = lzma_index_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_coder {
@@ -51,9 +25,6 @@ pub const SEQ_UNPADDED: C2RustUnnamed_0 = 3;
 pub const SEQ_MEMUSAGE: C2RustUnnamed_0 = 2;
 pub const SEQ_COUNT: C2RustUnnamed_0 = 1;
 pub const SEQ_INDICATOR: C2RustUnnamed_0 = 0;
-pub const UNPADDED_SIZE_MIN: c_ulonglong = 5;
-pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
-pub const INDEX_INDICATOR: u8 = 0;
 unsafe extern "C" fn index_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
@@ -111,8 +82,8 @@ unsafe extern "C" fn index_decode(
                 ret = LZMA_OK;
                 (*coder).pos = 0;
                 if (*coder).sequence == SEQ_UNPADDED {
-                    if (*coder).unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
-                        || (*coder).unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
+                    if (*coder).unpadded_size < UNPADDED_SIZE_MIN
+                        || (*coder).unpadded_size > UNPADDED_SIZE_MAX
                     {
                         return LZMA_DATA_ERROR;
                     }
@@ -326,7 +297,10 @@ pub unsafe extern "C" fn lzma_index_decoder_init(
         (*next).end = Some(
             index_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
         );
-        (*next).memconfig = Some(index_decoder_memconfig as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret);
+        (*next).memconfig = Some(
+            index_decoder_memconfig
+                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+        );
         (*coder).index = core::ptr::null_mut();
     } else {
         lzma_index_end((*coder).index, allocator);

@@ -36,9 +36,9 @@ pub type lzma_bool = c_uchar;
 pub type lzma_vli = u64;
 
 // === Canonical struct re-exports ===
-pub use liblzma_rs::common::index_decoder::lzma_index;
 pub use liblzma_rs::types::lzma_allocator;
 pub use liblzma_rs::types::lzma_filter;
+pub use liblzma_rs::types::lzma_index;
 pub use liblzma_rs::types::lzma_options_lzma;
 pub use liblzma_rs::types::lzma_stream;
 pub use liblzma_rs::types::lzma_stream_flags;
@@ -95,8 +95,7 @@ pub const LZMA_PRESET_DEFAULT: u32 =
     liblzma_rs::common::string_conversion::LZMA_PRESET_DEFAULT as u32;
 pub const LZMA_PRESET_LEVEL_MASK: u32 =
     liblzma_rs::lzma::lzma_encoder_presets::LZMA_PRESET_LEVEL_MASK as u32;
-pub const LZMA_PRESET_EXTREME: u32 =
-    liblzma_rs::common::string_conversion::LZMA_PRESET_EXTREME as u32;
+pub const LZMA_PRESET_EXTREME: u32 = liblzma_rs::types::LZMA_PRESET_EXTREME as u32;
 pub const LZMA_DICT_SIZE_MIN: u32 = liblzma_rs::types::LZMA_DICT_SIZE_MIN as u32;
 pub const LZMA_DICT_SIZE_DEFAULT: u32 =
     liblzma_rs::common::string_conversion::LZMA_DICT_SIZE_DEFAULT as u32;

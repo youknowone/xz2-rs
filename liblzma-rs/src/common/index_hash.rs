@@ -1,25 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_uint, c_ulonglong, c_void};
-extern "C" {
-    fn lzma_vli_decode(
-        vli: *mut lzma_vli,
-        vli_pos: *mut size_t,
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-    ) -> lzma_ret;
-    fn lzma_vli_size(vli: lzma_vli) -> u32;
-    fn lzma_check_size(check: lzma_check) -> u32;
-    fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
-    fn lzma_check_init(check: *mut lzma_check_state, type_0: lzma_check);
-    fn lzma_check_update(
-        check: *mut lzma_check_state,
-        type_0: lzma_check,
-        buf: *const u8,
-        size: size_t,
-    );
-    fn lzma_check_finish(check: *mut lzma_check_state, type_0: lzma_check);
-}
+use core::ffi::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_hash_s {
@@ -50,23 +30,6 @@ pub const SEQ_UNPADDED: C2RustUnnamed_1 = 2;
 pub const SEQ_COUNT: C2RustUnnamed_1 = 1;
 pub const SEQ_BLOCK: C2RustUnnamed_1 = 0;
 pub type lzma_index_hash = lzma_index_hash_s;
-pub const UNPADDED_SIZE_MIN: c_ulonglong = 5;
-pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
-pub const INDEX_INDICATOR: u8 = 0;
-#[inline]
-extern "C" fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
-    vli.wrapping_add(3) & !(3)
-}
-#[inline]
-extern "C" fn index_size_unpadded(count: lzma_vli, index_list_size: lzma_vli) -> lzma_vli {
-    (1u32.wrapping_add(unsafe { lzma_vli_size(count) }) as lzma_vli)
-        .wrapping_add(index_list_size)
-        .wrapping_add(4)
-}
-#[inline]
-extern "C" fn index_size(count: lzma_vli, index_list_size: lzma_vli) -> lzma_vli {
-    vli_ceil4(index_size_unpadded(count, index_list_size))
-}
 #[inline]
 extern "C" fn index_stream_size(
     blocks_size: lzma_vli,
@@ -150,8 +113,8 @@ pub unsafe extern "C" fn lzma_index_hash_append(
 ) -> lzma_ret {
     if index_hash.is_null()
         || (*index_hash).sequence != SEQ_BLOCK
-        || unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
-        || unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
+        || unpadded_size < UNPADDED_SIZE_MIN
+        || unpadded_size > UNPADDED_SIZE_MAX
         || uncompressed_size > LZMA_VLI_MAX
     {
         return LZMA_PROG_ERROR;
@@ -166,7 +129,7 @@ pub unsafe extern "C" fn lzma_index_hash_append(
         || index_size(
             (*index_hash).blocks.count,
             (*index_hash).blocks.index_list_size,
-        ) > LZMA_BACKWARD_SIZE_MAX as lzma_vli
+        ) > LZMA_BACKWARD_SIZE_MAX
         || index_stream_size(
             (*index_hash).blocks.blocks_size,
             (*index_hash).blocks.count,
@@ -237,8 +200,8 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                 ret = LZMA_OK;
                 (*index_hash).pos = 0;
                 if (*index_hash).sequence == SEQ_UNPADDED {
-                    if (*index_hash).unpadded_size < UNPADDED_SIZE_MIN as lzma_vli
-                        || (*index_hash).unpadded_size > UNPADDED_SIZE_MAX as lzma_vli
+                    if (*index_hash).unpadded_size < UNPADDED_SIZE_MIN
+                        || (*index_hash).unpadded_size > UNPADDED_SIZE_MAX
                     {
                         return LZMA_DATA_ERROR;
                     }

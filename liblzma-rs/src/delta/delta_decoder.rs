@@ -1,12 +1,5 @@
 use crate::types::*;
 use core::ffi::c_void;
-extern "C" {
-    fn lzma_delta_coder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-}
 unsafe extern "C" fn decode_buffer(coder: *mut lzma_delta_coder, buffer: *mut u8, size: size_t) {
     let distance: size_t = (*coder).distance;
     let mut i: size_t = 0;

@@ -1,8 +1,4 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_raw_decoder_memusage(filters: *const lzma_filter) -> u64;
-    fn lzma_easy_preset(easy: *mut lzma_options_easy, preset: u32) -> bool;
-}
 #[no_mangle]
 pub extern "C" fn lzma_easy_decoder_memusage(preset: u32) -> u64 {
     let mut opt_easy: lzma_options_easy = lzma_options_easy {

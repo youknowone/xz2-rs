@@ -1,19 +1,5 @@
 use crate::types::*;
 use core::ffi::c_void;
-extern "C" {
-    fn lzma_next_filter_update(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        reversed_filters: *const lzma_filter,
-    ) -> lzma_ret;
-    fn lzma_delta_coder_memusage(options: *const c_void) -> u64;
-    fn lzma_delta_coder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-}
-pub const LZMA_DELTA_DIST_MIN: u32 = 1;
 unsafe extern "C" fn copy_and_encode(
     coder: *mut lzma_delta_coder,
     in_0: *const u8,
@@ -132,12 +118,15 @@ pub unsafe extern "C" fn lzma_delta_encoder_init(
                 lzma_action,
             ) -> lzma_ret,
     );
-    (*next).update = Some(delta_encoder_update as unsafe extern "C" fn(
-        *mut c_void,
-        *const lzma_allocator,
-        *const lzma_filter,
-        *const lzma_filter,
-    ) -> lzma_ret);
+    (*next).update = Some(
+        delta_encoder_update
+            as unsafe extern "C" fn(
+                *mut c_void,
+                *const lzma_allocator,
+                *const lzma_filter,
+                *const lzma_filter,
+            ) -> lzma_ret,
+    );
     lzma_delta_coder_init(next, allocator, filters)
 }
 #[no_mangle]

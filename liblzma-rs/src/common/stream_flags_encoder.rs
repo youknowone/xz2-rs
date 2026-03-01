@@ -1,26 +1,7 @@
 use crate::types::*;
 extern "C" {
-    fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
     static lzma_header_magic: [u8; 6];
     static lzma_footer_magic: [u8; 2];
-}
-#[inline]
-extern "C" fn write32le(buf: *mut u8, num: u32) {
-    unsafe {
-        *buf = num as u8;
-        *buf.offset(1) = (num >> 8) as u8;
-        *buf.offset(2) = (num >> 16) as u8;
-        *buf.offset(3) = (num >> 24) as u8;
-    }
-}
-pub const LZMA_STREAM_FLAGS_SIZE: u32 = 2;
-#[inline]
-extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
-    unsafe {
-        (*options).backward_size >= LZMA_BACKWARD_SIZE_MIN as lzma_vli
-            && (*options).backward_size <= LZMA_BACKWARD_SIZE_MAX as lzma_vli
-            && (*options).backward_size & 3 == 0
-    }
 }
 extern "C" fn stream_flags_encode(options: *const lzma_stream_flags, out: *mut u8) -> bool {
     return unsafe {
@@ -40,7 +21,11 @@ pub unsafe extern "C" fn lzma_stream_header_encode(
     if (*options).version != 0 {
         return LZMA_OPTIONS_ERROR;
     }
-    core::ptr::copy_nonoverlapping(&raw const lzma_header_magic as *const u8, out as *mut u8, core::mem::size_of::<[u8; 6]>());
+    core::ptr::copy_nonoverlapping(
+        &raw const lzma_header_magic as *const u8,
+        out as *mut u8,
+        core::mem::size_of::<[u8; 6]>(),
+    );
     if stream_flags_encode(
         options,
         out.offset(core::mem::size_of::<[u8; 6]>() as isize),
@@ -79,7 +64,11 @@ pub unsafe extern "C" fn lzma_stream_footer_encode(
     }
     let crc: u32 = lzma_crc32(out.offset(4), (4 + LZMA_STREAM_FLAGS_SIZE) as size_t, 0) as u32;
     write32le(out, crc);
-    core::ptr::copy_nonoverlapping(&raw const lzma_footer_magic as *const u8, out.offset((2 * 4) as isize)
-        .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *mut u8, core::mem::size_of::<[u8; 2]>());
+    core::ptr::copy_nonoverlapping(
+        &raw const lzma_footer_magic as *const u8,
+        out.offset((2 * 4) as isize)
+            .offset(LZMA_STREAM_FLAGS_SIZE as isize) as *mut u8,
+        core::mem::size_of::<[u8; 2]>(),
+    );
     LZMA_OK
 }

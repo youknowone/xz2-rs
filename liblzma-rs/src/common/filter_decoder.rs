@@ -1,21 +1,6 @@
 use crate::types::*;
 use core::ffi::c_void;
 extern "C" {
-    fn lzma_end(strm: *mut lzma_stream);
-    fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
-    fn lzma_raw_coder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter,
-        coder_find_0: lzma_filter_find,
-        is_encoder: bool,
-    ) -> lzma_ret;
-    fn lzma_raw_coder_memusage(coder_find_0: lzma_filter_find, filters: *const lzma_filter) -> u64;
-    fn lzma_lzma_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
     fn lzma_lzma_decoder_memusage(options: *const c_void) -> u64;
     fn lzma_lzma_props_decode(
         options: *mut *mut c_void,
@@ -81,7 +66,6 @@ extern "C" {
         props: *const u8,
         props_size: size_t,
     ) -> lzma_ret;
-    fn lzma_delta_coder_memusage(options: *const c_void) -> u64;
     fn lzma_delta_decoder_init(
         next: *mut lzma_next_coder,
         allocator: *const lzma_allocator,
