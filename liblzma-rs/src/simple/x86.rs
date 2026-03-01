@@ -40,7 +40,7 @@ unsafe extern "C" fn x86_code(
     while buffer_pos <= limit {
         let mut b: u8 = *buffer.offset(buffer_pos as isize);
         if b != 0xe8 && b != 0xe9 {
-            buffer_pos = buffer_pos.wrapping_add(1);
+            buffer_pos += 1;
         } else {
             let offset: u32 = now_pos
                 .wrapping_add(buffer_pos as u32)
@@ -53,7 +53,7 @@ unsafe extern "C" fn x86_code(
                 while i < offset {
                     prev_mask &= 0x77;
                     prev_mask <<= 1;
-                    i = i.wrapping_add(1);
+                    i += 1;
                 }
             }
             b = *buffer.offset(buffer_pos.wrapping_add(4) as isize);
@@ -90,7 +90,7 @@ unsafe extern "C" fn x86_code(
                 buffer_pos = buffer_pos.wrapping_add(5);
                 prev_mask = 0;
             } else {
-                buffer_pos = buffer_pos.wrapping_add(1);
+                buffer_pos += 1;
                 prev_mask |= 1;
                 if b == 0 || b == 0xff {
                     prev_mask |= 0x10;

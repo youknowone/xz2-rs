@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_uint, c_void};
 extern "C" {
     fn lzma_mf_find(mf: *mut lzma_mf, count: *mut u32, matches: *mut lzma_match) -> u32;
 }
@@ -63,7 +63,7 @@ pub struct lzma_lzma1_encoder_s {
     pub opts_current_index: u32,
     pub opts: [lzma_optimal; OPTS as usize],
 }
-pub const OPTS: c_int = (1) << 12;
+pub const OPTS: u32 = (1) << 12;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_optimal {
@@ -105,7 +105,7 @@ unsafe extern "C" fn mf_skip(mf: *mut lzma_mf, amount: u32) {
         (*mf).read_ahead = (*mf).read_ahead.wrapping_add(amount);
     }
 }
-pub const REPS: c_int = 4;
+pub const REPS: u32 = 4;
 #[inline(always)]
 unsafe extern "C" fn lzma_memcmplen(
     buf1: *const u8,
@@ -114,7 +114,7 @@ unsafe extern "C" fn lzma_memcmplen(
     limit: u32,
 ) -> u32 {
     while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
-        len = len.wrapping_add(1);
+        len += 1;
     }
     return len;
 }
@@ -153,7 +153,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
     let mut rep_len: u32 = 0;
     let mut rep_index: u32 = 0;
     let mut i: u32 = 0;
-    while i < REPS as u32 {
+    while i < REPS {
         let buf_back: *const u8 = buf.offset(-((*coder).reps[i as usize] as isize)).offset(-1);
         if !(*buf.offset(0) != *buf_back.offset(0) || *buf.offset(1) != *buf_back.offset(1)) {
             let len: u32 = lzma_memcmplen(buf, buf_back, 2, buf_avail) as u32;
@@ -168,12 +168,12 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
                 rep_len = len;
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     if len_main >= nice_len {
         *back_res = (*coder).matches[matches_count.wrapping_sub(1) as usize]
             .dist
-            .wrapping_add(REPS as u32);
+            .wrapping_add(REPS);
         *len_res = len_main;
         mf_skip(mf, len_main.wrapping_sub(1));
         return;
@@ -190,7 +190,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
             if !(back_main >> 7 > (*coder).matches[matches_count.wrapping_sub(2) as usize].dist) {
                 break;
             }
-            matches_count = matches_count.wrapping_sub(1);
+            matches_count -= 1;
             len_main = (*coder).matches[matches_count.wrapping_sub(1) as usize].len;
             back_main = (*coder).matches[matches_count.wrapping_sub(1) as usize].dist;
         }
@@ -241,7 +241,7 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
         len_main.wrapping_sub(1)
     };
     let mut i_0: u32 = 0;
-    while i_0 < REPS as u32 {
+    while i_0 < REPS {
         if memcmp(
             buf as *const c_void,
             buf.offset(-((*coder).reps[i_0 as usize] as isize))
@@ -253,9 +253,9 @@ pub unsafe extern "C" fn lzma_lzma_optimum_fast(
             *len_res = 1;
             return;
         }
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
-    *back_res = back_main.wrapping_add(REPS as u32);
+    *back_res = back_main.wrapping_add(REPS);
     *len_res = len_main;
     mf_skip(mf, len_main.wrapping_sub(2));
 }

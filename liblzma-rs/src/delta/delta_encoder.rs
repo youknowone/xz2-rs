@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_void};
+use core::ffi::c_void;
 extern "C" {
     fn lzma_next_filter_update(
         next: *mut lzma_next_coder,
@@ -13,7 +13,7 @@ extern "C" {
         filters: *const lzma_filter_info,
     ) -> lzma_ret;
 }
-pub const LZMA_DELTA_DIST_MIN: c_int = 1;
+pub const LZMA_DELTA_DIST_MIN: u32 = 1;
 unsafe extern "C" fn copy_and_encode(
     coder: *mut lzma_delta_coder,
     in_0: *const u8,
@@ -23,27 +23,26 @@ unsafe extern "C" fn copy_and_encode(
     let distance: size_t = (*coder).distance;
     let mut i: size_t = 0;
     while i < size {
-        let tmp: u8 = (*coder).history
-            [(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize];
+        let tmp: u8 =
+            (*coder).history[(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize];
         let fresh2 = (*coder).pos;
         (*coder).pos = (*coder).pos.wrapping_sub(1);
         (*coder).history[(fresh2 & 0xff) as usize] = *in_0.offset(i as isize);
         *out.offset(i as isize) = (*in_0.offset(i as isize)).wrapping_sub(tmp);
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 unsafe extern "C" fn encode_in_place(coder: *mut lzma_delta_coder, buffer: *mut u8, size: size_t) {
     let distance: size_t = (*coder).distance;
     let mut i: size_t = 0;
     while i < size {
-        let tmp: u8 = (*coder).history
-            [(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize];
+        let tmp: u8 =
+            (*coder).history[(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize];
         let fresh0 = (*coder).pos;
         (*coder).pos = (*coder).pos.wrapping_sub(1);
         (*coder).history[(fresh0 & 0xff) as usize] = *buffer.offset(i as isize);
-        let ref mut fresh1 = *buffer.offset(i as isize);
-        *fresh1 = (*fresh1).wrapping_sub(tmp);
-        i = i.wrapping_add(1);
+        *buffer.offset(i as isize) = (*buffer.offset(i as isize)).wrapping_sub(tmp);
+        i += 1;
     }
 }
 unsafe extern "C" fn delta_encode(
@@ -160,6 +159,6 @@ pub unsafe extern "C" fn lzma_delta_props_encode(options: *const c_void, out: *m
         return LZMA_PROG_ERROR;
     }
     let opt: *const lzma_options_delta = options as *const lzma_options_delta;
-    *out.offset(0) = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN as u32) as u8;
+    *out.offset(0) = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN) as u8;
     return LZMA_OK;
 }

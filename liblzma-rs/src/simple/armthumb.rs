@@ -44,11 +44,9 @@ unsafe extern "C" fn armthumb_code(
                 dest = src.wrapping_sub(now_pos.wrapping_add(i as u32).wrapping_add(4));
             }
             dest >>= 1;
-            *buffer.offset(i.wrapping_add(1) as isize) =
-                (0xf0 | dest >> 19 & 0x7) as u8;
+            *buffer.offset(i.wrapping_add(1) as isize) = (0xf0 | dest >> 19 & 0x7) as u8;
             *buffer.offset(i as isize) = (dest >> 11) as u8;
-            *buffer.offset(i.wrapping_add(3) as isize) =
-                (0xf8 | dest >> 8 & 0x7) as u8;
+            *buffer.offset(i.wrapping_add(3) as isize) = (0xf8 | dest >> 8 & 0x7) as u8;
             *buffer.offset(i.wrapping_add(2) as isize) = dest as u8;
             i = i.wrapping_add(2);
         }

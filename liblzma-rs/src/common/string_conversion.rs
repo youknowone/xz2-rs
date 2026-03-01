@@ -63,13 +63,13 @@ pub const LZMA_STR_ENCODER: c_uint = 0x10;
 pub const LZMA_STR_DECODER: c_uint = 0x20;
 pub const LZMA_STR_GETOPT_LONG: c_uint = 0x40;
 pub const LZMA_STR_NO_SPACES: c_uint = 0x80;
-pub const LZMA_DELTA_DIST_MIN: c_int = 1;
+pub const LZMA_DELTA_DIST_MIN: u32 = 1;
 pub const LZMA_DICT_SIZE_DEFAULT: c_uint = 1u32 << 23;
-pub const LZMA_LCLP_MIN: c_int = 0;
-pub const LZMA_PB_MIN: c_int = 0;
+pub const LZMA_LCLP_MIN: u32 = 0;
+pub const LZMA_PB_MIN: u32 = 0;
 pub const LZMA_PRESET_DEFAULT: c_uint = 6;
 pub const LZMA_PRESET_EXTREME: c_uint = 1u32 << 31;
-pub const STR_ALLOC_SIZE: c_int = 800;
+pub const STR_ALLOC_SIZE: u32 = 800;
 unsafe extern "C" fn str_init(str: *mut lzma_str, allocator: *const lzma_allocator) -> lzma_ret {
     (*str).buf = lzma_alloc(STR_ALLOC_SIZE as size_t, allocator) as *mut c_char;
     if (*str).buf.is_null() {
@@ -130,14 +130,14 @@ unsafe extern "C" fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suf
                         .wrapping_sub(1 as usize)
             {
                 v >>= 10;
-                suf = suf.wrapping_add(1);
+                suf += 1;
             }
         }
         let mut buf: [c_char; 16] =
             ::core::mem::transmute::<[u8; 16], [c_char; 16]>(*b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
         let mut pos: size_t = (core::mem::size_of::<[c_char; 16]>()).wrapping_sub(1);
         loop {
-            pos = pos.wrapping_sub(1);
+            pos -= 1;
             buf[pos as usize] = ('0' as i32 as u32).wrapping_add(v.wrapping_rem(10)) as c_char;
             v = v.wrapping_div(10);
             if !(v != 0) {
@@ -152,7 +152,7 @@ unsafe extern "C" fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suf
         );
     };
 }
-pub const NAME_LEN_MAX: c_int = 11;
+pub const NAME_LEN_MAX: u32 = 11;
 pub const OPTMAP_USE_NAME_VALUE_MAP: u8 = 0x1;
 pub const OPTMAP_USE_BYTE_SUFFIX: u8 = 0x2;
 pub const OPTMAP_NO_STRFY_ZERO: u8 = 0x4;
@@ -194,8 +194,8 @@ static mut delta_optmap: [option_map; 1] = unsafe {
         offset: 4,
         u: C2RustUnnamed_0 {
             range: C2RustUnnamed_1 {
-                min: LZMA_DELTA_DIST_MIN as u32,
-                max: LZMA_DELTA_DIST_MAX as u32,
+                min: LZMA_DELTA_DIST_MIN,
+                max: LZMA_DELTA_DIST_MAX,
             },
         },
     }]
@@ -208,7 +208,7 @@ extern "C" fn parse_delta(
     return unsafe {
         let opts: *mut lzma_options_delta = filter_options as *mut lzma_options_delta;
         (*opts).type_0 = LZMA_DELTA_TYPE_BYTE;
-        (*opts).dist = LZMA_DELTA_DIST_MIN as u32;
+        (*opts).dist = LZMA_DELTA_DIST_MIN;
         parse_options(
             str,
             str_end,
@@ -332,7 +332,7 @@ unsafe extern "C" fn parse_lzma12(
     if !errmsg.is_null() {
         return errmsg;
     }
-    if (*opts).lc.wrapping_add((*opts).lp) > LZMA_LCLP_MAX as u32 {
+    if (*opts).lc.wrapping_add((*opts).lp) > LZMA_LCLP_MAX {
         return b"The sum of lc and lp must not exceed 4\0" as *const u8 as *const c_char;
     }
     return ::core::ptr::null::<c_char>();
@@ -572,7 +572,7 @@ unsafe extern "C" fn parse_options(
                 {
                     break;
                 }
-                i = i.wrapping_add(1);
+                i += 1;
             }
             *str = equals_sign.offset(1);
             let value_len: size_t = name_eq_value_end.offset_from(*str) as size_t;
@@ -608,7 +608,7 @@ unsafe extern "C" fn parse_options(
                             v = (*map.offset(j as isize)).value;
                             break;
                         } else {
-                            j = j.wrapping_add(1);
+                            j += 1;
                         }
                     }
                 } else if (**str as u8) < b'0' || **str as u8 > b'9' {
@@ -758,7 +758,7 @@ unsafe extern "C" fn parse_filter(
             (*filter).options = options;
             return ::core::ptr::null::<c_char>();
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     return b"Unknown filter name\0" as *const u8 as *const c_char;
 }
@@ -793,7 +793,7 @@ unsafe extern "C" fn str_to_filters(
                 if *str_end.offset(i as isize) as u8 != b' ' {
                     return b"Unsupported preset\0" as *const u8 as *const c_char;
                 }
-                i = i.wrapping_add(1);
+                i += 1;
             }
         } else {
             str_end = (*str).offset(str_len as isize);
@@ -814,11 +814,9 @@ unsafe extern "C" fn str_to_filters(
             return b"Unsupported preset\0" as *const u8 as *const c_char;
         }
         (*filters.offset(0)).id = LZMA_FILTER_LZMA2;
-        let ref mut fresh0 = (*filters.offset(0)).options;
-        *fresh0 = opts as *mut c_void;
+        (*filters.offset(0)).options = opts as *mut c_void;
         (*filters.offset(1)).id = LZMA_VLI_UNKNOWN;
-        let ref mut fresh1 = (*filters.offset(1)).options;
-        *fresh1 = core::ptr::null_mut();
+        (*filters.offset(1)).options = core::ptr::null_mut();
         return ::core::ptr::null::<c_char>();
     }
     let only_xz: bool = flags & LZMA_STR_ALL_FILTERS as u32 == 0;
@@ -865,7 +863,7 @@ unsafe extern "C" fn str_to_filters(
                 while **str as u8 == b' ' {
                     *str = (*str).offset(1);
                 }
-                i_0 = i_0.wrapping_add(1);
+                i_0 += 1;
                 if !(**str != 0) {
                     current_block = 15090052786889560393;
                     break;
@@ -994,7 +992,7 @@ unsafe extern "C" fn strfy_filter(
                             );
                             break;
                         } else {
-                            j = j.wrapping_add(1);
+                            j += 1;
                         }
                     }
                 } else {
@@ -1006,7 +1004,7 @@ unsafe extern "C" fn strfy_filter(
                 }
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 #[no_mangle]
@@ -1101,10 +1099,10 @@ pub unsafe extern "C" fn lzma_str_from_filters(
                     break;
                 }
             } else {
-                j = j.wrapping_add(1);
+                j += 1;
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     return str_finish(output_str, &raw mut dest, allocator);
 }
@@ -1204,7 +1202,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
                                     &raw mut dest,
                                     &raw const (*m.offset(k as isize)).name as *const c_char,
                                 );
-                                k = k.wrapping_add(1);
+                                k += 1;
                             }
                         } else {
                             let use_byte_suffix: bool =
@@ -1222,12 +1220,12 @@ pub unsafe extern "C" fn lzma_str_list_filters(
                             );
                         }
                         str_append_str(&raw mut dest, b">\0" as *const u8 as *const c_char);
-                        j = j.wrapping_add(1);
+                        j += 1;
                     }
                 }
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     if !first_filter_printed {
         str_free(&raw mut dest, allocator);
@@ -1265,8 +1263,8 @@ unsafe extern "C" fn run_static_initializers() {
             offset: 20,
             u: C2RustUnnamed_0 {
                 range: C2RustUnnamed_1 {
-                    min: LZMA_LCLP_MIN as u32,
-                    max: LZMA_LCLP_MAX as u32,
+                    min: LZMA_LCLP_MIN,
+                    max: LZMA_LCLP_MAX,
                 },
             },
         },
@@ -1277,8 +1275,8 @@ unsafe extern "C" fn run_static_initializers() {
             offset: 24,
             u: C2RustUnnamed_0 {
                 range: C2RustUnnamed_1 {
-                    min: LZMA_LCLP_MIN as u32,
-                    max: LZMA_LCLP_MAX as u32,
+                    min: LZMA_LCLP_MIN,
+                    max: LZMA_LCLP_MAX,
                 },
             },
         },
@@ -1289,8 +1287,8 @@ unsafe extern "C" fn run_static_initializers() {
             offset: 28,
             u: C2RustUnnamed_0 {
                 range: C2RustUnnamed_1 {
-                    min: LZMA_PB_MIN as u32,
-                    max: LZMA_PB_MAX as u32,
+                    min: LZMA_PB_MIN,
+                    max: LZMA_PB_MAX,
                 },
             },
         },

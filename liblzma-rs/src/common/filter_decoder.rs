@@ -372,7 +372,7 @@ extern "C" fn decoder_find(id: lzma_vli) -> *const lzma_filter_decoder {
         if decoders[i as usize].id == id {
             return decoders.as_ptr().wrapping_add(i as usize);
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     return ::core::ptr::null::<lzma_filter_decoder>();
 }

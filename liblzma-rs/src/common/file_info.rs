@@ -153,10 +153,10 @@ unsafe extern "C" fn reverse_seek(
 unsafe extern "C" fn get_padding_size(buf: *const u8, mut buf_size: size_t) -> size_t {
     let mut padding: size_t = 0;
     while buf_size > 0 && {
-        buf_size = buf_size.wrapping_sub(1);
+        buf_size -= 1;
         *buf.offset(buf_size as isize) == 0
     } {
-        padding = padding.wrapping_add(1);
+        padding += 1;
     }
     return padding;
 }

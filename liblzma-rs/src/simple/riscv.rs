@@ -79,8 +79,7 @@ unsafe extern "C" fn riscv_encode(
                     | (b3 & 0x7f) << 4
                     | (b3 & 0x80) << 13;
                 addr = addr.wrapping_add(pc);
-                *buffer.offset(i.wrapping_add(1) as isize) =
-                    (b1 & 0xf | addr >> 13 & 0xf0) as u8;
+                *buffer.offset(i.wrapping_add(1) as isize) = (b1 & 0xf | addr >> 13 & 0xf0) as u8;
                 *buffer.offset(i.wrapping_add(2) as isize) = (addr >> 9) as u8;
                 *buffer.offset(i.wrapping_add(3) as isize) = (addr >> 1) as u8;
                 i = i.wrapping_add((4 - 2) as size_t);
@@ -96,8 +95,7 @@ unsafe extern "C" fn riscv_encode(
                     current_block_22 = 12517898123489920830;
                 } else {
                     let mut addr_0: u32 = inst & 0xfffff000;
-                    addr_0 = addr_0
-                        .wrapping_add((inst2 >> 20).wrapping_sub(inst2 >> 19 & 0x1000));
+                    addr_0 = addr_0.wrapping_add((inst2 >> 20).wrapping_sub(inst2 >> 19 & 0x1000));
                     addr_0 = addr_0.wrapping_add(now_pos.wrapping_add(i as u32));
                     inst = (0x17 | (2) << 7) as u32 | inst2 << 12;
                     write32le(buffer.offset(i as isize), inst);
@@ -181,11 +179,9 @@ unsafe extern "C" fn riscv_decode(
                 let pc: u32 = now_pos.wrapping_add(i as u32);
                 let mut addr: u32 = (b1 & 0xf0) << 13 | b2 << 9 | b3 << 1;
                 addr = addr.wrapping_sub(pc);
-                *buffer.offset(i.wrapping_add(1) as isize) =
-                    (b1 & 0xf | addr >> 8 & 0xf0) as u8;
+                *buffer.offset(i.wrapping_add(1) as isize) = (b1 & 0xf | addr >> 8 & 0xf0) as u8;
                 *buffer.offset(i.wrapping_add(2) as isize) =
-                    (addr >> 16 & 0xf | addr >> 7 & 0x10 | addr << 4 & 0xe0)
-                        as u8;
+                    (addr >> 16 & 0xf | addr >> 7 & 0x10 | addr << 4 & 0xe0) as u8;
                 *buffer.offset(i.wrapping_add(3) as isize) =
                     (addr >> 4 & 0x7f | addr >> 13 & 0x80) as u8;
                 i = i.wrapping_add((4 - 2) as size_t);
@@ -216,9 +212,7 @@ unsafe extern "C" fn riscv_decode(
                     let mut addr_1: u32 = read32be(buffer.offset(i as isize).offset(4));
                     addr_1 = addr_1.wrapping_sub(now_pos.wrapping_add(i as u32));
                     inst2 = inst >> 12 | addr_1 << 20;
-                    inst = 0x17
-                        | inst2_rs1 << 7
-                        | addr_1.wrapping_add(0x800) & 0xfffff000;
+                    inst = 0x17 | inst2_rs1 << 7 | addr_1.wrapping_add(0x800) & 0xfffff000;
                     current_block_23 = 6669252993407410313;
                 }
             }

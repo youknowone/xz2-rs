@@ -11,15 +11,13 @@ unsafe extern "C" fn decode_buffer(coder: *mut lzma_delta_coder, buffer: *mut u8
     let distance: size_t = (*coder).distance;
     let mut i: size_t = 0;
     while i < size {
-        let ref mut fresh0 = *buffer.offset(i as isize);
-        *fresh0 = (*fresh0).wrapping_add(
-            (*coder).history
-                [(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize],
+        *buffer.offset(i as isize) = (*buffer.offset(i as isize)).wrapping_add(
+            (*coder).history[(distance.wrapping_add((*coder).pos as size_t) & 0xff) as usize],
         );
         let fresh1 = (*coder).pos;
         (*coder).pos = (*coder).pos.wrapping_sub(1);
         (*coder).history[(fresh1 & 0xff) as usize] = *buffer.offset(i as isize);
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 unsafe extern "C" fn delta_decode(

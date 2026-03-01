@@ -404,7 +404,7 @@ extern "C" fn mythread_condtime_set(
         }
     }
 }
-pub const LZMA_THREADS_MAX: c_int = 16384;
+pub const LZMA_THREADS_MAX: u32 = 16384;
 pub const INDEX_INDICATOR: u8 = 0;
 #[inline]
 extern "C" fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
@@ -606,12 +606,12 @@ unsafe extern "C" fn threads_end(coder: *mut lzma_stream_coder, allocator: *cons
             }
             mythread_i_502 = 1;
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     let mut i_0: u32 = 0;
     while i_0 < (*coder).threads_initialized {
         mythread_join((*(*coder).threads.offset(i_0 as isize)).thread_id);
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
     lzma_free((*coder).threads as *mut c_void, allocator);
     (*coder).threads_initialized = 0;
@@ -639,7 +639,7 @@ unsafe extern "C" fn threads_stop(coder: *mut lzma_stream_coder) {
             }
             mythread_i_538 = 1;
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 unsafe extern "C" fn initialize_new_thread(
@@ -1704,7 +1704,7 @@ unsafe extern "C" fn stream_decoder_mt_get_progress(
                     }
                     mythread_i_1867 = 1;
                 }
-                i = i.wrapping_add(1);
+                i += 1;
             }
             mythread_j_1862 = 1;
         }
@@ -1717,7 +1717,7 @@ unsafe extern "C" fn stream_decoder_mt_init(
     options: *const lzma_mt,
 ) -> lzma_ret {
     let mut coder: *mut lzma_stream_coder = core::ptr::null_mut();
-    if (*options).threads == 0 || (*options).threads > LZMA_THREADS_MAX as u32 {
+    if (*options).threads == 0 || (*options).threads > LZMA_THREADS_MAX {
         return LZMA_OPTIONS_ERROR;
     }
     if (*options).flags & !(LZMA_SUPPORTED_FLAGS as u32) != 0 {

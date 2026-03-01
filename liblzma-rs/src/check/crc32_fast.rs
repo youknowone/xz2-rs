@@ -325,7 +325,7 @@ unsafe extern "C" fn lzma_crc32_generic(mut buf: *const u8, mut size: size_t, mu
             let fresh0 = buf;
             buf = buf.offset(1);
             crc = lzma_crc32_table[0][(*fresh0 as u32 ^ crc & 0xff) as usize] ^ crc >> 8;
-            size = size.wrapping_sub(1);
+            size -= 1;
         }
         let limit: *const u8 = buf.offset((size & !(7)) as isize);
         size &= 7;

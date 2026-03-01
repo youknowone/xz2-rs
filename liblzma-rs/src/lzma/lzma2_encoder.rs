@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_int, c_uint, c_void};
+use core::ffi::{c_uint, c_void};
 #[repr(C)]
 pub struct lzma_lzma1_encoder_s {
     _opaque: [u8; 0],
@@ -112,7 +112,7 @@ unsafe extern "C" fn mf_read(
     *out_pos = (*out_pos).wrapping_add(copy_size);
     *left = (*left).wrapping_sub(copy_size);
 }
-pub const FASTPOS_BITS: c_int = 13;
+pub const FASTPOS_BITS: u32 = 13;
 #[inline]
 unsafe extern "C" fn get_dist_slot(dist: u32) -> u32 {
     if dist < (1) << FASTPOS_BITS + (0 + 0 * (FASTPOS_BITS - 1)) {
@@ -127,8 +127,8 @@ unsafe extern "C" fn get_dist_slot(dist: u32) -> u32 {
 }
 pub const LZMA2_CHUNK_MAX: c_uint = 1u32 << 16;
 pub const LZMA2_UNCOMPRESSED_MAX: c_uint = 1u32 << 21;
-pub const LZMA2_HEADER_MAX: c_int = 6;
-pub const LZMA2_HEADER_UNCOMPRESSED: c_int = 3;
+pub const LZMA2_HEADER_MAX: u32 = 6;
+pub const LZMA2_HEADER_UNCOMPRESSED: u32 = 3;
 unsafe extern "C" fn lzma2_header_lzma(coder: *mut lzma_lzma2_coder) {
     let mut pos: size_t = 0;
     if (*coder).need_properties {
@@ -149,21 +149,21 @@ unsafe extern "C" fn lzma2_header_lzma(coder: *mut lzma_lzma2_coder) {
     (*coder).buf_pos = pos;
     let mut size: size_t = (*coder).uncompressed_size.wrapping_sub(1);
     let fresh1 = pos;
-    pos = pos.wrapping_add(1);
+    pos += 1;
     (*coder).buf[fresh1 as usize] =
         ((*coder).buf[fresh1 as usize] as size_t).wrapping_add(size >> 16) as u8;
     let fresh2 = pos;
-    pos = pos.wrapping_add(1);
+    pos += 1;
     (*coder).buf[fresh2 as usize] = (size >> 8 & 0xff) as u8;
     let fresh3 = pos;
-    pos = pos.wrapping_add(1);
+    pos += 1;
     (*coder).buf[fresh3 as usize] = (size & 0xff) as u8;
     size = (*coder).compressed_size.wrapping_sub(1);
     let fresh4 = pos;
-    pos = pos.wrapping_add(1);
+    pos += 1;
     (*coder).buf[fresh4 as usize] = (size >> 8) as u8;
     let fresh5 = pos;
-    pos = pos.wrapping_add(1);
+    pos += 1;
     (*coder).buf[fresh5 as usize] = (size & 0xff) as u8;
     if (*coder).need_properties {
         lzma_lzma_lclppb_encode(
@@ -357,10 +357,10 @@ unsafe extern "C" fn lzma2_encoder_options_update(
         || (*coder).opt_cur.lp != (*opt).lp
         || (*coder).opt_cur.pb != (*opt).pb
     {
-        if (*opt).lc > LZMA_LCLP_MAX as u32
-            || (*opt).lp > LZMA_LCLP_MAX as u32
-            || (*opt).lc.wrapping_add((*opt).lp) > LZMA_LCLP_MAX as u32
-            || (*opt).pb > LZMA_PB_MAX as u32
+        if (*opt).lc > LZMA_LCLP_MAX
+            || (*opt).lp > LZMA_LCLP_MAX
+            || (*opt).lc.wrapping_add((*opt).lp) > LZMA_LCLP_MAX
+            || (*opt).pb > LZMA_PB_MAX
         {
             return LZMA_OPTIONS_ERROR;
         }
@@ -487,7 +487,7 @@ pub unsafe extern "C" fn lzma_lzma2_props_encode(options: *const c_void, out: *m
     } else {
         4096
     };
-    d = d.wrapping_sub(1);
+    d -= 1;
     d |= d >> 2;
     d |= d >> 3;
     d |= d >> 4;

@@ -374,7 +374,7 @@ extern "C" fn mythread_condtime_set(
         }
     }
 }
-pub const LZMA_THREADS_MAX: c_int = 16384;
+pub const LZMA_THREADS_MAX: u32 = 16384;
 #[inline]
 extern "C" fn lzma_outq_has_buf(outq: *const lzma_outq) -> bool {
     return unsafe { (*outq).bufs_in_use < (*outq).bufs_limit };
@@ -689,7 +689,7 @@ unsafe extern "C" fn threads_stop(coder: *mut lzma_stream_coder, wait_for_thread
             }
             mythread_i_449 = 1;
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     if !wait_for_threads {
         return;
@@ -717,7 +717,7 @@ unsafe extern "C" fn threads_stop(coder: *mut lzma_stream_coder, wait_for_thread
             }
             mythread_i_460 = 1;
         }
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
 }
 unsafe extern "C" fn threads_end(coder: *mut lzma_stream_coder, allocator: *const lzma_allocator) {
@@ -740,12 +740,12 @@ unsafe extern "C" fn threads_end(coder: *mut lzma_stream_coder, allocator: *cons
             }
             mythread_i_477 = 1;
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     let mut i_0: u32 = 0;
     while i_0 < (*coder).threads_initialized {
         let _ret: c_int = mythread_join((*(*coder).threads.offset(i_0 as isize)).thread_id);
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
     lzma_free((*coder).threads as *mut c_void, allocator);
 }
@@ -1270,10 +1270,7 @@ unsafe extern "C" fn get_options(
     if options.is_null() {
         return LZMA_PROG_ERROR;
     }
-    if (*options).flags != 0
-        || (*options).threads == 0
-        || (*options).threads > LZMA_THREADS_MAX as u32
-    {
+    if (*options).flags != 0 || (*options).threads == 0 || (*options).threads > LZMA_THREADS_MAX {
         return LZMA_OPTIONS_ERROR;
     }
     if !(*options).filters.is_null() {
@@ -1338,7 +1335,7 @@ unsafe extern "C" fn get_progress(
                     }
                     mythread_i_1015 = 1;
                 }
-                i = i.wrapping_add(1);
+                i += 1;
             }
             mythread_j_1010 = 1;
         }

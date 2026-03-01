@@ -40,9 +40,8 @@ pub unsafe extern "C" fn lzma_block_header_decode(
     let mut i: size_t = 0;
     while i <= LZMA_FILTERS_MAX as size_t {
         (*(*block).filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN;
-        let ref mut fresh0 = (*(*block).filters.offset(i as isize)).options;
-        *fresh0 = core::ptr::null_mut();
-        i = i.wrapping_add(1);
+        (*(*block).filters.offset(i as isize)).options = core::ptr::null_mut();
+        i += 1;
     }
     if (*block).version > 1 {
         (*block).version = 1;
@@ -106,11 +105,11 @@ pub unsafe extern "C" fn lzma_block_header_decode(
             lzma_filters_free((*block).filters, allocator);
             return ret;
         }
-        i_0 = i_0.wrapping_add(1);
+        i_0 += 1;
     }
     while in_pos < in_size {
         let fresh1 = in_pos;
-        in_pos = in_pos.wrapping_add(1);
+        in_pos += 1;
         if *in_0.offset(fresh1 as isize) != 0 {
             lzma_filters_free((*block).filters, allocator);
             return LZMA_OPTIONS_ERROR;

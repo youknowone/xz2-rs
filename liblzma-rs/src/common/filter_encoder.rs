@@ -330,7 +330,7 @@ extern "C" fn encoder_find(id: lzma_vli) -> *const lzma_filter_encoder {
         if encoders[i as usize].id == id {
             return encoders.as_ptr().wrapping_add(i as usize);
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     return ::core::ptr::null::<lzma_filter_encoder>();
 }
@@ -354,7 +354,7 @@ pub unsafe extern "C" fn lzma_filters_update(
     }
     let mut count: size_t = 1;
     while (*filters.offset(count as isize)).id != LZMA_VLI_UNKNOWN {
-        count = count.wrapping_add(1);
+        count += 1;
     }
     let mut reversed_filters: [lzma_filter; 5] = [lzma_filter {
         id: 0,
@@ -364,7 +364,7 @@ pub unsafe extern "C" fn lzma_filters_update(
     while i < count {
         reversed_filters[count.wrapping_sub(i).wrapping_sub(1) as usize] =
             *filters.offset(i as isize);
-        i = i.wrapping_add(1);
+        i += 1;
     }
     reversed_filters[count as usize].id = LZMA_VLI_UNKNOWN;
     return (*(*strm).internal)
@@ -444,7 +444,7 @@ pub unsafe extern "C" fn lzma_mt_block_size(filters: *const lzma_filter) -> u64 
                 max = size;
             }
         }
-        i = i.wrapping_add(1);
+        i += 1;
     }
     return if max == 0 { UINT64_MAX } else { max };
 }

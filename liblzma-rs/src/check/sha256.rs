@@ -522,22 +522,9 @@ unsafe extern "C" fn transform(state: *mut u32, data: *const u32) {
         );
         j = j.wrapping_add(16);
     }
-    let ref mut fresh0 = *state.offset(0);
-    *fresh0 = (*fresh0).wrapping_add(T[0]);
-    let ref mut fresh1 = *state.offset(1);
-    *fresh1 = (*fresh1).wrapping_add(T[1]);
-    let ref mut fresh2 = *state.offset(2);
-    *fresh2 = (*fresh2).wrapping_add(T[2]);
-    let ref mut fresh3 = *state.offset(3);
-    *fresh3 = (*fresh3).wrapping_add(T[3]);
-    let ref mut fresh4 = *state.offset(4);
-    *fresh4 = (*fresh4).wrapping_add(T[4]);
-    let ref mut fresh5 = *state.offset(5);
-    *fresh5 = (*fresh5).wrapping_add(T[5]);
-    let ref mut fresh6 = *state.offset(6);
-    *fresh6 = (*fresh6).wrapping_add(T[6]);
-    let ref mut fresh7 = *state.offset(7);
-    *fresh7 = (*fresh7).wrapping_add(T[7]);
+    for i in 0..8 {
+        *state.offset(i as isize) = (*state.offset(i as isize)).wrapping_add(T[i]);
+    }
 }
 unsafe extern "C" fn process(check: *mut lzma_check_state) {
     transform(
@@ -587,7 +574,7 @@ pub unsafe extern "C" fn lzma_sha256_update(
 pub unsafe extern "C" fn lzma_sha256_finish(check: *mut lzma_check_state) {
     let mut pos: size_t = ((*check).state.sha256.size & 0x3f as u64) as size_t;
     let fresh8 = pos;
-    pos = pos.wrapping_add(1);
+    pos += 1;
     (*check).buffer.u8_0[fresh8 as usize] = 0x80 as u8;
     while pos != (64 - 8) as size_t {
         if pos == 64 {
@@ -595,7 +582,7 @@ pub unsafe extern "C" fn lzma_sha256_finish(check: *mut lzma_check_state) {
             pos = 0;
         }
         let fresh9 = pos;
-        pos = pos.wrapping_add(1);
+        pos += 1;
         (*check).buffer.u8_0[fresh9 as usize] = 0;
     }
     (*check).state.sha256.size = (*check).state.sha256.size.wrapping_mul(8);
@@ -614,6 +601,6 @@ pub unsafe extern "C" fn lzma_sha256_finish(check: *mut lzma_check_state) {
             | ((*check).state.sha256.state[i as usize] & 0xff00) << 8
             | ((*check).state.sha256.state[i as usize] & 0xff0000) >> 8
             | ((*check).state.sha256.state[i as usize] & 0xff000000) >> 24;
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }

@@ -149,7 +149,7 @@ pub unsafe extern "C" fn lzma_filters_copy(
                         current_block = 6392083060350426025;
                         break 's_15;
                     } else {
-                        j = j.wrapping_add(1);
+                        j += 1;
                     }
                 }
                 dest[i as usize].options = lzma_alloc(features[j as usize].options_size, allocator);
@@ -165,13 +165,13 @@ pub unsafe extern "C" fn lzma_filters_copy(
                     );
                 }
             }
-            i = i.wrapping_add(1);
+            i += 1;
         }
     }
     match current_block {
         6392083060350426025 => {
             while i > 0 {
-                i = i.wrapping_sub(1);
+                i -= 1;
                 lzma_free(dest[i as usize].options, allocator);
             }
             return ret;
@@ -203,10 +203,9 @@ pub unsafe extern "C" fn lzma_filters_free(
             break;
         }
         lzma_free((*filters.offset(i as isize)).options, allocator);
-        let ref mut fresh0 = (*filters.offset(i as isize)).options;
-        *fresh0 = core::ptr::null_mut();
+        (*filters.offset(i as isize)).options = core::ptr::null_mut();
         (*filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN;
-        i = i.wrapping_add(1);
+        i += 1;
     }
 }
 #[no_mangle]
@@ -228,7 +227,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
             if features[j as usize].id == LZMA_VLI_UNKNOWN {
                 return LZMA_OPTIONS_ERROR;
             }
-            j = j.wrapping_add(1);
+            j += 1;
         }
         if !non_last_ok {
             return LZMA_OPTIONS_ERROR;
@@ -237,7 +236,7 @@ pub unsafe extern "C" fn lzma_validate_chain(
         last_ok = features[j as usize].last_ok;
         changes_size_count =
             changes_size_count.wrapping_add(features[j as usize].changes_size as size_t);
-        i = i.wrapping_add(1);
+        i += 1;
         if !((*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN) {
             break;
         }
@@ -279,7 +278,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
             filters[j as usize].id = (*options.offset(i as isize)).id;
             filters[j as usize].init = (*fc).init;
             filters[j as usize].options = (*options.offset(i as isize)).options;
-            i = i.wrapping_add(1);
+            i += 1;
         }
     } else {
         let mut i_0: size_t = 0;
@@ -293,7 +292,7 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
             filters[i_0 as usize].id = (*options.offset(i_0 as isize)).id;
             filters[i_0 as usize].init = (*fc_0).init;
             filters[i_0 as usize].options = (*options.offset(i_0 as isize)).options;
-            i_0 = i_0.wrapping_add(1);
+            i_0 += 1;
         }
     }
     filters[count as usize].id = LZMA_VLI_UNKNOWN;
@@ -334,7 +333,7 @@ pub unsafe extern "C" fn lzma_raw_coder_memusage(
             }
             total = total.wrapping_add(usage);
         }
-        i = i.wrapping_add(1);
+        i += 1;
         if !((*filters.offset(i as isize)).id != LZMA_VLI_UNKNOWN) {
             break;
         }

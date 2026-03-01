@@ -42,7 +42,7 @@ unsafe extern "C" fn ia64_code(
                         (*buffer.offset(i.wrapping_add(j).wrapping_add(byte_pos) as isize) as u64)
                             << (8_usize).wrapping_mul(j),
                     );
-                    j = j.wrapping_add(1);
+                    j += 1;
                 }
                 let mut inst_norm: u64 = instruction >> bit_res;
                 if inst_norm >> 37 & 0xf as u64 == 0x5 as u64 && inst_norm >> 9 & 0x7 as u64 == 0 {
@@ -65,11 +65,11 @@ unsafe extern "C" fn ia64_code(
                     while j_0 < 6 {
                         *buffer.offset(i.wrapping_add(j_0).wrapping_add(byte_pos) as isize) =
                             (instruction >> (8_usize).wrapping_mul(j_0)) as u8;
-                        j_0 = j_0.wrapping_add(1);
+                        j_0 += 1;
                     }
                 }
             }
-            slot = slot.wrapping_add(1);
+            slot += 1;
             bit_pos = bit_pos.wrapping_add(41);
         }
         i = i.wrapping_add(16);
