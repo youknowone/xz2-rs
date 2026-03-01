@@ -12,7 +12,6 @@ extern "C" fn write32le(buf: *mut u8, num: u32) {
         *buf.offset(3) = (num >> 24) as u8;
     }
 }
-pub const LZMA_STREAM_FLAGS_SIZE: u32 = 2;
 #[inline]
 extern "C" fn is_backward_size_valid(options: *const lzma_stream_flags) -> bool {
     unsafe {

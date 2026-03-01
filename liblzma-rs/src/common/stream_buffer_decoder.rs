@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_uint;
 extern "C" {
     fn lzma_stream_decoder_init(
         next: *mut lzma_next_coder,
@@ -8,7 +7,6 @@ extern "C" {
         flags: u32,
     ) -> lzma_ret;
 }
-pub const LZMA_TELL_ANY_CHECK: c_uint = 0x4;
 #[no_mangle]
 pub unsafe extern "C" fn lzma_stream_buffer_decode(
     memlimit: *mut u64,

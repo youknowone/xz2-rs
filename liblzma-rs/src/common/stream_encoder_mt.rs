@@ -236,14 +236,9 @@ pub const SEQ_STREAM_FOOTER: C2RustUnnamed_0 = 3;
 pub const SEQ_INDEX: C2RustUnnamed_0 = 2;
 pub const SEQ_BLOCK: C2RustUnnamed_0 = 1;
 pub const SEQ_STREAM_HEADER: C2RustUnnamed_0 = 0;
-pub type worker_state = c_uint;
 pub const THR_EXIT: worker_state = 4;
 pub const THR_STOP: worker_state = 3;
 pub const THR_FINISH: worker_state = 2;
-pub const THR_RUN: worker_state = 1;
-pub const THR_IDLE: worker_state = 0;
-pub const SIG_SETMASK: c_int = 3;
-pub const MYTHREAD_RET_VALUE: *mut c_void = core::ptr::null_mut();
 #[inline]
 extern "C" fn mythread_sigmask(how: c_int, set: *const sigset_t, oset: *mut sigset_t) {
     let _ret: c_int =

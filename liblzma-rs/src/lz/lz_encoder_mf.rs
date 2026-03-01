@@ -11,8 +11,6 @@ unsafe extern "C" fn mf_ptr(mf: *const lzma_mf) -> *const u8 {
 unsafe extern "C" fn mf_avail(mf: *const lzma_mf) -> u32 {
     (*mf).write_pos.wrapping_sub((*mf).read_pos)
 }
-pub const HASH_2_SIZE: c_uint = 1u32 << 10;
-pub const HASH_3_SIZE: c_uint = 1u32 << 16;
 pub const HASH_2_MASK: c_uint = HASH_2_SIZE.wrapping_sub(1);
 pub const HASH_3_MASK: c_uint = HASH_3_SIZE.wrapping_sub(1);
 pub const FIX_3_HASH_SIZE: c_uint = 1u32 << 10;

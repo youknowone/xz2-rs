@@ -1,12 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_uint, c_ulonglong, c_void};
-pub const LZMA_CHECK_SIZE_MAX: u32 = 64;
-pub const COMPRESSED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX
-    .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as u64)
-    .wrapping_sub(LZMA_CHECK_SIZE_MAX as u64)
-    & !3;
-pub const LZMA2_CHUNK_MAX: c_uint = 1u32 << 16;
-pub const LZMA2_HEADER_UNCOMPRESSED: u32 = 3;
+use core::ffi::c_void;
 pub const HEADERS_BOUND: u32 =
     1 + 1 + 2 * LZMA_VLI_BYTES_MAX + 3 + 4 + LZMA_CHECK_SIZE_MAX + 3 & !(3);
 extern "C" fn lzma2_bound(uncompressed_size: u64) -> u64 {

@@ -14,7 +14,6 @@ extern "C" fn read32le(buf: *const u8) -> u32 {
         num
     };
 }
-pub const LZMA_STREAM_FLAGS_SIZE: u32 = 2;
 extern "C" fn stream_flags_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> bool {
     return unsafe {
         if *in_0 != 0 || *in_0.offset(1) & 0xf0 != 0 {

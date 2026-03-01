@@ -181,10 +181,6 @@ unsafe extern "C" fn dict_put_safe(dict: *mut lzma_dict, byte: u8) -> bool {
     dict_put(dict, byte);
     false
 }
-pub const RC_SHIFT_BITS: u32 = 8;
-pub const RC_TOP_BITS: u32 = 24;
-pub const RC_TOP_VALUE: c_uint = 1u32 << RC_TOP_BITS;
-pub const RC_MOVE_BITS: u32 = 5;
 #[inline]
 unsafe extern "C" fn is_lclppb_valid(options: *const lzma_options_lzma) -> bool {
     (*options).lc <= LZMA_LCLP_MAX
@@ -192,8 +188,6 @@ unsafe extern "C" fn is_lclppb_valid(options: *const lzma_options_lzma) -> bool 
         && (*options).lc.wrapping_add((*options).lp) <= LZMA_LCLP_MAX
         && (*options).pb <= LZMA_PB_MAX
 }
-pub const STATES: u32 = 12;
-pub const LITERAL_CODER_SIZE: c_uint = 0x300;
 #[inline]
 unsafe extern "C" fn literal_init(probs: *mut probability, lc: u32, lp: u32) {
     let coders: size_t = (LITERAL_CODER_SIZE << lc.wrapping_add(lp)) as size_t;
@@ -203,21 +197,7 @@ unsafe extern "C" fn literal_init(probs: *mut probability, lc: u32, lp: u32) {
         i += 1;
     }
 }
-pub const LEN_LOW_BITS: u32 = 3;
-pub const LEN_LOW_SYMBOLS: u32 = 1 << LEN_LOW_BITS;
-pub const LEN_MID_BITS: u32 = 3;
-pub const LEN_MID_SYMBOLS: u32 = 1 << LEN_MID_BITS;
-pub const LEN_HIGH_BITS: u32 = 8;
-pub const LEN_HIGH_SYMBOLS: u32 = 1 << LEN_HIGH_BITS;
-pub const DIST_STATES: u32 = 4;
-pub const DIST_SLOT_BITS: u32 = 6;
 pub const DIST_SLOTS: u32 = 1 << DIST_SLOT_BITS;
-pub const DIST_MODEL_START: u32 = 4;
-pub const DIST_MODEL_END: u32 = 14;
-pub const FULL_DISTANCES_BITS: u32 = DIST_MODEL_END / 2;
-pub const FULL_DISTANCES: u32 = 1 << FULL_DISTANCES_BITS;
-pub const ALIGN_BITS: u32 = 4;
-pub const ALIGN_SIZE: u32 = 1 << ALIGN_BITS;
 #[inline]
 unsafe extern "C" fn rc_read_init(
     rc: *mut lzma_range_decoder,

@@ -312,6 +312,62 @@ pub const OPTS: u32 = 1 << 12;
 pub const LZ_DICT_REPEAT_MAX: u32 = 288;
 pub const LZ_DICT_INIT_POS: u32 = 2 * LZ_DICT_REPEAT_MAX;
 
+// LZMA encoder/decoder shared constants
+pub const ALIGN_BITS: u32 = 4;
+pub const ALIGN_SIZE: u32 = 1 << ALIGN_BITS;
+pub const ALIGN_MASK: u32 = ALIGN_SIZE - 1;
+pub const DIST_STATES: u32 = 4;
+pub const DIST_SLOT_BITS: u32 = 6;
+pub const DIST_MODEL_START: u32 = 4;
+pub const DIST_MODEL_END: u32 = 14;
+pub const FULL_DISTANCES_BITS: u32 = DIST_MODEL_END / 2;
+pub const FULL_DISTANCES: u32 = 1 << FULL_DISTANCES_BITS;
+pub const STATES: u32 = 12;
+pub const LITERAL_CODER_SIZE: c_uint = 0x300;
+pub const LEN_LOW_BITS: u32 = 3;
+pub const LEN_LOW_SYMBOLS: u32 = 1 << LEN_LOW_BITS;
+pub const LEN_MID_BITS: u32 = 3;
+pub const LEN_MID_SYMBOLS: u32 = 1 << LEN_MID_BITS;
+pub const LEN_HIGH_BITS: u32 = 8;
+pub const LEN_HIGH_SYMBOLS: u32 = 1 << LEN_HIGH_BITS;
+pub const RC_MOVE_BITS: u32 = 5;
+pub const RC_SHIFT_BITS: u32 = 8;
+pub const RC_TOP_BITS: u32 = 24;
+pub const RC_TOP_VALUE: c_uint = 1u32 << RC_TOP_BITS;
+pub const RC_MOVE_REDUCING_BITS: u32 = 4;
+pub const LZMA2_CHUNK_MAX: c_uint = 1u32 << 16;
+pub const LZMA2_HEADER_UNCOMPRESSED: u32 = 3;
+
+// LZ encoder constants
+pub const HASH_2_SIZE: c_uint = 1u32 << 10;
+pub const HASH_3_SIZE: c_uint = 1u32 << 16;
+
+// Stream/block constants
+pub const LZMA_CHECK_SIZE_MAX: u32 = 64;
+pub const LZMA_STREAM_FLAGS_SIZE: u32 = 2;
+pub const LZMA_PRESET_EXTREME: c_uint = 1u32 << 31;
+pub const COMPRESSED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX
+    .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as u64)
+    .wrapping_sub(LZMA_CHECK_SIZE_MAX as u64);
+
+// Thread-related constants
+pub const MYTHREAD_RET_VALUE: *mut c_void = core::ptr::null_mut();
+pub const SIG_SETMASK: c_int = 3;
+
+// Type aliases used in multiple modules
+pub type worker_state = c_uint;
+pub type lzma_index_iter_mode = c_uint;
+
+// Worker state constants
+pub const THR_IDLE: worker_state = 0;
+pub const THR_RUN: worker_state = 1;
+
+// Index iterator mode constants
+pub const LZMA_INDEX_ITER_ANY: lzma_index_iter_mode = 0;
+pub const LZMA_INDEX_ITER_STREAM: lzma_index_iter_mode = 1;
+pub const LZMA_INDEX_ITER_BLOCK: lzma_index_iter_mode = 2;
+pub const LZMA_INDEX_ITER_NONEMPTY_BLOCK: lzma_index_iter_mode = 3;
+
 // lzma_block struct (shared across 12 modules)
 #[derive(Copy, Clone)]
 #[repr(C)]

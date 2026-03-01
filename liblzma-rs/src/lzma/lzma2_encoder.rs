@@ -115,10 +115,8 @@ unsafe extern "C" fn get_dist_slot(dist: u32) -> u32 {
     (lzma_fastpos[(dist >> 0 + 2 * (FASTPOS_BITS - 1)) as usize] as u32)
         .wrapping_add((2 * (0 + 2 * (FASTPOS_BITS - 1))) as u32)
 }
-pub const LZMA2_CHUNK_MAX: c_uint = 1u32 << 16;
 pub const LZMA2_UNCOMPRESSED_MAX: c_uint = 1u32 << 21;
 pub const LZMA2_HEADER_MAX: u32 = 6;
-pub const LZMA2_HEADER_UNCOMPRESSED: u32 = 3;
 unsafe extern "C" fn lzma2_header_lzma(coder: *mut lzma_lzma2_coder) {
     let mut pos: size_t = 0;
     if (*coder).need_properties {

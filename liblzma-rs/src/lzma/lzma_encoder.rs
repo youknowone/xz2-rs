@@ -140,7 +140,6 @@ extern "C" fn write32le(buf: *mut u8, num: u32) {
         *buf.offset(3) = (num >> 24) as u8;
     }
 }
-pub const LZMA2_CHUNK_MAX: c_uint = 1u32 << 16;
 #[inline]
 extern "C" fn mf_get_hash_bytes(match_finder: lzma_match_finder) -> u32 {
     match_finder as u32 & 0xf
@@ -152,11 +151,6 @@ unsafe extern "C" fn mf_skip(mf: *mut lzma_mf, amount: u32) {
         (*mf).read_ahead = (*mf).read_ahead.wrapping_add(amount);
     }
 }
-pub const RC_SHIFT_BITS: u32 = 8;
-pub const RC_TOP_BITS: u32 = 24;
-pub const RC_TOP_VALUE: c_uint = 1u32 << RC_TOP_BITS;
-pub const RC_MOVE_BITS: u32 = 5;
-pub const RC_MOVE_REDUCING_BITS: u32 = 4;
 #[inline]
 extern "C" fn rc_bit_price(prob: probability, bit: u32) -> u32 {
     unsafe {
@@ -467,8 +461,6 @@ unsafe extern "C" fn is_lclppb_valid(options: *const lzma_options_lzma) -> bool 
         && (*options).lc.wrapping_add((*options).lp) <= LZMA_LCLP_MAX
         && (*options).pb <= LZMA_PB_MAX
 }
-pub const STATES: u32 = 12;
-pub const LITERAL_CODER_SIZE: c_uint = 0x300;
 #[inline]
 unsafe extern "C" fn literal_init(probs: *mut probability, lc: u32, lp: u32) {
     let coders: size_t = (LITERAL_CODER_SIZE << lc.wrapping_add(lp)) as size_t;
@@ -478,23 +470,8 @@ unsafe extern "C" fn literal_init(probs: *mut probability, lc: u32, lp: u32) {
         i += 1;
     }
 }
-pub const LEN_LOW_BITS: u32 = 3;
-pub const LEN_LOW_SYMBOLS: u32 = 1 << LEN_LOW_BITS;
-pub const LEN_MID_BITS: u32 = 3;
-pub const LEN_MID_SYMBOLS: u32 = 1 << LEN_MID_BITS;
-pub const LEN_HIGH_BITS: u32 = 8;
-pub const LEN_HIGH_SYMBOLS: u32 = 1 << LEN_HIGH_BITS;
 pub const LEN_SYMBOLS: u32 = LEN_LOW_SYMBOLS + LEN_MID_SYMBOLS + LEN_HIGH_SYMBOLS;
 pub const MATCH_LEN_MAX: u32 = MATCH_LEN_MIN + LEN_SYMBOLS - 1;
-pub const DIST_STATES: u32 = 4;
-pub const DIST_SLOT_BITS: u32 = 6;
-pub const DIST_MODEL_START: u32 = 4;
-pub const DIST_MODEL_END: u32 = 14;
-pub const FULL_DISTANCES_BITS: u32 = DIST_MODEL_END / 2;
-pub const FULL_DISTANCES: u32 = 1 << FULL_DISTANCES_BITS;
-pub const ALIGN_BITS: u32 = 4;
-pub const ALIGN_SIZE: u32 = 1 << ALIGN_BITS;
-pub const ALIGN_MASK: u32 = ALIGN_SIZE - 1;
 #[inline]
 unsafe extern "C" fn get_dist_slot(dist: u32) -> u32 {
     if dist < 1 << FASTPOS_BITS + (0 + 0 * (FASTPOS_BITS - 1)) {

@@ -67,7 +67,6 @@ pub const LZMA_DICT_SIZE_DEFAULT: c_uint = 1u32 << 23;
 pub const LZMA_LCLP_MIN: u32 = 0;
 pub const LZMA_PB_MIN: u32 = 0;
 pub const LZMA_PRESET_DEFAULT: c_uint = 6;
-pub const LZMA_PRESET_EXTREME: c_uint = 1u32 << 31;
 pub const STR_ALLOC_SIZE: u32 = 800;
 unsafe extern "C" fn str_init(str: *mut lzma_str, allocator: *const lzma_allocator) -> lzma_ret {
     (*str).buf = lzma_alloc(STR_ALLOC_SIZE as size_t, allocator) as *mut c_char;

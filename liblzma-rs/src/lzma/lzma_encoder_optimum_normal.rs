@@ -106,7 +106,6 @@ unsafe extern "C" fn mf_skip(mf: *mut lzma_mf, amount: u32) {
         (*mf).read_ahead = (*mf).read_ahead.wrapping_add(amount);
     }
 }
-pub const RC_MOVE_REDUCING_BITS: u32 = 4;
 pub const RC_BIT_PRICE_SHIFT_BITS: u32 = 4;
 pub const RC_INFINITY_PRICE: c_uint = 1u32 << 30;
 #[inline]
@@ -171,15 +170,6 @@ unsafe extern "C" fn rc_bittree_reverse_price(
 extern "C" fn rc_direct_price(bits: u32) -> u32 {
     bits << RC_BIT_PRICE_SHIFT_BITS
 }
-pub const DIST_STATES: u32 = 4;
-pub const DIST_SLOT_BITS: u32 = 6;
-pub const DIST_MODEL_START: u32 = 4;
-pub const DIST_MODEL_END: u32 = 14;
-pub const FULL_DISTANCES_BITS: u32 = DIST_MODEL_END / 2;
-pub const FULL_DISTANCES: u32 = 1 << FULL_DISTANCES_BITS;
-pub const ALIGN_BITS: u32 = 4;
-pub const ALIGN_SIZE: u32 = 1 << ALIGN_BITS;
-pub const ALIGN_MASK: u32 = ALIGN_SIZE - 1;
 #[inline]
 unsafe extern "C" fn get_dist_slot(dist: u32) -> u32 {
     if dist < 1 << FASTPOS_BITS + (0 + 0 * (FASTPOS_BITS - 1)) {

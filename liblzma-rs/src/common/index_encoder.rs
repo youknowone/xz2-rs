@@ -66,11 +66,6 @@ pub struct C2RustUnnamed_2 {
     pub reserved_vli3: lzma_vli,
     pub reserved_vli4: lzma_vli,
 }
-pub type lzma_index_iter_mode = c_uint;
-pub const LZMA_INDEX_ITER_NONEMPTY_BLOCK: lzma_index_iter_mode = 3;
-pub const LZMA_INDEX_ITER_BLOCK: lzma_index_iter_mode = 2;
-pub const LZMA_INDEX_ITER_STREAM: lzma_index_iter_mode = 1;
-pub const LZMA_INDEX_ITER_ANY: lzma_index_iter_mode = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_coder {

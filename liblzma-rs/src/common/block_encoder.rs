@@ -1,5 +1,5 @@
 use crate::types::*;
-use core::ffi::{c_uint, c_ulonglong, c_void};
+use core::ffi::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_block_coder {
@@ -15,11 +15,6 @@ pub type C2RustUnnamed_2 = c_uint;
 pub const SEQ_CHECK: C2RustUnnamed_2 = 2;
 pub const SEQ_PADDING: C2RustUnnamed_2 = 1;
 pub const SEQ_CODE: C2RustUnnamed_2 = 0;
-pub const LZMA_CHECK_SIZE_MAX: u32 = 64;
-pub const COMPRESSED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX
-    .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as u64)
-    .wrapping_sub(LZMA_CHECK_SIZE_MAX as u64)
-    & !3;
 unsafe extern "C" fn block_encode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
