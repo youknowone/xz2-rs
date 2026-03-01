@@ -508,7 +508,7 @@ unsafe extern "C" fn worker_encode(
             out_size,
             action,
         );
-        if !(ret == LZMA_OK && *out_pos < out_size) {
+        if ret != LZMA_OK || *out_pos >= out_size {
             break;
         }
     }

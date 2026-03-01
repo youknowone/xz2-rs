@@ -937,28 +937,28 @@ pub unsafe extern "C" fn lzma_index_iter_next(
                     if stream.is_null() {
                         return true as lzma_bool;
                     }
-                    if !(mode >= LZMA_INDEX_ITER_BLOCK && (*stream).groups.leftmost.is_null()) {
+                    if mode < LZMA_INDEX_ITER_BLOCK || !(*stream).groups.leftmost.is_null() {
                         break;
                     }
                 }
                 group = (*stream).groups.leftmost as *const index_group;
             }
         }
-        if !(mode == LZMA_INDEX_ITER_NONEMPTY_BLOCK) {
+        if mode != LZMA_INDEX_ITER_NONEMPTY_BLOCK {
             break;
         }
         if record == 0 {
-            if !((*group).node.uncompressed_base
-                == (*(&raw const (*group).records as *const index_record).offset(0))
-                    .uncompressed_sum)
+            if (*group).node.uncompressed_base
+                != (*(&raw const (*group).records as *const index_record).offset(0))
+                    .uncompressed_sum
             {
                 break;
             }
-        } else if !((*(&raw const (*group).records as *const index_record)
+        } else if (*(&raw const (*group).records as *const index_record)
             .offset(record.wrapping_sub(1) as isize))
         .uncompressed_sum
-            == (*(&raw const (*group).records as *const index_record).offset(record as isize))
-                .uncompressed_sum)
+            != (*(&raw const (*group).records as *const index_record).offset(record as isize))
+                .uncompressed_sum
         {
             break;
         }

@@ -127,7 +127,7 @@ pub unsafe extern "C" fn lzma_block_header_encode(
             return ret__1;
         }
         filter_count += 1;
-        if !((*(*block).filters.offset(filter_count as isize)).id != LZMA_VLI_UNKNOWN) {
+        if (*(*block).filters.offset(filter_count as isize)).id == LZMA_VLI_UNKNOWN {
             break;
         }
     }

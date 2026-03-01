@@ -465,8 +465,8 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
                 (*thr).progress_out = (*thr).out_pos;
                 in_filled = (*thr).in_filled;
                 partial_update_enabled = (*thr).partial_update_enabled;
-                if !(in_filled == (*thr).in_pos
-                    && !(partial_update_enabled && !(*thr).partial_update_started))
+                if in_filled != (*thr).in_pos
+                    || (partial_update_enabled && !(*thr).partial_update_started)
                 {
                     break;
                 }
@@ -779,7 +779,7 @@ unsafe extern "C" fn read_output_and_wait(
                             ),
                         );
                     }
-                    if !(ret == LZMA_STREAM_END) {
+                    if ret != LZMA_STREAM_END {
                         break;
                     }
                 }
@@ -845,7 +845,7 @@ unsafe extern "C" fn read_output_and_wait(
                     } else {
                         mythread_cond_wait(&raw mut (*coder).cond, &raw mut (*coder).mutex);
                     }
-                    if !(ret == LZMA_OK) {
+                    if ret != LZMA_OK {
                         break;
                     }
                 }
