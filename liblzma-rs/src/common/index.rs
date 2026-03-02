@@ -32,60 +32,6 @@ pub struct index_tree_node_s {
 pub type lzma_index = lzma_index_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_index_iter {
-    pub stream: C2RustUnnamed_1,
-    pub block: C2RustUnnamed_0,
-    pub internal: [C2RustUnnamed; 6],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub p: *const c_void,
-    pub s: size_t,
-    pub v: lzma_vli,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_0 {
-    pub number_in_file: lzma_vli,
-    pub compressed_file_offset: lzma_vli,
-    pub uncompressed_file_offset: lzma_vli,
-    pub number_in_stream: lzma_vli,
-    pub compressed_stream_offset: lzma_vli,
-    pub uncompressed_stream_offset: lzma_vli,
-    pub uncompressed_size: lzma_vli,
-    pub unpadded_size: lzma_vli,
-    pub total_size: lzma_vli,
-    pub reserved_vli1: lzma_vli,
-    pub reserved_vli2: lzma_vli,
-    pub reserved_vli3: lzma_vli,
-    pub reserved_vli4: lzma_vli,
-    pub reserved_ptr1: *const c_void,
-    pub reserved_ptr2: *const c_void,
-    pub reserved_ptr3: *const c_void,
-    pub reserved_ptr4: *const c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_1 {
-    pub flags: *const lzma_stream_flags,
-    pub reserved_ptr1: *const c_void,
-    pub reserved_ptr2: *const c_void,
-    pub reserved_ptr3: *const c_void,
-    pub number: lzma_vli,
-    pub block_count: lzma_vli,
-    pub compressed_offset: lzma_vli,
-    pub uncompressed_offset: lzma_vli,
-    pub compressed_size: lzma_vli,
-    pub uncompressed_size: lzma_vli,
-    pub padding: lzma_vli,
-    pub reserved_vli1: lzma_vli,
-    pub reserved_vli2: lzma_vli,
-    pub reserved_vli3: lzma_vli,
-    pub reserved_vli4: lzma_vli,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct index_record {
     pub uncompressed_sum: lzma_vli,
     pub unpadded_sum: lzma_vli,
@@ -111,14 +57,14 @@ pub struct index_stream {
     pub stream_flags: lzma_stream_flags,
     pub stream_padding: lzma_vli,
 }
-pub const ITER_METHOD_NORMAL: C2RustUnnamed_3 = 0;
-pub const ITER_METHOD: C2RustUnnamed_2 = 4;
-pub const ITER_RECORD: C2RustUnnamed_2 = 3;
-pub const ITER_GROUP: C2RustUnnamed_2 = 2;
-pub const ITER_STREAM: C2RustUnnamed_2 = 1;
-pub const ITER_INDEX: C2RustUnnamed_2 = 0;
-pub const ITER_METHOD_LEFTMOST: C2RustUnnamed_3 = 2;
-pub const ITER_METHOD_NEXT: C2RustUnnamed_3 = 1;
+pub const ITER_METHOD_NORMAL: iter_method = 0;
+pub const ITER_METHOD: iter_mode = 4;
+pub const ITER_RECORD: iter_mode = 3;
+pub const ITER_GROUP: iter_mode = 2;
+pub const ITER_STREAM: iter_mode = 1;
+pub const ITER_INDEX: iter_mode = 0;
+pub const ITER_METHOD_LEFTMOST: iter_method = 2;
+pub const ITER_METHOD_NEXT: iter_method = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct index_cat_info {
@@ -128,8 +74,8 @@ pub struct index_cat_info {
     pub stream_number_add: u32,
     pub streams: *mut index_tree,
 }
-pub type C2RustUnnamed_2 = c_uint;
-pub type C2RustUnnamed_3 = c_uint;
+pub type iter_mode = c_uint;
+pub type iter_method = c_uint;
 #[inline]
 extern "C" fn bsr32(n: u32) -> u32 {
     n.leading_zeros() as i32 as u32 ^ 31
@@ -297,7 +243,6 @@ pub unsafe extern "C" fn lzma_index_init(allocator: *const lzma_allocator) -> *m
     index_tree_append(&raw mut (*i).streams, &raw mut (*s).node);
     i
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocator) {
     if !i.is_null() {
         index_tree_end(
@@ -416,7 +361,6 @@ pub unsafe extern "C" fn lzma_index_file_size(i: *const lzma_index) -> lzma_vli 
         (*s).stream_padding,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_index_uncompressed_size(i: *const lzma_index) -> lzma_vli {
     (*i).uncompressed_size
 }

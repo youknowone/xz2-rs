@@ -51,7 +51,7 @@ pub struct lzma_lz_options {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzma2_coder {
-    pub sequence: C2RustUnnamed,
+    pub sequence: lzma2_encoder_seq,
     pub lzma: *mut c_void,
     pub opt_cur: lzma_options_lzma,
     pub need_properties: bool,
@@ -62,12 +62,12 @@ pub struct lzma_lzma2_coder {
     pub buf_pos: size_t,
     pub buf: [u8; 65542],
 }
-pub type C2RustUnnamed = c_uint;
-pub const SEQ_UNCOMPRESSED_COPY: C2RustUnnamed = 4;
-pub const SEQ_UNCOMPRESSED_HEADER: C2RustUnnamed = 3;
-pub const SEQ_LZMA_COPY: C2RustUnnamed = 2;
-pub const SEQ_LZMA_ENCODE: C2RustUnnamed = 1;
-pub const SEQ_INIT: C2RustUnnamed = 0;
+pub type lzma2_encoder_seq = c_uint;
+pub const SEQ_UNCOMPRESSED_COPY: lzma2_encoder_seq = 4;
+pub const SEQ_UNCOMPRESSED_HEADER: lzma2_encoder_seq = 3;
+pub const SEQ_LZMA_COPY: lzma2_encoder_seq = 2;
+pub const SEQ_LZMA_ENCODE: lzma2_encoder_seq = 1;
+pub const SEQ_INIT: lzma2_encoder_seq = 0;
 #[inline]
 unsafe extern "C" fn mf_unencoded(mf: *const lzma_mf) -> u32 {
     (*mf)

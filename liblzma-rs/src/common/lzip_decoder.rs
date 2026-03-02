@@ -3,7 +3,7 @@ use core::ffi::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzip_coder {
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: lzip_decoder_seq,
     pub version: u32,
     pub crc32: u32,
     pub uncompressed_size: u64,
@@ -19,13 +19,13 @@ pub struct lzma_lzip_coder {
     pub options: lzma_options_lzma,
     pub lzma_decoder: lzma_next_coder,
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_MEMBER_FOOTER: C2RustUnnamed_0 = 5;
-pub const SEQ_LZMA_STREAM: C2RustUnnamed_0 = 4;
-pub const SEQ_CODER_INIT: C2RustUnnamed_0 = 3;
-pub const SEQ_DICT_SIZE: C2RustUnnamed_0 = 2;
-pub const SEQ_VERSION: C2RustUnnamed_0 = 1;
-pub const SEQ_ID_STRING: C2RustUnnamed_0 = 0;
+pub type lzip_decoder_seq = c_uint;
+pub const SEQ_MEMBER_FOOTER: lzip_decoder_seq = 5;
+pub const SEQ_LZMA_STREAM: lzip_decoder_seq = 4;
+pub const SEQ_CODER_INIT: lzip_decoder_seq = 3;
+pub const SEQ_DICT_SIZE: lzip_decoder_seq = 2;
+pub const SEQ_VERSION: lzip_decoder_seq = 1;
+pub const SEQ_ID_STRING: lzip_decoder_seq = 0;
 #[inline]
 extern "C" fn read64le(buf: *const u8) -> u64 {
     return unsafe {
@@ -383,7 +383,6 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     (*coder).pos = 0;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzip_decoder(
     strm: *mut lzma_stream,
     memlimit: u64,

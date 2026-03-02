@@ -5,7 +5,6 @@ extern "C" {
     fn lzma_sha256_update(buf: *const u8, size: size_t, check: *mut lzma_check_state);
     fn lzma_sha256_finish(check: *mut lzma_check_state);
 }
-#[no_mangle]
 pub extern "C" fn lzma_check_is_supported(type_0: lzma_check) -> lzma_bool {
     if type_0 > LZMA_CHECK_ID_MAX {
         return false as lzma_bool;
@@ -30,7 +29,6 @@ pub extern "C" fn lzma_check_is_supported(type_0: lzma_check) -> lzma_bool {
     ];
     available_checks[type_0 as usize]
 }
-#[no_mangle]
 pub extern "C" fn lzma_check_size(type_0: lzma_check) -> u32 {
     if type_0 > LZMA_CHECK_ID_MAX {
         return UINT32_MAX;

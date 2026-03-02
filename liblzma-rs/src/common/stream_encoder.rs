@@ -3,7 +3,7 @@ use core::ffi::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_coder {
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: stream_encoder_seq,
     pub block_encoder_is_initialized: bool,
     pub block_encoder: lzma_next_coder,
     pub block_options: lzma_block,
@@ -14,13 +14,13 @@ pub struct lzma_stream_coder {
     pub buffer_size: size_t,
     pub buffer: [u8; LZMA_BLOCK_HEADER_SIZE_MAX as usize],
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_STREAM_FOOTER: C2RustUnnamed_0 = 5;
-pub const SEQ_INDEX_ENCODE: C2RustUnnamed_0 = 4;
-pub const SEQ_BLOCK_ENCODE: C2RustUnnamed_0 = 3;
-pub const SEQ_BLOCK_HEADER: C2RustUnnamed_0 = 2;
-pub const SEQ_BLOCK_INIT: C2RustUnnamed_0 = 1;
-pub const SEQ_STREAM_HEADER: C2RustUnnamed_0 = 0;
+pub type stream_encoder_seq = c_uint;
+pub const SEQ_STREAM_FOOTER: stream_encoder_seq = 5;
+pub const SEQ_INDEX_ENCODE: stream_encoder_seq = 4;
+pub const SEQ_BLOCK_ENCODE: stream_encoder_seq = 3;
+pub const SEQ_BLOCK_HEADER: stream_encoder_seq = 2;
+pub const SEQ_BLOCK_INIT: stream_encoder_seq = 1;
+pub const SEQ_STREAM_HEADER: stream_encoder_seq = 0;
 unsafe extern "C" fn block_encoder_init(
     coder: *mut lzma_stream_coder,
     allocator: *const lzma_allocator,
@@ -405,7 +405,6 @@ unsafe extern "C" fn stream_encoder_init(
     (*coder).buffer_size = LZMA_STREAM_HEADER_SIZE as size_t;
     stream_encoder_update(coder as *mut c_void, allocator, filters, core::ptr::null())
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_stream_encoder(
     strm: *mut lzma_stream,
     filters: *const lzma_filter,

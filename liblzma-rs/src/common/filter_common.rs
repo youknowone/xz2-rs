@@ -1,99 +1,99 @@
 use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed {
+pub struct filter_features {
     pub id: lzma_vli,
     pub options_size: size_t,
     pub non_last_ok: bool,
     pub last_ok: bool,
     pub changes_size: bool,
 }
-static mut features: [C2RustUnnamed; 13] = [
-    C2RustUnnamed {
+static mut features: [filter_features; 13] = [
+    filter_features {
         id: LZMA_FILTER_LZMA1,
         options_size: core::mem::size_of::<lzma_options_lzma>(),
         non_last_ok: false,
         last_ok: true,
         changes_size: true,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_LZMA1EXT,
         options_size: core::mem::size_of::<lzma_options_lzma>(),
         non_last_ok: false,
         last_ok: true,
         changes_size: true,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_LZMA2,
         options_size: core::mem::size_of::<lzma_options_lzma>(),
         non_last_ok: false,
         last_ok: true,
         changes_size: true,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_X86,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_POWERPC,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_IA64,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_ARM,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_ARMTHUMB,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_ARM64,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_SPARC,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_RISCV,
         options_size: core::mem::size_of::<lzma_options_bcj>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_FILTER_DELTA,
         options_size: core::mem::size_of::<lzma_options_delta>(),
         non_last_ok: true,
         last_ok: false,
         changes_size: false,
     },
-    C2RustUnnamed {
+    filter_features {
         id: LZMA_VLI_UNKNOWN,
         options_size: 0,
         non_last_ok: false,
@@ -101,7 +101,6 @@ static mut features: [C2RustUnnamed; 13] = [
         changes_size: false,
     },
 ];
-#[no_mangle]
 pub unsafe extern "C" fn lzma_filters_copy(
     src: *const lzma_filter,
     real_dest: *mut lzma_filter,

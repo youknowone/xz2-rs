@@ -37,7 +37,7 @@ pub type lzma_stream_coder = lzma_stream_coder_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_coder_s {
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: stream_encoder_mt_seq,
     pub block_size: size_t,
     pub filters: [lzma_filter; 5],
     pub filters_cache: [lzma_filter; 5],
@@ -60,11 +60,11 @@ pub struct lzma_stream_coder_s {
     pub mutex: mythread_mutex,
     pub cond: mythread_cond,
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_STREAM_FOOTER: C2RustUnnamed_0 = 3;
-pub const SEQ_INDEX: C2RustUnnamed_0 = 2;
-pub const SEQ_BLOCK: C2RustUnnamed_0 = 1;
-pub const SEQ_STREAM_HEADER: C2RustUnnamed_0 = 0;
+pub type stream_encoder_mt_seq = c_uint;
+pub const SEQ_STREAM_FOOTER: stream_encoder_mt_seq = 3;
+pub const SEQ_INDEX: stream_encoder_mt_seq = 2;
+pub const SEQ_BLOCK: stream_encoder_mt_seq = 1;
+pub const SEQ_STREAM_HEADER: stream_encoder_mt_seq = 0;
 pub const THR_EXIT: worker_state = 4;
 pub const THR_STOP: worker_state = 3;
 pub const THR_FINISH: worker_state = 2;
@@ -1247,7 +1247,6 @@ unsafe extern "C" fn stream_encoder_mt_init(
     (*coder).progress_out = LZMA_STREAM_HEADER_SIZE as u64;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_stream_encoder_mt(
     strm: *mut lzma_stream,
     options: *const lzma_mt,
@@ -1271,7 +1270,6 @@ pub unsafe extern "C" fn lzma_stream_encoder_mt(
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_stream_encoder_mt_memusage(options: *const lzma_mt) -> u64 {
     let mut easy: lzma_options_easy = lzma_options_easy {
         filters: [lzma_filter {

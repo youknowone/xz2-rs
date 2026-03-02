@@ -1065,7 +1065,6 @@ unsafe extern "C" fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mu
     }
     !crc
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_crc64(buf: *const u8, size: size_t, crc: u64) -> u64 {
     lzma_crc64_generic(buf, size, crc)
 }

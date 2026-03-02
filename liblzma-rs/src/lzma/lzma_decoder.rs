@@ -50,37 +50,37 @@ pub struct lzma_lzma1_decoder {
     pub literal_mask: u32,
     pub uncompressed_size: lzma_vli,
     pub allow_eopm: bool,
-    pub sequence: C2RustUnnamed,
+    pub sequence: lzma_decoder_seq,
     pub probs: *mut probability,
     pub symbol: u32,
     pub limit: u32,
     pub offset: u32,
     pub len: u32,
 }
-pub type C2RustUnnamed = c_uint;
-pub const SEQ_COPY: C2RustUnnamed = 22;
-pub const SEQ_REP_LEN_BITTREE: C2RustUnnamed = 21;
-pub const SEQ_REP_LEN_CHOICE2: C2RustUnnamed = 20;
-pub const SEQ_REP_LEN_CHOICE: C2RustUnnamed = 19;
-pub const SEQ_IS_REP2: C2RustUnnamed = 18;
-pub const SEQ_IS_REP1: C2RustUnnamed = 17;
-pub const SEQ_IS_REP0_LONG: C2RustUnnamed = 16;
-pub const SEQ_SHORTREP: C2RustUnnamed = 15;
-pub const SEQ_IS_REP0: C2RustUnnamed = 14;
-pub const SEQ_EOPM: C2RustUnnamed = 13;
-pub const SEQ_ALIGN: C2RustUnnamed = 12;
-pub const SEQ_DIRECT: C2RustUnnamed = 11;
-pub const SEQ_DIST_MODEL: C2RustUnnamed = 10;
-pub const SEQ_DIST_SLOT: C2RustUnnamed = 9;
-pub const SEQ_MATCH_LEN_BITTREE: C2RustUnnamed = 8;
-pub const SEQ_MATCH_LEN_CHOICE2: C2RustUnnamed = 7;
-pub const SEQ_MATCH_LEN_CHOICE: C2RustUnnamed = 6;
-pub const SEQ_IS_REP: C2RustUnnamed = 5;
-pub const SEQ_LITERAL_WRITE: C2RustUnnamed = 4;
-pub const SEQ_LITERAL_MATCHED: C2RustUnnamed = 3;
-pub const SEQ_LITERAL: C2RustUnnamed = 2;
-pub const SEQ_IS_MATCH: C2RustUnnamed = 1;
-pub const SEQ_NORMALIZE: C2RustUnnamed = 0;
+pub type lzma_decoder_seq = c_uint;
+pub const SEQ_COPY: lzma_decoder_seq = 22;
+pub const SEQ_REP_LEN_BITTREE: lzma_decoder_seq = 21;
+pub const SEQ_REP_LEN_CHOICE2: lzma_decoder_seq = 20;
+pub const SEQ_REP_LEN_CHOICE: lzma_decoder_seq = 19;
+pub const SEQ_IS_REP2: lzma_decoder_seq = 18;
+pub const SEQ_IS_REP1: lzma_decoder_seq = 17;
+pub const SEQ_IS_REP0_LONG: lzma_decoder_seq = 16;
+pub const SEQ_SHORTREP: lzma_decoder_seq = 15;
+pub const SEQ_IS_REP0: lzma_decoder_seq = 14;
+pub const SEQ_EOPM: lzma_decoder_seq = 13;
+pub const SEQ_ALIGN: lzma_decoder_seq = 12;
+pub const SEQ_DIRECT: lzma_decoder_seq = 11;
+pub const SEQ_DIST_MODEL: lzma_decoder_seq = 10;
+pub const SEQ_DIST_SLOT: lzma_decoder_seq = 9;
+pub const SEQ_MATCH_LEN_BITTREE: lzma_decoder_seq = 8;
+pub const SEQ_MATCH_LEN_CHOICE2: lzma_decoder_seq = 7;
+pub const SEQ_MATCH_LEN_CHOICE: lzma_decoder_seq = 6;
+pub const SEQ_IS_REP: lzma_decoder_seq = 5;
+pub const SEQ_LITERAL_WRITE: lzma_decoder_seq = 4;
+pub const SEQ_LITERAL_MATCHED: lzma_decoder_seq = 3;
+pub const SEQ_LITERAL: lzma_decoder_seq = 2;
+pub const SEQ_IS_MATCH: lzma_decoder_seq = 1;
+pub const SEQ_NORMALIZE: lzma_decoder_seq = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_range_decoder {

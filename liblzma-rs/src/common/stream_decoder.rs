@@ -3,7 +3,7 @@ use core::ffi::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_coder {
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: stream_decoder_seq,
     pub block_decoder: lzma_next_coder,
     pub block_options: lzma_block,
     pub stream_flags: lzma_stream_flags,
@@ -19,14 +19,14 @@ pub struct lzma_stream_coder {
     pub pos: size_t,
     pub buffer: [u8; LZMA_BLOCK_HEADER_SIZE_MAX as usize],
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_STREAM_PADDING: C2RustUnnamed_0 = 6;
-pub const SEQ_STREAM_FOOTER: C2RustUnnamed_0 = 5;
-pub const SEQ_INDEX: C2RustUnnamed_0 = 4;
-pub const SEQ_BLOCK_RUN: C2RustUnnamed_0 = 3;
-pub const SEQ_BLOCK_INIT: C2RustUnnamed_0 = 2;
-pub const SEQ_BLOCK_HEADER: C2RustUnnamed_0 = 1;
-pub const SEQ_STREAM_HEADER: C2RustUnnamed_0 = 0;
+pub type stream_decoder_seq = c_uint;
+pub const SEQ_STREAM_PADDING: stream_decoder_seq = 6;
+pub const SEQ_STREAM_FOOTER: stream_decoder_seq = 5;
+pub const SEQ_INDEX: stream_decoder_seq = 4;
+pub const SEQ_BLOCK_RUN: stream_decoder_seq = 3;
+pub const SEQ_BLOCK_INIT: stream_decoder_seq = 2;
+pub const SEQ_BLOCK_HEADER: stream_decoder_seq = 1;
+pub const SEQ_STREAM_HEADER: stream_decoder_seq = 0;
 unsafe extern "C" fn stream_decoder_reset(
     coder: *mut lzma_stream_coder,
     allocator: *const lzma_allocator,
@@ -450,7 +450,6 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
     (*coder).first_stream = true;
     stream_decoder_reset(coder, allocator)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_stream_decoder(
     strm: *mut lzma_stream,
     memlimit: u64,

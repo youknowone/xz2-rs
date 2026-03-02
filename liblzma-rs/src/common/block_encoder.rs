@@ -5,16 +5,16 @@ use core::ffi::{c_uint, c_void};
 pub struct lzma_block_coder {
     pub next: lzma_next_coder,
     pub block: *mut lzma_block,
-    pub sequence: C2RustUnnamed_2,
+    pub sequence: block_encoder_seq,
     pub compressed_size: lzma_vli,
     pub uncompressed_size: lzma_vli,
     pub pos: size_t,
     pub check: lzma_check_state,
 }
-pub type C2RustUnnamed_2 = c_uint;
-pub const SEQ_CHECK: C2RustUnnamed_2 = 2;
-pub const SEQ_PADDING: C2RustUnnamed_2 = 1;
-pub const SEQ_CODE: C2RustUnnamed_2 = 0;
+pub type block_encoder_seq = c_uint;
+pub const SEQ_CHECK: block_encoder_seq = 2;
+pub const SEQ_PADDING: block_encoder_seq = 1;
+pub const SEQ_CODE: block_encoder_seq = 0;
 unsafe extern "C" fn block_encode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,

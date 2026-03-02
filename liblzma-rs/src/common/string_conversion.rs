@@ -5,7 +5,7 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed {
+pub struct filter_codec_def {
     pub name: [c_char; 12],
     pub opts_size: u32,
     pub id: lzma_vli,
@@ -24,17 +24,17 @@ pub struct option_map {
     pub type_0: u8,
     pub flags: u8,
     pub offset: u16,
-    pub u: C2RustUnnamed_0,
+    pub u: option_value,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_0 {
+pub union option_value {
     pub map: *const name_value_map,
-    pub range: C2RustUnnamed_1,
+    pub range: option_value_range,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_1 {
+pub struct option_value_range {
     pub min: u32,
     pub max: u32,
 }
@@ -44,17 +44,17 @@ pub struct name_value_map {
     pub name: [c_char; 12],
     pub value: u32,
 }
-pub const OPTMAP_TYPE_LZMA_MATCH_FINDER: C2RustUnnamed_2 = 2;
-pub const OPTMAP_TYPE_LZMA_MODE: C2RustUnnamed_2 = 1;
-pub const OPTMAP_TYPE_LZMA_PRESET: C2RustUnnamed_2 = 3;
+pub const OPTMAP_TYPE_LZMA_MATCH_FINDER: option_type = 2;
+pub const OPTMAP_TYPE_LZMA_MODE: option_type = 1;
+pub const OPTMAP_TYPE_LZMA_PRESET: option_type = 3;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_str {
     pub buf: *mut c_char,
     pub pos: size_t,
 }
-pub type C2RustUnnamed_2 = u8;
-pub const OPTMAP_TYPE_UINT32: C2RustUnnamed_2 = 0;
+pub type option_type = u8;
+pub const OPTMAP_TYPE_UINT32: option_type = 0;
 pub const INT_MAX: c_int = c_int::MAX;
 pub const LZMA_STR_ALL_FILTERS: c_uint = 0x1;
 pub const LZMA_STR_NO_VALIDATION: c_uint = 0x2;
@@ -159,8 +159,8 @@ static mut bcj_optmap: [option_map; 1] = unsafe {
         type_0: 0,
         flags: (OPTMAP_NO_STRFY_ZERO | OPTMAP_USE_BYTE_SUFFIX) as u8,
         offset: 0,
-        u: C2RustUnnamed_0 {
-            range: C2RustUnnamed_1 {
+        u: option_value {
+            range: option_value_range {
                 min: 0,
                 max: UINT32_MAX,
             },
@@ -189,8 +189,8 @@ static mut delta_optmap: [option_map; 1] = unsafe {
         type_0: 0,
         flags: 0,
         offset: 4,
-        u: C2RustUnnamed_0 {
-            range: C2RustUnnamed_1 {
+        u: option_value {
+            range: option_value_range {
                 min: LZMA_DELTA_DIST_MIN,
                 max: LZMA_DELTA_DIST_MAX,
             },
@@ -308,7 +308,7 @@ static mut lzma12_optmap: [option_map; 9] = [option_map {
     type_0: 0,
     flags: 0,
     offset: 0,
-    u: C2RustUnnamed_0 {
+    u: option_value {
         map: core::ptr::null(),
     },
 }; 9];
@@ -334,9 +334,9 @@ unsafe extern "C" fn parse_lzma12(
     }
     core::ptr::null()
 }
-static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
+static mut filter_name_map: [filter_codec_def; 11] = unsafe {
     [
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lzma1\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_lzma>() as u32,
             id: LZMA_FILTER_LZMA1,
@@ -353,7 +353,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 5,
             allow_null: false,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lzma2\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_lzma>() as u32,
             id: LZMA_FILTER_LZMA2,
@@ -370,7 +370,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 2,
             allow_null: false,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"x86\0\0\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
             id: LZMA_FILTER_X86,
@@ -387,7 +387,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 1,
             allow_null: true,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"arm\0\0\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
             id: LZMA_FILTER_ARM,
@@ -404,7 +404,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 1,
             allow_null: true,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"armthumb\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
             id: LZMA_FILTER_ARMTHUMB,
@@ -421,7 +421,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 1,
             allow_null: true,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"arm64\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
             id: LZMA_FILTER_ARM64,
@@ -438,7 +438,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 1,
             allow_null: true,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"riscv\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
             id: LZMA_FILTER_RISCV,
@@ -455,7 +455,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 1,
             allow_null: true,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"powerpc\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
             id: LZMA_FILTER_POWERPC,
@@ -472,7 +472,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 1,
             allow_null: true,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"ia64\0\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
             id: LZMA_FILTER_IA64,
@@ -489,7 +489,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 1,
             allow_null: true,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"sparc\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
             id: LZMA_FILTER_SPARC,
@@ -506,7 +506,7 @@ static mut filter_name_map: [C2RustUnnamed; 11] = unsafe {
             strfy_decoder: 1,
             allow_null: true,
         },
-        C2RustUnnamed {
+        filter_codec_def {
             name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"delta\0\0\0\0\0\0\0"),
             opts_size: core::mem::size_of::<lzma_options_delta>() as u32,
             id: LZMA_FILTER_DELTA,
@@ -721,12 +721,12 @@ unsafe extern "C" fn parse_filter(
     }
     let mut i: size_t = 0;
     while i
-        < (core::mem::size_of::<[C2RustUnnamed; 11]>())
-            .wrapping_div(core::mem::size_of::<C2RustUnnamed>())
+        < (core::mem::size_of::<[filter_codec_def; 11]>())
+            .wrapping_div(core::mem::size_of::<filter_codec_def>())
     {
         if memcmp(
             *str as *const c_void,
-            &raw const (*(&raw const filter_name_map as *const C2RustUnnamed).offset(i as isize))
+            &raw const (*(&raw const filter_name_map as *const filter_codec_def).offset(i as isize))
                 .name as *const c_void,
             name_len,
         ) == 0
@@ -1055,8 +1055,8 @@ pub unsafe extern "C" fn lzma_str_from_filters(
         }
         let mut j: size_t = 0;
         loop {
-            if j == (core::mem::size_of::<[C2RustUnnamed; 11]>())
-                .wrapping_div(core::mem::size_of::<C2RustUnnamed>())
+            if j == (core::mem::size_of::<[filter_codec_def; 11]>())
+                .wrapping_div(core::mem::size_of::<filter_codec_def>())
             {
                 str_free(&raw mut dest, allocator);
                 return LZMA_OPTIONS_ERROR;
@@ -1064,7 +1064,7 @@ pub unsafe extern "C" fn lzma_str_from_filters(
             if filter_name_map[j as usize].id == (*filters.offset(i as isize)).id {
                 str_append_str(
                     &raw mut dest,
-                    &raw const (*(&raw const filter_name_map as *const C2RustUnnamed)
+                    &raw const (*(&raw const filter_name_map as *const filter_codec_def)
                         .offset(j as isize))
                     .name as *const c_char,
                 );
@@ -1140,8 +1140,8 @@ pub unsafe extern "C" fn lzma_str_list_filters(
     let mut first_filter_printed: bool = false;
     let mut i: size_t = 0;
     while i
-        < (core::mem::size_of::<[C2RustUnnamed; 11]>())
-            .wrapping_div(core::mem::size_of::<C2RustUnnamed>())
+        < (core::mem::size_of::<[filter_codec_def; 11]>())
+            .wrapping_div(core::mem::size_of::<filter_codec_def>())
     {
         if filter_id == LZMA_VLI_UNKNOWN || filter_id == filter_name_map[i as usize].id {
             if filter_name_map[i as usize].id < LZMA_FILTER_RESERVED_START
@@ -1157,7 +1157,7 @@ pub unsafe extern "C" fn lzma_str_list_filters(
                 }
                 str_append_str(
                     &raw mut dest,
-                    &raw const (*(&raw const filter_name_map as *const C2RustUnnamed)
+                    &raw const (*(&raw const filter_name_map as *const filter_codec_def)
                         .offset(i as isize))
                     .name as *const c_char,
                 );
@@ -1231,7 +1231,7 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: OPTMAP_TYPE_LZMA_PRESET,
             flags: 0,
             offset: 0,
-            u: C2RustUnnamed_0 {
+            u: option_value {
                 map: core::ptr::null(),
             },
         },
@@ -1240,8 +1240,8 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: 0,
             flags: OPTMAP_USE_BYTE_SUFFIX,
             offset: 0,
-            u: C2RustUnnamed_0 {
-                range: C2RustUnnamed_1 {
+            u: option_value {
+                range: option_value_range {
                     min: LZMA_DICT_SIZE_MIN as u32,
                     max: (1u32 << 30).wrapping_add(1 << 29),
                 },
@@ -1252,8 +1252,8 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: 0,
             flags: 0,
             offset: 20,
-            u: C2RustUnnamed_0 {
-                range: C2RustUnnamed_1 {
+            u: option_value {
+                range: option_value_range {
                     min: LZMA_LCLP_MIN,
                     max: LZMA_LCLP_MAX,
                 },
@@ -1264,8 +1264,8 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: 0,
             flags: 0,
             offset: 24,
-            u: C2RustUnnamed_0 {
-                range: C2RustUnnamed_1 {
+            u: option_value {
+                range: option_value_range {
                     min: LZMA_LCLP_MIN,
                     max: LZMA_LCLP_MAX,
                 },
@@ -1276,8 +1276,8 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: 0,
             flags: 0,
             offset: 28,
-            u: C2RustUnnamed_0 {
-                range: C2RustUnnamed_1 {
+            u: option_value {
+                range: option_value_range {
                     min: LZMA_PB_MIN,
                     max: LZMA_PB_MAX,
                 },
@@ -1288,7 +1288,7 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: OPTMAP_TYPE_LZMA_MODE,
             flags: OPTMAP_USE_NAME_VALUE_MAP,
             offset: 32,
-            u: C2RustUnnamed_0 {
+            u: option_value {
                 map: &raw const lzma12_mode_map as *const name_value_map,
             },
         },
@@ -1297,8 +1297,8 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: 0,
             flags: 0,
             offset: 36,
-            u: C2RustUnnamed_0 {
-                range: C2RustUnnamed_1 { min: 2, max: 273 },
+            u: option_value {
+                range: option_value_range { min: 2, max: 273 },
             },
         },
         option_map {
@@ -1306,7 +1306,7 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: OPTMAP_TYPE_LZMA_MATCH_FINDER,
             flags: OPTMAP_USE_NAME_VALUE_MAP,
             offset: 40,
-            u: C2RustUnnamed_0 {
+            u: option_value {
                 map: &raw const lzma12_mf_map as *const name_value_map,
             },
         },
@@ -1315,8 +1315,8 @@ unsafe extern "C" fn run_static_initializers() {
             type_0: 0,
             flags: 0,
             offset: 44,
-            u: C2RustUnnamed_0 {
-                range: C2RustUnnamed_1 {
+            u: option_value {
+                range: option_value_range {
                     min: 0,
                     max: UINT32_MAX,
                 },
