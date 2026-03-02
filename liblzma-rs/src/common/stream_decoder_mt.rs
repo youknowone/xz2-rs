@@ -15,7 +15,7 @@ extern "C" {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_coder {
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: stream_decoder_mt_seq,
     pub block_decoder: lzma_next_coder,
     pub block_options: lzma_block,
     pub filters: [lzma_filter; 5],
@@ -78,19 +78,19 @@ pub struct worker_thread {
     pub thread_id: mythread,
 }
 pub const THR_EXIT: worker_state = 2;
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_ERROR: C2RustUnnamed_0 = 11;
-pub const SEQ_STREAM_PADDING: C2RustUnnamed_0 = 10;
-pub const SEQ_STREAM_FOOTER: C2RustUnnamed_0 = 9;
-pub const SEQ_INDEX_DECODE: C2RustUnnamed_0 = 8;
-pub const SEQ_INDEX_WAIT_OUTPUT: C2RustUnnamed_0 = 7;
-pub const SEQ_BLOCK_DIRECT_RUN: C2RustUnnamed_0 = 6;
-pub const SEQ_BLOCK_DIRECT_INIT: C2RustUnnamed_0 = 5;
-pub const SEQ_BLOCK_THR_RUN: C2RustUnnamed_0 = 4;
-pub const SEQ_BLOCK_THR_INIT: C2RustUnnamed_0 = 3;
-pub const SEQ_BLOCK_INIT: C2RustUnnamed_0 = 2;
-pub const SEQ_BLOCK_HEADER: C2RustUnnamed_0 = 1;
-pub const SEQ_STREAM_HEADER: C2RustUnnamed_0 = 0;
+pub type stream_decoder_mt_seq = c_uint;
+pub const SEQ_ERROR: stream_decoder_mt_seq = 11;
+pub const SEQ_STREAM_PADDING: stream_decoder_mt_seq = 10;
+pub const SEQ_STREAM_FOOTER: stream_decoder_mt_seq = 9;
+pub const SEQ_INDEX_DECODE: stream_decoder_mt_seq = 8;
+pub const SEQ_INDEX_WAIT_OUTPUT: stream_decoder_mt_seq = 7;
+pub const SEQ_BLOCK_DIRECT_RUN: stream_decoder_mt_seq = 6;
+pub const SEQ_BLOCK_DIRECT_INIT: stream_decoder_mt_seq = 5;
+pub const SEQ_BLOCK_THR_RUN: stream_decoder_mt_seq = 4;
+pub const SEQ_BLOCK_THR_INIT: stream_decoder_mt_seq = 3;
+pub const SEQ_BLOCK_INIT: stream_decoder_mt_seq = 2;
+pub const SEQ_BLOCK_HEADER: stream_decoder_mt_seq = 1;
+pub const SEQ_STREAM_HEADER: stream_decoder_mt_seq = 0;
 unsafe extern "C" fn worker_enable_partial_update(thr_ptr: *mut c_void) {
     let thr: *mut worker_thread = thr_ptr as *mut worker_thread;
     let mut mythread_i_325: c_uint = 0;

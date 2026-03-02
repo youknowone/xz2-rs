@@ -8,17 +8,17 @@ extern "C" {
         picky: bool,
     ) -> lzma_ret;
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_FINISH: C2RustUnnamed_0 = 2;
-pub const SEQ_CODE: C2RustUnnamed_0 = 1;
-pub const SEQ_INIT: C2RustUnnamed_0 = 0;
+pub type auto_decoder_seq = c_uint;
+pub const SEQ_FINISH: auto_decoder_seq = 2;
+pub const SEQ_CODE: auto_decoder_seq = 1;
+pub const SEQ_INIT: auto_decoder_seq = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_auto_coder {
     pub next: lzma_next_coder,
     pub memlimit: u64,
     pub flags: u32,
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: auto_decoder_seq,
 }
 unsafe extern "C" fn auto_decode(
     coder_ptr: *mut c_void,

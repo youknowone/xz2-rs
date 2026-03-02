@@ -23,7 +23,7 @@ extern "C" {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_file_info_coder {
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: file_info_seq,
     pub file_cur_pos: u64,
     pub file_target_pos: u64,
     pub file_size: u64,
@@ -42,15 +42,15 @@ pub struct lzma_file_info_coder {
     pub temp_size: size_t,
     pub temp: [u8; 8192],
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_HEADER_COMPARE: C2RustUnnamed_0 = 7;
-pub const SEQ_HEADER_DECODE: C2RustUnnamed_0 = 6;
-pub const SEQ_INDEX_DECODE: C2RustUnnamed_0 = 5;
-pub const SEQ_INDEX_INIT: C2RustUnnamed_0 = 4;
-pub const SEQ_FOOTER: C2RustUnnamed_0 = 3;
-pub const SEQ_PADDING_DECODE: C2RustUnnamed_0 = 2;
-pub const SEQ_PADDING_SEEK: C2RustUnnamed_0 = 1;
-pub const SEQ_MAGIC_BYTES: C2RustUnnamed_0 = 0;
+pub type file_info_seq = c_uint;
+pub const SEQ_HEADER_COMPARE: file_info_seq = 7;
+pub const SEQ_HEADER_DECODE: file_info_seq = 6;
+pub const SEQ_INDEX_DECODE: file_info_seq = 5;
+pub const SEQ_INDEX_INIT: file_info_seq = 4;
+pub const SEQ_FOOTER: file_info_seq = 3;
+pub const SEQ_PADDING_DECODE: file_info_seq = 2;
+pub const SEQ_PADDING_SEEK: file_info_seq = 1;
+pub const SEQ_MAGIC_BYTES: file_info_seq = 0;
 unsafe extern "C" fn fill_temp(
     coder: *mut lzma_file_info_coder,
     in_0: *const u8,
@@ -484,7 +484,7 @@ unsafe extern "C" fn file_info_decode(
                     SEQ_PADDING_DECODE
                 } else {
                     SEQ_PADDING_SEEK
-                }) as C2RustUnnamed_0;
+                }) as file_info_seq;
             }
             _ => {}
         }

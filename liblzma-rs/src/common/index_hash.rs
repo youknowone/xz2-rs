@@ -3,7 +3,7 @@ use core::ffi::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_hash_s {
-    pub sequence: C2RustUnnamed_1,
+    pub sequence: index_hash_seq,
     pub blocks: lzma_index_hash_info,
     pub records: lzma_index_hash_info,
     pub remaining: lzma_vli,
@@ -21,14 +21,14 @@ pub struct lzma_index_hash_info {
     pub index_list_size: lzma_vli,
     pub check: lzma_check_state,
 }
-pub type C2RustUnnamed_1 = c_uint;
-pub const SEQ_CRC32: C2RustUnnamed_1 = 6;
-pub const SEQ_PADDING: C2RustUnnamed_1 = 5;
-pub const SEQ_PADDING_INIT: C2RustUnnamed_1 = 4;
-pub const SEQ_UNCOMPRESSED: C2RustUnnamed_1 = 3;
-pub const SEQ_UNPADDED: C2RustUnnamed_1 = 2;
-pub const SEQ_COUNT: C2RustUnnamed_1 = 1;
-pub const SEQ_BLOCK: C2RustUnnamed_1 = 0;
+pub type index_hash_seq = c_uint;
+pub const SEQ_CRC32: index_hash_seq = 6;
+pub const SEQ_PADDING: index_hash_seq = 5;
+pub const SEQ_PADDING_INIT: index_hash_seq = 4;
+pub const SEQ_UNCOMPRESSED: index_hash_seq = 3;
+pub const SEQ_UNPADDED: index_hash_seq = 2;
+pub const SEQ_COUNT: index_hash_seq = 1;
+pub const SEQ_BLOCK: index_hash_seq = 0;
 pub type lzma_index_hash = lzma_index_hash_s;
 #[inline]
 extern "C" fn index_stream_size(
@@ -184,7 +184,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                     SEQ_PADDING_INIT
                 } else {
                     SEQ_UNPADDED
-                }) as C2RustUnnamed_1;
+                }) as index_hash_seq;
                 continue;
             }
             2 | 3 => {
@@ -225,7 +225,7 @@ pub unsafe extern "C" fn lzma_index_hash_decode(
                         SEQ_PADDING_INIT
                     } else {
                         SEQ_UNPADDED
-                    }) as C2RustUnnamed_1;
+                    }) as index_hash_seq;
                 }
                 continue;
             }

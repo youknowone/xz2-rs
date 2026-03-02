@@ -6,7 +6,7 @@ extern "C" {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_coder {
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: index_decoder_seq,
     pub memlimit: u64,
     pub index: *mut lzma_index,
     pub index_ptr: *mut *mut lzma_index,
@@ -16,15 +16,15 @@ pub struct lzma_index_coder {
     pub pos: size_t,
     pub crc32: u32,
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_CRC32: C2RustUnnamed_0 = 7;
-pub const SEQ_PADDING: C2RustUnnamed_0 = 6;
-pub const SEQ_PADDING_INIT: C2RustUnnamed_0 = 5;
-pub const SEQ_UNCOMPRESSED: C2RustUnnamed_0 = 4;
-pub const SEQ_UNPADDED: C2RustUnnamed_0 = 3;
-pub const SEQ_MEMUSAGE: C2RustUnnamed_0 = 2;
-pub const SEQ_COUNT: C2RustUnnamed_0 = 1;
-pub const SEQ_INDICATOR: C2RustUnnamed_0 = 0;
+pub type index_decoder_seq = c_uint;
+pub const SEQ_CRC32: index_decoder_seq = 7;
+pub const SEQ_PADDING: index_decoder_seq = 6;
+pub const SEQ_PADDING_INIT: index_decoder_seq = 5;
+pub const SEQ_UNCOMPRESSED: index_decoder_seq = 4;
+pub const SEQ_UNPADDED: index_decoder_seq = 3;
+pub const SEQ_MEMUSAGE: index_decoder_seq = 2;
+pub const SEQ_COUNT: index_decoder_seq = 1;
+pub const SEQ_INDICATOR: index_decoder_seq = 0;
 unsafe extern "C" fn index_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
@@ -103,7 +103,7 @@ unsafe extern "C" fn index_decode(
                         SEQ_PADDING_INIT
                     } else {
                         SEQ_UNPADDED
-                    }) as C2RustUnnamed_0;
+                    }) as index_decoder_seq;
                 }
                 continue;
             }
@@ -150,7 +150,7 @@ unsafe extern "C" fn index_decode(
                         SEQ_PADDING_INIT
                     } else {
                         SEQ_UNPADDED
-                    }) as C2RustUnnamed_0;
+                    }) as index_decoder_seq;
                     continue;
                 }
             }

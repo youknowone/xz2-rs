@@ -4,7 +4,7 @@ use core::ffi::{c_uint, c_void};
 #[repr(C)]
 pub struct lzma_alone_coder {
     pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: alone_decoder_seq,
     pub picky: bool,
     pub pos: size_t,
     pub uncompressed_size: lzma_vli,
@@ -12,12 +12,12 @@ pub struct lzma_alone_coder {
     pub memusage: u64,
     pub options: lzma_options_lzma,
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_CODE: C2RustUnnamed_0 = 4;
-pub const SEQ_CODER_INIT: C2RustUnnamed_0 = 3;
-pub const SEQ_UNCOMPRESSED_SIZE: C2RustUnnamed_0 = 2;
-pub const SEQ_DICTIONARY_SIZE: C2RustUnnamed_0 = 1;
-pub const SEQ_PROPERTIES: C2RustUnnamed_0 = 0;
+pub type alone_decoder_seq = c_uint;
+pub const SEQ_CODE: alone_decoder_seq = 4;
+pub const SEQ_CODER_INIT: alone_decoder_seq = 3;
+pub const SEQ_UNCOMPRESSED_SIZE: alone_decoder_seq = 2;
+pub const SEQ_DICTIONARY_SIZE: alone_decoder_seq = 1;
+pub const SEQ_PROPERTIES: alone_decoder_seq = 0;
 unsafe extern "C" fn alone_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,

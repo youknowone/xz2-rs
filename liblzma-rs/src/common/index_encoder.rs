@@ -7,75 +7,21 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_index_iter {
-    pub stream: C2RustUnnamed_2,
-    pub block: C2RustUnnamed_1,
-    pub internal: [C2RustUnnamed_0; 6],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub p: *const c_void,
-    pub s: size_t,
-    pub v: lzma_vli,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_1 {
-    pub number_in_file: lzma_vli,
-    pub compressed_file_offset: lzma_vli,
-    pub uncompressed_file_offset: lzma_vli,
-    pub number_in_stream: lzma_vli,
-    pub compressed_stream_offset: lzma_vli,
-    pub uncompressed_stream_offset: lzma_vli,
-    pub uncompressed_size: lzma_vli,
-    pub unpadded_size: lzma_vli,
-    pub total_size: lzma_vli,
-    pub reserved_vli1: lzma_vli,
-    pub reserved_vli2: lzma_vli,
-    pub reserved_vli3: lzma_vli,
-    pub reserved_vli4: lzma_vli,
-    pub reserved_ptr1: *const c_void,
-    pub reserved_ptr2: *const c_void,
-    pub reserved_ptr3: *const c_void,
-    pub reserved_ptr4: *const c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_2 {
-    pub flags: *const lzma_stream_flags,
-    pub reserved_ptr1: *const c_void,
-    pub reserved_ptr2: *const c_void,
-    pub reserved_ptr3: *const c_void,
-    pub number: lzma_vli,
-    pub block_count: lzma_vli,
-    pub compressed_offset: lzma_vli,
-    pub uncompressed_offset: lzma_vli,
-    pub compressed_size: lzma_vli,
-    pub uncompressed_size: lzma_vli,
-    pub padding: lzma_vli,
-    pub reserved_vli1: lzma_vli,
-    pub reserved_vli2: lzma_vli,
-    pub reserved_vli3: lzma_vli,
-    pub reserved_vli4: lzma_vli,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct lzma_index_coder {
-    pub sequence: C2RustUnnamed_3,
+    pub sequence: index_encoder_seq,
     pub index: *const lzma_index,
     pub iter: lzma_index_iter,
     pub pos: size_t,
     pub crc32: u32,
 }
-pub type C2RustUnnamed_3 = c_uint;
-pub const SEQ_CRC32: C2RustUnnamed_3 = 6;
-pub const SEQ_PADDING: C2RustUnnamed_3 = 5;
-pub const SEQ_NEXT: C2RustUnnamed_3 = 4;
-pub const SEQ_UNCOMPRESSED: C2RustUnnamed_3 = 3;
-pub const SEQ_UNPADDED: C2RustUnnamed_3 = 2;
-pub const SEQ_COUNT: C2RustUnnamed_3 = 1;
-pub const SEQ_INDICATOR: C2RustUnnamed_3 = 0;
+pub type index_encoder_seq = c_uint;
+pub const SEQ_CRC32: index_encoder_seq = 6;
+pub const SEQ_PADDING: index_encoder_seq = 5;
+pub const SEQ_NEXT: index_encoder_seq = 4;
+pub const SEQ_UNCOMPRESSED: index_encoder_seq = 3;
+pub const SEQ_UNPADDED: index_encoder_seq = 2;
+pub const SEQ_COUNT: index_encoder_seq = 1;
+pub const SEQ_INDICATOR: index_encoder_seq = 0;
 unsafe extern "C" fn index_encode(
     coder_ptr: *mut c_void,
     _allocator: *const lzma_allocator,
@@ -300,7 +246,7 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
         sequence: SEQ_INDICATOR,
         index: core::ptr::null(),
         iter: lzma_index_iter {
-            stream: C2RustUnnamed_2 {
+            stream: lzma_index_iter_stream {
                 flags: core::ptr::null(),
                 reserved_ptr1: core::ptr::null(),
                 reserved_ptr2: core::ptr::null(),
@@ -317,7 +263,7 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
                 reserved_vli3: 0,
                 reserved_vli4: 0,
             },
-            block: C2RustUnnamed_1 {
+            block: lzma_index_iter_block {
                 number_in_file: 0,
                 compressed_file_offset: 0,
                 uncompressed_file_offset: 0,
@@ -336,7 +282,7 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
                 reserved_ptr3: core::ptr::null(),
                 reserved_ptr4: core::ptr::null(),
             },
-            internal: [C2RustUnnamed_0 {
+            internal: [lzma_index_iter_internal {
                 p: core::ptr::null(),
             }; 6],
         },

@@ -4,13 +4,13 @@ use core::ffi::{c_uint, c_void};
 #[repr(C)]
 pub struct lzma_alone_coder {
     pub next: lzma_next_coder,
-    pub sequence: C2RustUnnamed_0,
+    pub sequence: alone_encoder_seq,
     pub header_pos: size_t,
     pub header: [u8; 13],
 }
-pub type C2RustUnnamed_0 = c_uint;
-pub const SEQ_CODE: C2RustUnnamed_0 = 1;
-pub const SEQ_HEADER: C2RustUnnamed_0 = 0;
+pub type alone_encoder_seq = c_uint;
+pub const SEQ_CODE: alone_encoder_seq = 1;
+pub const SEQ_HEADER: alone_encoder_seq = 0;
 pub const ALONE_HEADER_SIZE: u32 = 1 + 4 + 8;
 unsafe extern "C" fn alone_encode(
     coder_ptr: *mut c_void,

@@ -15,11 +15,11 @@ pub struct lzma_coder {
     pub next: lzma_next_coder,
     pub next_finished: bool,
     pub this_finished: bool,
-    pub temp: C2RustUnnamed,
+    pub temp: lz_decoder_temp_buf,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed {
+pub struct lz_decoder_temp_buf {
     pub pos: size_t,
     pub size: size_t,
     pub buffer: [u8; LZMA_BUFFER_SIZE as usize],

@@ -115,7 +115,7 @@ pub struct lzma_options_lzma {
     pub reserved_ptr2: *mut c_void,
 }
 
-// lzma_internal sequence enum (C2RustUnnamed in lzma_internal_s)
+// lzma_internal sequence enum
 pub type lzma_internal_sequence = c_uint;
 pub const ISEQ_RUN: lzma_internal_sequence = 0;
 pub const ISEQ_SYNC_FLUSH: lzma_internal_sequence = 1;
@@ -367,6 +367,61 @@ pub const LZMA_INDEX_ITER_ANY: lzma_index_iter_mode = 0;
 pub const LZMA_INDEX_ITER_STREAM: lzma_index_iter_mode = 1;
 pub const LZMA_INDEX_ITER_BLOCK: lzma_index_iter_mode = 2;
 pub const LZMA_INDEX_ITER_NONEMPTY_BLOCK: lzma_index_iter_mode = 3;
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_index_iter {
+    pub stream: lzma_index_iter_stream,
+    pub block: lzma_index_iter_block,
+    pub internal: [lzma_index_iter_internal; 6],
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union lzma_index_iter_internal {
+    pub p: *const c_void,
+    pub s: size_t,
+    pub v: lzma_vli,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_index_iter_block {
+    pub number_in_file: lzma_vli,
+    pub compressed_file_offset: lzma_vli,
+    pub uncompressed_file_offset: lzma_vli,
+    pub number_in_stream: lzma_vli,
+    pub compressed_stream_offset: lzma_vli,
+    pub uncompressed_stream_offset: lzma_vli,
+    pub uncompressed_size: lzma_vli,
+    pub unpadded_size: lzma_vli,
+    pub total_size: lzma_vli,
+    pub reserved_vli1: lzma_vli,
+    pub reserved_vli2: lzma_vli,
+    pub reserved_vli3: lzma_vli,
+    pub reserved_vli4: lzma_vli,
+    pub reserved_ptr1: *const c_void,
+    pub reserved_ptr2: *const c_void,
+    pub reserved_ptr3: *const c_void,
+    pub reserved_ptr4: *const c_void,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct lzma_index_iter_stream {
+    pub flags: *const lzma_stream_flags,
+    pub reserved_ptr1: *const c_void,
+    pub reserved_ptr2: *const c_void,
+    pub reserved_ptr3: *const c_void,
+    pub number: lzma_vli,
+    pub block_count: lzma_vli,
+    pub compressed_offset: lzma_vli,
+    pub uncompressed_offset: lzma_vli,
+    pub compressed_size: lzma_vli,
+    pub uncompressed_size: lzma_vli,
+    pub padding: lzma_vli,
+    pub reserved_vli1: lzma_vli,
+    pub reserved_vli2: lzma_vli,
+    pub reserved_vli3: lzma_vli,
+    pub reserved_vli4: lzma_vli,
+}
 
 // lzma_block struct (shared across 12 modules)
 #[derive(Copy, Clone)]
