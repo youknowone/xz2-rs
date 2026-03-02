@@ -265,7 +265,7 @@ extern "C" fn mythread_condtime_set(
 ) {
     unsafe {
         (*condtime).tv_sec = timeout_ms.wrapping_div(1000) as time_t as __darwin_time_t;
-        (*condtime).tv_nsec = timeout_ms.wrapping_rem(1000).wrapping_mul(1000000) as c_long;
+        (*condtime).tv_nsec = timeout_ms.wrapping_rem(1000).wrapping_mul(1_000_000) as c_long;
         let mut now: timespec = timespec {
             tv_sec: 0,
             tv_nsec: 0,
@@ -273,8 +273,8 @@ extern "C" fn mythread_condtime_set(
         let _ret: c_int = clock_gettime((*cond).clk_id, &raw mut now);
         (*condtime).tv_sec += now.tv_sec;
         (*condtime).tv_nsec += now.tv_nsec;
-        if (*condtime).tv_nsec >= 1000000000 as c_long {
-            (*condtime).tv_nsec -= 1000000000 as c_long;
+        if (*condtime).tv_nsec >= 1_000_000_000 {
+            (*condtime).tv_nsec -= 1_000_000_000;
             (*condtime).tv_sec += 1;
         }
     }
