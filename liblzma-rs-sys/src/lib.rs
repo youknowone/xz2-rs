@@ -256,7 +256,11 @@ pub unsafe extern "C" fn lzma_stream_encoder(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_stream_decoder(strm: *mut lzma_stream, memlimit: u64, flags: u32) -> lzma_ret {
+pub unsafe extern "C" fn lzma_stream_decoder(
+    strm: *mut lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> lzma_ret {
     liblzma_rs::common::stream_decoder::lzma_stream_decoder(strm.cast(), memlimit, flags)
 }
 
@@ -278,12 +282,20 @@ pub unsafe extern "C" fn lzma_alone_decoder(strm: *mut lzma_stream, memlimit: u6
 // --- Auto/lzip decoder ---
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_auto_decoder(strm: *mut lzma_stream, memlimit: u64, flags: u32) -> lzma_ret {
+pub unsafe extern "C" fn lzma_auto_decoder(
+    strm: *mut lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> lzma_ret {
     liblzma_rs::common::auto_decoder::lzma_auto_decoder(strm.cast(), memlimit, flags)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_lzip_decoder(strm: *mut lzma_stream, memlimit: u64, flags: u32) -> lzma_ret {
+pub unsafe extern "C" fn lzma_lzip_decoder(
+    strm: *mut lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> lzma_ret {
     liblzma_rs::common::lzip_decoder::lzma_lzip_decoder(strm.cast(), memlimit, flags)
 }
 
@@ -374,17 +386,26 @@ pub unsafe extern "C" fn lzma_raw_decoder_memusage(filters: *const lzma_filter) 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_raw_encoder(strm: *mut lzma_stream, filters: *const lzma_filter) -> lzma_ret {
+pub unsafe extern "C" fn lzma_raw_encoder(
+    strm: *mut lzma_stream,
+    filters: *const lzma_filter,
+) -> lzma_ret {
     liblzma_rs::common::filter_encoder::lzma_raw_encoder(strm.cast(), filters.cast())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_raw_decoder(strm: *mut lzma_stream, filters: *const lzma_filter) -> lzma_ret {
+pub unsafe extern "C" fn lzma_raw_decoder(
+    strm: *mut lzma_stream,
+    filters: *const lzma_filter,
+) -> lzma_ret {
     liblzma_rs::common::filter_decoder::lzma_raw_decoder(strm.cast(), filters.cast())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_filters_update(strm: *mut lzma_stream, filters: *const lzma_filter) -> lzma_ret {
+pub unsafe extern "C" fn lzma_filters_update(
+    strm: *mut lzma_stream,
+    filters: *const lzma_filter,
+) -> lzma_ret {
     liblzma_rs::common::filter_encoder::lzma_filters_update(strm.cast(), filters.cast())
 }
 
@@ -437,12 +458,18 @@ pub unsafe extern "C" fn lzma_raw_buffer_decode(
 // --- Properties ---
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_properties_size(size: *mut u32, filter: *const lzma_filter) -> lzma_ret {
+pub unsafe extern "C" fn lzma_properties_size(
+    size: *mut u32,
+    filter: *const lzma_filter,
+) -> lzma_ret {
     liblzma_rs::common::filter_encoder::lzma_properties_size(size, filter.cast())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_properties_encode(filter: *const lzma_filter, props: *mut u8) -> lzma_ret {
+pub unsafe extern "C" fn lzma_properties_encode(
+    filter: *const lzma_filter,
+    props: *mut u8,
+) -> lzma_ret {
     liblzma_rs::common::filter_encoder::lzma_properties_encode(filter.cast(), props)
 }
 
@@ -469,7 +496,10 @@ pub unsafe extern "C" fn lzma_mt_block_size(filters: *const lzma_filter) -> u64 
 // --- LZMA preset ---
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_lzma_preset(options: *mut lzma_options_lzma, preset: u32) -> lzma_bool {
+pub unsafe extern "C" fn lzma_lzma_preset(
+    options: *mut lzma_options_lzma,
+    preset: u32,
+) -> lzma_bool {
     liblzma_rs::lzma::lzma_encoder_presets::lzma_lzma_preset(options.cast(), preset)
 }
 
@@ -625,13 +655,19 @@ pub struct lzma_mt {
 
 #[cfg(feature = "parallel")]
 #[no_mangle]
-pub unsafe extern "C" fn lzma_stream_encoder_mt(strm: *mut lzma_stream, options: *const lzma_mt) -> lzma_ret {
+pub unsafe extern "C" fn lzma_stream_encoder_mt(
+    strm: *mut lzma_stream,
+    options: *const lzma_mt,
+) -> lzma_ret {
     liblzma_rs::common::stream_mt::lzma_stream_encoder_mt(strm.cast(), options.cast())
 }
 
 #[cfg(feature = "parallel")]
 #[no_mangle]
-pub unsafe extern "C" fn lzma_stream_decoder_mt(strm: *mut lzma_stream, options: *const lzma_mt) -> lzma_ret {
+pub unsafe extern "C" fn lzma_stream_decoder_mt(
+    strm: *mut lzma_stream,
+    options: *const lzma_mt,
+) -> lzma_ret {
     liblzma_rs::common::stream_mt::lzma_stream_decoder_mt(strm.cast(), options.cast())
 }
 
