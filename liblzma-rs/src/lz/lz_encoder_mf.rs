@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_uint;
 extern "C" {
     static lzma_crc32_table: [[u32; 256]; 8];
 }

@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_void;
 unsafe extern "C" fn ia64_code(
     _simple: *mut c_void,
     now_pos: u32,

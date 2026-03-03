@@ -1,3 +1,5 @@
+#![cfg(not(target_family = "wasm"))]
+
 use std::ptr;
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};

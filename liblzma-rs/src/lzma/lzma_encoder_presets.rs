@@ -1,5 +1,4 @@
 use crate::types::*;
-use core::ffi::c_uint;
 pub const LZMA_LC_DEFAULT: u32 = 3;
 pub const LZMA_LP_DEFAULT: u32 = 0;
 pub const LZMA_PB_DEFAULT: u32 = 2;
