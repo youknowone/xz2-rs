@@ -120,30 +120,47 @@ pub const LZMA_STREAM_HEADER_SIZE: u32 = liblzma_rs::types::LZMA_STREAM_HEADER_S
 // Functions
 // =========================================================================
 //
-// Functions defined in common::common use the canonical lzma_stream type,
-// so they can be re-exported directly. Functions in other modules use
-// module-local struct definitions that are structurally identical (#[repr(C)])
-// but nominally different, so we provide thin wrappers with pointer casts.
+// Functions are exposed as thin C ABI wrappers from this crate.
+// Wrappers cast to canonical Rust implementation types and forward the call.
 
-// --- Direct re-exports (canonical types from common::common) ---
-pub use liblzma_rs::common::common::{lzma_code, lzma_end, lzma_memlimit_get, lzma_memlimit_set};
+// --- Common stream API ---
+
+#[no_mangle]
+pub unsafe extern "C" fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret {
+    liblzma_rs::common::common::lzma_code(strm.cast(), action)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn lzma_end(strm: *mut lzma_stream) {
+    liblzma_rs::common::common::lzma_end(strm.cast())
+}
+
+#[no_mangle]
+pub extern "C" fn lzma_memlimit_get(strm: *const lzma_stream) -> u64 {
+    liblzma_rs::common::common::lzma_memlimit_get(strm.cast())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn lzma_memlimit_set(strm: *mut lzma_stream, new_memlimit: u64) -> lzma_ret {
+    liblzma_rs::common::common::lzma_memlimit_set(strm.cast(), new_memlimit)
+}
 
 // --- Version ---
 
-#[inline]
-pub unsafe fn lzma_version_number() -> u32 {
+#[no_mangle]
+pub unsafe extern "C" fn lzma_version_number() -> u32 {
     liblzma_rs::common::common::lzma_version_number()
 }
 
-#[inline]
-pub unsafe fn lzma_version_string() -> *const c_char {
+#[no_mangle]
+pub unsafe extern "C" fn lzma_version_string() -> *const c_char {
     liblzma_rs::common::common::lzma_version_string()
 }
 
 // --- Progress / memusage ---
 
-#[inline]
-pub unsafe fn lzma_get_progress(
+#[no_mangle]
+pub unsafe extern "C" fn lzma_get_progress(
     strm: *mut lzma_stream,
     progress_in: *mut u64,
     progress_out: *mut u64,
@@ -151,35 +168,35 @@ pub unsafe fn lzma_get_progress(
     liblzma_rs::common::common::lzma_get_progress(strm.cast(), progress_in, progress_out)
 }
 
-#[inline]
-pub unsafe fn lzma_memusage(strm: *const lzma_stream) -> u64 {
+#[no_mangle]
+pub unsafe extern "C" fn lzma_memusage(strm: *const lzma_stream) -> u64 {
     liblzma_rs::common::common::lzma_memusage(strm.cast())
 }
 
-#[inline]
-pub unsafe fn lzma_get_check(strm: *const lzma_stream) -> lzma_check {
+#[no_mangle]
+pub unsafe extern "C" fn lzma_get_check(strm: *const lzma_stream) -> lzma_check {
     liblzma_rs::common::common::lzma_get_check(strm.cast())
 }
 
 // --- Check ---
 
-#[inline]
-pub unsafe fn lzma_check_is_supported(check: lzma_check) -> lzma_bool {
+#[no_mangle]
+pub unsafe extern "C" fn lzma_check_is_supported(check: lzma_check) -> lzma_bool {
     liblzma_rs::check::check::lzma_check_is_supported(check)
 }
 
-#[inline]
-pub unsafe fn lzma_check_size(check: lzma_check) -> u32 {
+#[no_mangle]
+pub unsafe extern "C" fn lzma_check_size(check: lzma_check) -> u32 {
     liblzma_rs::check::check::lzma_check_size(check)
 }
 
-#[inline]
-pub unsafe fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32 {
+#[no_mangle]
+pub unsafe extern "C" fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32 {
     liblzma_rs::check::crc32_fast::lzma_crc32(buf, size, crc)
 }
 
-#[inline]
-pub unsafe fn lzma_crc64(buf: *const u8, size: size_t, crc: u64) -> u64 {
+#[no_mangle]
+pub unsafe extern "C" fn lzma_crc64(buf: *const u8, size: size_t, crc: u64) -> u64 {
     liblzma_rs::check::crc64_fast::lzma_crc64(buf, size, crc)
 }
 
