@@ -15,38 +15,41 @@ const LZMA_ALLOC_ALIGN: usize = 16;
 const LZMA_ALLOC_HEADER_SIZE: usize = 16;
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
-unsafe fn wasm_alloc_layout(size: size_t) -> Option<Layout> {
-    let total_size = (size as usize).checked_add(LZMA_ALLOC_HEADER_SIZE)?;
+unsafe fn rust_alloc_layout(size: usize) -> Option<Layout> {
+    let total_size = size.checked_add(LZMA_ALLOC_HEADER_SIZE)?;
     Layout::from_size_align(total_size, LZMA_ALLOC_ALIGN).ok()
 }
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 unsafe fn malloc(size: size_t) -> *mut c_void {
-    let Some(layout) = wasm_alloc_layout(size) else {
-        return core::ptr::null_mut();
+    let layout = match rust_alloc_layout(size as usize) {
+        Some(layout) => layout,
+        None => return core::ptr::null_mut(),
     };
-    let ptr = alloc(layout);
-    if ptr.is_null() {
+    let base = alloc(layout);
+    if base.is_null() {
         return core::ptr::null_mut();
     }
-    *(ptr as *mut usize) = layout.size();
-    ptr.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
+    *(base as *mut usize) = layout.size();
+    base.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
 }
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 unsafe fn calloc(count: size_t, size: size_t) -> *mut c_void {
-    let Some(total_size) = (count as usize).checked_mul(size as usize) else {
-        return core::ptr::null_mut();
+    let size = match (count as usize).checked_mul(size as usize) {
+        Some(size) => size,
+        None => return core::ptr::null_mut(),
     };
-    let Some(layout) = wasm_alloc_layout(total_size as size_t) else {
-        return core::ptr::null_mut();
+    let layout = match rust_alloc_layout(size) {
+        Some(layout) => layout,
+        None => return core::ptr::null_mut(),
     };
-    let ptr = alloc_zeroed(layout);
-    if ptr.is_null() {
+    let base = alloc_zeroed(layout);
+    if base.is_null() {
         return core::ptr::null_mut();
     }
-    *(ptr as *mut usize) = layout.size();
-    ptr.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
+    *(base as *mut usize) = layout.size();
+    base.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
 }
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
@@ -56,9 +59,7 @@ unsafe fn free(ptr: *mut c_void) {
     }
     let base = (ptr as *mut u8).sub(LZMA_ALLOC_HEADER_SIZE);
     let total_size = *(base as *const usize);
-    let Ok(layout) = Layout::from_size_align(total_size, LZMA_ALLOC_ALIGN) else {
-        return;
-    };
+    let layout = Layout::from_size_align_unchecked(total_size, LZMA_ALLOC_ALIGN);
     dealloc(base, layout);
 }
 pub const LZMA_VERSION_MAJOR: u32 = 5;
