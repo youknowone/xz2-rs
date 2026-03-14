@@ -107,7 +107,7 @@ unsafe extern "C" fn auto_decode(
 unsafe extern "C" fn auto_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 extern "C" fn auto_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
     return unsafe {
@@ -189,8 +189,7 @@ unsafe extern "C" fn auto_decoder_init(
     }
     let mut coder: *mut lzma_auto_coder = (*next).coder as *mut lzma_auto_coder;
     if coder.is_null() {
-        coder =
-            lzma_alloc(core::mem::size_of::<lzma_auto_coder>(), allocator) as *mut lzma_auto_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_auto_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

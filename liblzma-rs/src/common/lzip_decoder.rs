@@ -272,7 +272,7 @@ unsafe extern "C" fn lzip_decode(
 unsafe extern "C" fn lzip_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_lzip_coder = coder_ptr as *mut lzma_lzip_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).lzma_decoder), allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 extern "C" fn lzip_decoder_get_check(_coder_ptr: *const c_void) -> lzma_check {
     LZMA_CHECK_CRC32
@@ -337,8 +337,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     }
     let mut coder: *mut lzma_lzip_coder = (*next).coder as *mut lzma_lzip_coder;
     if coder.is_null() {
-        coder =
-            lzma_alloc(core::mem::size_of::<lzma_lzip_coder>(), allocator) as *mut lzma_lzip_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_lzip_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

@@ -60,7 +60,7 @@ unsafe extern "C" fn alone_encode(
 unsafe extern "C" fn alone_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_alone_coder = coder_ptr as *mut lzma_alone_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn alone_encoder_init(
     next: *mut lzma_next_coder,
@@ -106,8 +106,7 @@ unsafe extern "C" fn alone_encoder_init(
     ));
     let mut coder: *mut lzma_alone_coder = (*next).coder as *mut lzma_alone_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_alone_coder>(), allocator)
-            as *mut lzma_alone_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_alone_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

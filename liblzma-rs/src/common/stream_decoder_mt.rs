@@ -126,7 +126,7 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
             } else {
                 if (*thr).state == THR_EXIT {
                     mythread_mutex_unlock(::core::ptr::addr_of_mut!((*thr).mutex));
-                    lzma_free((*thr).in_0 as *mut c_void, (*thr).allocator);
+                    crate::alloc::internal_free((*thr).in_0 as *mut c_void, (*thr).allocator);
                     lzma_next_end(
                         ::core::ptr::addr_of_mut!((*thr).block_decoder),
                         (*thr).allocator,
@@ -211,7 +211,7 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
                 mythread_i_434 = 1;
             }
             if ret == LZMA_STREAM_END {
-                lzma_free((*thr).in_0 as *mut c_void, (*thr).allocator);
+                crate::alloc::internal_free((*thr).in_0 as *mut c_void, (*thr).allocator);
                 (*thr).in_0 = core::ptr::null_mut();
             }
             let mut mythread_i_458: c_uint = 0;
@@ -293,7 +293,7 @@ unsafe extern "C" fn threads_end(coder: *mut lzma_stream_coder, allocator: *cons
         mythread_join((*(*coder).threads.offset(i_0 as isize)).thread_id);
         i_0 += 1;
     }
-    lzma_free((*coder).threads as *mut c_void, allocator);
+    crate::alloc::internal_free((*coder).threads as *mut c_void, allocator);
     (*coder).threads_initialized = 0;
     (*coder).threads = core::ptr::null_mut();
     (*coder).threads_free = core::ptr::null_mut();
@@ -331,10 +331,10 @@ unsafe extern "C" fn initialize_new_thread(
     allocator: *const lzma_allocator,
 ) -> lzma_ret {
     if (*coder).threads.is_null() {
-        (*coder).threads = lzma_alloc(
-            ((*coder).threads_max as size_t).wrapping_mul(core::mem::size_of::<worker_thread>()),
+        (*coder).threads = crate::alloc::internal_alloc_array::<worker_thread>(
+            (*coder).threads_max as size_t,
             allocator,
-        ) as *mut worker_thread;
+        );
         if (*coder).threads.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -1186,7 +1186,8 @@ unsafe extern "C" fn stream_decode_mt(
                     } else {
                         (*(*coder).thr).in_size = (*coder).mem_next_in as size_t;
                         (*(*coder).thr).in_0 =
-                            lzma_alloc((*(*coder).thr).in_size, allocator) as *mut u8;
+                            crate::alloc::internal_alloc_bytes((*(*coder).thr).in_size, allocator)
+                                as *mut u8;
                         if (*(*coder).thr).in_0.is_null() {
                             threads_stop(coder);
                             return LZMA_MEM_ERROR;
@@ -1322,7 +1323,7 @@ unsafe extern "C" fn stream_decoder_mt_end(
         allocator,
     );
     lzma_index_hash_end((*coder).index_hash, allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 extern "C" fn stream_decoder_mt_get_check(coder_ptr: *const c_void) -> lzma_check {
     return unsafe {
@@ -1473,19 +1474,18 @@ unsafe extern "C" fn stream_decoder_mt_init(
     ));
     coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_stream_coder>(), allocator)
-            as *mut lzma_stream_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_stream_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }
         (*next).coder = coder as *mut c_void;
         if mythread_mutex_init(::core::ptr::addr_of_mut!((*coder).mutex)) != 0 {
-            lzma_free(coder as *mut c_void, allocator);
+            crate::alloc::internal_free(coder as *mut c_void, allocator);
             return LZMA_MEM_ERROR;
         }
         if mythread_cond_init(::core::ptr::addr_of_mut!((*coder).cond)) != 0 {
             mythread_mutex_destroy(::core::ptr::addr_of_mut!((*coder).mutex));
-            lzma_free(coder as *mut c_void, allocator);
+            crate::alloc::internal_free(coder as *mut c_void, allocator);
             return LZMA_MEM_ERROR;
         }
         (*next).code = Some(

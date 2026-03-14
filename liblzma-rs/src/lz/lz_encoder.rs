@@ -177,7 +177,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         .wrapping_add(reserve)
         .wrapping_add((*mf).keep_size_after);
     if !(*mf).buffer.is_null() && old_size != (*mf).size {
-        lzma_free((*mf).buffer as *mut c_void, allocator);
+        crate::alloc::internal_free((*mf).buffer as *mut c_void, allocator);
         (*mf).buffer = core::ptr::null_mut();
     }
     (*mf).match_len_max = (*lz_options).match_len_max as u32;
@@ -253,9 +253,9 @@ unsafe extern "C" fn lz_encoder_prepare(
         (*mf).sons_count = (*mf).sons_count.wrapping_mul(2);
     }
     if old_hash_count != (*mf).hash_count || old_sons_count != (*mf).sons_count {
-        lzma_free((*mf).hash as *mut c_void, allocator);
+        crate::alloc::internal_free((*mf).hash as *mut c_void, allocator);
         (*mf).hash = core::ptr::null_mut();
-        lzma_free((*mf).son as *mut c_void, allocator);
+        crate::alloc::internal_free((*mf).son as *mut c_void, allocator);
         (*mf).son = core::ptr::null_mut();
     }
     (*mf).depth = (*lz_options).depth;
@@ -274,7 +274,7 @@ unsafe extern "C" fn lz_encoder_init(
     lz_options: *const lzma_lz_options,
 ) -> bool {
     if (*mf).buffer.is_null() {
-        (*mf).buffer = lzma_alloc(
+        (*mf).buffer = crate::alloc::internal_alloc_bytes(
             (*mf).size.wrapping_add(LZMA_MEMCMPLEN_EXTRA) as size_t,
             allocator,
         ) as *mut u8;
@@ -294,18 +294,14 @@ unsafe extern "C" fn lz_encoder_init(
     (*mf).write_pos = 0;
     (*mf).pending = 0;
     if (*mf).hash.is_null() {
-        (*mf).hash = lzma_alloc_zero(
-            ((*mf).hash_count as size_t).wrapping_mul(core::mem::size_of::<u32>()),
-            allocator,
-        ) as *mut u32;
-        (*mf).son = lzma_alloc(
-            ((*mf).sons_count as size_t).wrapping_mul(core::mem::size_of::<u32>()),
-            allocator,
-        ) as *mut u32;
+        (*mf).hash =
+            crate::alloc::internal_alloc_zeroed_array::<u32>((*mf).hash_count as size_t, allocator);
+        (*mf).son =
+            crate::alloc::internal_alloc_array::<u32>((*mf).sons_count as size_t, allocator);
         if (*mf).hash.is_null() || (*mf).son.is_null() {
-            lzma_free((*mf).hash as *mut c_void, allocator);
+            crate::alloc::internal_free((*mf).hash as *mut c_void, allocator);
             (*mf).hash = core::ptr::null_mut();
-            lzma_free((*mf).son as *mut c_void, allocator);
+            crate::alloc::internal_free((*mf).son as *mut c_void, allocator);
             (*mf).son = core::ptr::null_mut();
             return true;
         }
@@ -376,15 +372,15 @@ pub extern "C" fn lzma_lz_encoder_memusage(lz_options: *const lzma_lz_options) -
 unsafe extern "C" fn lz_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
-    lzma_free((*coder).mf.son as *mut c_void, allocator);
-    lzma_free((*coder).mf.hash as *mut c_void, allocator);
-    lzma_free((*coder).mf.buffer as *mut c_void, allocator);
+    crate::alloc::internal_free((*coder).mf.son as *mut c_void, allocator);
+    crate::alloc::internal_free((*coder).mf.hash as *mut c_void, allocator);
+    crate::alloc::internal_free((*coder).mf.buffer as *mut c_void, allocator);
     if (*coder).lz.end.is_some() {
         (*coder).lz.end.unwrap()((*coder).lz.coder, allocator);
     } else {
-        lzma_free((*coder).lz.coder, allocator);
+        crate::alloc::internal_free((*coder).lz.coder, allocator);
     }
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn lz_encoder_update(
     coder_ptr: *mut c_void,
@@ -434,7 +430,7 @@ pub unsafe extern "C" fn lzma_lz_encoder_init(
 ) -> lzma_ret {
     let mut coder: *mut lzma_coder = (*next).coder as *mut lzma_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_coder>(), allocator) as *mut lzma_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

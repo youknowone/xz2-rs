@@ -36,7 +36,7 @@ unsafe extern "C" fn free_one_cached_buffer(
     (*outq).mem_allocated = (*outq)
         .mem_allocated
         .wrapping_sub(lzma_outq_outbuf_memusage((*buf).allocated));
-    lzma_free(buf as *mut c_void, allocator);
+    crate::alloc::internal_free(buf as *mut c_void, allocator);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_outq_clear_cache(
@@ -104,7 +104,7 @@ pub unsafe extern "C" fn lzma_outq_prealloc_buf(
     }
     let alloc_size: size_t = lzma_outq_outbuf_memusage(size) as size_t;
     lzma_outq_clear_cache(outq, allocator);
-    (*outq).cache = lzma_alloc(alloc_size, allocator) as *mut lzma_outbuf;
+    (*outq).cache = crate::alloc::internal_alloc_bytes(alloc_size, allocator) as *mut lzma_outbuf;
     if (*outq).cache.is_null() {
         return LZMA_MEM_ERROR;
     }

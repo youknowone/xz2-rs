@@ -199,7 +199,7 @@ unsafe extern "C" fn stream_encoder_end(coder_ptr: *mut c_void, allocator: *cons
         ::core::ptr::addr_of_mut!((*coder).filters) as *mut lzma_filter,
         allocator,
     );
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn stream_encoder_update(
     coder_ptr: *mut c_void,
@@ -324,8 +324,7 @@ unsafe extern "C" fn stream_encoder_init(
     }
     let mut coder: *mut lzma_stream_coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_stream_coder>(), allocator)
-            as *mut lzma_stream_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_stream_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

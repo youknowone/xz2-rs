@@ -170,8 +170,8 @@ unsafe extern "C" fn simple_code(
 unsafe extern "C" fn simple_coder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_simple_coder = coder_ptr as *mut lzma_simple_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
-    lzma_free((*coder).simple, allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free((*coder).simple, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn simple_coder_update(
     coder_ptr: *mut c_void,
@@ -199,7 +199,7 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
 ) -> lzma_ret {
     let mut coder: *mut lzma_simple_coder = (*next).coder as *mut lzma_simple_coder;
     if coder.is_null() {
-        coder = lzma_alloc(
+        coder = crate::alloc::internal_alloc_bytes(
             (core::mem::size_of::<lzma_simple_coder>())
                 .wrapping_add((2_usize).wrapping_mul(unfiltered_max)),
             allocator,
@@ -249,7 +249,7 @@ pub unsafe extern "C" fn lzma_simple_coder_init(
         (*coder).filter = filter;
         (*coder).allocated = (2_usize).wrapping_mul(unfiltered_max);
         if simple_size > 0 {
-            (*coder).simple = lzma_alloc(simple_size, allocator);
+            (*coder).simple = crate::alloc::internal_alloc_bytes(simple_size, allocator);
             if (*coder).simple.is_null() {
                 return LZMA_MEM_ERROR;
             }

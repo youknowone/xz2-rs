@@ -980,7 +980,8 @@ pub unsafe extern "C" fn lzma_lzma_encoder_create(
     lz_options: *mut lzma_lz_options,
 ) -> lzma_ret {
     if (*coder_ptr).is_null() {
-        *coder_ptr = lzma_alloc(core::mem::size_of::<lzma_lzma1_encoder>(), allocator);
+        *coder_ptr =
+            crate::alloc::internal_alloc_object::<lzma_lzma1_encoder>(allocator) as *mut c_void;
         if (*coder_ptr).is_null() {
             return LZMA_MEM_ERROR;
         }

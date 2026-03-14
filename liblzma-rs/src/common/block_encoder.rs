@@ -114,7 +114,7 @@ unsafe extern "C" fn block_encode(
 unsafe extern "C" fn block_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_block_coder = coder_ptr as *mut lzma_block_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn block_encoder_update(
     coder_ptr: *mut c_void,
@@ -189,8 +189,7 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
     }
     let mut coder: *mut lzma_block_coder = (*next).coder as *mut lzma_block_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_block_coder>(), allocator)
-            as *mut lzma_block_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_block_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

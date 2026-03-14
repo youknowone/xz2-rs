@@ -2,7 +2,7 @@ use crate::types::*;
 unsafe extern "C" fn delta_coder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_delta_coder_init(
@@ -12,8 +12,7 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
 ) -> lzma_ret {
     let mut coder: *mut lzma_delta_coder = (*next).coder as *mut lzma_delta_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_delta_coder>(), allocator)
-            as *mut lzma_delta_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_delta_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

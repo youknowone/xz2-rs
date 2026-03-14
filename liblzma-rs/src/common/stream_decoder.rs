@@ -333,7 +333,7 @@ unsafe extern "C" fn stream_decoder_end(coder_ptr: *mut c_void, allocator: *cons
     let coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).block_decoder), allocator);
     lzma_index_hash_end((*coder).index_hash, allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 extern "C" fn stream_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
     return unsafe {
@@ -401,8 +401,7 @@ pub unsafe extern "C" fn lzma_stream_decoder_init(
     }
     let mut coder: *mut lzma_stream_coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_stream_coder>(), allocator)
-            as *mut lzma_stream_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_stream_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

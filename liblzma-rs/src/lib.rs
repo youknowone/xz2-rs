@@ -13,6 +13,7 @@ macro_rules! c_str {
         concat!($s, "\0").as_ptr() as *const ::std::os::raw::c_char
     };
 }
+pub mod alloc;
 pub mod check;
 pub mod common;
 pub mod delta;

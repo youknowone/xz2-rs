@@ -216,8 +216,7 @@ pub unsafe extern "C" fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
         return LZMA_PROG_ERROR;
     }
     if (*strm).internal.is_null() {
-        (*strm).internal = lzma_alloc(core::mem::size_of::<lzma_internal>(), (*strm).allocator)
-            as *mut lzma_internal;
+        (*strm).internal = crate::alloc::internal_alloc_object::<lzma_internal>((*strm).allocator);
         if (*strm).internal.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -389,7 +388,7 @@ pub unsafe extern "C" fn lzma_end(strm: *mut lzma_stream) {
             ::core::ptr::addr_of_mut!((*(*strm).internal).next),
             (*strm).allocator,
         );
-        lzma_free((*strm).internal as *mut c_void, (*strm).allocator);
+        crate::alloc::internal_free((*strm).internal as *mut c_void, (*strm).allocator);
         (*strm).internal = core::ptr::null_mut();
     }
 }

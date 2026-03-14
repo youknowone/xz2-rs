@@ -164,13 +164,13 @@ unsafe extern "C" fn lz_decode(
 unsafe extern "C" fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
-    lzma_free((*coder).dict.buf as *mut c_void, allocator);
+    crate::alloc::internal_free((*coder).dict.buf as *mut c_void, allocator);
     if (*coder).lz.end.is_some() {
         (*coder).lz.end.unwrap()((*coder).lz.coder, allocator);
     } else {
-        lzma_free((*coder).lz.coder, allocator);
+        crate::alloc::internal_free((*coder).lz.coder, allocator);
     }
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 #[no_mangle]
 pub unsafe extern "C" fn lzma_lz_decoder_init(
@@ -189,7 +189,7 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
 ) -> lzma_ret {
     let mut coder: *mut lzma_coder = (*next).coder as *mut lzma_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_coder>(), allocator) as *mut lzma_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -257,9 +257,11 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
         .dict_size
         .wrapping_add((2 * LZ_DICT_REPEAT_MAX) as size_t);
     if (*coder).dict.size != alloc_size {
-        lzma_free((*coder).dict.buf as *mut c_void, allocator);
-        (*coder).dict.buf =
-            lzma_alloc(alloc_size.wrapping_add(LZ_DICT_EXTRA as size_t), allocator) as *mut u8;
+        crate::alloc::internal_free((*coder).dict.buf as *mut c_void, allocator);
+        (*coder).dict.buf = crate::alloc::internal_alloc_bytes(
+            alloc_size.wrapping_add(LZ_DICT_EXTRA as size_t),
+            allocator,
+        ) as *mut u8;
         if (*coder).dict.buf.is_null() {
             return LZMA_MEM_ERROR;
         }

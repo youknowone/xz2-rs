@@ -304,8 +304,8 @@ unsafe extern "C" fn lzma2_encode(
 }
 unsafe extern "C" fn lzma2_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_lzma2_coder = coder_ptr as *mut lzma_lzma2_coder;
-    lzma_free((*coder).lzma, allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free((*coder).lzma, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn lzma2_encoder_options_update(
     coder_ptr: *mut c_void,
@@ -347,8 +347,7 @@ unsafe extern "C" fn lzma2_encoder_init(
     }
     let mut coder: *mut lzma_lzma2_coder = (*lz).coder as *mut lzma_lzma2_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_lzma2_coder>(), allocator)
-            as *mut lzma_lzma2_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_lzma2_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

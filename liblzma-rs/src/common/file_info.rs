@@ -555,7 +555,7 @@ unsafe extern "C" fn file_info_decoder_end(
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).index_decoder), allocator);
     lzma_index_end((*coder).this_index, allocator);
     lzma_index_end((*coder).combined_index, allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn lzma_file_info_decoder_init(
     next: *mut lzma_next_coder,
@@ -619,8 +619,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
     }
     let mut coder: *mut lzma_file_info_coder = (*next).coder as *mut lzma_file_info_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_file_info_coder>(), allocator)
-            as *mut lzma_file_info_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_file_info_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }

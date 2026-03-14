@@ -144,7 +144,7 @@ unsafe extern "C" fn index_encode(
     ret
 }
 unsafe extern "C" fn index_encoder_end(coder: *mut c_void, allocator: *const lzma_allocator) {
-    lzma_free(coder, allocator);
+    crate::alloc::internal_free(coder, allocator);
 }
 unsafe extern "C" fn index_encoder_reset(coder: *mut lzma_index_coder, i: *const lzma_index) {
     lzma_index_iter_init(::core::ptr::addr_of_mut!((*coder).iter), i);
@@ -200,7 +200,8 @@ pub unsafe extern "C" fn lzma_index_encoder_init(
         return LZMA_PROG_ERROR;
     }
     if (*next).coder.is_null() {
-        (*next).coder = lzma_alloc(core::mem::size_of::<lzma_index_coder>(), allocator);
+        (*next).coder =
+            crate::alloc::internal_alloc_object::<lzma_index_coder>(allocator) as *mut c_void;
         if (*next).coder.is_null() {
             return LZMA_MEM_ERROR;
         }

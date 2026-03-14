@@ -153,7 +153,7 @@ unsafe extern "C" fn microlzma_decoder_end(
 ) {
     let coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).lzma), allocator);
-    lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
 unsafe extern "C" fn microlzma_decoder_init(
     next: *mut lzma_next_coder,
@@ -214,8 +214,7 @@ unsafe extern "C" fn microlzma_decoder_init(
     ));
     let mut coder: *mut lzma_microlzma_coder = (*next).coder as *mut lzma_microlzma_coder;
     if coder.is_null() {
-        coder = lzma_alloc(core::mem::size_of::<lzma_microlzma_coder>(), allocator)
-            as *mut lzma_microlzma_coder;
+        coder = crate::alloc::internal_alloc_object::<lzma_microlzma_coder>(allocator);
         if coder.is_null() {
             return LZMA_MEM_ERROR;
         }
