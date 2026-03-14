@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_uint;
 #[inline]
 extern "C" fn rotr_32(num: u32, amount: c_uint) -> u32 {
     num >> amount | num << 32u32.wrapping_sub(amount)

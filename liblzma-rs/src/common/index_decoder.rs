@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::{c_uint, c_void};
 extern "C" {
     fn lzma_index_prealloc(i: *mut lzma_index, records: lzma_vli);
 }

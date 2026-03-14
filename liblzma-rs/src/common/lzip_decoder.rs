@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::{c_uint, c_void};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzip_coder {

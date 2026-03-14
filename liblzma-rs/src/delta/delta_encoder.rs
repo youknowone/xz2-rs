@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 unsafe extern "C" fn copy_and_encode(
     coder: *mut lzma_delta_coder,
     in_0: *const u8,

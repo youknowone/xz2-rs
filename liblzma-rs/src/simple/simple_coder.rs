@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 unsafe extern "C" fn copy_or_code(
     coder: *mut lzma_simple_coder,
     allocator: *const lzma_allocator,

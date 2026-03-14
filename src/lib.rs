@@ -171,13 +171,13 @@ pub fn uncompressed_size<R: Read + Seek>(mut source: R) -> io::Result<u64> {
     Ok(uncompressed_size)
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(target_family = "wasm")))]
 mod tests {
     use super::*;
+    #[cfg(not(target_family = "wasm"))]
     use quickcheck::quickcheck;
-    #[cfg(all(target_family = "wasm", target_os = "unknown"))]
-    use wasm_bindgen_test::wasm_bindgen_test as test;
 
+    #[cfg(not(target_family = "wasm"))]
     #[test]
     fn all() {
         quickcheck(test as fn(_) -> _);
@@ -189,6 +189,7 @@ mod tests {
         }
     }
 
+    #[cfg(not(target_family = "wasm"))]
     #[test]
     fn copy() {
         quickcheck(test as fn(_) -> _);
@@ -202,6 +203,7 @@ mod tests {
         }
     }
 
+    #[cfg(not(target_family = "wasm"))]
     #[test]
     #[cfg(feature = "bindgen")]
     fn size() {

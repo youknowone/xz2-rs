@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 extern "C" {
     fn lzma_lzma_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
     fn lzma_lzma2_encoder_init(

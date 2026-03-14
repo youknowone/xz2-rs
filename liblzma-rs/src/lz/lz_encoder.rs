@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 extern "C" {
     fn lzma_mf_hc3_find(dict: *mut lzma_mf, matches: *mut lzma_match) -> u32;
     fn lzma_mf_hc3_skip(dict: *mut lzma_mf, amount: u32);

@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 unsafe extern "C" fn delta_coder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);

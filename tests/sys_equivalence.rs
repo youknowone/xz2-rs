@@ -1,3 +1,5 @@
+#![cfg(not(target_family = "wasm"))]
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;

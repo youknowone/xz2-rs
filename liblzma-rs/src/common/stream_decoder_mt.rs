@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::{c_uint, c_ulong, c_void};
 extern "C" {
     fn lzma_outq_clear_cache(outq: *mut lzma_outq, allocator: *const lzma_allocator);
     fn lzma_outq_clear_cache2(

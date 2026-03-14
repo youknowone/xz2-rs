@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 extern "C" {
     fn lzma_lzma_decoder_memusage(options: *const c_void) -> u64;
     fn lzma_lzma_props_decode(

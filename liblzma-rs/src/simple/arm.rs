@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 unsafe extern "C" fn arm_code(
     _simple: *mut c_void,
     now_pos: u32,

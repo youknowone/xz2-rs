@@ -15,8 +15,16 @@
     clippy::all
 )]
 
+#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
 use libc::size_t;
+#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
 use libc::{c_char, c_int, c_uchar, c_uint, c_void};
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+use std::os::raw::{c_char, c_int, c_uchar, c_uint, c_void};
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+type wasm_size_t = usize;
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+use self::wasm_size_t as size_t;
 
 // === Canonical type aliases ===
 // On MSVC, C enums are c_int; elsewhere c_uint (matching liblzma-sys manual.rs)

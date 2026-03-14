@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 extern "C" {
     fn lzma_lz_encoder_init(
         next: *mut lzma_next_coder,

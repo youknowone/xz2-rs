@@ -10,7 +10,7 @@
 #[macro_export]
 macro_rules! c_str {
     ($s:literal) => {
-        concat!($s, "\0").as_ptr() as *const ::libc::c_char
+        concat!($s, "\0").as_ptr() as *const ::std::os::raw::c_char
     };
 }
 pub mod check;

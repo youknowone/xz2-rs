@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 extern "C" {
     static lzma_header_magic: [u8; 6];
     static lzma_footer_magic: [u8; 2];

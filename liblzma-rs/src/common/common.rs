@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::{c_char, c_uint, c_void};
 extern "C" {
     fn malloc(__size: size_t) -> *mut c_void;
     fn calloc(__count: size_t, __size: size_t) -> *mut c_void;

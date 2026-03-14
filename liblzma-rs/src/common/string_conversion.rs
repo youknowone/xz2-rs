@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::{c_char, c_int, c_uint, c_void};
 extern "C" {
     fn lzma_validate_chain(filters: *const lzma_filter, count: *mut size_t) -> lzma_ret;
 }

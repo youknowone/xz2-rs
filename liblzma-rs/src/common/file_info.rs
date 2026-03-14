@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::{c_uint, c_void};
 extern "C" {
     fn lzma_index_memused(i: *const lzma_index) -> u64;
     fn lzma_index_stream_flags(

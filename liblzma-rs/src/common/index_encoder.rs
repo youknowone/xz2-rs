@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::{c_uint, c_void};
 extern "C" {
     fn lzma_index_block_count(i: *const lzma_index) -> lzma_vli;
     fn lzma_index_iter_init(iter: *mut lzma_index_iter, i: *const lzma_index);

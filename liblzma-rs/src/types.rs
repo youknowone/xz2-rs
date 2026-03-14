@@ -1,5 +1,11 @@
-use libc::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ulonglong, c_void};
+pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ulonglong, c_void};
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+pub type size_t = usize;
+#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
 pub type size_t = libc::size_t;
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+pub type uintptr_t = usize;
+#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
 pub type uintptr_t = libc::uintptr_t;
 pub type lzma_bool = c_uchar;
 pub type lzma_ret = c_uint;

@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::{c_int, c_uint, c_ulonglong, c_void};
 extern "C" {
     fn lzma_mt_block_size(filters: *const lzma_filter) -> u64;
     fn lzma_block_uncomp_encode(

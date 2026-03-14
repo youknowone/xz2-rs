@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 pub const HEADERS_BOUND: u32 =
     1 + 1 + 2 * LZMA_VLI_BYTES_MAX + 3 + 4 + LZMA_CHECK_SIZE_MAX + 3 & !(3);
 extern "C" fn lzma2_bound(uncompressed_size: u64) -> u64 {

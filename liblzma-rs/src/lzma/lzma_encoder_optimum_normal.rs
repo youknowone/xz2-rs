@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_uint;
 pub const RC_BIT_PRICE_SHIFT_BITS: u32 = 4;
 pub const RC_INFINITY_PRICE: c_uint = 1u32 << 30;
 #[inline]

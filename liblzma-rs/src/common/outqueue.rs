@@ -1,5 +1,4 @@
 use crate::types::*;
-use libc::c_void;
 #[no_mangle]
 pub extern "C" fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64 {
     let limit: u64 = (UINT64_MAX)
