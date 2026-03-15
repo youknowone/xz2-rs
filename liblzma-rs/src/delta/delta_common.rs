@@ -4,7 +4,6 @@ unsafe extern "C" fn delta_coder_end(coder_ptr: *mut c_void, allocator: *const l
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_delta_coder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -49,7 +48,6 @@ pub unsafe extern "C" fn lzma_delta_coder_init(
         filters.offset(1),
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u64 {
     let opt: *const lzma_options_delta = options as *const lzma_options_delta;
     if opt.is_null()

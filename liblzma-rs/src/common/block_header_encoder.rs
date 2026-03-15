@@ -1,14 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_filter_flags_size(size: *mut u32, filter: *const lzma_filter) -> lzma_ret;
-    fn lzma_filter_flags_encode(
-        filter: *const lzma_filter,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> lzma_ret;
-}
-#[no_mangle]
+use crate::common::filter_flags_encoder::{lzma_filter_flags_size, lzma_filter_flags_encode};
 pub unsafe extern "C" fn lzma_block_header_size(block: *mut lzma_block) -> lzma_ret {
     if (*block).version > 1 {
         return LZMA_OPTIONS_ERROR;
@@ -50,7 +41,6 @@ pub unsafe extern "C" fn lzma_block_header_size(block: *mut lzma_block) -> lzma_
     (*block).header_size = size.wrapping_add(3) & !(3);
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_block_header_encode(
     block: *const lzma_block,
     out: *mut u8,

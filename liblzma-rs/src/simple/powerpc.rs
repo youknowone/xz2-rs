@@ -56,7 +56,6 @@ extern "C" fn powerpc_coder_init(
         )
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_powerpc_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -64,7 +63,6 @@ pub unsafe extern "C" fn lzma_simple_powerpc_encoder_init(
 ) -> lzma_ret {
     powerpc_coder_init(next, allocator, filters, true)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_powerpc_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,

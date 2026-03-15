@@ -294,7 +294,6 @@ unsafe extern "C" fn lzip_decoder_memconfig(
     }
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzip_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,

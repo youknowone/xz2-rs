@@ -1,22 +1,6 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_block_buffer_bound(uncompressed_size: size_t) -> size_t;
-    fn lzma_block_buffer_encode(
-        block: *mut lzma_block,
-        allocator: *const lzma_allocator,
-        in_0: *const u8,
-        in_size: size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> lzma_ret;
-    fn lzma_index_buffer_encode(
-        i: *const lzma_index,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> lzma_ret;
-}
+use crate::common::block_buffer_encoder::{lzma_block_buffer_bound, lzma_block_buffer_encode};
+use crate::common::index_encoder::lzma_index_buffer_encode;
 pub const INDEX_BOUND: u32 = 1 + 1 + 2 * LZMA_VLI_BYTES_MAX + 4 + 3 & !(3);
 pub const HEADERS_BOUND: u32 = 2 * LZMA_STREAM_HEADER_SIZE + INDEX_BOUND;
 pub extern "C" fn lzma_stream_buffer_bound(uncompressed_size: size_t) -> size_t {

@@ -97,7 +97,6 @@ unsafe extern "C" fn delta_encoder_update(
         reversed_filters.offset(1),
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_delta_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -128,7 +127,6 @@ pub unsafe extern "C" fn lzma_delta_encoder_init(
     );
     lzma_delta_coder_init(next, allocator, filters)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_delta_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
     if lzma_delta_coder_memusage(options) == UINT64_MAX {
         return LZMA_PROG_ERROR;

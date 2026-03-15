@@ -179,7 +179,6 @@ pub unsafe extern "C" fn lzma_filters_copy(
         }
     };
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_filters_free(
     filters: *mut lzma_filter,
     allocator: *const lzma_allocator,
@@ -198,7 +197,6 @@ pub unsafe extern "C" fn lzma_filters_free(
         i += 1;
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_validate_chain(
     filters: *const lzma_filter,
     count: *mut size_t,
@@ -237,7 +235,6 @@ pub unsafe extern "C" fn lzma_validate_chain(
     *count = i;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_raw_coder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -295,7 +292,6 @@ pub unsafe extern "C" fn lzma_raw_coder_init(
     }
     ret
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_raw_coder_memusage(
     coder_find: lzma_filter_find,
     filters: *const lzma_filter,

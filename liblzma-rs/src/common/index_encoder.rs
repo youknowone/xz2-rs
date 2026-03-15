@@ -1,9 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_index_block_count(i: *const lzma_index) -> lzma_vli;
-    fn lzma_index_iter_init(iter: *mut lzma_index_iter, i: *const lzma_index);
-    fn lzma_index_iter_next(iter: *mut lzma_index_iter, mode: lzma_index_iter_mode) -> lzma_bool;
-}
+use crate::common::index::{lzma_index_block_count, lzma_index_iter_init, lzma_index_iter_next};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_coder {
@@ -153,7 +149,6 @@ unsafe extern "C" fn index_encoder_reset(coder: *mut lzma_index_coder, i: *const
     (*coder).pos = 0;
     (*coder).crc32 = 0;
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_index_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -226,7 +221,6 @@ pub unsafe extern "C" fn lzma_index_encoder_init(
     index_encoder_reset((*next).coder as *mut lzma_index_coder, i);
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_index_encoder(
     strm: *mut lzma_stream,
     i: *const lzma_index,
@@ -248,7 +242,6 @@ pub unsafe extern "C" fn lzma_index_encoder(
     (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_index_buffer_encode(
     i: *const lzma_index,
     out: *mut u8,

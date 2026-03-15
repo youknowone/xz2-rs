@@ -1,5 +1,4 @@
 use crate::types::*;
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_size(
     size: *mut u32,
     options: *const c_void,
@@ -12,7 +11,6 @@ pub unsafe extern "C" fn lzma_simple_props_size(
     }) as u32;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_encode(
     options: *const c_void,
     out: *mut u8,

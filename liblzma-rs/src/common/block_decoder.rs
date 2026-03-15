@@ -174,7 +174,6 @@ unsafe extern "C" fn block_decoder_end(coder_ptr: *mut c_void, allocator: *const
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_block_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -289,7 +288,6 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
         (*block).filters,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_block_decoder(
     strm: *mut lzma_stream,
     block: *mut lzma_block,

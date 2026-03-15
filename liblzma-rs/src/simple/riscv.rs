@@ -95,7 +95,6 @@ unsafe extern "C" fn riscv_encode(
     }
     i
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -114,7 +113,6 @@ pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
         true,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_riscv_encode(
     mut start_offset: u32,
     buf: *mut u8,
@@ -197,7 +195,6 @@ unsafe extern "C" fn riscv_decode(
     }
     i
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -216,7 +213,6 @@ pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
         false,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_riscv_decode(
     mut start_offset: u32,
     buf: *mut u8,

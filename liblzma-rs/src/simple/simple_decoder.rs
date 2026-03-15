@@ -1,5 +1,4 @@
 use crate::types::*;
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_props_decode(
     options: *mut *mut c_void,
     allocator: *const lzma_allocator,

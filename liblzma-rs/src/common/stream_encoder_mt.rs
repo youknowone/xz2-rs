@@ -1,17 +1,7 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_mt_block_size(filters: *const lzma_filter) -> u64;
-    fn lzma_block_uncomp_encode(
-        block: *mut lzma_block,
-        in_0: *const u8,
-        in_size: size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> lzma_ret;
-    fn lzma_block_buffer_bound64(uncompressed_size: u64) -> u64;
-    fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64;
-}
+use crate::common::filter_encoder::lzma_mt_block_size;
+use crate::common::block_buffer_encoder::{lzma_block_uncomp_encode, lzma_block_buffer_bound64};
+use crate::common::outqueue::lzma_outq_memusage;
 pub type worker_thread = worker_thread_s;
 #[derive(Copy, Clone)]
 #[repr(C)]

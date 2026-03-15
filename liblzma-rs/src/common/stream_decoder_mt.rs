@@ -1,16 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_outq_clear_cache(outq: *mut lzma_outq, allocator: *const lzma_allocator);
-    fn lzma_outq_clear_cache2(
-        outq: *mut lzma_outq,
-        allocator: *const lzma_allocator,
-        keep_size: size_t,
-    );
-    fn lzma_outq_enable_partial_output(
-        outq: *mut lzma_outq,
-        enable_partial_output: Option<unsafe extern "C" fn(*mut c_void) -> ()>,
-    );
-}
+use crate::common::outqueue::{lzma_outq_clear_cache, lzma_outq_clear_cache2, lzma_outq_enable_partial_output};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_coder {

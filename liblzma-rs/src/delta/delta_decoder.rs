@@ -41,7 +41,6 @@ unsafe extern "C" fn delta_decode(
     }
     ret
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_delta_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -63,7 +62,6 @@ pub unsafe extern "C" fn lzma_delta_decoder_init(
     );
     lzma_delta_coder_init(next, allocator, filters)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_delta_props_decode(
     options: *mut *mut c_void,
     allocator: *const lzma_allocator,

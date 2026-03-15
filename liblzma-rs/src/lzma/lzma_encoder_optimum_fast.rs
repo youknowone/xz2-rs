@@ -1,5 +1,4 @@
 use crate::types::*;
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_optimum_fast(
     coder: *mut lzma_lzma1_encoder,
     mf: *mut lzma_mf,

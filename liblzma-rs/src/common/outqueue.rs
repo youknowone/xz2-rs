@@ -1,5 +1,4 @@
 use crate::types::*;
-#[no_mangle]
 pub extern "C" fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64 {
     let limit: u64 = (UINT64_MAX)
         .wrapping_div((2 * 16384) as u64)
@@ -38,7 +37,6 @@ unsafe extern "C" fn free_one_cached_buffer(
         .wrapping_sub(lzma_outq_outbuf_memusage((*buf).allocated));
     crate::alloc::internal_free(buf as *mut c_void, allocator);
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_clear_cache(
     outq: *mut lzma_outq,
     allocator: *const lzma_allocator,
@@ -47,7 +45,6 @@ pub unsafe extern "C" fn lzma_outq_clear_cache(
         free_one_cached_buffer(outq, allocator);
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_clear_cache2(
     outq: *mut lzma_outq,
     allocator: *const lzma_allocator,
@@ -63,7 +60,6 @@ pub unsafe extern "C" fn lzma_outq_clear_cache2(
         free_one_cached_buffer(outq, allocator);
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_init(
     outq: *mut lzma_outq,
     allocator: *const lzma_allocator,
@@ -83,14 +79,12 @@ pub unsafe extern "C" fn lzma_outq_init(
     (*outq).read_pos = 0;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_end(outq: *mut lzma_outq, allocator: *const lzma_allocator) {
     while !(*outq).head.is_null() {
         move_head_to_cache(outq, allocator);
     }
     lzma_outq_clear_cache(outq, allocator);
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_prealloc_buf(
     outq: *mut lzma_outq,
     allocator: *const lzma_allocator,
@@ -114,7 +108,6 @@ pub unsafe extern "C" fn lzma_outq_prealloc_buf(
     (*outq).mem_allocated = (*outq).mem_allocated.wrapping_add(alloc_size as u64);
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_get_buf(
     outq: *mut lzma_outq,
     worker: *mut c_void,
@@ -141,14 +134,12 @@ pub unsafe extern "C" fn lzma_outq_get_buf(
         .wrapping_add(lzma_outq_outbuf_memusage((*buf).allocated));
     buf
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_is_readable(outq: *const lzma_outq) -> bool {
     if (*outq).head.is_null() {
         return false;
     }
     (*outq).read_pos < (*(*outq).head).pos || (*(*outq).head).finished
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_read(
     outq: *mut lzma_outq,
     allocator: *const lzma_allocator,
@@ -184,7 +175,6 @@ pub unsafe extern "C" fn lzma_outq_read(
     (*outq).read_pos = 0;
     finish_ret
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_outq_enable_partial_output(
     outq: *mut lzma_outq,
     enable_partial_output: Option<unsafe extern "C" fn(*mut c_void) -> ()>,

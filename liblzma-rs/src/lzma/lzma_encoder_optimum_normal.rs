@@ -916,7 +916,6 @@ unsafe extern "C" fn helper2(
     }
     len_end
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_optimum_normal(
     coder: *mut lzma_lzma1_encoder,
     mf: *mut lzma_mf,

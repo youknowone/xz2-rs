@@ -60,7 +60,6 @@ extern "C" fn sparc_coder_init(
         )
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_sparc_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -68,7 +67,6 @@ pub unsafe extern "C" fn lzma_simple_sparc_encoder_init(
 ) -> lzma_ret {
     sparc_coder_init(next, allocator, filters, true)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_sparc_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,

@@ -1,5 +1,4 @@
 use crate::types::*;
-#[no_mangle]
 pub static mut lzma_crc64_table: [[u64; 256]; 4] = [
     [
         0,

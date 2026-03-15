@@ -1,4 +1,3 @@
-#[no_mangle]
 pub extern "C" fn tuklib_physmem() -> u64 {
     #[cfg(target_os = "macos")]
     {

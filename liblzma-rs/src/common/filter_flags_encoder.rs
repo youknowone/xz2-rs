@@ -1,9 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_properties_size(size: *mut u32, filter: *const lzma_filter) -> lzma_ret;
-    fn lzma_properties_encode(filter: *const lzma_filter, props: *mut u8) -> lzma_ret;
-}
-#[no_mangle]
+use crate::common::filter_encoder::{lzma_properties_size, lzma_properties_encode};
 pub unsafe extern "C" fn lzma_filter_flags_size(
     size: *mut u32,
     filter: *const lzma_filter,
@@ -19,7 +15,6 @@ pub unsafe extern "C" fn lzma_filter_flags_size(
         .wrapping_add(lzma_vli_size((*filter).id).wrapping_add(lzma_vli_size(*size as lzma_vli)));
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_filter_flags_encode(
     filter: *const lzma_filter,
     out: *mut u8,

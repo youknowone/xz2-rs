@@ -63,7 +63,6 @@ extern "C" fn armthumb_coder_init(
         )
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_armthumb_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -71,7 +70,6 @@ pub unsafe extern "C" fn lzma_simple_armthumb_encoder_init(
 ) -> lzma_ret {
     armthumb_coder_init(next, allocator, filters, true)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_armthumb_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,

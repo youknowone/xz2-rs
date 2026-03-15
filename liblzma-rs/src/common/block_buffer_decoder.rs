@@ -1,5 +1,4 @@
 use crate::types::*;
-#[no_mangle]
 pub unsafe extern "C" fn lzma_block_buffer_decode(
     block: *mut lzma_block,
     allocator: *const lzma_allocator,

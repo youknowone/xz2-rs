@@ -1,16 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_mf_hc3_find(dict: *mut lzma_mf, matches: *mut lzma_match) -> u32;
-    fn lzma_mf_hc3_skip(dict: *mut lzma_mf, amount: u32);
-    fn lzma_mf_hc4_find(dict: *mut lzma_mf, matches: *mut lzma_match) -> u32;
-    fn lzma_mf_hc4_skip(dict: *mut lzma_mf, amount: u32);
-    fn lzma_mf_bt2_find(dict: *mut lzma_mf, matches: *mut lzma_match) -> u32;
-    fn lzma_mf_bt2_skip(dict: *mut lzma_mf, amount: u32);
-    fn lzma_mf_bt3_find(dict: *mut lzma_mf, matches: *mut lzma_match) -> u32;
-    fn lzma_mf_bt3_skip(dict: *mut lzma_mf, amount: u32);
-    fn lzma_mf_bt4_find(dict: *mut lzma_mf, matches: *mut lzma_match) -> u32;
-    fn lzma_mf_bt4_skip(dict: *mut lzma_mf, amount: u32);
-}
+use crate::lz::lz_encoder_mf::{lzma_mf_hc3_find, lzma_mf_hc3_skip, lzma_mf_hc4_find, lzma_mf_hc4_skip, lzma_mf_bt2_find, lzma_mf_bt2_skip, lzma_mf_bt3_find, lzma_mf_bt3_skip, lzma_mf_bt4_find, lzma_mf_bt4_skip};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lz_options {
@@ -333,7 +322,6 @@ unsafe extern "C" fn lz_encoder_init(
     (*mf).action = LZMA_RUN;
     false
 }
-#[no_mangle]
 pub extern "C" fn lzma_lz_encoder_memusage(lz_options: *const lzma_lz_options) -> u64 {
     let mut mf: lzma_mf = lzma_mf_s {
         buffer: core::ptr::null_mut(),
@@ -413,7 +401,6 @@ unsafe extern "C" fn lz_encoder_set_out_limit(
     }
     LZMA_OPTIONS_ERROR
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lz_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,

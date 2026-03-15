@@ -1,47 +1,7 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_lz_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-        lz_init: Option<
-            unsafe extern "C" fn(
-                *mut lzma_lz_encoder,
-                *const lzma_allocator,
-                lzma_vli,
-                *const c_void,
-                *mut lzma_lz_options,
-            ) -> lzma_ret,
-        >,
-    ) -> lzma_ret;
-    fn lzma_lz_encoder_memusage(lz_options: *const lzma_lz_options) -> u64;
-    fn lzma_lzma_optimum_fast(
-        coder: *mut lzma_lzma1_encoder,
-        mf: *mut lzma_mf,
-        back_res: *mut u32,
-        len_res: *mut u32,
-    );
-    fn lzma_lzma_optimum_normal(
-        coder: *mut lzma_lzma1_encoder,
-        mf: *mut lzma_mf,
-        back_res: *mut u32,
-        len_res: *mut u32,
-        position: u32,
-    );
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_lz_options {
-    pub before_size: size_t,
-    pub dict_size: size_t,
-    pub after_size: size_t,
-    pub match_len_max: size_t,
-    pub nice_len: size_t,
-    pub match_finder: lzma_match_finder,
-    pub depth: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-}
+use crate::lz::lz_encoder::{lzma_lz_encoder_init, lzma_lz_encoder_memusage, lzma_lz_options};
+use crate::lzma::lzma_encoder_optimum_fast::lzma_lzma_optimum_fast;
+use crate::lzma::lzma_encoder_optimum_normal::lzma_lzma_optimum_normal;
 #[inline]
 unsafe extern "C" fn rc_reset(rc: *mut lzma_range_encoder) {
     (*rc).low = 0;
@@ -713,7 +673,6 @@ unsafe extern "C" fn encode_eopm(coder: *mut lzma_lzma1_encoder, position: u32) 
     match_0(coder, pos_state, UINT32_MAX, MATCH_LEN_MIN);
 }
 pub const LOOP_INPUT_MAX: u32 = OPTS + 1;
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_encode(
     coder: *mut lzma_lzma1_encoder,
     mf: *mut lzma_mf,
@@ -897,7 +856,6 @@ unsafe extern "C" fn length_encoder_reset(
         }
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_encoder_reset(
     coder: *mut lzma_lzma1_encoder,
     options: *const lzma_options_lzma,
@@ -971,7 +929,6 @@ pub unsafe extern "C" fn lzma_lzma_encoder_reset(
     (*coder).opts_current_index = 0;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_encoder_create(
     coder_ptr: *mut *mut c_void,
     allocator: *const lzma_allocator,
@@ -1059,7 +1016,6 @@ unsafe extern "C" fn lzma_encoder_init(
         lz_options,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -1081,7 +1037,6 @@ pub unsafe extern "C" fn lzma_lzma_encoder_init(
         ),
     )
 }
-#[no_mangle]
 pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     if !is_options_valid(options as *const lzma_options_lzma) {
         return UINT64_MAX;
@@ -1108,7 +1063,6 @@ pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     }
     (core::mem::size_of::<lzma_lzma1_encoder>() as u64).wrapping_add(lz_memusage)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_lclppb_encode(
     options: *const lzma_options_lzma,
     byte: *mut u8,
@@ -1124,7 +1078,6 @@ pub unsafe extern "C" fn lzma_lzma_lclppb_encode(
         .wrapping_add((*options).lc) as u8;
     false
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
     if options.is_null() {
         return LZMA_PROG_ERROR;
@@ -1136,7 +1089,6 @@ pub unsafe extern "C" fn lzma_lzma_props_encode(options: *const c_void, out: *mu
     write32le(out.offset(1), (*opt).dict_size);
     LZMA_OK
 }
-#[no_mangle]
 pub extern "C" fn lzma_mode_is_supported(mode: lzma_mode) -> lzma_bool {
     (mode == LZMA_MODE_FAST || mode == LZMA_MODE_NORMAL) as lzma_bool
 }

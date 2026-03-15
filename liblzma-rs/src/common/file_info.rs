@@ -1,24 +1,6 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_index_memused(i: *const lzma_index) -> u64;
-    fn lzma_index_stream_flags(
-        i: *mut lzma_index,
-        stream_flags: *const lzma_stream_flags,
-    ) -> lzma_ret;
-    fn lzma_index_stream_padding(i: *mut lzma_index, stream_padding: lzma_vli) -> lzma_ret;
-    fn lzma_index_total_size(i: *const lzma_index) -> lzma_vli;
-    fn lzma_index_cat(
-        dest: *mut lzma_index,
-        src: *mut lzma_index,
-        allocator: *const lzma_allocator,
-    ) -> lzma_ret;
-    fn lzma_index_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        i: *mut *mut lzma_index,
-        memlimit: u64,
-    ) -> lzma_ret;
-}
+use crate::common::index::{lzma_index_memused, lzma_index_stream_flags, lzma_index_stream_padding, lzma_index_total_size, lzma_index_cat};
+use crate::common::index_decoder::lzma_index_decoder_init;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_file_info_coder {
@@ -676,7 +658,6 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
     (*coder).temp_size = LZMA_STREAM_HEADER_SIZE as size_t;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_file_info_decoder(
     strm: *mut lzma_stream,
     dest_index: *mut *mut lzma_index,

@@ -1,12 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_alone_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        memlimit: u64,
-        picky: bool,
-    ) -> lzma_ret;
-}
+use crate::common::alone_decoder::lzma_alone_decoder_init;
 pub type auto_decoder_seq = c_uint;
 pub const SEQ_FINISH: auto_decoder_seq = 2;
 pub const SEQ_CODE: auto_decoder_seq = 1;

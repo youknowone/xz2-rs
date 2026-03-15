@@ -132,7 +132,6 @@ unsafe extern "C" fn block_encoder_update(
         reversed_filters,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_block_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -245,7 +244,6 @@ pub unsafe extern "C" fn lzma_block_encoder_init(
         (*block).filters,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_block_encoder(
     strm: *mut lzma_stream,
     block: *mut lzma_block,

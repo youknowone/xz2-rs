@@ -1,16 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_stream_buffer_encode(
-        filters: *mut lzma_filter,
-        check: lzma_check,
-        allocator: *const lzma_allocator,
-        in_0: *const u8,
-        in_size: size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> lzma_ret;
-}
+use crate::common::stream_buffer_encoder::lzma_stream_buffer_encode;
 pub unsafe extern "C" fn lzma_easy_buffer_encode(
     preset: u32,
     check: lzma_check,

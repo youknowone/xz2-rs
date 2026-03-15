@@ -563,16 +563,8 @@ pub struct lzma_outq {
     pub bufs_allocated: u32,
     pub bufs_limit: u32,
 }
-#[repr(C)]
-pub struct lzma_index_s {
-    _opaque: [u8; 0],
-}
-pub type lzma_index = lzma_index_s;
-#[repr(C)]
-pub struct lzma_index_hash_s {
-    _opaque: [u8; 0],
-}
-pub type lzma_index_hash = lzma_index_hash_s;
+pub use crate::common::index::{lzma_index_s, lzma_index};
+pub use crate::common::index_hash::{lzma_index_hash_s, lzma_index_hash};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzma1_encoder_s {
@@ -1065,206 +1057,38 @@ pub struct lzma_simple_coder {
     pub size: size_t,
     pub buffer: [u8; 0],
 }
+pub use crate::common::common::{lzma_alloc, lzma_alloc_zero, lzma_free, lzma_next_end, lzma_next_filter_init, lzma_next_filter_update, lzma_strm_init, lzma_end, lzma_bufcpy};
+pub use crate::check::crc32_fast::lzma_crc32;
+pub use crate::common::block_util::lzma_block_unpadded_size;
+pub use crate::check::check::{lzma_check_is_supported, lzma_check_size, lzma_check_init, lzma_check_update, lzma_check_finish};
+pub use crate::common::vli_size::lzma_vli_size;
+pub use crate::common::vli_decoder::lzma_vli_decode;
+pub use crate::common::stream_flags_common::lzma_stream_flags_compare;
+pub use crate::common::easy_preset::lzma_easy_preset;
+pub use crate::common::filter_common::{lzma_filters_free, lzma_filters_copy, lzma_raw_coder_init, lzma_raw_coder_memusage};
+pub use crate::simple::simple_coder::lzma_simple_coder_init;
+pub use crate::common::vli_encoder::lzma_vli_encode;
+pub use crate::common::stream_flags_encoder::{lzma_stream_header_encode, lzma_stream_footer_encode};
+pub use crate::common::stream_flags_decoder::{lzma_stream_header_decode, lzma_stream_footer_decode};
+pub use crate::common::block_header_encoder::{lzma_block_header_size, lzma_block_header_encode};
+pub use crate::common::block_header_decoder::lzma_block_header_decode;
+pub use crate::common::block_decoder::lzma_block_decoder_init;
+pub use crate::common::block_encoder::lzma_block_encoder_init;
+pub use crate::common::filter_encoder::{lzma_raw_encoder_init, lzma_raw_encoder_memusage};
+pub use crate::common::filter_decoder::{lzma_raw_decoder_memusage, lzma_raw_decoder_init};
+pub use crate::lzma::lzma_encoder::{lzma_lzma_encoder_init, lzma_lzma_lclppb_encode, lzma_lzma_encoder_memusage};
+pub use crate::lzma::lzma_decoder::{lzma_lzma_decoder_init, lzma_lzma_lclppb_decode, lzma_lzma_decoder_memusage_nocheck};
+pub use crate::delta::delta_common::{lzma_delta_coder_memusage, lzma_delta_coder_init};
+pub use crate::common::stream_decoder::lzma_stream_decoder_init;
+pub use crate::lzma::lzma_encoder_presets::lzma_lzma_preset;
+pub use crate::lz::lz_encoder_mf::lzma_mf_find;
+pub use crate::common::index::{lzma_index_memusage, lzma_index_init, lzma_index_end, lzma_index_append, lzma_index_size, lzma_index_padding_size};
+pub use crate::common::index_encoder::lzma_index_encoder_init;
+pub use crate::common::index_hash::{lzma_index_hash_init, lzma_index_hash_end, lzma_index_hash_append, lzma_index_hash_decode, lzma_index_hash_size};
+pub use crate::common::outqueue::{lzma_outq_init, lzma_outq_end, lzma_outq_prealloc_buf, lzma_outq_get_buf, lzma_outq_is_readable, lzma_outq_read};
+pub use crate::rangecoder::price_table::lzma_rc_prices;
+pub use crate::lzma::fastpos_table::lzma_fastpos;
 extern "C" {
-    pub fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
-    pub fn lzma_alloc_zero(size: size_t, allocator: *const lzma_allocator) -> *mut c_void;
-    pub fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator);
-    pub fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator);
-    pub fn lzma_next_filter_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    pub fn lzma_next_filter_update(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        reversed_filters: *const lzma_filter,
-    ) -> lzma_ret;
-    pub fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret;
-    pub fn lzma_end(strm: *mut lzma_stream);
-    pub fn lzma_bufcpy(
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> size_t;
-    pub fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32;
-    pub fn lzma_block_unpadded_size(block: *const lzma_block) -> lzma_vli;
-    pub fn lzma_check_is_supported(check: lzma_check) -> lzma_bool;
-    pub fn lzma_check_size(check: lzma_check) -> u32;
-    pub fn lzma_check_init(check: *mut lzma_check_state, type_0: lzma_check);
-    pub fn lzma_check_update(
-        check: *mut lzma_check_state,
-        type_0: lzma_check,
-        buf: *const u8,
-        size: size_t,
-    );
-    pub fn lzma_check_finish(check: *mut lzma_check_state, type_0: lzma_check);
-    pub fn lzma_vli_size(vli: lzma_vli) -> u32;
-    pub fn lzma_vli_decode(
-        vli: *mut lzma_vli,
-        vli_pos: *mut size_t,
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-    ) -> lzma_ret;
-    pub fn lzma_stream_flags_compare(
-        a: *const lzma_stream_flags,
-        b: *const lzma_stream_flags,
-    ) -> lzma_ret;
-    pub fn lzma_easy_preset(easy: *mut lzma_options_easy, preset: u32) -> bool;
-    pub fn lzma_filters_free(filters: *mut lzma_filter, allocator: *const lzma_allocator);
-    pub fn lzma_simple_coder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-        filter: Option<unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t>,
-        simple_size: size_t,
-        unfiltered_max: size_t,
-        alignment: u32,
-        is_encoder: bool,
-    ) -> lzma_ret;
-    pub fn lzma_vli_encode(
-        vli: lzma_vli,
-        vli_pos: *mut size_t,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-    ) -> lzma_ret;
-    pub fn lzma_stream_header_encode(options: *const lzma_stream_flags, out: *mut u8) -> lzma_ret;
-    pub fn lzma_stream_header_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> lzma_ret;
-    pub fn lzma_stream_footer_encode(options: *const lzma_stream_flags, out: *mut u8) -> lzma_ret;
-    pub fn lzma_stream_footer_decode(options: *mut lzma_stream_flags, in_0: *const u8) -> lzma_ret;
-    pub fn lzma_block_header_size(block: *mut lzma_block) -> lzma_ret;
-    pub fn lzma_block_header_encode(block: *const lzma_block, out: *mut u8) -> lzma_ret;
-    pub fn lzma_block_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        block: *mut lzma_block,
-    ) -> lzma_ret;
-    pub fn lzma_raw_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter,
-    ) -> lzma_ret;
-    pub fn lzma_raw_decoder_memusage(filters: *const lzma_filter) -> u64;
-    pub fn lzma_lzma_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    pub fn lzma_lzma_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    pub fn lzma_lzma_lclppb_encode(options: *const lzma_options_lzma, byte: *mut u8) -> bool;
-    pub fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, byte: u8) -> bool;
-    pub fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64;
-    pub fn lzma_delta_coder_memusage(options: *const c_void) -> u64;
-    pub fn lzma_block_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        block: *mut lzma_block,
-    ) -> lzma_ret;
-    pub fn lzma_block_header_decode(
-        block: *mut lzma_block,
-        allocator: *const lzma_allocator,
-        in_0: *const u8,
-    ) -> lzma_ret;
-    pub fn lzma_filters_copy(
-        src: *const lzma_filter,
-        dest: *mut lzma_filter,
-        allocator: *const lzma_allocator,
-    ) -> lzma_ret;
-    pub fn lzma_raw_encoder_memusage(filters: *const lzma_filter) -> u64;
-    pub fn lzma_raw_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        options: *const lzma_filter,
-    ) -> lzma_ret;
-    pub fn lzma_raw_coder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter,
-        coder_find: lzma_filter_find,
-        is_encoder: bool,
-    ) -> lzma_ret;
-    pub fn lzma_raw_coder_memusage(
-        coder_find: lzma_filter_find,
-        filters: *const lzma_filter,
-    ) -> u64;
-    pub fn lzma_stream_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        memlimit: u64,
-        flags: u32,
-    ) -> lzma_ret;
-    pub fn lzma_delta_coder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    pub fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64;
-    pub fn lzma_lzma_preset(options: *mut lzma_options_lzma, preset: u32) -> lzma_bool;
-    pub fn lzma_mf_find(mf: *mut lzma_mf, count: *mut u32, matches: *mut lzma_match) -> u32;
-    pub fn lzma_index_memusage(streams: lzma_vli, blocks: lzma_vli) -> u64;
-    pub fn lzma_index_init(allocator: *const lzma_allocator) -> *mut lzma_index;
-    pub fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocator);
-    pub fn lzma_index_append(
-        i: *mut lzma_index,
-        allocator: *const lzma_allocator,
-        unpadded_size: lzma_vli,
-        uncompressed_size: lzma_vli,
-    ) -> lzma_ret;
-    pub fn lzma_index_size(i: *const lzma_index) -> lzma_vli;
-    pub fn lzma_index_padding_size(i: *const lzma_index) -> u32;
-    pub fn lzma_index_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        i: *const lzma_index,
-    ) -> lzma_ret;
-    pub fn lzma_index_hash_init(
-        index_hash: *mut lzma_index_hash,
-        allocator: *const lzma_allocator,
-    ) -> *mut lzma_index_hash;
-    pub fn lzma_index_hash_end(index_hash: *mut lzma_index_hash, allocator: *const lzma_allocator);
-    pub fn lzma_index_hash_append(
-        index_hash: *mut lzma_index_hash,
-        unpadded_size: lzma_vli,
-        uncompressed_size: lzma_vli,
-    ) -> lzma_ret;
-    pub fn lzma_index_hash_decode(
-        index_hash: *mut lzma_index_hash,
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-    ) -> lzma_ret;
-    pub fn lzma_index_hash_size(index_hash: *const lzma_index_hash) -> lzma_vli;
-    pub fn lzma_outq_init(
-        outq: *mut lzma_outq,
-        allocator: *const lzma_allocator,
-        threads: u32,
-    ) -> lzma_ret;
-    pub fn lzma_outq_end(outq: *mut lzma_outq, allocator: *const lzma_allocator);
-    pub fn lzma_outq_prealloc_buf(
-        outq: *mut lzma_outq,
-        allocator: *const lzma_allocator,
-        size: size_t,
-    ) -> lzma_ret;
-    pub fn lzma_outq_get_buf(outq: *mut lzma_outq, worker: *mut c_void) -> *mut lzma_outbuf;
-    pub fn lzma_outq_is_readable(outq: *const lzma_outq) -> bool;
-    pub fn lzma_outq_read(
-        outq: *mut lzma_outq,
-        allocator: *const lzma_allocator,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-        unpadded_size: *mut lzma_vli,
-        uncompressed_size: *mut lzma_vli,
-    ) -> lzma_ret;
     pub fn clock_gettime(__clock_id: clockid_t, __tp: *mut timespec) -> c_int;
     pub fn pthread_cond_destroy(_: *mut pthread_cond_t) -> c_int;
     pub fn pthread_cond_init(_: *mut pthread_cond_t, _: *const pthread_condattr_t) -> c_int;
@@ -1289,8 +1113,6 @@ extern "C" {
     pub fn pthread_sigmask(_: c_int, _: *const sigset_t, _: *mut sigset_t) -> c_int;
     pub fn memcmp(s1: *const c_void, s2: *const c_void, n: size_t) -> c_int;
     pub fn strlen(s: *const c_char) -> size_t;
-    pub static lzma_rc_prices: [u8; 128];
-    pub static lzma_fastpos: [u8; 8192];
 }
 
 pub unsafe fn memchr(s: *const c_void, c: c_int, n: size_t) -> *mut c_void {

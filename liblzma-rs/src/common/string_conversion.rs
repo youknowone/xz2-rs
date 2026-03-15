@@ -1,7 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_validate_chain(filters: *const lzma_filter, count: *mut size_t) -> lzma_ret;
-}
+use crate::common::filter_common::lzma_validate_chain;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct filter_codec_def {
@@ -917,7 +915,6 @@ unsafe extern "C" fn str_to_filters(
     }
     errmsg
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_str_to_filters(
     str: *const c_char,
     error_pos: *mut c_int,
@@ -1012,7 +1009,6 @@ unsafe extern "C" fn strfy_filter(
         i += 1;
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_str_from_filters(
     output_str: *mut *mut c_char,
     filters: *const lzma_filter,
@@ -1113,7 +1109,6 @@ pub unsafe extern "C" fn lzma_str_from_filters(
     }
     str_finish(output_str, ::core::ptr::addr_of_mut!(dest), allocator)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_str_list_filters(
     output_str: *mut *mut c_char,
     filter_id: lzma_vli,

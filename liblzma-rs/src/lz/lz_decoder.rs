@@ -172,7 +172,6 @@ unsafe extern "C" fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lz
     }
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lz_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -293,7 +292,6 @@ pub unsafe extern "C" fn lzma_lz_decoder_init(
         filters.offset(1),
     )
 }
-#[no_mangle]
 pub extern "C" fn lzma_lz_decoder_memusage(dictionary_size: size_t) -> u64 {
     (core::mem::size_of::<lzma_coder>() as u64)
         .wrapping_add(dictionary_size as u64)

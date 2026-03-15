@@ -1,63 +1,16 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_lzma_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
-    fn lzma_lzma2_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_lzma2_encoder_memusage(options: *const c_void) -> u64;
-    fn lzma_lzma2_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
-    fn lzma_lzma2_block_size(options: *const c_void) -> u64;
-    fn lzma_simple_x86_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_simple_powerpc_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_simple_ia64_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_simple_arm_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_simple_armthumb_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_simple_arm64_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_simple_sparc_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_simple_riscv_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_simple_props_size(size: *mut u32, options: *const c_void) -> lzma_ret;
-    fn lzma_simple_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
-    fn lzma_delta_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-    ) -> lzma_ret;
-    fn lzma_delta_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret;
-}
+use crate::lzma::lzma_encoder::lzma_lzma_props_encode;
+use crate::lzma::lzma2_encoder::{lzma_lzma2_encoder_init, lzma_lzma2_encoder_memusage, lzma_lzma2_props_encode, lzma_lzma2_block_size};
+use crate::simple::x86::lzma_simple_x86_encoder_init;
+use crate::simple::powerpc::lzma_simple_powerpc_encoder_init;
+use crate::simple::ia64::lzma_simple_ia64_encoder_init;
+use crate::simple::arm::lzma_simple_arm_encoder_init;
+use crate::simple::armthumb::lzma_simple_armthumb_encoder_init;
+use crate::simple::arm64::lzma_simple_arm64_encoder_init;
+use crate::simple::sparc::lzma_simple_sparc_encoder_init;
+use crate::simple::riscv::lzma_simple_riscv_encoder_init;
+use crate::simple::simple_encoder::{lzma_simple_props_size, lzma_simple_props_encode};
+use crate::delta::delta_encoder::{lzma_delta_encoder_init, lzma_delta_props_encode};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_filter_encoder {
@@ -354,7 +307,6 @@ pub unsafe extern "C" fn lzma_filters_update(
         ::core::ptr::addr_of_mut!(reversed_filters) as *mut lzma_filter,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_raw_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,

@@ -117,7 +117,6 @@ extern "C" fn x86_coder_init(
         ret
     };
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_x86_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -125,7 +124,6 @@ pub unsafe extern "C" fn lzma_simple_x86_encoder_init(
 ) -> lzma_ret {
     x86_coder_init(next, allocator, filters, true)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_x86_encode(
     start_offset: u32,
     buf: *mut u8,
@@ -143,7 +141,6 @@ pub unsafe extern "C" fn lzma_bcj_x86_encode(
         size,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_x86_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -151,7 +148,6 @@ pub unsafe extern "C" fn lzma_simple_x86_decoder_init(
 ) -> lzma_ret {
     x86_coder_init(next, allocator, filters, false)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_bcj_x86_decode(
     start_offset: u32,
     buf: *mut u8,

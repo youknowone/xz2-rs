@@ -186,7 +186,6 @@ unsafe extern "C" fn simple_coder_update(
         reversed_filters.offset(1),
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_simple_coder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,

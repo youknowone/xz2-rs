@@ -1,14 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_filter_flags_decode(
-        filter: *mut lzma_filter,
-        allocator: *const lzma_allocator,
-        in_0: *const u8,
-        in_pos: *mut size_t,
-        in_size: size_t,
-    ) -> lzma_ret;
-}
-#[no_mangle]
+use crate::common::filter_flags_decoder::lzma_filter_flags_decode;
 pub unsafe extern "C" fn lzma_block_header_decode(
     block: *mut lzma_block,
     allocator: *const lzma_allocator,

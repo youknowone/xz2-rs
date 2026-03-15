@@ -259,7 +259,6 @@ unsafe extern "C" fn microlzma_decoder_init(
     (*coder).props_decoded = false;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_microlzma_decoder(
     strm: *mut lzma_stream,
     comp_size: u64,

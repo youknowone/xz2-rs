@@ -173,7 +173,6 @@ unsafe extern "C" fn alone_decoder_memconfig(
     }
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_alone_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,

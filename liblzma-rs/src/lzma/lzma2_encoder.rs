@@ -1,52 +1,6 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_lz_encoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-        lz_init: Option<
-            unsafe extern "C" fn(
-                *mut lzma_lz_encoder,
-                *const lzma_allocator,
-                lzma_vli,
-                *const c_void,
-                *mut lzma_lz_options,
-            ) -> lzma_ret,
-        >,
-    ) -> lzma_ret;
-    fn lzma_lzma_encoder_create(
-        coder_ptr: *mut *mut c_void,
-        allocator: *const lzma_allocator,
-        id: lzma_vli,
-        options: *const lzma_options_lzma,
-        lz_options: *mut lzma_lz_options,
-    ) -> lzma_ret;
-    fn lzma_lzma_encoder_reset(
-        coder: *mut lzma_lzma1_encoder,
-        options: *const lzma_options_lzma,
-    ) -> lzma_ret;
-    fn lzma_lzma_encode(
-        coder: *mut lzma_lzma1_encoder,
-        mf: *mut lzma_mf,
-        out: *mut u8,
-        out_pos: *mut size_t,
-        out_size: size_t,
-        read_limit: u32,
-    ) -> lzma_ret;
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_lz_options {
-    pub before_size: size_t,
-    pub dict_size: size_t,
-    pub after_size: size_t,
-    pub match_len_max: size_t,
-    pub nice_len: size_t,
-    pub match_finder: lzma_match_finder,
-    pub depth: u32,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: u32,
-}
+use crate::lz::lz_encoder::{lzma_lz_encoder_init, lzma_lz_options};
+use crate::lzma::lzma_encoder::{lzma_lzma_encoder_create, lzma_lzma_encoder_reset, lzma_lzma_encode};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzma2_coder {
@@ -397,7 +351,6 @@ unsafe extern "C" fn lzma2_encoder_init(
     }
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma2_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -419,7 +372,6 @@ pub unsafe extern "C" fn lzma_lzma2_encoder_init(
         ),
     )
 }
-#[no_mangle]
 pub extern "C" fn lzma_lzma2_encoder_memusage(options: *const c_void) -> u64 {
     let lzma_mem: u64 = unsafe { lzma_lzma_encoder_memusage(options) } as u64;
     if lzma_mem == UINT64_MAX {
@@ -427,7 +379,6 @@ pub extern "C" fn lzma_lzma2_encoder_memusage(options: *const c_void) -> u64 {
     }
     (core::mem::size_of::<lzma_lzma2_coder>() as u64).wrapping_add(lzma_mem)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma2_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
     if options.is_null() {
         return LZMA_PROG_ERROR;
@@ -451,7 +402,6 @@ pub unsafe extern "C" fn lzma_lzma2_props_encode(options: *const c_void, out: *m
     }
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma2_block_size(options: *const c_void) -> u64 {
     let opt: *const lzma_options_lzma = options as *const lzma_options_lzma;
     if (*opt).dict_size < LZMA_DICT_SIZE_MIN as u32

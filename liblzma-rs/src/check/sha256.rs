@@ -531,7 +531,6 @@ unsafe extern "C" fn process(check: *mut lzma_check_state) {
         ::core::ptr::addr_of_mut!((*check).buffer.u32_0) as *const u32,
     );
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_sha256_init(check: *mut lzma_check_state) {
     static mut s: [u32; 8] = [
         0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
@@ -544,7 +543,6 @@ pub unsafe extern "C" fn lzma_sha256_init(check: *mut lzma_check_state) {
     );
     (*check).state.sha256.size = 0;
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_sha256_update(
     mut buf: *const u8,
     mut size: size_t,
@@ -570,7 +568,6 @@ pub unsafe extern "C" fn lzma_sha256_update(
         }
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_sha256_finish(check: *mut lzma_check_state) {
     let mut pos: size_t = ((*check).state.sha256.size & 0x3f as u64) as size_t;
     (*check).buffer.u8_0[pos as usize] = 0x80 as u8;

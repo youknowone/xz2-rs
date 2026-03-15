@@ -1,7 +1,5 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_index_prealloc(i: *mut lzma_index, records: lzma_vli);
-}
+use crate::common::index::lzma_index_prealloc;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_coder {
@@ -226,7 +224,6 @@ unsafe extern "C" fn index_decoder_reset(
     (*coder).crc32 = 0;
     LZMA_OK
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_index_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -311,7 +308,6 @@ pub unsafe extern "C" fn lzma_index_decoder_init(
     }
     index_decoder_reset(coder, allocator, i, memlimit)
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_index_decoder(
     strm: *mut lzma_stream,
     i: *mut *mut lzma_index,

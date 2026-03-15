@@ -1,33 +1,6 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_lz_decoder_init(
-        next: *mut lzma_next_coder,
-        allocator: *const lzma_allocator,
-        filters: *const lzma_filter_info,
-        lz_init: Option<
-            unsafe extern "C" fn(
-                *mut lzma_lz_decoder,
-                *const lzma_allocator,
-                lzma_vli,
-                *const c_void,
-                *mut lzma_lz_options,
-            ) -> lzma_ret,
-        >,
-    ) -> lzma_ret;
-    fn lzma_lzma_decoder_create(
-        lz: *mut lzma_lz_decoder,
-        allocator: *const lzma_allocator,
-        opt: *const lzma_options_lzma,
-        lz_options: *mut lzma_lz_options,
-    ) -> lzma_ret;
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_lz_options {
-    pub dict_size: size_t,
-    pub preset_dict: *const u8,
-    pub preset_dict_size: size_t,
-}
+use crate::lz::lz_decoder::{lzma_lz_decoder_init, lzma_lz_options};
+use crate::lzma::lzma_decoder::lzma_lzma_decoder_create;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzma2_coder {
@@ -259,7 +232,6 @@ unsafe extern "C" fn lzma2_decoder_init(
         lz_options,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma2_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -281,12 +253,10 @@ pub unsafe extern "C" fn lzma_lzma2_decoder_init(
         ),
     )
 }
-#[no_mangle]
 pub extern "C" fn lzma_lzma2_decoder_memusage(options: *const c_void) -> u64 {
     (core::mem::size_of::<lzma_lzma2_coder>() as u64)
         .wrapping_add(unsafe { lzma_lzma_decoder_memusage_nocheck(options) })
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_lzma2_props_decode(
     options: *mut *mut c_void,
     allocator: *const lzma_allocator,

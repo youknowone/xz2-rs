@@ -1,10 +1,6 @@
 use crate::types::*;
-extern "C" {
-    fn lzma_crc64(buf: *const u8, size: size_t, crc: u64) -> u64;
-    fn lzma_sha256_init(check: *mut lzma_check_state);
-    fn lzma_sha256_update(buf: *const u8, size: size_t, check: *mut lzma_check_state);
-    fn lzma_sha256_finish(check: *mut lzma_check_state);
-}
+use crate::check::crc64_fast::lzma_crc64;
+use crate::check::sha256::{lzma_sha256_init, lzma_sha256_update, lzma_sha256_finish};
 pub extern "C" fn lzma_check_is_supported(type_0: lzma_check) -> lzma_bool {
     if type_0 > LZMA_CHECK_ID_MAX {
         return false as lzma_bool;
@@ -39,7 +35,6 @@ pub extern "C" fn lzma_check_size(type_0: lzma_check) -> u32 {
     ];
     check_sizes[type_0 as usize] as u32
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_check_init(check: *mut lzma_check_state, type_0: lzma_check) {
     match type_0 {
         1 => {
@@ -54,7 +49,6 @@ pub unsafe extern "C" fn lzma_check_init(check: *mut lzma_check_state, type_0: l
         0 | _ => {}
     };
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_check_update(
     check: *mut lzma_check_state,
     type_0: lzma_check,
@@ -74,7 +68,6 @@ pub unsafe extern "C" fn lzma_check_update(
         _ => {}
     };
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_check_finish(check: *mut lzma_check_state, type_0: lzma_check) {
     match type_0 {
         1 => {

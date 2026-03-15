@@ -1,12 +1,9 @@
 use crate::types::*;
-extern "C" {
-    static lzma_crc32_table: [[u32; 256]; 8];
-}
+use crate::check::crc32_fast::lzma_crc32_table;
 pub const HASH_2_MASK: c_uint = HASH_2_SIZE.wrapping_sub(1);
 pub const HASH_3_MASK: c_uint = HASH_3_SIZE.wrapping_sub(1);
 pub const FIX_3_HASH_SIZE: c_uint = 1u32 << 10;
 pub const FIX_4_HASH_SIZE: c_uint = HASH_2_SIZE.wrapping_add(HASH_3_SIZE);
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_find(
     mf: *mut lzma_mf,
     count_ptr: *mut u32,
@@ -113,7 +110,6 @@ unsafe extern "C" fn hc_find_func(
         }
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_hc3_find(mf: *mut lzma_mf, matches: *mut lzma_match) -> u32 {
     let mut len_limit: u32 = mf_avail(mf);
     if (*mf).nice_len <= len_limit {
@@ -164,7 +160,6 @@ pub unsafe extern "C" fn lzma_mf_hc3_find(mf: *mut lzma_mf, matches: *mut lzma_m
     move_pos(mf);
     matches_count
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_hc3_skip(mf: *mut lzma_mf, mut amount: u32) {
     loop {
         if mf_avail(mf) < 3 {
@@ -191,7 +186,6 @@ pub unsafe extern "C" fn lzma_mf_hc3_skip(mf: *mut lzma_mf, mut amount: u32) {
         }
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_hc4_find(mf: *mut lzma_mf, matches: *mut lzma_match) -> u32 {
     let mut len_limit: u32 = mf_avail(mf);
     if (*mf).nice_len <= len_limit {
@@ -266,7 +260,6 @@ pub unsafe extern "C" fn lzma_mf_hc4_find(mf: *mut lzma_mf, matches: *mut lzma_m
     move_pos(mf);
     matches_count
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_hc4_skip(mf: *mut lzma_mf, mut amount: u32) {
     loop {
         if mf_avail(mf) < 4 {
@@ -412,7 +405,6 @@ unsafe extern "C" fn bt_skip_func(
         }
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt2_find(mf: *mut lzma_mf, matches: *mut lzma_match) -> u32 {
     let mut len_limit: u32 = mf_avail(mf);
     if (*mf).nice_len <= len_limit {
@@ -443,7 +435,6 @@ pub unsafe extern "C" fn lzma_mf_bt2_find(mf: *mut lzma_mf, matches: *mut lzma_m
     move_pos(mf);
     matches_count
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt2_skip(mf: *mut lzma_mf, mut amount: u32) {
     let mut current_block_8: u64;
     loop {
@@ -484,7 +475,6 @@ pub unsafe extern "C" fn lzma_mf_bt2_skip(mf: *mut lzma_mf, mut amount: u32) {
         }
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt3_find(mf: *mut lzma_mf, matches: *mut lzma_match) -> u32 {
     let mut len_limit: u32 = mf_avail(mf);
     if (*mf).nice_len <= len_limit {
@@ -544,7 +534,6 @@ pub unsafe extern "C" fn lzma_mf_bt3_find(mf: *mut lzma_mf, matches: *mut lzma_m
     move_pos(mf);
     matches_count
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt3_skip(mf: *mut lzma_mf, mut amount: u32) {
     let mut current_block_9: u64;
     loop {
@@ -592,7 +581,6 @@ pub unsafe extern "C" fn lzma_mf_bt3_skip(mf: *mut lzma_mf, mut amount: u32) {
         }
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt4_find(mf: *mut lzma_mf, matches: *mut lzma_match) -> u32 {
     let mut len_limit: u32 = mf_avail(mf);
     if (*mf).nice_len <= len_limit {
@@ -676,7 +664,6 @@ pub unsafe extern "C" fn lzma_mf_bt4_find(mf: *mut lzma_mf, matches: *mut lzma_m
     move_pos(mf);
     matches_count
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_mf_bt4_skip(mf: *mut lzma_mf, mut amount: u32) {
     let mut current_block_10: u64;
     loop {

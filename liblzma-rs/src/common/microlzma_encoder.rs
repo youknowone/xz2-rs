@@ -164,7 +164,6 @@ unsafe extern "C" fn microlzma_encoder_init(
         ::core::ptr::addr_of!(filters) as *const lzma_filter_info,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_microlzma_encoder(
     strm: *mut lzma_stream,
     options: *const lzma_options_lzma,

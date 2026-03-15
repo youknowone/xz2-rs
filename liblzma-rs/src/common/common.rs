@@ -79,7 +79,6 @@ pub extern "C" fn lzma_version_number() -> u32 {
 pub extern "C" fn lzma_version_string() -> *const c_char {
     crate::c_str!("5.8.2")
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_alloc(
     mut size: size_t,
     allocator: *const lzma_allocator,
@@ -95,7 +94,6 @@ pub unsafe extern "C" fn lzma_alloc(
     }
     ptr
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_alloc_zero(
     mut size: size_t,
     allocator: *const lzma_allocator,
@@ -114,7 +112,6 @@ pub unsafe extern "C" fn lzma_alloc_zero(
     }
     ptr
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
     if !allocator.is_null() && (*allocator).free.is_some() {
         (*allocator).free.unwrap()((*allocator).opaque, ptr);
@@ -122,7 +119,6 @@ pub unsafe extern "C" fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allo
         free(ptr);
     };
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_bufcpy(
     in_0: *const u8,
     in_pos: *mut size_t,
@@ -149,7 +145,6 @@ pub unsafe extern "C" fn lzma_bufcpy(
     *out_pos = (*out_pos).wrapping_add(copy_size);
     copy_size
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_next_filter_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -166,7 +161,6 @@ pub unsafe extern "C" fn lzma_next_filter_init(
         (*filters).init.unwrap()(next, allocator, filters)
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_next_filter_update(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -185,7 +179,6 @@ pub unsafe extern "C" fn lzma_next_filter_update(
         reversed_filters,
     )
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_next_end(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
@@ -210,7 +203,6 @@ pub unsafe extern "C" fn lzma_next_end(
         };
     }
 }
-#[no_mangle]
 pub unsafe extern "C" fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
     if strm.is_null() {
         return LZMA_PROG_ERROR;
