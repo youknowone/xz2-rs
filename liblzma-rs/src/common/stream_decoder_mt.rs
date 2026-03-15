@@ -1,5 +1,7 @@
+use crate::common::outqueue::{
+    lzma_outq_clear_cache, lzma_outq_clear_cache2, lzma_outq_enable_partial_output,
+};
 use crate::types::*;
-use crate::common::outqueue::{lzma_outq_clear_cache, lzma_outq_clear_cache2, lzma_outq_enable_partial_output};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream_coder {

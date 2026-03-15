@@ -1,6 +1,9 @@
-use crate::types::*;
-use crate::common::index::{lzma_index_memused, lzma_index_stream_flags, lzma_index_stream_padding, lzma_index_total_size, lzma_index_cat};
+use crate::common::index::{
+    lzma_index_cat, lzma_index_memused, lzma_index_stream_flags, lzma_index_stream_padding,
+    lzma_index_total_size,
+};
 use crate::common::index_decoder::lzma_index_decoder_init;
+use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_file_info_coder {

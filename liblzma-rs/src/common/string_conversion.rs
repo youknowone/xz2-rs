@@ -1,5 +1,5 @@
-use crate::types::*;
 use crate::common::filter_common::lzma_validate_chain;
+use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct filter_codec_def {

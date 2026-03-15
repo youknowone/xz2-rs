@@ -33,7 +33,11 @@ unsafe fn rust_alloc_impl(size: usize, align: usize, zeroed: bool) -> *mut c_voi
         Ok(layout) => layout,
         Err(_) => return core::ptr::null_mut(),
     };
-    let base = if zeroed { alloc_zeroed(layout) } else { alloc(layout) };
+    let base = if zeroed {
+        alloc_zeroed(layout)
+    } else {
+        alloc(layout)
+    };
     if base.is_null() {
         return core::ptr::null_mut();
     }

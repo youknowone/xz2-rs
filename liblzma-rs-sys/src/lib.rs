@@ -44,16 +44,17 @@ pub type lzma_bool = c_uchar;
 pub type lzma_vli = u64;
 
 // === Canonical struct re-exports ===
+pub use liblzma_rs::common::index_hash::lzma_index_hash;
 pub use liblzma_rs::types::lzma_allocator;
+pub use liblzma_rs::types::lzma_block;
 pub use liblzma_rs::types::lzma_filter;
 pub use liblzma_rs::types::lzma_index;
+pub use liblzma_rs::types::lzma_index_iter;
+pub use liblzma_rs::types::lzma_index_iter_mode;
+pub use liblzma_rs::types::lzma_mt;
 pub use liblzma_rs::types::lzma_options_lzma;
 pub use liblzma_rs::types::lzma_stream;
 pub use liblzma_rs::types::lzma_stream_flags;
-pub use liblzma_rs::types::lzma_block;
-pub use liblzma_rs::types::lzma_index_iter;
-pub use liblzma_rs::types::lzma_index_iter_mode;
-pub use liblzma_rs::common::index_hash::lzma_index_hash;
 
 #[repr(C)]
 pub struct lzma_options_bcj {
@@ -777,9 +778,7 @@ pub extern "C" fn lzma_index_memused(i: *const lzma_index) -> u64 {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_index_init(
-    allocator: *const lzma_allocator,
-) -> *mut lzma_index {
+pub unsafe extern "C" fn lzma_index_init(allocator: *const lzma_allocator) -> *mut lzma_index {
     liblzma_rs::common::index::lzma_index_init(allocator.cast()).cast()
 }
 
@@ -850,10 +849,7 @@ pub unsafe extern "C" fn lzma_index_file_size(i: *const lzma_index) -> lzma_vli 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn lzma_index_iter_init(
-    iter: *mut lzma_index_iter,
-    i: *const lzma_index,
-) {
+pub unsafe extern "C" fn lzma_index_iter_init(iter: *mut lzma_index_iter, i: *const lzma_index) {
     liblzma_rs::common::index::lzma_index_iter_init(iter.cast(), i.cast())
 }
 
@@ -919,12 +915,7 @@ pub unsafe extern "C" fn lzma_index_buffer_encode(
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    liblzma_rs::common::index_encoder::lzma_index_buffer_encode(
-        i.cast(),
-        out,
-        out_pos,
-        out_size,
-    )
+    liblzma_rs::common::index_encoder::lzma_index_buffer_encode(i.cast(), out, out_pos, out_size)
 }
 
 // --- Index hash ---
@@ -934,8 +925,7 @@ pub unsafe extern "C" fn lzma_index_hash_init(
     index_hash: *mut lzma_index_hash,
     allocator: *const lzma_allocator,
 ) -> *mut lzma_index_hash {
-    liblzma_rs::common::index_hash::lzma_index_hash_init(index_hash.cast(), allocator.cast())
-        .cast()
+    liblzma_rs::common::index_hash::lzma_index_hash_init(index_hash.cast(), allocator.cast()).cast()
 }
 
 #[no_mangle]
@@ -1126,33 +1116,6 @@ pub unsafe extern "C" fn lzma_file_info_decoder(
 // =========================================================================
 // Multithreaded API
 // =========================================================================
-
-#[cfg(feature = "parallel")]
-#[repr(C)]
-pub struct lzma_mt {
-    pub flags: u32,
-    pub threads: u32,
-    pub block_size: u64,
-    pub timeout: u32,
-    pub preset: u32,
-    pub filters: *const lzma_filter,
-    pub check: lzma_check,
-    _reserved_enum1: __enum_ty,
-    _reserved_enum2: __enum_ty,
-    _reserved_enum3: __enum_ty,
-    _reserved_int1: u32,
-    _reserved_int2: u32,
-    _reserved_int3: u32,
-    _reserved_int4: u32,
-    pub memlimit_threading: u64,
-    pub memlimit_stop: u64,
-    _reserved_int7: u64,
-    _reserved_int8: u64,
-    _reserved_ptr1: *mut c_void,
-    _reserved_ptr2: *mut c_void,
-    _reserved_ptr3: *mut c_void,
-    _reserved_ptr4: *mut c_void,
-}
 
 #[cfg(feature = "parallel")]
 #[no_mangle]

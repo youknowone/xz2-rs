@@ -1,16 +1,19 @@
-use crate::types::*;
-use crate::lzma::lzma_encoder::lzma_lzma_props_encode;
-use crate::lzma::lzma2_encoder::{lzma_lzma2_encoder_init, lzma_lzma2_encoder_memusage, lzma_lzma2_props_encode, lzma_lzma2_block_size};
-use crate::simple::x86::lzma_simple_x86_encoder_init;
-use crate::simple::powerpc::lzma_simple_powerpc_encoder_init;
-use crate::simple::ia64::lzma_simple_ia64_encoder_init;
-use crate::simple::arm::lzma_simple_arm_encoder_init;
-use crate::simple::armthumb::lzma_simple_armthumb_encoder_init;
-use crate::simple::arm64::lzma_simple_arm64_encoder_init;
-use crate::simple::sparc::lzma_simple_sparc_encoder_init;
-use crate::simple::riscv::lzma_simple_riscv_encoder_init;
-use crate::simple::simple_encoder::{lzma_simple_props_size, lzma_simple_props_encode};
 use crate::delta::delta_encoder::{lzma_delta_encoder_init, lzma_delta_props_encode};
+use crate::lzma::lzma2_encoder::{
+    lzma_lzma2_block_size, lzma_lzma2_encoder_init, lzma_lzma2_encoder_memusage,
+    lzma_lzma2_props_encode,
+};
+use crate::lzma::lzma_encoder::lzma_lzma_props_encode;
+use crate::simple::arm::lzma_simple_arm_encoder_init;
+use crate::simple::arm64::lzma_simple_arm64_encoder_init;
+use crate::simple::armthumb::lzma_simple_armthumb_encoder_init;
+use crate::simple::ia64::lzma_simple_ia64_encoder_init;
+use crate::simple::powerpc::lzma_simple_powerpc_encoder_init;
+use crate::simple::riscv::lzma_simple_riscv_encoder_init;
+use crate::simple::simple_encoder::{lzma_simple_props_encode, lzma_simple_props_size};
+use crate::simple::sparc::lzma_simple_sparc_encoder_init;
+use crate::simple::x86::lzma_simple_x86_encoder_init;
+use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_filter_encoder {

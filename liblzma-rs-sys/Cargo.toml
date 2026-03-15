@@ -6,18 +6,20 @@ license = "MIT OR Apache-2.0"
 description = "liblzma-sys compatible API layer backed by pure Rust liblzma-rs"
 
 [lib]
-crate-type = ["rlib", "staticlib"]
+crate-type = ["rlib", "staticlib", "cdylib"]
 
 [features]
 default = ["bindgen"]
-# Feature stubs matching liblzma-sys for smooth migration
-static = []
+# The following features exist for compatibility with liblzma-sys.
+# Since this crate is a pure Rust implementation, they are ignored.
+static = []       # ignored: no C library to link statically
+bindgen = []      # ignored: no C headers to generate bindings from
+fat-lto = []      # ignored: no C object files for cross-language LTO
+thin-lto = []     # ignored: no C object files for cross-language LTO
+uncheck_liblzma_version = [] # ignored: no system liblzma to version-check
+# These features have actual effects:
 parallel = []
-bindgen = []
 wasm = ["static", "bindgen"]
-uncheck_liblzma_version = []
-fat-lto = []
-thin-lto = []
 
 [dependencies]
 liblzma-rs = { path = "../liblzma-rs" }

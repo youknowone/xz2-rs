@@ -1,6 +1,6 @@
-use crate::types::*;
 use crate::common::block_buffer_encoder::{lzma_block_buffer_bound, lzma_block_buffer_encode};
 use crate::common::index_encoder::lzma_index_buffer_encode;
+use crate::types::*;
 pub const INDEX_BOUND: u32 = 1 + 1 + 2 * LZMA_VLI_BYTES_MAX + 4 + 3 & !(3);
 pub const HEADERS_BOUND: u32 = 2 * LZMA_STREAM_HEADER_SIZE + INDEX_BOUND;
 pub extern "C" fn lzma_stream_buffer_bound(uncompressed_size: size_t) -> size_t {

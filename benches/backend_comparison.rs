@@ -4,7 +4,7 @@ use std::ptr;
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 
-use liblzma_c_sys_test as c_sys;
+use liblzma_c_sys as c_sys;
 use liblzma_sys as rs_sys;
 
 fn make_payload(size: usize) -> Vec<u8> {

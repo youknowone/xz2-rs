@@ -1,5 +1,5 @@
-use crate::types::*;
 use crate::common::index::{lzma_index_block_count, lzma_index_iter_init, lzma_index_iter_next};
+use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_index_coder {

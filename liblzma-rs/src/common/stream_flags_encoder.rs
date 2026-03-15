@@ -1,5 +1,5 @@
+use crate::common::stream_flags_common::{lzma_footer_magic, lzma_header_magic};
 use crate::types::*;
-use crate::common::stream_flags_common::{lzma_header_magic, lzma_footer_magic};
 extern "C" fn stream_flags_encode(options: *const lzma_stream_flags, out: *mut u8) -> bool {
     return unsafe {
         if (*options).check > LZMA_CHECK_ID_MAX {

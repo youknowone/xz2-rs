@@ -1,5 +1,5 @@
-use crate::types::*;
 use crate::common::alone_decoder::lzma_alone_decoder_init;
+use crate::types::*;
 pub type auto_decoder_seq = c_uint;
 pub const SEQ_FINISH: auto_decoder_seq = 2;
 pub const SEQ_CODE: auto_decoder_seq = 1;

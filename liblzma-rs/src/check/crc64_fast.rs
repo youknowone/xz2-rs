@@ -1033,6 +1033,7 @@ pub static mut lzma_crc64_table: [[u64; 256]; 4] = [
         0x1e5cd90c6ec2440d,
     ],
 ];
+#[inline]
 unsafe extern "C" fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mut crc: u64) -> u64 {
     crc = !crc;
     if size > 4 {
@@ -1053,14 +1054,10 @@ unsafe extern "C" fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mu
                 ^ lzma_crc64_table[0][(tmp >> 24) as usize];
         }
     }
-    loop {
-        let old_size = size;
-        size = size.wrapping_sub(1);
-        if old_size == 0 {
-            break;
-        }
+    while size > 0 {
         crc = lzma_crc64_table[0][(*buf as u64 ^ crc & 0xff as u64) as usize] ^ crc >> 8;
         buf = buf.offset(1);
+        size -= 1;
     }
     !crc
 }

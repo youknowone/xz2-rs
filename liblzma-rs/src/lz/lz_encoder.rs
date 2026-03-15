@@ -1,5 +1,8 @@
+use crate::lz::lz_encoder_mf::{
+    lzma_mf_bt2_find, lzma_mf_bt2_skip, lzma_mf_bt3_find, lzma_mf_bt3_skip, lzma_mf_bt4_find,
+    lzma_mf_bt4_skip, lzma_mf_hc3_find, lzma_mf_hc3_skip, lzma_mf_hc4_find, lzma_mf_hc4_skip,
+};
 use crate::types::*;
-use crate::lz::lz_encoder_mf::{lzma_mf_hc3_find, lzma_mf_hc3_skip, lzma_mf_hc4_find, lzma_mf_hc4_skip, lzma_mf_bt2_find, lzma_mf_bt2_skip, lzma_mf_bt3_find, lzma_mf_bt3_skip, lzma_mf_bt4_find, lzma_mf_bt4_skip};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lz_options {
@@ -21,20 +24,23 @@ pub struct lzma_coder {
     pub next: lzma_next_coder,
 }
 pub const LZMA_MEMCMPLEN_EXTRA: u32 = 0;
-unsafe extern "C" fn move_window(mf: *mut lzma_mf) {
-    let move_offset: u32 = (*mf).read_pos.wrapping_sub((*mf).keep_size_before) & !(15);
-    let move_size: size_t = (*mf).write_pos.wrapping_sub(move_offset) as size_t;
+#[inline]
+unsafe fn move_window(mf: *mut lzma_mf) {
+    debug_assert!((*mf).read_pos > (*mf).keep_size_before);
+    let move_offset: u32 = ((*mf).read_pos - (*mf).keep_size_before) & !15;
+    debug_assert!((*mf).write_pos > move_offset);
+    let move_size: size_t = ((*mf).write_pos - move_offset) as size_t;
     core::ptr::copy(
         (*mf).buffer.offset(move_offset as isize) as *const u8,
         (*mf).buffer as *mut u8,
         move_size,
     );
-    (*mf).offset = (*mf).offset.wrapping_add(move_offset);
-    (*mf).read_pos = (*mf).read_pos.wrapping_sub(move_offset);
-    (*mf).read_limit = (*mf).read_limit.wrapping_sub(move_offset);
-    (*mf).write_pos = (*mf).write_pos.wrapping_sub(move_offset);
+    (*mf).offset += move_offset;
+    (*mf).read_pos -= move_offset;
+    (*mf).read_limit -= move_offset;
+    (*mf).write_pos -= move_offset;
 }
-unsafe extern "C" fn fill_window(
+unsafe fn fill_window(
     coder: *mut lzma_coder,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -42,12 +48,12 @@ unsafe extern "C" fn fill_window(
     in_size: size_t,
     action: lzma_action,
 ) -> lzma_ret {
-    if (*coder).mf.read_pos >= (*coder).mf.size.wrapping_sub((*coder).mf.keep_size_after) {
+    debug_assert!((*coder).mf.read_pos <= (*coder).mf.write_pos);
+    if (*coder).mf.read_pos >= (*coder).mf.size - (*coder).mf.keep_size_after {
         move_window(::core::ptr::addr_of_mut!((*coder).mf));
     }
     let mut write_pos: size_t = (*coder).mf.write_pos as size_t;
-    let mut ret: lzma_ret = LZMA_OK;
-    if (*coder).next.code.is_none() {
+    let mut ret = if (*coder).next.code.is_none() {
         lzma_bufcpy(
             in_0,
             in_pos,
@@ -56,13 +62,13 @@ unsafe extern "C" fn fill_window(
             ::core::ptr::addr_of_mut!(write_pos),
             (*coder).mf.size as size_t,
         );
-        ret = if action != LZMA_RUN && *in_pos == in_size {
+        if action != LZMA_RUN && *in_pos == in_size {
             LZMA_STREAM_END
         } else {
             LZMA_OK
-        };
+        }
     } else {
-        ret = (*coder).next.code.unwrap()(
+        (*coder).next.code.unwrap()(
             (*coder).next.coder,
             allocator,
             in_0,
@@ -72,8 +78,8 @@ unsafe extern "C" fn fill_window(
             ::core::ptr::addr_of_mut!(write_pos),
             (*coder).mf.size as size_t,
             action,
-        );
-    }
+        )
+    };
     (*coder).mf.write_pos = write_pos as u32;
     core::ptr::write_bytes(
         (*coder).mf.buffer.offset(write_pos as isize) as *mut u8,
@@ -85,15 +91,13 @@ unsafe extern "C" fn fill_window(
         (*coder).mf.action = action;
         (*coder).mf.read_limit = (*coder).mf.write_pos;
     } else if (*coder).mf.write_pos > (*coder).mf.keep_size_after {
-        (*coder).mf.read_limit = (*coder)
-            .mf
-            .write_pos
-            .wrapping_sub((*coder).mf.keep_size_after);
+        (*coder).mf.read_limit = (*coder).mf.write_pos - (*coder).mf.keep_size_after;
     }
     if (*coder).mf.pending > 0 && (*coder).mf.read_pos < (*coder).mf.read_limit {
         let pending: u32 = (*coder).mf.pending;
         (*coder).mf.pending = 0;
-        (*coder).mf.read_pos = (*coder).mf.read_pos.wrapping_sub(pending);
+        debug_assert!((*coder).mf.read_pos >= pending);
+        (*coder).mf.read_pos -= pending;
         (*coder).mf.skip.unwrap()(::core::ptr::addr_of_mut!((*coder).mf), pending);
     }
     ret
@@ -131,47 +135,35 @@ unsafe extern "C" fn lz_encode(
     }
     LZMA_OK
 }
-unsafe extern "C" fn lz_encoder_prepare(
+unsafe fn lz_encoder_prepare(
     mf: *mut lzma_mf,
     allocator: *const lzma_allocator,
     lz_options: *const lzma_lz_options,
 ) -> bool {
     if (*lz_options).dict_size < LZMA_DICT_SIZE_MIN as size_t
-        || (*lz_options).dict_size > (1u32 << 30).wrapping_add(1u32 << 29) as size_t
+        || (*lz_options).dict_size > ((1u32 << 30) + (1u32 << 29)) as size_t
         || (*lz_options).nice_len > (*lz_options).match_len_max
     {
         return true;
     }
-    (*mf).keep_size_before = (*lz_options)
-        .before_size
-        .wrapping_add((*lz_options).dict_size) as u32;
-    (*mf).keep_size_after = (*lz_options)
-        .after_size
-        .wrapping_add((*lz_options).match_len_max) as u32;
-    let mut reserve: u32 = (*lz_options).dict_size.wrapping_div(2) as u32;
+    (*mf).keep_size_before = ((*lz_options).before_size + (*lz_options).dict_size) as u32;
+    (*mf).keep_size_after = ((*lz_options).after_size + (*lz_options).match_len_max) as u32;
+    let mut reserve: u32 = ((*lz_options).dict_size / 2) as u32;
     if reserve > 1 << 30 {
-        reserve = reserve.wrapping_div(2);
+        reserve /= 2;
     }
-    reserve = (reserve as size_t).wrapping_add(
-        (*lz_options)
-            .before_size
-            .wrapping_add((*lz_options).match_len_max)
-            .wrapping_add((*lz_options).after_size)
-            .wrapping_div(2)
-            .wrapping_add((1u32 << 19) as size_t),
-    ) as u32;
+    reserve +=
+        (((*lz_options).before_size + (*lz_options).match_len_max + (*lz_options).after_size) / 2
+            + (1u32 << 19) as size_t) as u32;
     let old_size: u32 = (*mf).size;
-    (*mf).size = (*mf)
-        .keep_size_before
-        .wrapping_add(reserve)
-        .wrapping_add((*mf).keep_size_after);
+    (*mf).size = (*mf).keep_size_before + reserve + (*mf).keep_size_after;
     if !(*mf).buffer.is_null() && old_size != (*mf).size {
         crate::alloc::internal_free((*mf).buffer as *mut c_void, allocator);
         (*mf).buffer = core::ptr::null_mut();
     }
     (*mf).match_len_max = (*lz_options).match_len_max as u32;
     (*mf).nice_len = (*lz_options).nice_len as u32;
-    (*mf).cyclic_size = (*lz_options).dict_size.wrapping_add(1) as u32;
+    (*mf).cyclic_size = (*lz_options).dict_size as u32 + 1;
     match (*lz_options).match_finder {
         3 => {
             (*mf).find = Some(
@@ -211,7 +203,7 @@ unsafe extern "C" fn lz_encoder_prepare(
     if hash_bytes == 2 {
         hs = 0xffff;
     } else {
-        hs = (*lz_options).dict_size.wrapping_sub(1) as u32;
+        hs = (*lz_options).dict_size as u32 - 1;
         hs |= hs >> 1;
         hs |= hs >> 2;
         hs |= hs >> 4;
@@ -220,7 +212,7 @@ unsafe extern "C" fn lz_encoder_prepare(
         hs |= 0xffff;
         if hs > 1 << 24 {
             if hash_bytes == 3 {
-                hs = (1u32 << 24).wrapping_sub(1) as u32;
+                hs = (1u32 << 24) - 1;
             } else {
                 hs >>= 1;
             }
@@ -229,17 +221,17 @@ unsafe extern "C" fn lz_encoder_prepare(
     (*mf).hash_mask = hs;
     hs += 1;
     if hash_bytes > 2 {
-        hs = hs.wrapping_add(HASH_2_SIZE);
+        hs += HASH_2_SIZE;
     }
     if hash_bytes > 3 {
-        hs = hs.wrapping_add(HASH_3_SIZE);
+        hs += HASH_3_SIZE;
     }
     let old_hash_count: u32 = (*mf).hash_count;
     let old_sons_count: u32 = (*mf).sons_count;
     (*mf).hash_count = hs;
     (*mf).sons_count = (*mf).cyclic_size;
     if is_bt {
-        (*mf).sons_count = (*mf).sons_count.wrapping_mul(2);
+        (*mf).sons_count *= 2;
     }
     if old_hash_count != (*mf).hash_count || old_sons_count != (*mf).sons_count {
         crate::alloc::internal_free((*mf).hash as *mut c_void, allocator);
@@ -250,21 +242,21 @@ unsafe extern "C" fn lz_encoder_prepare(
     (*mf).depth = (*lz_options).depth;
     if (*mf).depth == 0 {
         if is_bt {
-            (*mf).depth = (16u32).wrapping_add((*mf).nice_len.wrapping_div(2));
+            (*mf).depth = 16u32 + (*mf).nice_len / 2;
         } else {
-            (*mf).depth = (4u32).wrapping_add((*mf).nice_len.wrapping_div(4));
+            (*mf).depth = 4u32 + (*mf).nice_len / 4;
         }
     }
     false
 }
-unsafe extern "C" fn lz_encoder_init(
+unsafe fn lz_encoder_init(
     mf: *mut lzma_mf,
     allocator: *const lzma_allocator,
     lz_options: *const lzma_lz_options,
 ) -> bool {
     if (*mf).buffer.is_null() {
         (*mf).buffer = crate::alloc::internal_alloc_bytes(
-            (*mf).size.wrapping_add(LZMA_MEMCMPLEN_EXTRA) as size_t,
+            ((*mf).size + LZMA_MEMCMPLEN_EXTRA) as size_t,
             allocator,
         ) as *mut u8;
         if (*mf).buffer.is_null() {
@@ -298,7 +290,7 @@ unsafe extern "C" fn lz_encoder_init(
         core::ptr::write_bytes(
             (*mf).hash as *mut u8,
             0 as u8,
-            ((*mf).hash_count as size_t).wrapping_mul(core::mem::size_of::<u32>()),
+            ((*mf).hash_count as size_t) * core::mem::size_of::<u32>(),
         );
     }
     (*mf).cyclic_pos = 0;
@@ -351,11 +343,9 @@ pub extern "C" fn lzma_lz_encoder_memusage(lz_options: *const lzma_lz_options) -
     if unsafe { lz_encoder_prepare(::core::ptr::addr_of_mut!(mf), core::ptr::null(), lz_options) } {
         return UINT64_MAX;
     }
-    (mf.hash_count as u64)
-        .wrapping_add(mf.sons_count as u64)
-        .wrapping_mul(core::mem::size_of::<u32>() as u64)
-        .wrapping_add(mf.size as u64)
-        .wrapping_add(core::mem::size_of::<lzma_coder>() as u64)
+    ((mf.hash_count as u64) + (mf.sons_count as u64)) * core::mem::size_of::<u32>() as u64
+        + mf.size as u64
+        + core::mem::size_of::<lzma_coder>() as u64
 }
 unsafe extern "C" fn lz_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;

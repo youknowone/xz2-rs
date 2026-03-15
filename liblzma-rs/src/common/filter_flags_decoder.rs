@@ -1,5 +1,5 @@
-use crate::types::*;
 use crate::common::filter_decoder::lzma_properties_decode;
+use crate::types::*;
 pub unsafe extern "C" fn lzma_filter_flags_decode(
     filter: *mut lzma_filter,
     allocator: *const lzma_allocator,

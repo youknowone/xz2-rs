@@ -1,6 +1,6 @@
-use crate::types::*;
 use crate::check::crc64_fast::lzma_crc64;
-use crate::check::sha256::{lzma_sha256_init, lzma_sha256_update, lzma_sha256_finish};
+use crate::check::sha256::{lzma_sha256_finish, lzma_sha256_init, lzma_sha256_update};
+use crate::types::*;
 pub extern "C" fn lzma_check_is_supported(type_0: lzma_check) -> lzma_bool {
     if type_0 > LZMA_CHECK_ID_MAX {
         return false as lzma_bool;

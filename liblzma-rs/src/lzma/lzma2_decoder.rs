@@ -1,6 +1,6 @@
-use crate::types::*;
 use crate::lz::lz_decoder::{lzma_lz_decoder_init, lzma_lz_options};
 use crate::lzma::lzma_decoder::lzma_lzma_decoder_create;
+use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lzma2_coder {

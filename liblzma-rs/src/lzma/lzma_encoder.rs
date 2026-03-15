@@ -1,7 +1,7 @@
-use crate::types::*;
 use crate::lz::lz_encoder::{lzma_lz_encoder_init, lzma_lz_encoder_memusage, lzma_lz_options};
 use crate::lzma::lzma_encoder_optimum_fast::lzma_lzma_optimum_fast;
 use crate::lzma::lzma_encoder_optimum_normal::lzma_lzma_optimum_normal;
+use crate::types::*;
 #[inline]
 unsafe extern "C" fn rc_reset(rc: *mut lzma_range_encoder) {
     (*rc).low = 0;

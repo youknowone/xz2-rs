@@ -1,5 +1,5 @@
-use crate::types::*;
 use crate::common::stream_buffer_encoder::lzma_stream_buffer_encode;
+use crate::types::*;
 pub unsafe extern "C" fn lzma_easy_buffer_encode(
     preset: u32,
     check: lzma_check,

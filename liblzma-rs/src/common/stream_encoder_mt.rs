@@ -1,7 +1,7 @@
-use crate::types::*;
+use crate::common::block_buffer_encoder::{lzma_block_buffer_bound64, lzma_block_uncomp_encode};
 use crate::common::filter_encoder::lzma_mt_block_size;
-use crate::common::block_buffer_encoder::{lzma_block_uncomp_encode, lzma_block_buffer_bound64};
 use crate::common::outqueue::lzma_outq_memusage;
+use crate::types::*;
 pub type worker_thread = worker_thread_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
