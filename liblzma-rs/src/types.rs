@@ -866,6 +866,23 @@ pub unsafe extern "C" fn lzma_memcmplen(
     mut len: u32,
     limit: u32,
 ) -> u32 {
+    debug_assert!(len <= limit);
+    debug_assert!(limit <= u32::MAX / 2);
+
+    #[cfg(all(
+        target_endian = "little",
+        any(target_arch = "aarch64", target_arch = "x86_64")
+    ))]
+    while len + 8 <= limit {
+        let lhs = core::ptr::read_unaligned(buf1.add(len as usize) as *const u64);
+        let rhs = core::ptr::read_unaligned(buf2.add(len as usize) as *const u64);
+        let diff = lhs.wrapping_sub(rhs);
+        if diff != 0 {
+            return core::cmp::min(len + (diff.trailing_zeros() >> 3), limit);
+        }
+        len += 8;
+    }
+
     while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
         len += 1;
     }
