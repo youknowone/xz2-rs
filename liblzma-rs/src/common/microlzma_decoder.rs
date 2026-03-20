@@ -26,9 +26,7 @@ unsafe extern "C" fn microlzma_decode(
     if (in_size - *in_pos) as u64 > (*coder).comp_size {
         in_size = *in_pos + (*coder).comp_size as size_t;
     }
-    if !(*coder).uncomp_size_is_exact
-        && (out_size - *out_pos) as lzma_vli > (*coder).uncomp_size
-    {
+    if !(*coder).uncomp_size_is_exact && (out_size - *out_pos) as lzma_vli > (*coder).uncomp_size {
         out_size = *out_pos + (*coder).uncomp_size as size_t;
     }
     if !(*coder).props_decoded {

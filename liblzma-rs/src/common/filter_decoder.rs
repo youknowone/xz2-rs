@@ -284,9 +284,8 @@ static decoders: [lzma_filter_decoder; 12] = [
 ];
 extern "C" fn decoder_find(id: lzma_vli) -> *const lzma_filter_decoder {
     let mut i: size_t = 0;
-    while i
-        < core::mem::size_of::<[lzma_filter_decoder; 12]>()
-            / core::mem::size_of::<lzma_filter_decoder>()
+    while i < core::mem::size_of::<[lzma_filter_decoder; 12]>()
+        / core::mem::size_of::<lzma_filter_decoder>()
     {
         if decoders[i as usize].id == id {
             return &decoders[i as usize];
@@ -314,10 +313,7 @@ pub unsafe fn lzma_raw_decoder_init(
         false,
     )
 }
-pub unsafe fn lzma_raw_decoder(
-    strm: *mut lzma_stream,
-    options: *const lzma_filter,
-) -> lzma_ret {
+pub unsafe fn lzma_raw_decoder(strm: *mut lzma_stream, options: *const lzma_filter) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;

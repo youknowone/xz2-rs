@@ -113,11 +113,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
         true,
     )
 }
-pub unsafe fn lzma_bcj_riscv_encode(
-    mut start_offset: u32,
-    buf: *mut u8,
-    size: size_t,
-) -> size_t {
+pub unsafe fn lzma_bcj_riscv_encode(mut start_offset: u32, buf: *mut u8, size: size_t) -> size_t {
     start_offset = (start_offset & !1u32) as u32;
     riscv_encode(core::ptr::null_mut(), start_offset, true, buf, size)
 }
@@ -148,8 +144,7 @@ unsafe extern "C" fn riscv_decode(
                 *buffer.offset((i + 1) as isize) = (b1 & 0xf | addr >> 8 & 0xf0) as u8;
                 *buffer.offset((i + 2) as isize) =
                     (addr >> 16 & 0xf | addr >> 7 & 0x10 | addr << 4 & 0xe0) as u8;
-                *buffer.offset((i + 3) as isize) =
-                    (addr >> 4 & 0x7f | addr >> 13 & 0x80) as u8;
+                *buffer.offset((i + 3) as isize) = (addr >> 4 & 0x7f | addr >> 13 & 0x80) as u8;
                 i += 4 - 2;
             }
         } else if inst & 0x7f == 0x17 {
@@ -213,11 +208,7 @@ pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
         false,
     )
 }
-pub unsafe fn lzma_bcj_riscv_decode(
-    mut start_offset: u32,
-    buf: *mut u8,
-    size: size_t,
-) -> size_t {
+pub unsafe fn lzma_bcj_riscv_decode(mut start_offset: u32, buf: *mut u8, size: size_t) -> size_t {
     start_offset = (start_offset & !1u32) as u32;
     riscv_decode(core::ptr::null_mut(), start_offset, false, buf, size)
 }

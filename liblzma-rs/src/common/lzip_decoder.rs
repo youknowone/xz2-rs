@@ -135,8 +135,7 @@ unsafe extern "C" fn lzip_decode(
                 if b2log < 12 || b2log > 29 || b2log == 12 && fracnum > 0 {
                     return LZMA_DATA_ERROR;
                 }
-                (*coder).options.dict_size =
-                    (1u32 << b2log) - (fracnum << (b2log - 4));
+                (*coder).options.dict_size = (1u32 << b2log) - (fracnum << (b2log - 4));
                 (*coder).options.preset_dict = core::ptr::null();
                 (*coder).options.lc = LZIP_LC;
                 (*coder).options.lp = LZIP_LP;
@@ -384,11 +383,7 @@ pub unsafe extern "C" fn lzma_lzip_decoder_init(
     (*coder).pos = 0;
     LZMA_OK
 }
-pub unsafe fn lzma_lzip_decoder(
-    strm: *mut lzma_stream,
-    memlimit: u64,
-    flags: u32,
-) -> lzma_ret {
+pub unsafe fn lzma_lzip_decoder(strm: *mut lzma_stream, memlimit: u64, flags: u32) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;

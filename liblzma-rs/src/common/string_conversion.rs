@@ -94,14 +94,14 @@ unsafe fn str_finish(
 }
 unsafe fn str_append_str(str: *mut lzma_str, s: *const c_char) {
     let len: size_t = strlen(s) as size_t;
-    let limit: size_t = ((STR_ALLOC_SIZE - 1) as size_t).wrapping_sub((*str).pos);
+    let limit: size_t = (STR_ALLOC_SIZE - 1) as size_t - (*str).pos;
     let copy_size: size_t = if len < limit { len } else { limit };
     core::ptr::copy_nonoverlapping(
         s as *const u8,
         (*str).buf.offset((*str).pos as isize) as *mut u8,
         copy_size,
     );
-    (*str).pos = (*str).pos.wrapping_add(copy_size);
+    (*str).pos += copy_size;
 }
 unsafe fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suffix: bool) {
     if v == 0 {
@@ -119,9 +119,8 @@ unsafe fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suffix: bool) 
         if use_byte_suffix {
             while v & 1023 == 0
                 && suf
-                    < (core::mem::size_of::<[[c_char; 4]; 4]>())
-                        .wrapping_div(core::mem::size_of::<[c_char; 4]>())
-                        .wrapping_sub(1)
+                    < core::mem::size_of::<[[c_char; 4]; 4]>() / core::mem::size_of::<[c_char; 4]>()
+                        - 1
             {
                 v >>= 10;
                 suf += 1;
@@ -129,11 +128,11 @@ unsafe fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suffix: bool) 
         }
         let mut buf: [c_char; 16] =
             core::mem::transmute::<[u8; 16], [c_char; 16]>(*b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
-        let mut pos: size_t = (core::mem::size_of::<[c_char; 16]>()).wrapping_sub(1);
+        let mut pos: size_t = core::mem::size_of::<[c_char; 16]>() - 1;
         loop {
             pos -= 1;
-            buf[pos as usize] = ('0' as i32 as u32).wrapping_add(v.wrapping_rem(10)) as c_char;
-            v = v.wrapping_div(10);
+            buf[pos as usize] = ('0' as i32 as u32 + v % 10) as c_char;
+            v /= 10;
             if v == 0 {
                 break;
             }
@@ -174,8 +173,7 @@ extern "C" fn parse_bcj(
             str_end,
             filter_options,
             ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            (core::mem::size_of::<[option_map; 1]>())
-                .wrapping_div(core::mem::size_of::<option_map>()),
+            core::mem::size_of::<[option_map; 1]>() / core::mem::size_of::<option_map>(),
         )
     };
 }
@@ -321,7 +319,7 @@ unsafe extern "C" fn parse_lzma12(
         str_end,
         filter_options,
         ::core::ptr::addr_of!(lzma12_optmap) as *const option_map,
-        (core::mem::size_of::<[option_map; 9]>()).wrapping_div(core::mem::size_of::<option_map>()),
+        core::mem::size_of::<[option_map; 9]>() / core::mem::size_of::<option_map>(),
     );
     if !errmsg.is_null() {
         return errmsg;
@@ -717,9 +715,8 @@ unsafe fn parse_filter(
         return crate::c_str!("Unknown filter name");
     }
     let mut i: size_t = 0;
-    while i
-        < (core::mem::size_of::<[filter_codec_def; 11]>())
-            .wrapping_div(core::mem::size_of::<filter_codec_def>())
+    while i < core::mem::size_of::<[filter_codec_def; 11]>()
+        / core::mem::size_of::<filter_codec_def>()
     {
         if memcmp(
             *str as *const c_void,
@@ -891,8 +888,7 @@ unsafe fn str_to_filters(
                     core::ptr::copy_nonoverlapping(
                         ::core::ptr::addr_of_mut!(temp_filters) as *const u8,
                         filters as *mut u8,
-                        i_0.wrapping_add(1)
-                            .wrapping_mul(core::mem::size_of::<lzma_filter>()),
+                        (i_0 + 1) * core::mem::size_of::<lzma_filter>(),
                     );
                     return core::ptr::null();
                 }
@@ -902,7 +898,7 @@ unsafe fn str_to_filters(
     }
     loop {
         let old_i = i_0;
-        i_0 = i_0.wrapping_sub(1);
+        i_0 -= 1;
         if old_i == 0 {
             break;
         }

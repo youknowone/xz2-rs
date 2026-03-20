@@ -1,9 +1,6 @@
 use crate::common::filter_encoder::{lzma_properties_encode, lzma_properties_size};
 use crate::types::*;
-pub unsafe fn lzma_filter_flags_size(
-    size: *mut u32,
-    filter: *const lzma_filter,
-) -> lzma_ret {
+pub unsafe fn lzma_filter_flags_size(size: *mut u32, filter: *const lzma_filter) -> lzma_ret {
     if (*filter).id >= LZMA_FILTER_RESERVED_START {
         return LZMA_PROG_ERROR;
     }

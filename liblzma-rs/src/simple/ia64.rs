@@ -25,9 +25,7 @@ unsafe extern "C" fn ia64_code(
                 let mut instruction: u64 = 0;
                 let mut j: size_t = 0;
                 while j < 6 {
-                    instruction +=
-                        (*buffer.offset((i + j + byte_pos) as isize) as u64)
-                            << (8 * j);
+                    instruction += (*buffer.offset((i + j + byte_pos) as isize) as u64) << (8 * j);
                     j += 1;
                 }
                 let mut inst_norm: u64 = instruction >> bit_res;

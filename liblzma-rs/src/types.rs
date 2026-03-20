@@ -860,12 +860,7 @@ pub unsafe fn mf_skip(mf: *mut lzma_mf, amount: u32) {
     }
 }
 #[inline(always)]
-pub unsafe fn lzma_memcmplen(
-    buf1: *const u8,
-    buf2: *const u8,
-    mut len: u32,
-    limit: u32,
-) -> u32 {
+pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, mut len: u32, limit: u32) -> u32 {
     debug_assert!(len <= limit);
     debug_assert!(limit <= u32::MAX / 2);
 
@@ -921,11 +916,7 @@ pub fn rc_bit_1_price(prob: probability) -> u32 {
     }
 }
 #[inline]
-pub unsafe fn rc_bittree_price(
-    probs: *const probability,
-    bit_levels: u32,
-    mut symbol: u32,
-) -> u32 {
+pub unsafe fn rc_bittree_price(probs: *const probability, bit_levels: u32, mut symbol: u32) -> u32 {
     let mut price: u32 = 0;
     symbol = (symbol as u32).wrapping_add(1u32 << bit_levels) as u32;
     loop {

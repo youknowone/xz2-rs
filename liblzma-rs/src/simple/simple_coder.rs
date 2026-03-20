@@ -35,11 +35,7 @@ unsafe fn copy_or_code(
     }
     LZMA_OK
 }
-unsafe fn call_filter(
-    coder: *mut lzma_simple_coder,
-    buffer: *mut u8,
-    size: size_t,
-) -> size_t {
+unsafe fn call_filter(coder: *mut lzma_simple_coder, buffer: *mut u8, size: size_t) -> size_t {
     let filtered: size_t = (*coder).filter.unwrap()(
         (*coder).simple,
         (*coder).now_pos,

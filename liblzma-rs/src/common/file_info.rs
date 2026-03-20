@@ -41,14 +41,14 @@ unsafe fn fill_temp(
     in_pos: *mut size_t,
     in_size: size_t,
 ) -> bool {
-    (*coder).file_cur_pos = (*coder).file_cur_pos.wrapping_add(lzma_bufcpy(
+    (*coder).file_cur_pos += lzma_bufcpy(
         in_0,
         in_pos,
         in_size,
         ::core::ptr::addr_of_mut!((*coder).temp) as *mut u8,
         ::core::ptr::addr_of_mut!((*coder).temp_pos),
         (*coder).temp_size,
-    ) as u64);
+    ) as u64;
     (*coder).temp_pos < (*coder).temp_size
 }
 unsafe fn seek_to_pos(
@@ -58,15 +58,11 @@ unsafe fn seek_to_pos(
     in_pos: *mut size_t,
     in_size: size_t,
 ) -> bool {
-    let pos_min: u64 = (*coder)
-        .file_cur_pos
-        .wrapping_sub((*in_pos).wrapping_sub(in_start) as u64);
-    let pos_max: u64 = (*coder)
-        .file_cur_pos
-        .wrapping_add(in_size.wrapping_sub(*in_pos) as u64);
+    let pos_min: u64 = (*coder).file_cur_pos - (*in_pos - in_start) as u64;
+    let pos_max: u64 = (*coder).file_cur_pos + (in_size - *in_pos) as u64;
     let mut external_seek_needed: bool = false;
     if target_pos >= pos_min && target_pos <= pos_max {
-        *in_pos = (*in_pos).wrapping_add(target_pos.wrapping_sub((*coder).file_cur_pos) as size_t);
+        *in_pos += (target_pos - (*coder).file_cur_pos) as size_t;
         external_seek_needed = false;
     } else {
         *(*coder).external_seek_pos = target_pos;
@@ -86,22 +82,16 @@ unsafe fn reverse_seek(
         return LZMA_DATA_ERROR;
     }
     (*coder).temp_pos = 0;
-    if (*coder)
-        .file_target_pos
-        .wrapping_sub(LZMA_STREAM_HEADER_SIZE as u64)
+    if ((*coder).file_target_pos - LZMA_STREAM_HEADER_SIZE as u64)
         < core::mem::size_of::<[u8; 8192]>() as u64
     {
-        (*coder).temp_size = (*coder)
-            .file_target_pos
-            .wrapping_sub(LZMA_STREAM_HEADER_SIZE as u64) as size_t;
+        (*coder).temp_size = ((*coder).file_target_pos - LZMA_STREAM_HEADER_SIZE as u64) as size_t;
     } else {
         (*coder).temp_size = core::mem::size_of::<[u8; 8192]>() as size_t;
     }
     if seek_to_pos(
         coder,
-        (*coder)
-            .file_target_pos
-            .wrapping_sub((*coder).temp_size as u64),
+        (*coder).file_target_pos - (*coder).temp_size as u64,
         in_start,
         in_pos,
         in_size,
@@ -146,13 +136,9 @@ unsafe fn decode_index(
         0,
         LZMA_RUN,
     );
-    (*coder).index_remaining = (*coder)
-        .index_remaining
-        .wrapping_sub((*in_pos).wrapping_sub(in_start) as lzma_vli);
+    (*coder).index_remaining -= (*in_pos - in_start) as lzma_vli;
     if update_file_cur_pos {
-        (*coder).file_cur_pos = (*coder)
-            .file_cur_pos
-            .wrapping_add((*in_pos).wrapping_sub(in_start) as u64);
+        (*coder).file_cur_pos += (*in_pos - in_start) as u64;
     }
     ret
 }
@@ -169,11 +155,8 @@ unsafe extern "C" fn file_info_decode(
 ) -> lzma_ret {
     let coder: *mut lzma_file_info_coder = coder_ptr as *mut lzma_file_info_coder;
     let in_start: size_t = *in_pos;
-    if (*coder).file_size.wrapping_sub((*coder).file_cur_pos)
-        < in_size.wrapping_sub(in_start) as u64
-    {
-        in_size =
-            in_start.wrapping_add((*coder).file_size.wrapping_sub((*coder).file_cur_pos) as size_t);
+    if (*coder).file_size - (*coder).file_cur_pos < (in_size - in_start) as u64 {
+        in_size = in_start + ((*coder).file_size - (*coder).file_cur_pos) as size_t;
     }
     loop {
         let mut current_block_142: u64;
@@ -241,11 +224,8 @@ unsafe extern "C" fn file_info_decode(
                     ::core::ptr::addr_of_mut!((*coder).temp) as *mut u8,
                     (*coder).temp_size,
                 ) as size_t;
-                (*coder).stream_padding = (*coder)
-                    .stream_padding
-                    .wrapping_add(new_padding as lzma_vli);
-                (*coder).file_target_pos =
-                    (*coder).file_target_pos.wrapping_sub(new_padding as u64);
+                (*coder).stream_padding += new_padding as lzma_vli;
+                (*coder).file_target_pos -= new_padding as u64;
                 if new_padding == (*coder).temp_size {
                     (*coder).sequence = SEQ_PADDING_SEEK;
                     current_block_142 = 13014351284863956202;
@@ -254,7 +234,7 @@ unsafe extern "C" fn file_info_decode(
                         return LZMA_DATA_ERROR;
                     }
                     (*coder).sequence = SEQ_FOOTER;
-                    (*coder).temp_size = (*coder).temp_size.wrapping_sub(new_padding);
+                    (*coder).temp_size -= new_padding;
                     (*coder).temp_pos = (*coder).temp_size;
                     if (*coder).temp_size < LZMA_STREAM_HEADER_SIZE as size_t {
                         let ret__1: lzma_ret = reverse_seek(coder, in_start, in_pos, in_size);
@@ -272,12 +252,8 @@ unsafe extern "C" fn file_info_decode(
                 if fill_temp(coder, in_0, in_pos, in_size) {
                     return LZMA_OK;
                 }
-                (*coder).file_target_pos = (*coder)
-                    .file_target_pos
-                    .wrapping_sub(LZMA_STREAM_HEADER_SIZE as u64);
-                (*coder).temp_size = (*coder)
-                    .temp_size
-                    .wrapping_sub(LZMA_STREAM_HEADER_SIZE as size_t);
+                (*coder).file_target_pos -= LZMA_STREAM_HEADER_SIZE as u64;
+                (*coder).temp_size -= LZMA_STREAM_HEADER_SIZE as size_t;
                 let ret__2: lzma_ret = hide_format_error(lzma_stream_footer_decode(
                     ::core::ptr::addr_of_mut!((*coder).footer_flags),
                     (::core::ptr::addr_of_mut!((*coder).temp) as *mut u8)
@@ -287,20 +263,15 @@ unsafe extern "C" fn file_info_decode(
                     return ret__2;
                 }
                 if (*coder).file_target_pos
-                    < (*coder)
-                        .footer_flags
-                        .backward_size
-                        .wrapping_add(LZMA_STREAM_HEADER_SIZE as lzma_vli)
+                    < (*coder).footer_flags.backward_size + LZMA_STREAM_HEADER_SIZE as lzma_vli
                 {
                     return LZMA_DATA_ERROR;
                 }
-                (*coder).file_target_pos = (*coder)
-                    .file_target_pos
-                    .wrapping_sub((*coder).footer_flags.backward_size as u64);
+                (*coder).file_target_pos -= (*coder).footer_flags.backward_size as u64;
                 (*coder).sequence = SEQ_INDEX_INIT;
                 if (*coder).temp_size as lzma_vli >= (*coder).footer_flags.backward_size {
-                    (*coder).temp_pos = ((*coder).temp_size as lzma_vli)
-                        .wrapping_sub((*coder).footer_flags.backward_size)
+                    (*coder).temp_pos = ((*coder).temp_size as lzma_vli
+                        - (*coder).footer_flags.backward_size)
                         as size_t;
                 } else {
                     (*coder).temp_pos = 0;
@@ -326,7 +297,7 @@ unsafe extern "C" fn file_info_decode(
                     ::core::ptr::addr_of_mut!((*coder).index_decoder),
                     allocator,
                     ::core::ptr::addr_of_mut!((*coder).this_index),
-                    (*coder).memlimit.wrapping_sub(memused),
+                    (*coder).memlimit - memused,
                 );
                 if ret__3 != LZMA_OK {
                     return ret__3;
@@ -351,8 +322,8 @@ unsafe extern "C" fn file_info_decode(
                     );
                 } else {
                     let mut in_stop: size_t = in_size;
-                    if in_size.wrapping_sub(*in_pos) as lzma_vli > (*coder).index_remaining {
-                        in_stop = (*in_pos).wrapping_add((*coder).index_remaining as size_t);
+                    if (in_size - *in_pos) as lzma_vli > (*coder).index_remaining {
+                        in_stop = *in_pos + (*coder).index_remaining as size_t;
                     }
                     ret = decode_index(coder, allocator, in_0, in_pos, in_stop, true);
                 }
@@ -370,30 +341,27 @@ unsafe extern "C" fn file_info_decode(
                     }
                     _ => return ret,
                 }
-                let seek_amount: u64 = (lzma_index_total_size((*coder).this_index) as u64)
-                    .wrapping_add(LZMA_STREAM_HEADER_SIZE as u64);
+                let seek_amount: u64 = lzma_index_total_size((*coder).this_index) as u64
+                    + LZMA_STREAM_HEADER_SIZE as u64;
                 if (*coder).file_target_pos < seek_amount {
                     return LZMA_DATA_ERROR;
                 }
-                (*coder).file_target_pos = (*coder).file_target_pos.wrapping_sub(seek_amount);
+                (*coder).file_target_pos -= seek_amount;
                 if (*coder).file_target_pos == 0 {
                     (*coder).header_flags = (*coder).first_header_flags;
                     (*coder).sequence = SEQ_HEADER_COMPARE;
                     current_block_142 = 13014351284863956202;
                 } else {
                     (*coder).sequence = SEQ_HEADER_DECODE;
-                    (*coder).file_target_pos = (*coder)
-                        .file_target_pos
-                        .wrapping_add(LZMA_STREAM_HEADER_SIZE as u64);
+                    (*coder).file_target_pos += LZMA_STREAM_HEADER_SIZE as u64;
                     if (*coder).temp_size != 0
-                        && ((*coder).temp_size as lzma_vli)
-                            .wrapping_sub((*coder).footer_flags.backward_size)
+                        && (*coder).temp_size as lzma_vli - (*coder).footer_flags.backward_size
                             >= seek_amount
                     {
-                        (*coder).temp_pos = ((*coder).temp_size as lzma_vli)
-                            .wrapping_sub((*coder).footer_flags.backward_size)
-                            .wrapping_sub(seek_amount as lzma_vli)
-                            .wrapping_add(LZMA_STREAM_HEADER_SIZE as lzma_vli)
+                        (*coder).temp_pos = ((*coder).temp_size as lzma_vli
+                            - (*coder).footer_flags.backward_size
+                            - seek_amount as lzma_vli
+                            + LZMA_STREAM_HEADER_SIZE as lzma_vli)
                             as size_t;
                         (*coder).temp_size = (*coder).temp_pos;
                     } else {
@@ -412,12 +380,8 @@ unsafe extern "C" fn file_info_decode(
                 if fill_temp(coder, in_0, in_pos, in_size) {
                     return LZMA_OK;
                 }
-                (*coder).file_target_pos = (*coder)
-                    .file_target_pos
-                    .wrapping_sub(LZMA_STREAM_HEADER_SIZE as u64);
-                (*coder).temp_size = (*coder)
-                    .temp_size
-                    .wrapping_sub(LZMA_STREAM_HEADER_SIZE as size_t);
+                (*coder).file_target_pos -= LZMA_STREAM_HEADER_SIZE as u64;
+                (*coder).temp_size -= LZMA_STREAM_HEADER_SIZE as size_t;
                 (*coder).temp_pos = (*coder).temp_size;
                 let ret__5: lzma_ret = hide_format_error(lzma_stream_header_decode(
                     ::core::ptr::addr_of_mut!((*coder).header_flags),
@@ -505,7 +469,7 @@ unsafe extern "C" fn file_info_decoder_memconfig(
             return LZMA_PROG_ERROR;
         }
     }
-    *memusage = combined_index_memusage.wrapping_add(this_index_memusage);
+    *memusage = combined_index_memusage + this_index_memusage;
     if *memusage == 0 {
         *memusage = lzma_index_memusage(1, 0);
     }
@@ -515,7 +479,7 @@ unsafe extern "C" fn file_info_decoder_memconfig(
             return LZMA_MEMLIMIT_ERROR;
         }
         if (*coder).this_index.is_null() && (*coder).sequence == SEQ_INDEX_DECODE {
-            let idec_new_memlimit: u64 = new_memlimit.wrapping_sub(combined_index_memusage);
+            let idec_new_memlimit: u64 = new_memlimit - combined_index_memusage;
             let mut dummy1: u64 = 0;
             let mut dummy2: u64 = 0;
             if (*coder).index_decoder.memconfig.unwrap()(

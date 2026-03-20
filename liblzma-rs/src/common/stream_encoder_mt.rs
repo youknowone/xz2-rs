@@ -170,8 +170,8 @@ unsafe fn worker_encode(
         }) as lzma_action;
         static mut in_chunk_max: size_t = 16384;
         let mut in_limit: size_t = in_size;
-        if in_size.wrapping_sub(in_pos) > in_chunk_max {
-            in_limit = in_pos.wrapping_add(in_chunk_max);
+        if in_size - in_pos > in_chunk_max {
+            in_limit = in_pos + in_chunk_max;
             action = LZMA_RUN;
         }
         ret = (*thr).block_encoder.code.unwrap()(
@@ -325,11 +325,8 @@ unsafe extern "C" fn worker_start(thr_ptr: *mut c_void) -> *mut c_void {
                     (*(*thr).outbuf).pos = out_pos;
                     (*(*thr).outbuf).finished = true;
                 }
-                (*(*thr).coder).progress_in = (*(*thr).coder)
-                    .progress_in
-                    .wrapping_add((*(*thr).outbuf).uncompressed_size as u64);
-                (*(*thr).coder).progress_out =
-                    (*(*thr).coder).progress_out.wrapping_add(out_pos as u64);
+                (*(*thr).coder).progress_in += (*(*thr).outbuf).uncompressed_size as u64;
+                (*(*thr).coder).progress_out += out_pos as u64;
                 (*thr).progress_in = 0;
                 (*thr).progress_out = 0;
                 (*thr).next = (*(*thr).coder).threads_free;
@@ -489,7 +486,7 @@ unsafe fn initialize_new_thread(
             {
                 mythread_cond_destroy(::core::ptr::addr_of_mut!((*thr).cond));
             } else {
-                (*coder).threads_initialized = (*coder).threads_initialized.wrapping_add(1);
+                (*coder).threads_initialized += 1;
                 (*coder).thr = thr;
                 return LZMA_OK;
             }
@@ -499,10 +496,7 @@ unsafe fn initialize_new_thread(
     crate::alloc::internal_free((*thr).in_0 as *mut c_void, allocator);
     LZMA_MEM_ERROR
 }
-unsafe fn get_thread(
-    coder: *mut lzma_stream_coder,
-    allocator: *const lzma_allocator,
-) -> lzma_ret {
+unsafe fn get_thread(coder: *mut lzma_stream_coder, allocator: *const lzma_allocator) -> lzma_ret {
     if !lzma_outq_has_buf(::core::ptr::addr_of_mut!((*coder).outq)) {
         return LZMA_OK;
     }
@@ -844,10 +838,8 @@ unsafe extern "C" fn stream_encode_mt(
             return ret_;
         }
         (*coder).sequence = SEQ_INDEX;
-        (*coder).progress_out = (*coder).progress_out.wrapping_add(
-            lzma_index_size((*coder).index).wrapping_add(LZMA_STREAM_HEADER_SIZE as lzma_vli)
-                as u64,
-        );
+        (*coder).progress_out +=
+            (lzma_index_size((*coder).index) + LZMA_STREAM_HEADER_SIZE as lzma_vli) as u64;
         current_block_53 = 7301844830188010456;
     }
     if current_block_53 == 7301844830188010456 {
@@ -1024,10 +1016,8 @@ unsafe extern "C" fn get_progress(
                 {
                     let mut mythread_j_1015: c_uint = 0;
                     while mythread_j_1015 == 0 {
-                        *progress_in = (*progress_in)
-                            .wrapping_add((*(*coder).threads.offset(i as isize)).progress_in);
-                        *progress_out = (*progress_out)
-                            .wrapping_add((*(*coder).threads.offset(i as isize)).progress_out);
+                        *progress_in += (*(*coder).threads.offset(i as isize)).progress_in;
+                        *progress_out += (*(*coder).threads.offset(i as isize)).progress_out;
                         mythread_j_1015 = 1;
                     }
                     mythread_i_1015 = 1;
@@ -1271,10 +1261,7 @@ unsafe extern "C" fn stream_encoder_mt_init(
     (*coder).progress_out = LZMA_STREAM_HEADER_SIZE as u64;
     LZMA_OK
 }
-pub unsafe fn lzma_stream_encoder_mt(
-    strm: *mut lzma_stream,
-    options: *const lzma_mt,
-) -> lzma_ret {
+pub unsafe fn lzma_stream_encoder_mt(strm: *mut lzma_stream, options: *const lzma_mt) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;

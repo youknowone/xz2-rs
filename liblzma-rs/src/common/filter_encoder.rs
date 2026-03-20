@@ -261,9 +261,8 @@ static encoders: [lzma_filter_encoder; 12] = [
 ];
 extern "C" fn encoder_find(id: lzma_vli) -> *const lzma_filter_encoder {
     let mut i: size_t = 0;
-    while i
-        < core::mem::size_of::<[lzma_filter_encoder; 12]>()
-            / core::mem::size_of::<lzma_filter_encoder>()
+    while i < core::mem::size_of::<[lzma_filter_encoder; 12]>()
+        / core::mem::size_of::<lzma_filter_encoder>()
     {
         if encoders[i as usize].id == id {
             return &encoders[i as usize];
@@ -278,10 +277,7 @@ extern "C" fn coder_find(id: lzma_vli) -> *const lzma_filter_coder {
 pub fn lzma_filter_encoder_is_supported(id: lzma_vli) -> lzma_bool {
     !encoder_find(id).is_null() as lzma_bool
 }
-pub unsafe fn lzma_filters_update(
-    strm: *mut lzma_stream,
-    filters: *const lzma_filter,
-) -> lzma_ret {
+pub unsafe fn lzma_filters_update(strm: *mut lzma_stream, filters: *const lzma_filter) -> lzma_ret {
     if (*(*strm).internal).next.update.is_none() {
         return LZMA_PROG_ERROR;
     }
@@ -298,8 +294,7 @@ pub unsafe fn lzma_filters_update(
     }; 5];
     let mut i: size_t = 0;
     while i < count {
-        reversed_filters[count - i - 1] =
-            *filters.offset(i as isize);
+        reversed_filters[count - i - 1] = *filters.offset(i as isize);
         i += 1;
     }
     reversed_filters[count as usize].id = LZMA_VLI_UNKNOWN;
@@ -323,10 +318,7 @@ pub unsafe fn lzma_raw_encoder_init(
         true,
     )
 }
-pub unsafe fn lzma_raw_encoder(
-    strm: *mut lzma_stream,
-    filters: *const lzma_filter,
-) -> lzma_ret {
+pub unsafe fn lzma_raw_encoder(strm: *mut lzma_stream, filters: *const lzma_filter) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;
@@ -379,10 +371,7 @@ pub unsafe fn lzma_mt_block_size(filters: *const lzma_filter) -> u64 {
         max
     }
 }
-pub unsafe fn lzma_properties_size(
-    size: *mut u32,
-    filter: *const lzma_filter,
-) -> lzma_ret {
+pub unsafe fn lzma_properties_size(size: *mut u32, filter: *const lzma_filter) -> lzma_ret {
     let fe: *const lzma_filter_encoder = encoder_find((*filter).id) as *const lzma_filter_encoder;
     if fe.is_null() {
         return if (*filter).id <= LZMA_VLI_MAX {
@@ -397,10 +386,7 @@ pub unsafe fn lzma_properties_size(
     }
     (*fe).props_size_get.unwrap()(size, (*filter).options)
 }
-pub unsafe fn lzma_properties_encode(
-    filter: *const lzma_filter,
-    props: *mut u8,
-) -> lzma_ret {
+pub unsafe fn lzma_properties_encode(filter: *const lzma_filter, props: *mut u8) -> lzma_ret {
     let fe: *const lzma_filter_encoder = encoder_find((*filter).id) as *const lzma_filter_encoder;
     if fe.is_null() {
         return LZMA_PROG_ERROR;

@@ -69,8 +69,7 @@ unsafe extern "C" fn x86_code(
                     src =
                         dest ^ (1u32 << (32u32).wrapping_sub(i_0.wrapping_mul(8))).wrapping_sub(1);
                 }
-                *buffer.offset((buffer_pos + 4) as isize) =
-                    !(dest >> 24 & 1).wrapping_sub(1) as u8;
+                *buffer.offset((buffer_pos + 4) as isize) = !(dest >> 24 & 1).wrapping_sub(1) as u8;
                 *buffer.offset((buffer_pos + 3) as isize) = (dest >> 16) as u8;
                 *buffer.offset((buffer_pos + 2) as isize) = (dest >> 8) as u8;
                 *buffer.offset((buffer_pos + 1) as isize) = dest as u8;
@@ -124,11 +123,7 @@ pub unsafe extern "C" fn lzma_simple_x86_encoder_init(
 ) -> lzma_ret {
     x86_coder_init(next, allocator, filters, true)
 }
-pub unsafe fn lzma_bcj_x86_encode(
-    start_offset: u32,
-    buf: *mut u8,
-    size: size_t,
-) -> size_t {
+pub unsafe fn lzma_bcj_x86_encode(start_offset: u32, buf: *mut u8, size: size_t) -> size_t {
     let mut simple: lzma_simple_x86 = lzma_simple_x86 {
         prev_mask: 0,
         prev_pos: (-5_i32) as u32,
@@ -148,11 +143,7 @@ pub unsafe extern "C" fn lzma_simple_x86_decoder_init(
 ) -> lzma_ret {
     x86_coder_init(next, allocator, filters, false)
 }
-pub unsafe fn lzma_bcj_x86_decode(
-    start_offset: u32,
-    buf: *mut u8,
-    size: size_t,
-) -> size_t {
+pub unsafe fn lzma_bcj_x86_decode(start_offset: u32, buf: *mut u8, size: size_t) -> size_t {
     let mut simple: lzma_simple_x86 = lzma_simple_x86 {
         prev_mask: 0,
         prev_pos: (-5_i32) as u32,

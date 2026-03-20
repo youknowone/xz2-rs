@@ -78,10 +78,7 @@ pub fn lzma_version_number() -> u32 {
 pub fn lzma_version_string() -> *const c_char {
     crate::c_str!("5.8.2")
 }
-pub unsafe fn lzma_alloc(
-    mut size: size_t,
-    allocator: *const lzma_allocator,
-) -> *mut c_void {
+pub unsafe fn lzma_alloc(mut size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
     if size == 0 {
         size = 1;
     }
@@ -93,10 +90,7 @@ pub unsafe fn lzma_alloc(
     }
     ptr
 }
-pub unsafe fn lzma_alloc_zero(
-    mut size: size_t,
-    allocator: *const lzma_allocator,
-) -> *mut c_void {
+pub unsafe fn lzma_alloc_zero(mut size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
     if size == 0 {
         size = 1;
     }
@@ -185,10 +179,7 @@ pub unsafe fn lzma_next_filter_update(
         reversed_filters,
     )
 }
-pub unsafe fn lzma_next_end(
-    next: *mut lzma_next_coder,
-    allocator: *const lzma_allocator,
-) {
+pub unsafe fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator) {
     if (*next).init != 0 {
         if (*next).end.is_some() {
             (*next).end.unwrap()((*next).coder, allocator);
@@ -466,10 +457,7 @@ pub fn lzma_memlimit_get(strm: *const lzma_stream) -> u64 {
         old_memlimit
     };
 }
-pub unsafe fn lzma_memlimit_set(
-    strm: *mut lzma_stream,
-    mut new_memlimit: u64,
-) -> lzma_ret {
+pub unsafe fn lzma_memlimit_set(strm: *mut lzma_stream, mut new_memlimit: u64) -> lzma_ret {
     let mut old_memlimit: u64 = 0;
     let mut memusage: u64 = 0;
     if strm.is_null() || (*strm).internal.is_null() || (*(*strm).internal).next.memconfig.is_none()

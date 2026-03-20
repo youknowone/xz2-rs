@@ -20,20 +20,14 @@ unsafe fn move_head_to_cache(outq: *mut lzma_outq, allocator: *const lzma_alloca
     (*outq).bufs_in_use -= 1;
     (*outq).mem_in_use -= lzma_outq_outbuf_memusage((*buf).allocated);
 }
-unsafe fn free_one_cached_buffer(
-    outq: *mut lzma_outq,
-    allocator: *const lzma_allocator,
-) {
+unsafe fn free_one_cached_buffer(outq: *mut lzma_outq, allocator: *const lzma_allocator) {
     let buf: *mut lzma_outbuf = (*outq).cache;
     (*outq).cache = (*buf).next;
     (*outq).bufs_allocated -= 1;
     (*outq).mem_allocated -= lzma_outq_outbuf_memusage((*buf).allocated);
     crate::alloc::internal_free(buf as *mut c_void, allocator);
 }
-pub unsafe fn lzma_outq_clear_cache(
-    outq: *mut lzma_outq,
-    allocator: *const lzma_allocator,
-) {
+pub unsafe fn lzma_outq_clear_cache(outq: *mut lzma_outq, allocator: *const lzma_allocator) {
     while !(*outq).cache.is_null() {
         free_one_cached_buffer(outq, allocator);
     }
@@ -101,10 +95,7 @@ pub unsafe fn lzma_outq_prealloc_buf(
     (*outq).mem_allocated += alloc_size as u64;
     LZMA_OK
 }
-pub unsafe fn lzma_outq_get_buf(
-    outq: *mut lzma_outq,
-    worker: *mut c_void,
-) -> *mut lzma_outbuf {
+pub unsafe fn lzma_outq_get_buf(outq: *mut lzma_outq, worker: *mut c_void) -> *mut lzma_outbuf {
     let buf: *mut lzma_outbuf = (*outq).cache;
     (*outq).cache = (*buf).next;
     (*buf).next = core::ptr::null_mut();

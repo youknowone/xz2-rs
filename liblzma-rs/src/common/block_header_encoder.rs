@@ -41,10 +41,7 @@ pub unsafe fn lzma_block_header_size(block: *mut lzma_block) -> lzma_ret {
     (*block).header_size = (size + 3) & !(3);
     LZMA_OK
 }
-pub unsafe fn lzma_block_header_encode(
-    block: *const lzma_block,
-    out: *mut u8,
-) -> lzma_ret {
+pub unsafe fn lzma_block_header_encode(block: *const lzma_block, out: *mut u8) -> lzma_ret {
     if lzma_block_unpadded_size(block) == 0
         || !((*block).uncompressed_size <= LZMA_VLI_MAX
             || (*block).uncompressed_size == LZMA_VLI_UNKNOWN)

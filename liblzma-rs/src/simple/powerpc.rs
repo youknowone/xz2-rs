@@ -10,9 +10,7 @@ unsafe extern "C" fn powerpc_code(
     let mut i: size_t = 0;
     i = 0;
     while i < size {
-        if *buffer.offset(i as isize) >> 2 == 0x12
-            && *buffer.offset((i + 3) as isize) & 3 == 1
-        {
+        if *buffer.offset(i as isize) >> 2 == 0x12 && *buffer.offset((i + 3) as isize) & 3 == 1 {
             let src: u32 = (*buffer.offset(i as isize) as u32 & 3) << 24
                 | (*buffer.offset((i + 1) as isize) as u32) << 16
                 | (*buffer.offset((i + 2) as isize) as u32) << 8

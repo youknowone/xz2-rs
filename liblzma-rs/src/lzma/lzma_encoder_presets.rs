@@ -3,10 +3,7 @@ pub const LZMA_LC_DEFAULT: u32 = 3;
 pub const LZMA_LP_DEFAULT: u32 = 0;
 pub const LZMA_PB_DEFAULT: u32 = 2;
 pub const LZMA_PRESET_LEVEL_MASK: c_uint = 0x1f;
-pub unsafe fn lzma_lzma_preset(
-    options: *mut lzma_options_lzma,
-    preset: u32,
-) -> lzma_bool {
+pub unsafe fn lzma_lzma_preset(options: *mut lzma_options_lzma, preset: u32) -> lzma_bool {
     let level: u32 = preset & LZMA_PRESET_LEVEL_MASK as u32;
     let flags: u32 = preset & !(LZMA_PRESET_LEVEL_MASK as u32);
     let supported_flags: u32 = LZMA_PRESET_EXTREME as u32;

@@ -178,10 +178,7 @@ pub unsafe fn lzma_filters_copy(
         }
     };
 }
-pub unsafe fn lzma_filters_free(
-    filters: *mut lzma_filter,
-    allocator: *const lzma_allocator,
-) {
+pub unsafe fn lzma_filters_free(filters: *mut lzma_filter, allocator: *const lzma_allocator) {
     if filters.is_null() {
         return;
     }
@@ -196,10 +193,7 @@ pub unsafe fn lzma_filters_free(
         i += 1;
     }
 }
-pub unsafe fn lzma_validate_chain(
-    filters: *const lzma_filter,
-    count: *mut size_t,
-) -> lzma_ret {
+pub unsafe fn lzma_validate_chain(filters: *const lzma_filter, count: *mut size_t) -> lzma_ret {
     if filters.is_null() || (*filters).id == LZMA_VLI_UNKNOWN {
         return LZMA_PROG_ERROR;
     }

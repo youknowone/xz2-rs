@@ -18,9 +18,7 @@ pub unsafe fn lzma_block_header_decode(
         (*block).version = 1;
     }
     (*block).ignore_check = false as lzma_bool;
-    if (*in_0 as u32 + 1) * 4 != (*block).header_size
-        || (*block).check > LZMA_CHECK_ID_MAX
-    {
+    if (*in_0 as u32 + 1) * 4 != (*block).header_size || (*block).check > LZMA_CHECK_ID_MAX {
         return LZMA_PROG_ERROR;
     }
     let in_size: size_t = ((*block).header_size - 4) as size_t;

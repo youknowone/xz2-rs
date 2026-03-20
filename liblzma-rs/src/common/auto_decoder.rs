@@ -231,11 +231,7 @@ unsafe extern "C" fn auto_decoder_init(
     (*coder).sequence = SEQ_INIT;
     LZMA_OK
 }
-pub unsafe fn lzma_auto_decoder(
-    strm: *mut lzma_stream,
-    memlimit: u64,
-    flags: u32,
-) -> lzma_ret {
+pub unsafe fn lzma_auto_decoder(strm: *mut lzma_stream, memlimit: u64, flags: u32) -> lzma_ret {
     let ret_: lzma_ret = lzma_strm_init(strm);
     if ret_ != LZMA_OK {
         return ret_;
