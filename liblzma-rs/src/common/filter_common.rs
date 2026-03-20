@@ -172,8 +172,7 @@ pub unsafe fn lzma_filters_copy(
             core::ptr::copy_nonoverlapping(
                 ::core::ptr::addr_of_mut!(dest) as *const u8,
                 real_dest as *mut u8,
-                i.wrapping_add(1)
-                    .wrapping_mul(core::mem::size_of::<lzma_filter>()),
+                (i + 1) * core::mem::size_of::<lzma_filter>(),
             );
             return LZMA_OK;
         }
@@ -222,8 +221,7 @@ pub unsafe fn lzma_validate_chain(
         }
         non_last_ok = FEATURES[j as usize].non_last_ok;
         last_ok = FEATURES[j as usize].last_ok;
-        changes_size_count =
-            changes_size_count.wrapping_add(FEATURES[j as usize].changes_size as size_t);
+        changes_size_count += FEATURES[j as usize].changes_size as size_t;
         i += 1;
         if (*filters.offset(i as isize)).id == LZMA_VLI_UNKNOWN {
             break;
@@ -255,7 +253,7 @@ pub unsafe fn lzma_raw_coder_init(
     if is_encoder {
         let mut i: size_t = 0;
         while i < count {
-            let j: size_t = count.wrapping_sub(i).wrapping_sub(1);
+            let j: size_t = count - i - 1;
             let fc: *const lzma_filter_coder =
                 coder_find.unwrap()((*options.offset(i as isize)).id) as *const lzma_filter_coder;
             if fc.is_null() || (*fc).init.is_none() {
@@ -309,18 +307,18 @@ pub unsafe fn lzma_raw_coder_memusage(
             return UINT64_MAX;
         }
         if (*fc).memusage.is_none() {
-            total = total.wrapping_add(1024);
+            total += 1024;
         } else {
             let usage: u64 = (*fc).memusage.unwrap()((*filters.offset(i as isize)).options) as u64;
             if usage == UINT64_MAX {
                 return UINT64_MAX;
             }
-            total = total.wrapping_add(usage);
+            total += usage;
         }
         i += 1;
         if (*filters.offset(i as isize)).id == LZMA_VLI_UNKNOWN {
             break;
         }
     }
-    total.wrapping_add(LZMA_MEMUSAGE_BASE)
+    total + LZMA_MEMUSAGE_BASE
 }

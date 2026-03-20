@@ -42,8 +42,10 @@ unsafe extern "C" fn delta_encode(
     let coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
     let mut ret: lzma_ret = LZMA_OK;
     if (*coder).next.code.is_none() {
-        let in_avail: size_t = in_size.wrapping_sub(*in_pos);
-        let out_avail: size_t = out_size.wrapping_sub(*out_pos);
+        debug_assert!(in_size >= *in_pos);
+        debug_assert!(out_size >= *out_pos);
+        let in_avail: size_t = in_size - *in_pos;
+        let out_avail: size_t = out_size - *out_pos;
         let size: size_t = if in_avail < out_avail {
             in_avail
         } else {
@@ -57,8 +59,8 @@ unsafe extern "C" fn delta_encode(
                 size,
             );
         }
-        *in_pos = (*in_pos).wrapping_add(size);
-        *out_pos = (*out_pos).wrapping_add(size);
+        *in_pos += size;
+        *out_pos += size;
         ret = if action != LZMA_RUN && *in_pos == in_size {
             LZMA_STREAM_END
         } else {
@@ -77,7 +79,8 @@ unsafe extern "C" fn delta_encode(
             out_size,
             action,
         );
-        let size_0: size_t = (*out_pos).wrapping_sub(out_start);
+        debug_assert!(*out_pos >= out_start);
+        let size_0: size_t = *out_pos - out_start;
         if size_0 > 0 {
             encode_in_place(coder, out.offset(out_start as isize), size_0);
         }
@@ -132,6 +135,7 @@ pub unsafe extern "C" fn lzma_delta_props_encode(options: *const c_void, out: *m
         return LZMA_PROG_ERROR;
     }
     let opt: *const lzma_options_delta = options as *const lzma_options_delta;
-    *out = (*opt).dist.wrapping_sub(LZMA_DELTA_DIST_MIN) as u8;
+    debug_assert!((*opt).dist >= LZMA_DELTA_DIST_MIN);
+    *out = ((*opt).dist - LZMA_DELTA_DIST_MIN) as u8;
     LZMA_OK
 }

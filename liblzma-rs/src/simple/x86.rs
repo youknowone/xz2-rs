@@ -22,7 +22,7 @@ unsafe extern "C" fn x86_code(
     if now_pos.wrapping_sub(prev_pos) > 5 {
         prev_pos = now_pos.wrapping_sub(5);
     }
-    let limit: size_t = size.wrapping_sub(5);
+    let limit: size_t = size - 5;
     let mut buffer_pos: size_t = 0;
     while buffer_pos <= limit {
         let mut b: u8 = *buffer.offset(buffer_pos as isize);
@@ -43,12 +43,12 @@ unsafe extern "C" fn x86_code(
                     i += 1;
                 }
             }
-            b = *buffer.offset(buffer_pos.wrapping_add(4) as isize);
+            b = *buffer.offset((buffer_pos + 4) as isize);
             if (b == 0 || b == 0xff) && prev_mask >> 1 <= 4 && prev_mask >> 1 != 3 {
                 let mut src: u32 = (b as u32) << 24
-                    | (*buffer.offset(buffer_pos.wrapping_add(3) as isize) as u32) << 16
-                    | (*buffer.offset(buffer_pos.wrapping_add(2) as isize) as u32) << 8
-                    | *buffer.offset(buffer_pos.wrapping_add(1) as isize) as u32;
+                    | (*buffer.offset((buffer_pos + 3) as isize) as u32) << 16
+                    | (*buffer.offset((buffer_pos + 2) as isize) as u32) << 8
+                    | *buffer.offset((buffer_pos + 1) as isize) as u32;
                 let mut dest: u32 = 0;
                 loop {
                     if is_encoder {
@@ -69,12 +69,12 @@ unsafe extern "C" fn x86_code(
                     src =
                         dest ^ (1u32 << (32u32).wrapping_sub(i_0.wrapping_mul(8))).wrapping_sub(1);
                 }
-                *buffer.offset(buffer_pos.wrapping_add(4) as isize) =
+                *buffer.offset((buffer_pos + 4) as isize) =
                     !(dest >> 24 & 1).wrapping_sub(1) as u8;
-                *buffer.offset(buffer_pos.wrapping_add(3) as isize) = (dest >> 16) as u8;
-                *buffer.offset(buffer_pos.wrapping_add(2) as isize) = (dest >> 8) as u8;
-                *buffer.offset(buffer_pos.wrapping_add(1) as isize) = dest as u8;
-                buffer_pos = buffer_pos.wrapping_add(5);
+                *buffer.offset((buffer_pos + 3) as isize) = (dest >> 16) as u8;
+                *buffer.offset((buffer_pos + 2) as isize) = (dest >> 8) as u8;
+                *buffer.offset((buffer_pos + 1) as isize) = dest as u8;
+                buffer_pos += 5;
                 prev_mask = 0;
             } else {
                 buffer_pos += 1;

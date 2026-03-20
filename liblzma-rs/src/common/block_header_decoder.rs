@@ -18,12 +18,12 @@ pub unsafe fn lzma_block_header_decode(
         (*block).version = 1;
     }
     (*block).ignore_check = false as lzma_bool;
-    if (*in_0 as u32).wrapping_add(1).wrapping_mul(4) != (*block).header_size
+    if (*in_0 as u32 + 1) * 4 != (*block).header_size
         || (*block).check > LZMA_CHECK_ID_MAX
     {
         return LZMA_PROG_ERROR;
     }
-    let in_size: size_t = (*block).header_size.wrapping_sub(4) as size_t;
+    let in_size: size_t = ((*block).header_size - 4) as size_t;
     if lzma_crc32(in_0, in_size, 0) != read32le(in_0.offset(in_size as isize)) {
         return LZMA_DATA_ERROR;
     }
@@ -62,7 +62,7 @@ pub unsafe fn lzma_block_header_decode(
     } else {
         (*block).uncompressed_size = LZMA_VLI_UNKNOWN;
     }
-    let filter_count: size_t = (u32::from(*in_0.offset(1)) & 3).wrapping_add(1) as size_t;
+    let filter_count: size_t = ((u32::from(*in_0.offset(1)) & 3) + 1) as size_t;
     let mut i_0: size_t = 0;
     while i_0 < filter_count {
         let ret: lzma_ret = lzma_filter_flags_decode(

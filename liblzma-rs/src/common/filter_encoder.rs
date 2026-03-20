@@ -262,11 +262,11 @@ static encoders: [lzma_filter_encoder; 12] = [
 extern "C" fn encoder_find(id: lzma_vli) -> *const lzma_filter_encoder {
     let mut i: size_t = 0;
     while i
-        < (core::mem::size_of::<[lzma_filter_encoder; 12]>())
-            .wrapping_div(core::mem::size_of::<lzma_filter_encoder>())
+        < core::mem::size_of::<[lzma_filter_encoder; 12]>()
+            / core::mem::size_of::<lzma_filter_encoder>()
     {
         if encoders[i as usize].id == id {
-            return encoders.as_ptr().wrapping_add(i as usize);
+            return &encoders[i as usize];
         }
         i += 1;
     }
@@ -298,7 +298,7 @@ pub unsafe fn lzma_filters_update(
     }; 5];
     let mut i: size_t = 0;
     while i < count {
-        reversed_filters[count.wrapping_sub(i).wrapping_sub(1) as usize] =
+        reversed_filters[count - i - 1] =
             *filters.offset(i as isize);
         i += 1;
     }

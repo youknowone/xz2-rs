@@ -37,32 +37,22 @@ unsafe extern "C" fn block_decode(
         0 => {
             let in_start: size_t = *in_pos;
             let out_start: size_t = *out_pos;
-            let in_stop: size_t = (*in_pos).wrapping_add(
-                (if (in_size.wrapping_sub(*in_pos) as lzma_vli)
-                    < (*coder)
-                        .compressed_limit
-                        .wrapping_sub((*coder).compressed_size)
+            let in_stop: size_t = *in_pos
+                + (if ((in_size - *in_pos) as lzma_vli)
+                    < (*coder).compressed_limit - (*coder).compressed_size
                 {
-                    in_size.wrapping_sub(*in_pos) as lzma_vli
+                    (in_size - *in_pos) as lzma_vli
                 } else {
-                    (*coder)
-                        .compressed_limit
-                        .wrapping_sub((*coder).compressed_size)
-                }) as size_t,
-            );
-            let out_stop: size_t = (*out_pos).wrapping_add(
-                (if (out_size.wrapping_sub(*out_pos) as lzma_vli)
-                    < (*coder)
-                        .uncompressed_limit
-                        .wrapping_sub((*coder).uncompressed_size)
+                    (*coder).compressed_limit - (*coder).compressed_size
+                }) as size_t;
+            let out_stop: size_t = *out_pos
+                + (if ((out_size - *out_pos) as lzma_vli)
+                    < (*coder).uncompressed_limit - (*coder).uncompressed_size
                 {
-                    out_size.wrapping_sub(*out_pos) as lzma_vli
+                    (out_size - *out_pos) as lzma_vli
                 } else {
-                    (*coder)
-                        .uncompressed_limit
-                        .wrapping_sub((*coder).uncompressed_size)
-                }) as size_t,
-            );
+                    (*coder).uncompressed_limit - (*coder).uncompressed_size
+                }) as size_t;
             let ret: lzma_ret = (*coder).next.code.unwrap()(
                 (*coder).next.coder,
                 allocator,
@@ -74,12 +64,10 @@ unsafe extern "C" fn block_decode(
                 out_stop,
                 action,
             );
-            let in_used: size_t = (*in_pos).wrapping_sub(in_start);
-            let out_used: size_t = (*out_pos).wrapping_sub(out_start);
-            (*coder).compressed_size = (*coder).compressed_size.wrapping_add(in_used as lzma_vli);
-            (*coder).uncompressed_size = (*coder)
-                .uncompressed_size
-                .wrapping_add(out_used as lzma_vli);
+            let in_used: size_t = *in_pos - in_start;
+            let out_used: size_t = *out_pos - out_start;
+            (*coder).compressed_size += in_used as lzma_vli;
+            (*coder).uncompressed_size += out_used as lzma_vli;
             if ret == LZMA_OK {
                 let comp_done: bool = (*coder).compressed_size == (*(*coder).block).compressed_size;
                 let uncomp_done: bool =
@@ -127,7 +115,7 @@ unsafe extern "C" fn block_decode(
             if *in_pos >= in_size {
                 return LZMA_OK;
             }
-            (*coder).compressed_size = (*coder).compressed_size.wrapping_add(1);
+            (*coder).compressed_size += 1;
             let byte = *in_0.offset(*in_pos as isize);
             *in_pos += 1;
             if byte != 0 {
@@ -265,8 +253,8 @@ pub unsafe extern "C" fn lzma_block_decoder_init(
     (*coder).uncompressed_size = 0;
     (*coder).compressed_limit = if (*block).compressed_size == LZMA_VLI_UNKNOWN {
         (LZMA_VLI_MAX & !(3))
-            .wrapping_sub((*block).header_size as lzma_vli)
-            .wrapping_sub(lzma_check_size((*block).check) as lzma_vli)
+            - (*block).header_size as lzma_vli
+            - lzma_check_size((*block).check) as lzma_vli
     } else {
         (*block).compressed_size
     };

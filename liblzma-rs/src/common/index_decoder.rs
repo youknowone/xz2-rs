@@ -101,7 +101,7 @@ unsafe extern "C" fn index_decode(
                     if ret_ != LZMA_OK {
                         return ret_;
                     }
-                    (*coder).count = (*coder).count.wrapping_sub(1);
+                    (*coder).count -= 1;
                     (*coder).sequence = (if (*coder).count == 0 {
                         SEQ_PADDING_INIT
                     } else {
@@ -126,7 +126,7 @@ unsafe extern "C" fn index_decode(
         match current_block {
             8340016495055110192 => {
                 if (*coder).pos > 0 {
-                    (*coder).pos = (*coder).pos.wrapping_sub(1);
+                    (*coder).pos -= 1;
                     let byte = *in_0.offset(*in_pos as isize);
                     *in_pos += 1;
                     if byte != 0 {
@@ -136,7 +136,7 @@ unsafe extern "C" fn index_decode(
                 } else {
                     (*coder).crc32 = lzma_crc32(
                         in_0.offset(in_start as isize),
-                        (*in_pos).wrapping_sub(in_start),
+                        *in_pos - in_start,
                         (*coder).crc32,
                     );
                     (*coder).sequence = SEQ_CRC32;
@@ -165,10 +165,10 @@ unsafe extern "C" fn index_decode(
             }
             let val = *in_0.offset(*in_pos as isize);
             *in_pos += 1;
-            if (*coder).crc32 >> (*coder).pos.wrapping_mul(8) & 0xff != val as u32 {
+            if (*coder).crc32 >> ((*coder).pos * 8) & 0xff != val as u32 {
                 return LZMA_DATA_ERROR;
             }
-            (*coder).pos = (*coder).pos.wrapping_add(1);
+            (*coder).pos += 1;
             if (*coder).pos >= 4 {
                 break;
             }
@@ -177,7 +177,7 @@ unsafe extern "C" fn index_decode(
         (*coder).index = core::ptr::null_mut();
         return LZMA_STREAM_END;
     }
-    let in_used: size_t = (*in_pos).wrapping_sub(in_start);
+    let in_used: size_t = *in_pos - in_start;
     if in_used > 0 {
         (*coder).crc32 = lzma_crc32(in_0.offset(in_start as isize), in_used, (*coder).crc32);
     }

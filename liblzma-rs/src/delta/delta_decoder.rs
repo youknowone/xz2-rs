@@ -35,7 +35,8 @@ unsafe extern "C" fn delta_decode(
         out_size,
         action,
     );
-    let size: size_t = (*out_pos).wrapping_sub(out_start);
+    debug_assert!(*out_pos >= out_start);
+    let size: size_t = *out_pos - out_start;
     if size > 0 {
         decode_buffer(coder, out.offset(out_start as isize), size);
     }
@@ -78,7 +79,7 @@ pub unsafe extern "C" fn lzma_delta_props_decode(
         return LZMA_MEM_ERROR;
     }
     (*opt).type_0 = LZMA_DELTA_TYPE_BYTE;
-    (*opt).dist = u32::from(*props).wrapping_add(1);
+    (*opt).dist = u32::from(*props) + 1;
     *options = opt as *mut c_void;
     LZMA_OK
 }

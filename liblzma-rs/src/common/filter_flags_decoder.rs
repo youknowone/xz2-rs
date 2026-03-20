@@ -32,7 +32,7 @@ pub unsafe fn lzma_filter_flags_decode(
     if ret__0 != LZMA_OK {
         return ret__0;
     }
-    if (in_size.wrapping_sub(*in_pos) as lzma_vli) < props_size {
+    if ((in_size - *in_pos) as lzma_vli) < props_size {
         return LZMA_DATA_ERROR;
     }
     let ret: lzma_ret = lzma_properties_decode(
@@ -41,6 +41,6 @@ pub unsafe fn lzma_filter_flags_decode(
         in_0.offset(*in_pos as isize),
         props_size as size_t,
     );
-    *in_pos = (*in_pos as lzma_vli).wrapping_add(props_size) as size_t;
+    *in_pos = (*in_pos as lzma_vli + props_size) as size_t;
     ret
 }

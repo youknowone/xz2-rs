@@ -18,12 +18,12 @@ pub unsafe fn lzma_vli_encode(
     if *vli_pos >= LZMA_VLI_BYTES_MAX as size_t || vli > LZMA_VLI_MAX {
         return LZMA_PROG_ERROR;
     }
-    vli >>= (*vli_pos).wrapping_mul(7);
+    vli >>= *vli_pos * 7;
     while vli >= 0x80 {
-        *vli_pos = (*vli_pos).wrapping_add(1);
+        *vli_pos += 1;
         *out.offset(*out_pos as isize) = vli as u8 | 0x80;
         vli >>= 7;
-        *out_pos = (*out_pos).wrapping_add(1);
+        *out_pos += 1;
         if *out_pos == out_size {
             return if vli_pos == ::core::ptr::addr_of_mut!(vli_pos_internal) {
                 LZMA_PROG_ERROR
@@ -33,8 +33,8 @@ pub unsafe fn lzma_vli_encode(
         }
     }
     *out.offset(*out_pos as isize) = vli as u8;
-    *out_pos = (*out_pos).wrapping_add(1);
-    *vli_pos = (*vli_pos).wrapping_add(1);
+    *out_pos += 1;
+    *vli_pos += 1;
     if vli_pos == ::core::ptr::addr_of_mut!(vli_pos_internal) {
         LZMA_OK
     } else {

@@ -1,13 +1,10 @@
 use crate::types::*;
 pub fn lzma_outq_memusage(buf_size_max: u64, threads: u32) -> u64 {
-    let limit: u64 = (UINT64_MAX)
-        .wrapping_div((2 * 16384) as u64)
-        .wrapping_div(2);
+    let limit: u64 = UINT64_MAX / (2 * 16384) as u64 / 2;
     if threads > LZMA_THREADS_MAX || buf_size_max > limit {
         return UINT64_MAX;
     }
-    ((2u32).wrapping_mul(threads) as u64)
-        .wrapping_mul(lzma_outq_outbuf_memusage(buf_size_max as size_t))
+    (2u32 * threads) as u64 * lzma_outq_outbuf_memusage(buf_size_max as size_t)
 }
 unsafe fn move_head_to_cache(outq: *mut lzma_outq, allocator: *const lzma_allocator) {
     let buf: *mut lzma_outbuf = (*outq).head;
@@ -20,10 +17,8 @@ unsafe fn move_head_to_cache(outq: *mut lzma_outq, allocator: *const lzma_alloca
     }
     (*buf).next = (*outq).cache;
     (*outq).cache = buf;
-    (*outq).bufs_in_use = (*outq).bufs_in_use.wrapping_sub(1);
-    (*outq).mem_in_use = (*outq)
-        .mem_in_use
-        .wrapping_sub(lzma_outq_outbuf_memusage((*buf).allocated));
+    (*outq).bufs_in_use -= 1;
+    (*outq).mem_in_use -= lzma_outq_outbuf_memusage((*buf).allocated);
 }
 unsafe fn free_one_cached_buffer(
     outq: *mut lzma_outq,
@@ -31,10 +26,8 @@ unsafe fn free_one_cached_buffer(
 ) {
     let buf: *mut lzma_outbuf = (*outq).cache;
     (*outq).cache = (*buf).next;
-    (*outq).bufs_allocated = (*outq).bufs_allocated.wrapping_sub(1);
-    (*outq).mem_allocated = (*outq)
-        .mem_allocated
-        .wrapping_sub(lzma_outq_outbuf_memusage((*buf).allocated));
+    (*outq).bufs_allocated -= 1;
+    (*outq).mem_allocated -= lzma_outq_outbuf_memusage((*buf).allocated);
     crate::alloc::internal_free(buf as *mut c_void, allocator);
 }
 pub unsafe fn lzma_outq_clear_cache(
@@ -68,7 +61,7 @@ pub unsafe fn lzma_outq_init(
     if threads > LZMA_THREADS_MAX {
         return LZMA_OPTIONS_ERROR;
     }
-    let bufs_limit: u32 = (2u32).wrapping_mul(threads);
+    let bufs_limit: u32 = 2u32 * threads;
     while !(*outq).head.is_null() {
         move_head_to_cache(outq, allocator);
     }
@@ -93,7 +86,7 @@ pub unsafe fn lzma_outq_prealloc_buf(
     if !(*outq).cache.is_null() && (*(*outq).cache).allocated == size {
         return LZMA_OK;
     }
-    if size > (SIZE_MAX as usize).wrapping_sub(core::mem::size_of::<lzma_outbuf>()) {
+    if size > (SIZE_MAX as usize) - core::mem::size_of::<lzma_outbuf>() {
         return LZMA_MEM_ERROR;
     }
     let alloc_size: size_t = lzma_outq_outbuf_memusage(size) as size_t;
@@ -104,8 +97,8 @@ pub unsafe fn lzma_outq_prealloc_buf(
     }
     (*(*outq).cache).next = core::ptr::null_mut();
     (*(*outq).cache).allocated = size;
-    (*outq).bufs_allocated = (*outq).bufs_allocated.wrapping_add(1);
-    (*outq).mem_allocated = (*outq).mem_allocated.wrapping_add(alloc_size as u64);
+    (*outq).bufs_allocated += 1;
+    (*outq).mem_allocated += alloc_size as u64;
     LZMA_OK
 }
 pub unsafe fn lzma_outq_get_buf(
@@ -128,10 +121,8 @@ pub unsafe fn lzma_outq_get_buf(
     (*buf).decoder_in_pos = 0;
     (*buf).unpadded_size = 0;
     (*buf).uncompressed_size = 0;
-    (*outq).bufs_in_use = (*outq).bufs_in_use.wrapping_add(1);
-    (*outq).mem_in_use = (*outq)
-        .mem_in_use
-        .wrapping_add(lzma_outq_outbuf_memusage((*buf).allocated));
+    (*outq).bufs_in_use += 1;
+    (*outq).mem_in_use += lzma_outq_outbuf_memusage((*buf).allocated);
     buf
 }
 pub unsafe fn lzma_outq_is_readable(outq: *const lzma_outq) -> bool {

@@ -76,8 +76,8 @@ unsafe extern "C" fn lzip_decode(
                             LZMA_FORMAT_ERROR
                         };
                     }
-                    *in_pos = (*in_pos).wrapping_add(1);
-                    (*coder).pos = (*coder).pos.wrapping_add(1);
+                    *in_pos += 1;
+                    (*coder).pos += 1;
                 }
                 (*coder).pos = 0;
                 (*coder).crc32 = 0;
@@ -113,7 +113,7 @@ unsafe extern "C" fn lzip_decode(
                 if (*coder).version > 1 {
                     return LZMA_OPTIONS_ERROR;
                 }
-                (*coder).member_size = (*coder).member_size.wrapping_add(1);
+                (*coder).member_size += 1;
                 (*coder).sequence = SEQ_DICT_SIZE;
                 if (*coder).tell_any_check {
                     return LZMA_GET_CHECK;
@@ -129,14 +129,14 @@ unsafe extern "C" fn lzip_decode(
                 }
                 let ds: u32 = *in_0.offset(*in_pos as isize) as u32;
                 *in_pos += 1;
-                (*coder).member_size = (*coder).member_size.wrapping_add(1);
+                (*coder).member_size += 1;
                 let b2log: u32 = ds & 0x1f;
                 let fracnum: u32 = ds >> 5;
                 if b2log < 12 || b2log > 29 || b2log == 12 && fracnum > 0 {
                     return LZMA_DATA_ERROR;
                 }
                 (*coder).options.dict_size =
-                    (1u32 << b2log).wrapping_sub(fracnum << b2log.wrapping_sub(4));
+                    (1u32 << b2log) - (fracnum << (b2log - 4));
                 (*coder).options.preset_dict = core::ptr::null();
                 (*coder).options.lc = LZIP_LC;
                 (*coder).options.lp = LZIP_LP;
@@ -205,12 +205,9 @@ unsafe extern "C" fn lzip_decode(
                     out_size,
                     action,
                 );
-                let out_used: size_t = (*out_pos).wrapping_sub(out_start);
-                (*coder).member_size = (*coder)
-                    .member_size
-                    .wrapping_add((*in_pos).wrapping_sub(in_start) as u64);
-                (*coder).uncompressed_size =
-                    (*coder).uncompressed_size.wrapping_add(out_used as u64);
+                let out_used: size_t = *out_pos - out_start;
+                (*coder).member_size += (*in_pos - in_start) as u64;
+                (*coder).uncompressed_size += out_used as u64;
                 if !(*coder).ignore_check && out_used > 0 {
                     (*coder).crc32 =
                         lzma_crc32(out.offset(out_start as isize), out_used, (*coder).crc32);
@@ -239,7 +236,7 @@ unsafe extern "C" fn lzip_decode(
             return LZMA_OK;
         }
         (*coder).pos = 0;
-        (*coder).member_size = (*coder).member_size.wrapping_add(footer_size as u64);
+        (*coder).member_size += footer_size as u64;
         if !(*coder).ignore_check
             && (*coder).crc32
                 != read32le((::core::ptr::addr_of_mut!((*coder).buffer) as *mut u8) as *mut u8)

@@ -46,14 +46,13 @@ unsafe extern "C" fn block_encode(
                 out_size,
                 action,
             );
-            let in_used: size_t = (*in_pos).wrapping_sub(in_start);
-            let out_used: size_t = (*out_pos).wrapping_sub(out_start);
+            let in_used: size_t = *in_pos - in_start;
+            let out_used: size_t = *out_pos - out_start;
             if (COMPRESSED_SIZE_MAX).wrapping_sub((*coder).compressed_size) < out_used as lzma_vli {
                 return LZMA_DATA_ERROR;
             }
-            (*coder).compressed_size = (*coder).compressed_size.wrapping_add(out_used as lzma_vli);
-            (*coder).uncompressed_size =
-                (*coder).uncompressed_size.wrapping_add(in_used as lzma_vli);
+            (*coder).compressed_size += out_used as lzma_vli;
+            (*coder).uncompressed_size += in_used as lzma_vli;
             if in_used > 0 {
                 lzma_check_update(
                     ::core::ptr::addr_of_mut!((*coder).check),
@@ -80,8 +79,8 @@ unsafe extern "C" fn block_encode(
                 return LZMA_OK;
             }
             *out.offset(*out_pos as isize) = 0;
-            *out_pos = (*out_pos).wrapping_add(1);
-            (*coder).compressed_size = (*coder).compressed_size.wrapping_add(1);
+            *out_pos += 1;
+            (*coder).compressed_size += 1;
         }
         if (*(*coder).block).check == LZMA_CHECK_NONE {
             return LZMA_STREAM_END;

@@ -67,11 +67,10 @@ pub const LZMA_VERSION_MINOR: u32 = 8;
 pub const LZMA_VERSION_PATCH: u32 = 2;
 pub const LZMA_VERSION_STABILITY: u32 = LZMA_VERSION_STABILITY_STABLE;
 pub const LZMA_VERSION_STABILITY_STABLE: u32 = 2;
-pub const LZMA_VERSION: c_uint = (LZMA_VERSION_MAJOR)
-    .wrapping_mul(10000000)
-    .wrapping_add((LZMA_VERSION_MINOR).wrapping_mul(10000))
-    .wrapping_add((LZMA_VERSION_PATCH).wrapping_mul(10))
-    .wrapping_add(LZMA_VERSION_STABILITY);
+pub const LZMA_VERSION: c_uint = LZMA_VERSION_MAJOR * 10000000
+    + LZMA_VERSION_MINOR * 10000
+    + LZMA_VERSION_PATCH * 10
+    + LZMA_VERSION_STABILITY;
 pub const LZMA_TIMED_OUT: c_uint = 101;
 pub fn lzma_version_number() -> u32 {
     LZMA_VERSION as u32
@@ -131,8 +130,8 @@ pub unsafe fn lzma_bufcpy(
         return 0;
     }
 
-    let in_avail: size_t = in_size.wrapping_sub(*in_pos);
-    let out_avail: size_t = out_size.wrapping_sub(*out_pos);
+    let in_avail: size_t = in_size - *in_pos;
+    let out_avail: size_t = out_size - *out_pos;
     let copy_size: size_t = if in_avail < out_avail {
         in_avail
     } else {
@@ -145,8 +144,8 @@ pub unsafe fn lzma_bufcpy(
             copy_size,
         );
     }
-    *in_pos = (*in_pos).wrapping_add(copy_size);
-    *out_pos = (*out_pos).wrapping_add(copy_size);
+    *in_pos += copy_size;
+    *out_pos += copy_size;
     copy_size
 }
 pub unsafe fn lzma_next_filter_init(
@@ -320,12 +319,12 @@ pub unsafe fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret
     );
     if in_pos > 0 {
         (*strm).next_in = (*strm).next_in.offset(in_pos as isize);
-        (*strm).avail_in = (*strm).avail_in.wrapping_sub(in_pos);
+        (*strm).avail_in -= in_pos;
         (*strm).total_in = (*strm).total_in.wrapping_add(in_pos as u64);
     }
     if out_pos > 0 {
         (*strm).next_out = (*strm).next_out.offset(out_pos as isize);
-        (*strm).avail_out = (*strm).avail_out.wrapping_sub(out_pos);
+        (*strm).avail_out -= out_pos;
         (*strm).total_out = (*strm).total_out.wrapping_add(out_pos as u64);
     }
     (*(*strm).internal).avail_in = (*strm).avail_in;

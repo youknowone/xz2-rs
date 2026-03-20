@@ -226,7 +226,7 @@ pub unsafe fn lzma_index_hash_decode(
                     {
                         return LZMA_DATA_ERROR;
                     }
-                    (*index_hash).remaining = (*index_hash).remaining.wrapping_sub(1);
+                    (*index_hash).remaining -= 1;
                     (*index_hash).sequence = (if (*index_hash).remaining == 0 {
                         SEQ_PADDING_INIT
                     } else {
@@ -254,7 +254,7 @@ pub unsafe fn lzma_index_hash_decode(
         match current_block {
             12753679906265593574 => {
                 if (*index_hash).pos > 0 {
-                    (*index_hash).pos = (*index_hash).pos.wrapping_sub(1);
+                    (*index_hash).pos -= 1;
                     let byte = *in_0.offset(*in_pos as isize);
                     *in_pos += 1;
                     if byte != 0 {
@@ -290,7 +290,7 @@ pub unsafe fn lzma_index_hash_decode(
                     }
                     (*index_hash).crc32 = lzma_crc32(
                         in_0.offset(in_start as isize),
-                        (*in_pos).wrapping_sub(in_start),
+                        *in_pos - in_start,
                         (*index_hash).crc32,
                     );
                     (*index_hash).sequence = SEQ_CRC32;
@@ -304,17 +304,17 @@ pub unsafe fn lzma_index_hash_decode(
             }
             let val = *in_0.offset(*in_pos as isize);
             *in_pos += 1;
-            if (*index_hash).crc32 >> (*index_hash).pos.wrapping_mul(8) & 0xff != val as u32 {
+            if (*index_hash).crc32 >> ((*index_hash).pos * 8) & 0xff != val as u32 {
                 return LZMA_DATA_ERROR;
             }
-            (*index_hash).pos = (*index_hash).pos.wrapping_add(1);
+            (*index_hash).pos += 1;
             if (*index_hash).pos >= 4 {
                 break;
             }
         }
         return LZMA_STREAM_END;
     }
-    let in_used: size_t = (*in_pos).wrapping_sub(in_start);
+    let in_used: size_t = *in_pos - in_start;
     if in_used > 0 {
         (*index_hash).crc32 =
             lzma_crc32(in_0.offset(in_start as isize), in_used, (*index_hash).crc32);

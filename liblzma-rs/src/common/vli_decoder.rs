@@ -17,7 +17,7 @@ pub unsafe fn lzma_vli_decode(
         if *vli_pos == 0 {
             *vli = 0;
         }
-        if *vli_pos >= LZMA_VLI_BYTES_MAX as size_t || *vli >> (*vli_pos).wrapping_mul(7) != 0 {
+        if *vli_pos >= LZMA_VLI_BYTES_MAX as size_t || *vli >> (*vli_pos * 7) != 0 {
             return LZMA_PROG_ERROR;
         }
         if *in_pos >= in_size {
@@ -26,9 +26,9 @@ pub unsafe fn lzma_vli_decode(
     }
     loop {
         let byte: u8 = *in_0.offset(*in_pos as isize);
-        *in_pos = (*in_pos).wrapping_add(1);
-        *vli = (*vli).wrapping_add(((byte & 0x7f) as lzma_vli) << (*vli_pos).wrapping_mul(7));
-        *vli_pos = (*vli_pos).wrapping_add(1);
+        *in_pos += 1;
+        *vli += ((byte & 0x7f) as lzma_vli) << (*vli_pos * 7);
+        *vli_pos += 1;
         if byte & 0x80 == 0 {
             if byte == 0 && *vli_pos > 1 {
                 return LZMA_DATA_ERROR;

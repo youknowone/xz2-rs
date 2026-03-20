@@ -152,7 +152,7 @@ unsafe extern "C" fn alone_encoder_init(
     if (*options).dict_size < LZMA_DICT_SIZE_MIN as u32 {
         return LZMA_OPTIONS_ERROR;
     }
-    let mut d: u32 = (*options).dict_size.wrapping_sub(1);
+    let mut d: u32 = (*options).dict_size - 1;
     d |= d >> 2;
     d |= d >> 3;
     d |= d >> 4;

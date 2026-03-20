@@ -11,8 +11,7 @@ pub unsafe fn lzma_filter_flags_size(
     if ret_ != LZMA_OK {
         return ret_;
     }
-    *size = (*size)
-        .wrapping_add(lzma_vli_size((*filter).id).wrapping_add(lzma_vli_size(*size as lzma_vli)));
+    *size += lzma_vli_size((*filter).id) + lzma_vli_size(*size as lzma_vli);
     LZMA_OK
 }
 pub unsafe fn lzma_filter_flags_encode(
@@ -44,13 +43,13 @@ pub unsafe fn lzma_filter_flags_encode(
     if ret__1 != LZMA_OK {
         return ret__1;
     }
-    if out_size.wrapping_sub(*out_pos) < props_size as size_t {
+    if out_size - *out_pos < props_size as size_t {
         return LZMA_PROG_ERROR;
     }
     let ret__2: lzma_ret = lzma_properties_encode(filter, out.offset(*out_pos as isize));
     if ret__2 != LZMA_OK {
         return ret__2;
     }
-    *out_pos = (*out_pos).wrapping_add(props_size as size_t);
+    *out_pos += props_size as size_t;
     LZMA_OK
 }

@@ -40,14 +40,14 @@ unsafe extern "C" fn alone_decode(
                     return LZMA_FORMAT_ERROR;
                 }
                 (*coder).sequence = SEQ_DICTIONARY_SIZE;
-                *in_pos = (*in_pos).wrapping_add(1);
+                *in_pos += 1;
                 current_block_42 = 11048769245176032998;
             }
             1 => {
                 (*coder).options.dict_size = ((*coder).options.dict_size as size_t
-                    | (*in_0.offset(*in_pos as isize) as size_t) << (*coder).pos.wrapping_mul(8))
+                    | (*in_0.offset(*in_pos as isize) as size_t) << ((*coder).pos * 8))
                     as u32;
-                (*coder).pos = (*coder).pos.wrapping_add(1);
+                (*coder).pos += 1;
                 if (*coder).pos == 4 {
                     if (*coder).picky && (*coder).options.dict_size != UINT32_MAX {
                         let mut d: u32 = (*coder).options.dict_size.wrapping_sub(1);
@@ -64,14 +64,14 @@ unsafe extern "C" fn alone_decode(
                     (*coder).pos = 0;
                     (*coder).sequence = SEQ_UNCOMPRESSED_SIZE;
                 }
-                *in_pos = (*in_pos).wrapping_add(1);
+                *in_pos += 1;
                 current_block_42 = 11048769245176032998;
             }
             2 => {
                 (*coder).uncompressed_size |=
-                    (*in_0.offset(*in_pos as isize) as lzma_vli) << (*coder).pos.wrapping_mul(8);
-                *in_pos = (*in_pos).wrapping_add(1);
-                (*coder).pos = (*coder).pos.wrapping_add(1);
+                    (*in_0.offset(*in_pos as isize) as lzma_vli) << ((*coder).pos * 8);
+                *in_pos += 1;
+                (*coder).pos += 1;
                 if (*coder).pos < 8 {
                     current_block_42 = 11048769245176032998;
                 } else {

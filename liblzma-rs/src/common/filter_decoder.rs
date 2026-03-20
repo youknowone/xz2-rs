@@ -285,11 +285,11 @@ static decoders: [lzma_filter_decoder; 12] = [
 extern "C" fn decoder_find(id: lzma_vli) -> *const lzma_filter_decoder {
     let mut i: size_t = 0;
     while i
-        < (core::mem::size_of::<[lzma_filter_decoder; 12]>())
-            .wrapping_div(core::mem::size_of::<lzma_filter_decoder>())
+        < core::mem::size_of::<[lzma_filter_decoder; 12]>()
+            / core::mem::size_of::<lzma_filter_decoder>()
     {
         if decoders[i as usize].id == id {
-            return decoders.as_ptr().wrapping_add(i as usize);
+            return &decoders[i as usize];
         }
         i += 1;
     }

@@ -11,12 +11,12 @@ unsafe extern "C" fn powerpc_code(
     i = 0;
     while i < size {
         if *buffer.offset(i as isize) >> 2 == 0x12
-            && *buffer.offset(i.wrapping_add(3) as isize) & 3 == 1
+            && *buffer.offset((i + 3) as isize) & 3 == 1
         {
             let src: u32 = (*buffer.offset(i as isize) as u32 & 3) << 24
-                | (*buffer.offset(i.wrapping_add(1) as isize) as u32) << 16
-                | (*buffer.offset(i.wrapping_add(2) as isize) as u32) << 8
-                | *buffer.offset(i.wrapping_add(3) as isize) as u32 & !(3);
+                | (*buffer.offset((i + 1) as isize) as u32) << 16
+                | (*buffer.offset((i + 2) as isize) as u32) << 8
+                | *buffer.offset((i + 3) as isize) as u32 & !(3);
             let mut dest: u32 = 0;
             if is_encoder {
                 dest = now_pos.wrapping_add(i as u32).wrapping_add(src);
@@ -24,13 +24,13 @@ unsafe extern "C" fn powerpc_code(
                 dest = src.wrapping_sub(now_pos.wrapping_add(i as u32));
             }
             *buffer.offset(i as isize) = (0x48 | dest >> 24 & 0x3) as u8;
-            *buffer.offset(i.wrapping_add(1) as isize) = (dest >> 16) as u8;
-            *buffer.offset(i.wrapping_add(2) as isize) = (dest >> 8) as u8;
-            *buffer.offset(i.wrapping_add(3) as isize) &= 0x3;
-            *buffer.offset(i.wrapping_add(3) as isize) =
-                (*buffer.offset(i.wrapping_add(3) as isize) as u32 | dest) as u8;
+            *buffer.offset((i + 1) as isize) = (dest >> 16) as u8;
+            *buffer.offset((i + 2) as isize) = (dest >> 8) as u8;
+            *buffer.offset((i + 3) as isize) &= 0x3;
+            *buffer.offset((i + 3) as isize) =
+                (*buffer.offset((i + 3) as isize) as u32 | dest) as u8;
         }
-        i = i.wrapping_add(4);
+        i += 4;
     }
     i
 }

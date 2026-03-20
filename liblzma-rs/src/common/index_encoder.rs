@@ -36,7 +36,7 @@ unsafe extern "C" fn index_encode(
         match (*coder).sequence {
             0 => {
                 *out.offset(*out_pos as isize) = INDEX_INDICATOR;
-                *out_pos = (*out_pos).wrapping_add(1);
+                *out_pos += 1;
                 (*coder).sequence = SEQ_COUNT;
                 continue;
             }
@@ -76,14 +76,14 @@ unsafe extern "C" fn index_encode(
             }
             5 => {
                 if (*coder).pos > 0 {
-                    (*coder).pos = (*coder).pos.wrapping_sub(1);
+                    (*coder).pos -= 1;
                     *out.offset(*out_pos as isize) = 0;
                     *out_pos += 1;
                     continue;
                 } else {
                     (*coder).crc32 = lzma_crc32(
                         out.offset(out_start as isize),
-                        (*out_pos).wrapping_sub(out_start),
+                        *out_pos - out_start,
                         (*coder).crc32,
                     );
                     (*coder).sequence = SEQ_CRC32;
@@ -122,9 +122,9 @@ unsafe extern "C" fn index_encode(
                         return LZMA_OK;
                     }
                     *out.offset(*out_pos as isize) =
-                        ((*coder).crc32 >> (*coder).pos.wrapping_mul(8) & 0xff) as u8;
-                    *out_pos = (*out_pos).wrapping_add(1);
-                    (*coder).pos = (*coder).pos.wrapping_add(1);
+                        ((*coder).crc32 >> ((*coder).pos * 8) & 0xff) as u8;
+                    *out_pos += 1;
+                    (*coder).pos += 1;
                     if (*coder).pos >= 4 {
                         break;
                     }
@@ -133,7 +133,7 @@ unsafe extern "C" fn index_encode(
             }
         }
     }
-    let out_used: size_t = (*out_pos).wrapping_sub(out_start);
+    let out_used: size_t = *out_pos - out_start;
     if out_used > 0 {
         (*coder).crc32 = lzma_crc32(out.offset(out_start as isize), out_used, (*coder).crc32);
     }
@@ -251,7 +251,7 @@ pub unsafe fn lzma_index_buffer_encode(
     if i.is_null() || out.is_null() || out_pos.is_null() || *out_pos > out_size {
         return LZMA_PROG_ERROR;
     }
-    if (out_size.wrapping_sub(*out_pos) as lzma_vli) < lzma_index_size(i) {
+    if ((out_size - *out_pos) as lzma_vli) < lzma_index_size(i) {
         return LZMA_BUF_ERROR;
     }
     let mut coder: lzma_index_coder = lzma_index_coder {

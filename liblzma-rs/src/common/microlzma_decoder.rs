@@ -23,13 +23,13 @@ unsafe extern "C" fn microlzma_decode(
     let coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
     let in_start: size_t = *in_pos;
     let out_start: size_t = *out_pos;
-    if in_size.wrapping_sub(*in_pos) as u64 > (*coder).comp_size {
-        in_size = (*in_pos).wrapping_add((*coder).comp_size as size_t);
+    if (in_size - *in_pos) as u64 > (*coder).comp_size {
+        in_size = *in_pos + (*coder).comp_size as size_t;
     }
     if !(*coder).uncomp_size_is_exact
-        && out_size.wrapping_sub(*out_pos) as lzma_vli > (*coder).uncomp_size
+        && (out_size - *out_pos) as lzma_vli > (*coder).uncomp_size
     {
-        out_size = (*out_pos).wrapping_add((*coder).uncomp_size as size_t);
+        out_size = *out_pos + (*coder).uncomp_size as size_t;
     }
     if !(*coder).props_decoded {
         if *in_pos >= in_size {
@@ -71,7 +71,7 @@ unsafe extern "C" fn microlzma_decode(
         ) {
             return LZMA_OPTIONS_ERROR;
         }
-        *in_pos = (*in_pos).wrapping_add(1);
+        *in_pos += 1;
         let mut filters: [lzma_filter_info; 2] = [
             lzma_filter_info_s {
                 id: LZMA_FILTER_LZMA1EXT,
@@ -128,17 +128,13 @@ unsafe extern "C" fn microlzma_decode(
         out_size,
         action,
     );
-    (*coder).comp_size = (*coder)
-        .comp_size
-        .wrapping_sub((*in_pos).wrapping_sub(in_start) as u64);
+    (*coder).comp_size -= (*in_pos - in_start) as u64;
     if (*coder).uncomp_size_is_exact {
         if ret == LZMA_STREAM_END && (*coder).comp_size != 0 {
             ret = LZMA_DATA_ERROR;
         }
     } else {
-        (*coder).uncomp_size = (*coder)
-            .uncomp_size
-            .wrapping_sub((*out_pos).wrapping_sub(out_start) as lzma_vli);
+        (*coder).uncomp_size -= (*out_pos - out_start) as lzma_vli;
         if ret == LZMA_STREAM_END {
             ret = LZMA_DATA_ERROR;
         } else if (*coder).uncomp_size == 0 {

@@ -29,7 +29,7 @@ unsafe extern "C" fn microlzma_encode(
     if set_out_limit(
         (*coder).lzma.coder,
         ::core::ptr::addr_of_mut!(uncomp_size),
-        out_size.wrapping_sub(*out_pos) as u64,
+        (out_size - *out_pos) as u64,
     ) != LZMA_OK
     {
         return LZMA_PROG_ERROR;
@@ -52,7 +52,7 @@ unsafe extern "C" fn microlzma_encode(
         return ret;
     }
     *out.offset(out_start as isize) = !(*coder).props;
-    *in_pos = in_start.wrapping_add(uncomp_size as size_t);
+    *in_pos = in_start + uncomp_size as size_t;
     ret
 }
 unsafe extern "C" fn microlzma_encoder_end(

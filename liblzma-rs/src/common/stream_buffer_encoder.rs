@@ -9,10 +9,10 @@ pub fn lzma_stream_buffer_bound(uncompressed_size: size_t) -> size_t {
         return 0;
     }
     let stream_bound_max: size_t = core::cmp::min(size_t::MAX, LZMA_VLI_MAX as size_t);
-    if stream_bound_max.wrapping_sub(block_bound) < HEADERS_BOUND as size_t {
+    if stream_bound_max - block_bound < HEADERS_BOUND as size_t {
         return 0;
     }
-    block_bound.wrapping_add(HEADERS_BOUND as size_t)
+    block_bound + HEADERS_BOUND as size_t
 }
 pub unsafe fn lzma_stream_buffer_encode(
     filters: *mut lzma_filter,
@@ -37,10 +37,10 @@ pub unsafe fn lzma_stream_buffer_encode(
         return LZMA_UNSUPPORTED_CHECK;
     }
     let mut out_pos: size_t = *out_pos_ptr;
-    if out_size.wrapping_sub(out_pos) <= (2 * LZMA_STREAM_HEADER_SIZE) as size_t {
+    if out_size - out_pos <= (2 * LZMA_STREAM_HEADER_SIZE) as size_t {
         return LZMA_BUF_ERROR;
     }
-    out_size = out_size.wrapping_sub(LZMA_STREAM_HEADER_SIZE as size_t);
+    out_size -= LZMA_STREAM_HEADER_SIZE as size_t;
     let mut stream_flags: lzma_stream_flags = lzma_stream_flags {
         version: 0,
         backward_size: 0,
@@ -67,7 +67,7 @@ pub unsafe fn lzma_stream_buffer_encode(
     {
         return LZMA_PROG_ERROR;
     }
-    out_pos = out_pos.wrapping_add(LZMA_STREAM_HEADER_SIZE as size_t);
+    out_pos += LZMA_STREAM_HEADER_SIZE as size_t;
     let mut block: lzma_block = lzma_block {
         version: 0,
         header_size: 0,
@@ -142,7 +142,7 @@ pub unsafe fn lzma_stream_buffer_encode(
     {
         return LZMA_PROG_ERROR;
     }
-    out_pos = out_pos.wrapping_add(LZMA_STREAM_HEADER_SIZE as size_t);
+    out_pos += LZMA_STREAM_HEADER_SIZE as size_t;
     *out_pos_ptr = out_pos;
     LZMA_OK
 }

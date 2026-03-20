@@ -7,13 +7,11 @@ pub unsafe fn lzma_block_compressed_size(
     if lzma_block_unpadded_size(block) == 0 {
         return LZMA_PROG_ERROR;
     }
-    let container_size: u32 = (*block)
-        .header_size
-        .wrapping_add(lzma_check_size((*block).check) as u32);
+    let container_size: u32 = (*block).header_size + lzma_check_size((*block).check) as u32;
     if unpadded_size <= container_size as lzma_vli {
         return LZMA_DATA_ERROR;
     }
-    let compressed_size: lzma_vli = unpadded_size.wrapping_sub(container_size as lzma_vli);
+    let compressed_size: lzma_vli = unpadded_size - container_size as lzma_vli;
     if (*block).compressed_size != LZMA_VLI_UNKNOWN && (*block).compressed_size != compressed_size {
         return LZMA_DATA_ERROR;
     }
@@ -36,10 +34,9 @@ pub unsafe fn lzma_block_unpadded_size(block: *const lzma_block) -> lzma_vli {
     if (*block).compressed_size == LZMA_VLI_UNKNOWN {
         return LZMA_VLI_UNKNOWN;
     }
-    let unpadded_size: lzma_vli = (*block)
-        .compressed_size
-        .wrapping_add((*block).header_size as lzma_vli)
-        .wrapping_add(lzma_check_size((*block).check) as lzma_vli);
+    let unpadded_size: lzma_vli = (*block).compressed_size
+        + (*block).header_size as lzma_vli
+        + lzma_check_size((*block).check) as lzma_vli;
     if unpadded_size > UNPADDED_SIZE_MAX {
         return 0;
     }
