@@ -18,9 +18,30 @@ unsafe fn rc_forget(rc: *mut lzma_range_encoder) {
 }
 #[inline]
 unsafe fn rc_bit(rc: *mut lzma_range_encoder, prob: *mut probability, bit: u32) {
-    (*rc).symbols[(*rc).count as usize] = bit as rc_symbol;
-    (*rc).probs[(*rc).count as usize] = prob;
+    *rc_symbol_slot_mut(rc, (*rc).count) = bit as rc_symbol;
+    *rc_prob_slot_mut(rc, (*rc).count) = prob;
     (*rc).count += 1;
+}
+
+#[inline(always)]
+unsafe fn rc_symbol_slot_mut(rc: *mut lzma_range_encoder, index: size_t) -> *mut rc_symbol {
+    debug_assert!(index < 53);
+    (::core::ptr::addr_of_mut!((*rc).symbols) as *mut rc_symbol).add(index)
+}
+
+#[inline(always)]
+unsafe fn rc_prob_slot_mut(
+    rc: *mut lzma_range_encoder,
+    index: size_t,
+) -> *mut *mut probability {
+    debug_assert!(index < 53);
+    (::core::ptr::addr_of_mut!((*rc).probs) as *mut *mut probability).add(index)
+}
+
+#[inline(always)]
+unsafe fn coder_rep_slot_mut(coder: *mut lzma_lzma1_encoder, index: usize) -> *mut u32 {
+    debug_assert!(index < REPS as usize);
+    (::core::ptr::addr_of_mut!((*coder).reps) as *mut u32).add(index)
 }
 #[inline]
 unsafe fn rc_bittree(
@@ -71,8 +92,8 @@ unsafe fn rc_bittree_reverse(
 unsafe fn rc_direct(rc: *mut lzma_range_encoder, value: u32, mut bit_count: u32) {
     loop {
         bit_count -= 1;
-        (*rc).symbols[(*rc).count as usize] =
-            ((RC_DIRECT_0 as u32) + (value >> bit_count & 1)) as rc_symbol;
+        *rc_symbol_slot_mut(rc, (*rc).count) = ((RC_DIRECT_0 as u32) + (value >> bit_count & 1))
+            as rc_symbol;
         (*rc).count += 1;
         if bit_count == 0 {
             break;
@@ -83,7 +104,7 @@ unsafe fn rc_direct(rc: *mut lzma_range_encoder, value: u32, mut bit_count: u32)
 unsafe fn rc_flush(rc: *mut lzma_range_encoder) {
     let mut i: size_t = 0;
     while i < 5 {
-        (*rc).symbols[(*rc).count as usize] = RC_FLUSH;
+        *rc_symbol_slot_mut(rc, (*rc).count) = RC_FLUSH;
         (*rc).count += 1;
         i += 1;
     }
@@ -155,23 +176,23 @@ unsafe fn rc_encode(
             }
             (*rc).range <<= RC_SHIFT_BITS;
         }
-        match (*rc).symbols[(*rc).pos as usize] {
+        match *rc_symbol_slot_mut(rc, (*rc).pos) {
             0 => {
-                let mut prob: probability = *(*rc).probs[(*rc).pos as usize];
+                let mut prob: probability = **rc_prob_slot_mut(rc, (*rc).pos);
                 (*rc).range = ((*rc).range >> RC_BIT_MODEL_TOTAL_BITS).wrapping_mul(prob as u32);
                 prob = (prob as u32)
                     .wrapping_add(RC_BIT_MODEL_TOTAL.wrapping_sub(prob as u32) >> RC_MOVE_BITS)
                     as probability;
-                *(*rc).probs[(*rc).pos as usize] = prob;
+                **rc_prob_slot_mut(rc, (*rc).pos) = prob;
             }
             1 => {
-                let mut prob_0: probability = *(*rc).probs[(*rc).pos as usize];
+                let mut prob_0: probability = **rc_prob_slot_mut(rc, (*rc).pos);
                 let bound: u32 =
                     (prob_0 as u32).wrapping_mul((*rc).range >> RC_BIT_MODEL_TOTAL_BITS);
                 (*rc).low = (*rc).low.wrapping_add(bound as u64);
                 (*rc).range = (*rc).range.wrapping_sub(bound);
                 prob_0 -= prob_0 >> RC_MOVE_BITS;
-                *(*rc).probs[(*rc).pos as usize] = prob_0;
+                **rc_prob_slot_mut(rc, (*rc).pos) = prob_0;
             }
             2 => {
                 (*rc).range >>= 1;
@@ -329,9 +350,9 @@ unsafe fn literal(coder: *mut lzma_lzma1_encoder, mf: *mut lzma_mf, position: u3
         } else {
             (*coder).state as u32 - 6
         }) as lzma_lzma_state;
-        let match_byte: u8 = *(*mf).buffer.offset(
-            ((*mf).read_pos - (*coder).reps[0] - 1 - (*mf).read_ahead) as isize,
-        );
+        let match_byte: u8 = *(*mf)
+            .buffer
+            .offset(((*mf).read_pos - *coder_rep_slot_mut(coder, 0) - 1 - (*mf).read_ahead) as isize);
         literal_matched(
             ::core::ptr::addr_of_mut!((*coder).rc),
             subcoder,
@@ -493,10 +514,10 @@ unsafe fn match_0(coder: *mut lzma_lzma1_encoder, pos_state: u32, distance: u32,
             (*coder).align_price_count += 1;
         }
     }
-    (*coder).reps[3] = (*coder).reps[2];
-    (*coder).reps[2] = (*coder).reps[1];
-    (*coder).reps[1] = (*coder).reps[0];
-    (*coder).reps[0] = distance;
+    *coder_rep_slot_mut(coder, 3) = *coder_rep_slot_mut(coder, 2);
+    *coder_rep_slot_mut(coder, 2) = *coder_rep_slot_mut(coder, 1);
+    *coder_rep_slot_mut(coder, 1) = *coder_rep_slot_mut(coder, 0);
+    *coder_rep_slot_mut(coder, 0) = distance;
     (*coder).match_price_count += 1;
 }
 #[inline]
@@ -517,7 +538,7 @@ unsafe fn rep_match(coder: *mut lzma_lzma1_encoder, pos_state: u32, rep: u32, le
             (len != 1) as u32,
         );
     } else {
-        let distance: u32 = (*coder).reps[rep as usize];
+        let distance: u32 = *coder_rep_slot_mut(coder, rep as usize);
         rc_bit(
             ::core::ptr::addr_of_mut!((*coder).rc),
             (::core::ptr::addr_of_mut!((*coder).is_rep0) as *mut probability)
@@ -545,12 +566,12 @@ unsafe fn rep_match(coder: *mut lzma_lzma1_encoder, pos_state: u32, rep: u32, le
                 rep - 2,
             );
             if rep == 3 {
-                (*coder).reps[3] = (*coder).reps[2];
+                *coder_rep_slot_mut(coder, 3) = *coder_rep_slot_mut(coder, 2);
             }
-            (*coder).reps[2] = (*coder).reps[1];
+            *coder_rep_slot_mut(coder, 2) = *coder_rep_slot_mut(coder, 1);
         }
-        (*coder).reps[1] = (*coder).reps[0];
-        (*coder).reps[0] = distance;
+        *coder_rep_slot_mut(coder, 1) = *coder_rep_slot_mut(coder, 0);
+        *coder_rep_slot_mut(coder, 0) = distance;
     }
     if len == 1 {
         (*coder).state = (if ((*coder).state as u32) < LIT_STATES {
