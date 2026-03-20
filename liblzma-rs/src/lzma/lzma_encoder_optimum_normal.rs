@@ -556,7 +556,7 @@ unsafe fn helper1(
     }
     len_end
 }
-#[inline]
+#[inline(never)]
 unsafe fn helper2(
     coder: *mut lzma_lzma1_encoder,
     reps: *mut u32,
