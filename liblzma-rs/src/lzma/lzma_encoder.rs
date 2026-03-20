@@ -359,6 +359,11 @@ unsafe fn length_mid_probs(lc: *mut lzma_length_encoder, pos_state: u32) -> *mut
     ) as *mut probability
 }
 #[inline(always)]
+unsafe fn length_counter(lc: *mut lzma_length_encoder, pos_state: u32) -> *mut u32 {
+    debug_assert!((pos_state as usize) < (*lc).counters.len());
+    (::core::ptr::addr_of_mut!((*lc).counters) as *mut u32).add(pos_state as usize)
+}
+#[inline(always)]
 unsafe fn is_match_prob(coder: *mut lzma_lzma1_encoder, pos_state: u32) -> *mut probability {
     (::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_match)
         as *mut [probability; 16])
@@ -371,7 +376,7 @@ unsafe fn is_rep_prob(coder: *mut lzma_lzma1_encoder) -> *mut probability {
 }
 unsafe fn length_update_prices(lc: *mut lzma_length_encoder, pos_state: u32) {
     let table_size: u32 = (*lc).table_size;
-    (*lc).counters[pos_state as usize] = table_size;
+    *length_counter(lc, pos_state) = table_size;
     let a0: u32 = rc_bit_0_price((*lc).choice) as u32;
     let a1: u32 = rc_bit_1_price((*lc).choice) as u32;
     let b0: u32 = a1 + rc_bit_0_price((*lc).choice2) as u32;
