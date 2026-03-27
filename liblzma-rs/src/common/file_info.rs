@@ -159,64 +159,35 @@ unsafe extern "C" fn file_info_decode(
         in_size = in_start + ((*coder).file_size - (*coder).file_cur_pos) as size_t;
     }
     loop {
-        let mut current_block_142: u64;
         match (*coder).sequence {
-            0 => {
+            SEQ_MAGIC_BYTES => {
                 if (*coder).file_size < LZMA_STREAM_HEADER_SIZE as u64 {
                     return LZMA_FORMAT_ERROR;
                 }
                 if fill_temp(coder, in_0, in_pos, in_size) {
                     return LZMA_OK;
                 }
-                let ret_: lzma_ret = lzma_stream_header_decode(
+                let ret: lzma_ret = lzma_stream_header_decode(
                     ::core::ptr::addr_of_mut!((*coder).first_header_flags),
                     ::core::ptr::addr_of_mut!((*coder).temp) as *mut u8,
                 );
-                if ret_ != LZMA_OK {
-                    return ret_;
+                if ret != LZMA_OK {
+                    return ret;
                 }
                 if (*coder).file_size > LZMA_VLI_MAX as u64 || (*coder).file_size & 3 != 0 {
                     return LZMA_DATA_ERROR;
                 }
                 (*coder).file_target_pos = (*coder).file_size;
-                current_block_142 = 10445208204442080639;
+                (*coder).sequence = SEQ_PADDING_SEEK;
             }
-            1 => {
-                current_block_142 = 10445208204442080639;
-            }
-            2 => {
-                current_block_142 = 13242334135786603907;
-            }
-            3 => {
-                current_block_142 = 9626344630975045425;
-            }
-            4 => {
-                current_block_142 = 9376024032952078885;
-            }
-            5 => {
-                current_block_142 = 16203797167131938757;
-            }
-            6 => {
-                current_block_142 = 1317013834825322123;
-            }
-            7 => {
-                current_block_142 = 6010056518000876263;
-            }
-            _ => return LZMA_PROG_ERROR,
-        }
-        match current_block_142 {
-            10445208204442080639 => {
+            SEQ_PADDING_SEEK => {
                 (*coder).sequence = SEQ_PADDING_DECODE;
-                let ret__0: lzma_ret = reverse_seek(coder, in_start, in_pos, in_size);
-                if ret__0 != LZMA_OK {
-                    return ret__0;
+                let ret: lzma_ret = reverse_seek(coder, in_start, in_pos, in_size);
+                if ret != LZMA_OK {
+                    return ret;
                 }
-                current_block_142 = 13242334135786603907;
             }
-            _ => {}
-        }
-        match current_block_142 {
-            13242334135786603907 => {
+            SEQ_PADDING_DECODE => {
                 if fill_temp(coder, in_0, in_pos, in_size) {
                     return LZMA_OK;
                 }
@@ -228,39 +199,34 @@ unsafe extern "C" fn file_info_decode(
                 (*coder).file_target_pos -= new_padding as u64;
                 if new_padding == (*coder).temp_size {
                     (*coder).sequence = SEQ_PADDING_SEEK;
-                    current_block_142 = 13014351284863956202;
-                } else {
-                    if (*coder).stream_padding & 3 != 0 {
-                        return LZMA_DATA_ERROR;
+                    continue;
+                }
+                if (*coder).stream_padding & 3 != 0 {
+                    return LZMA_DATA_ERROR;
+                }
+                (*coder).sequence = SEQ_FOOTER;
+                (*coder).temp_size -= new_padding;
+                (*coder).temp_pos = (*coder).temp_size;
+                if (*coder).temp_size < LZMA_STREAM_HEADER_SIZE as size_t {
+                    let ret: lzma_ret = reverse_seek(coder, in_start, in_pos, in_size);
+                    if ret != LZMA_OK {
+                        return ret;
                     }
-                    (*coder).sequence = SEQ_FOOTER;
-                    (*coder).temp_size -= new_padding;
-                    (*coder).temp_pos = (*coder).temp_size;
-                    if (*coder).temp_size < LZMA_STREAM_HEADER_SIZE as size_t {
-                        let ret__1: lzma_ret = reverse_seek(coder, in_start, in_pos, in_size);
-                        if ret__1 != LZMA_OK {
-                            return ret__1;
-                        }
-                    }
-                    current_block_142 = 9626344630975045425;
                 }
             }
-            _ => {}
-        }
-        match current_block_142 {
-            9626344630975045425 => {
+            SEQ_FOOTER => {
                 if fill_temp(coder, in_0, in_pos, in_size) {
                     return LZMA_OK;
                 }
                 (*coder).file_target_pos -= LZMA_STREAM_HEADER_SIZE as u64;
                 (*coder).temp_size -= LZMA_STREAM_HEADER_SIZE as size_t;
-                let ret__2: lzma_ret = hide_format_error(lzma_stream_footer_decode(
+                let ret: lzma_ret = hide_format_error(lzma_stream_footer_decode(
                     ::core::ptr::addr_of_mut!((*coder).footer_flags),
                     (::core::ptr::addr_of_mut!((*coder).temp) as *mut u8)
                         .offset((*coder).temp_size as isize),
                 ));
-                if ret__2 != LZMA_OK {
-                    return ret__2;
+                if ret != LZMA_OK {
+                    return ret;
                 }
                 if (*coder).file_target_pos
                     < (*coder).footer_flags.backward_size + LZMA_STREAM_HEADER_SIZE as lzma_vli
@@ -280,12 +246,8 @@ unsafe extern "C" fn file_info_decode(
                         return LZMA_SEEK_NEEDED;
                     }
                 }
-                current_block_142 = 9376024032952078885;
             }
-            _ => {}
-        }
-        match current_block_142 {
-            9376024032952078885 => {
+            SEQ_INDEX_INIT => {
                 let mut memused: u64 = 0;
                 if !(*coder).combined_index.is_null() {
                     memused = lzma_index_memused((*coder).combined_index);
@@ -293,56 +255,51 @@ unsafe extern "C" fn file_info_decode(
                         return LZMA_PROG_ERROR;
                     }
                 }
-                let ret__3: lzma_ret = lzma_index_decoder_init(
+                let ret: lzma_ret = lzma_index_decoder_init(
                     ::core::ptr::addr_of_mut!((*coder).index_decoder),
                     allocator,
                     ::core::ptr::addr_of_mut!((*coder).this_index),
                     (*coder).memlimit - memused,
                 );
-                if ret__3 != LZMA_OK {
-                    return ret__3;
+                if ret != LZMA_OK {
+                    return ret;
                 }
                 (*coder).index_remaining = (*coder).footer_flags.backward_size;
                 (*coder).sequence = SEQ_INDEX_DECODE;
-                current_block_142 = 16203797167131938757;
             }
-            _ => {}
-        }
-        match current_block_142 {
-            16203797167131938757 => {
-                let mut ret: lzma_ret = LZMA_OK;
-                if (*coder).temp_size != 0 {
-                    ret = decode_index(
+            SEQ_INDEX_DECODE => {
+                let ret: lzma_ret = if (*coder).temp_size != 0 {
+                    decode_index(
                         coder,
                         allocator,
                         ::core::ptr::addr_of_mut!((*coder).temp) as *mut u8,
                         ::core::ptr::addr_of_mut!((*coder).temp_pos),
                         (*coder).temp_size,
                         false,
-                    );
+                    )
                 } else {
                     let mut in_stop: size_t = in_size;
                     if (in_size - *in_pos) as lzma_vli > (*coder).index_remaining {
                         in_stop = *in_pos + (*coder).index_remaining as size_t;
                     }
-                    ret = decode_index(coder, allocator, in_0, in_pos, in_stop, true);
-                }
+                    decode_index(coder, allocator, in_0, in_pos, in_stop, true)
+                };
                 match ret {
-                    0 => {
+                    LZMA_OK => {
                         if (*coder).index_remaining == 0 {
                             return LZMA_DATA_ERROR;
                         }
                         return LZMA_OK;
                     }
-                    1 => {
+                    LZMA_STREAM_END => {
                         if (*coder).index_remaining != 0 {
                             return LZMA_DATA_ERROR;
                         }
                     }
                     _ => return ret,
                 }
-                let seek_amount: u64 = lzma_index_total_size((*coder).this_index) as u64
-                    + LZMA_STREAM_HEADER_SIZE as u64;
+                let seek_amount: u64 =
+                    lzma_index_total_size((*coder).this_index) as u64 + LZMA_STREAM_HEADER_SIZE as u64;
                 if (*coder).file_target_pos < seek_amount {
                     return LZMA_DATA_ERROR;
                 }
@@ -350,60 +307,51 @@ unsafe extern "C" fn file_info_decode(
                 if (*coder).file_target_pos == 0 {
                     (*coder).header_flags = (*coder).first_header_flags;
                     (*coder).sequence = SEQ_HEADER_COMPARE;
-                    current_block_142 = 13014351284863956202;
+                    continue;
+                }
+                (*coder).sequence = SEQ_HEADER_DECODE;
+                (*coder).file_target_pos += LZMA_STREAM_HEADER_SIZE as u64;
+                if (*coder).temp_size != 0
+                    && (*coder).temp_size as lzma_vli - (*coder).footer_flags.backward_size
+                        >= seek_amount
+                {
+                    (*coder).temp_pos = ((*coder).temp_size as lzma_vli
+                        - (*coder).footer_flags.backward_size
+                        - seek_amount as lzma_vli
+                        + LZMA_STREAM_HEADER_SIZE as lzma_vli)
+                        as size_t;
+                    (*coder).temp_size = (*coder).temp_pos;
                 } else {
-                    (*coder).sequence = SEQ_HEADER_DECODE;
-                    (*coder).file_target_pos += LZMA_STREAM_HEADER_SIZE as u64;
-                    if (*coder).temp_size != 0
-                        && (*coder).temp_size as lzma_vli - (*coder).footer_flags.backward_size
-                            >= seek_amount
-                    {
-                        (*coder).temp_pos = ((*coder).temp_size as lzma_vli
-                            - (*coder).footer_flags.backward_size
-                            - seek_amount as lzma_vli
-                            + LZMA_STREAM_HEADER_SIZE as lzma_vli)
-                            as size_t;
-                        (*coder).temp_size = (*coder).temp_pos;
-                    } else {
-                        let ret__4: lzma_ret = reverse_seek(coder, in_start, in_pos, in_size);
-                        if ret__4 != LZMA_OK {
-                            return ret__4;
-                        }
+                    let ret_seek: lzma_ret = reverse_seek(coder, in_start, in_pos, in_size);
+                    if ret_seek != LZMA_OK {
+                        return ret_seek;
                     }
-                    current_block_142 = 1317013834825322123;
                 }
             }
-            _ => {}
-        }
-        match current_block_142 {
-            1317013834825322123 => {
+            SEQ_HEADER_DECODE => {
                 if fill_temp(coder, in_0, in_pos, in_size) {
                     return LZMA_OK;
                 }
                 (*coder).file_target_pos -= LZMA_STREAM_HEADER_SIZE as u64;
                 (*coder).temp_size -= LZMA_STREAM_HEADER_SIZE as size_t;
                 (*coder).temp_pos = (*coder).temp_size;
-                let ret__5: lzma_ret = hide_format_error(lzma_stream_header_decode(
+                let ret: lzma_ret = hide_format_error(lzma_stream_header_decode(
                     ::core::ptr::addr_of_mut!((*coder).header_flags),
                     (::core::ptr::addr_of_mut!((*coder).temp) as *mut u8)
                         .offset((*coder).temp_size as isize),
                 ));
-                if ret__5 != LZMA_OK {
-                    return ret__5;
+                if ret != LZMA_OK {
+                    return ret;
                 }
                 (*coder).sequence = SEQ_HEADER_COMPARE;
-                current_block_142 = 6010056518000876263;
             }
-            _ => {}
-        }
-        match current_block_142 {
-            6010056518000876263 => {
-                let ret__6: lzma_ret = lzma_stream_flags_compare(
+            SEQ_HEADER_COMPARE => {
+                let ret: lzma_ret = lzma_stream_flags_compare(
                     ::core::ptr::addr_of_mut!((*coder).header_flags),
                     ::core::ptr::addr_of_mut!((*coder).footer_flags),
                 );
-                if ret__6 != LZMA_OK {
-                    return ret__6;
+                if ret != LZMA_OK {
+                    return ret;
                 }
                 if lzma_index_stream_flags(
                     (*coder).this_index,
@@ -419,10 +367,10 @@ unsafe extern "C" fn file_info_decode(
                 }
                 (*coder).stream_padding = 0;
                 if !(*coder).combined_index.is_null() {
-                    let ret__7: lzma_ret =
+                    let ret: lzma_ret =
                         lzma_index_cat((*coder).this_index, (*coder).combined_index, allocator);
-                    if ret__7 != LZMA_OK {
-                        return ret__7;
+                    if ret != LZMA_OK {
+                        return ret;
                     }
                 }
                 (*coder).combined_index = (*coder).this_index;
@@ -439,7 +387,7 @@ unsafe extern "C" fn file_info_decode(
                     SEQ_PADDING_SEEK
                 }) as file_info_seq;
             }
-            _ => {}
+            _ => return LZMA_PROG_ERROR,
         }
     }
 }
