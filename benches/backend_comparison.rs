@@ -4,19 +4,29 @@ use std::ptr;
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 
-#[cfg(all(feature = "c-backend", feature = "rust-backend"))]
+#[cfg(all(feature = "xz-sys", feature = "liblzma-sys"))]
 compile_error!("backend_comparison bench must be built with exactly one backend feature");
-#[cfg(not(any(feature = "c-backend", feature = "rust-backend")))]
-compile_error!("backend_comparison bench requires either `c-backend` or `rust-backend`");
+#[cfg(not(any(feature = "xz-sys", feature = "liblzma-sys")))]
+compile_error!("backend_comparison bench requires `xz-sys` or `liblzma-sys`");
 
-#[cfg(feature = "c-backend")]
-use liblzma_c_sys as backend_sys;
-#[cfg(feature = "rust-backend")]
-use liblzma_sys as backend_sys;
+#[cfg(feature = "liblzma-sys")]
+use liblzma_sys_c::{
+    lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_stream_buffer_bound,
+    lzma_stream_buffer_decode, LZMA_CHECK_CRC64,
+};
+#[cfg(feature = "xz-sys")]
+use xz::check::{crc32_fast::lzma_crc32, crc64_fast::lzma_crc64};
+#[cfg(feature = "xz-sys")]
+use xz::common::{
+    easy_buffer_encoder::lzma_easy_buffer_encode, stream_buffer_decoder::lzma_stream_buffer_decode,
+    stream_buffer_encoder::lzma_stream_buffer_bound,
+};
+#[cfg(feature = "xz-sys")]
+use xz::types::LZMA_CHECK_CRC64;
 
-#[cfg(feature = "c-backend")]
+#[cfg(feature = "liblzma-sys")]
 const BACKEND_NAME: &str = "c";
-#[cfg(feature = "rust-backend")]
+#[cfg(feature = "xz-sys")]
 const BACKEND_NAME: &str = "rust";
 
 fn make_payload(size: usize) -> Vec<u8> {
@@ -32,12 +42,12 @@ fn make_payload(size: usize) -> Vec<u8> {
 }
 
 unsafe fn backend_encode(input: &[u8]) -> Vec<u8> {
-    let bound = backend_sys::lzma_stream_buffer_bound(input.len());
+    let bound = lzma_stream_buffer_bound(input.len());
     let mut out = vec![0u8; bound];
     let mut out_pos: usize = 0;
-    backend_sys::lzma_easy_buffer_encode(
+    lzma_easy_buffer_encode(
         6,
-        backend_sys::LZMA_CHECK_CRC64,
+        LZMA_CHECK_CRC64,
         ptr::null(),
         input.as_ptr(),
         input.len(),
@@ -54,7 +64,7 @@ unsafe fn backend_decode(compressed: &[u8], out_size: usize) -> Vec<u8> {
     let mut memlimit = u64::MAX;
     let mut in_pos = 0usize;
     let mut out_pos = 0usize;
-    backend_sys::lzma_stream_buffer_decode(
+    lzma_stream_buffer_decode(
         &mut memlimit,
         0,
         ptr::null(),
@@ -111,7 +121,7 @@ fn bench_crc32(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(size as u64));
 
         group.bench_with_input(BenchmarkId::new(BACKEND_NAME, label), &data, |b, data| {
-            b.iter(|| unsafe { backend_sys::lzma_crc32(black_box(data.as_ptr()), data.len(), 0) })
+            b.iter(|| unsafe { lzma_crc32(black_box(data.as_ptr()), data.len(), 0) })
         });
     }
     group.finish();
@@ -126,7 +136,7 @@ fn bench_crc64(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(size as u64));
 
         group.bench_with_input(BenchmarkId::new(BACKEND_NAME, label), &data, |b, data| {
-            b.iter(|| unsafe { backend_sys::lzma_crc64(black_box(data.as_ptr()), data.len(), 0) })
+            b.iter(|| unsafe { lzma_crc64(black_box(data.as_ptr()), data.len(), 0) })
         });
     }
     group.finish();

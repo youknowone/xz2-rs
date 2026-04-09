@@ -1,11 +1,11 @@
 use std::env;
 
 fn main() {
-    let use_c_sys = env::var_os("CARGO_FEATURE_C_SYS").is_some();
-    let use_rs_sys = env::var_os("CARGO_FEATURE_RS_SYS").is_some();
+    let use_c_sys = env::var_os("CARGO_FEATURE_LIBLZMA_SYS").is_some();
+    let use_rs_sys = env::var_os("CARGO_FEATURE_XZ_SYS").is_some();
     match (use_c_sys, use_rs_sys) {
         (true, false) | (false, true) => {}
-        _ => panic!("Enable exactly one of features: c-sys or rs-sys"),
+        _ => panic!("Enable exactly one of features: liblzma-sys or xz-sys"),
     }
 
     let mut cfg = ctest2::TestGenerator::new();

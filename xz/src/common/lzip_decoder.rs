@@ -26,7 +26,7 @@ pub const SEQ_DICT_SIZE: lzip_decoder_seq = 2;
 pub const SEQ_VERSION: lzip_decoder_seq = 1;
 pub const SEQ_ID_STRING: lzip_decoder_seq = 0;
 #[inline]
-extern "C" fn read64le(buf: *const u8) -> u64 {
+fn read64le(buf: *const u8) -> u64 {
     return unsafe {
         let mut num: u64 = *buf as u64;
         num |= (*buf.offset(1) as u64) << 8;
@@ -290,7 +290,7 @@ unsafe extern "C" fn lzip_decoder_memconfig(
     }
     LZMA_OK
 }
-pub unsafe extern "C" fn lzma_lzip_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_lzip_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     memlimit: u64,

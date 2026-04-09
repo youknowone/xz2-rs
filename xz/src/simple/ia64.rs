@@ -82,14 +82,14 @@ extern "C" fn ia64_coder_init(
         )
     }
 }
-pub unsafe extern "C" fn lzma_simple_ia64_encoder_init(
+pub(crate) unsafe extern "C" fn lzma_simple_ia64_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
     ia64_coder_init(next, allocator, filters, true)
 }
-pub unsafe extern "C" fn lzma_simple_ia64_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_simple_ia64_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,

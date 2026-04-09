@@ -50,8 +50,8 @@ esac
 RUST_BIN="$RUST_TARGET/release/examples/$EXAMPLE_NAME"
 C_BIN="$C_TARGET/release/examples/$EXAMPLE_NAME"
 
-env CARGO_TARGET_DIR="$RUST_TARGET" cargo build --example "$EXAMPLE_NAME" --release --no-default-features --features rust-backend >/dev/null
-env CARGO_TARGET_DIR="$C_TARGET" cargo build --example "$EXAMPLE_NAME" --release --no-default-features --features c-backend >/dev/null
+env CARGO_TARGET_DIR="$RUST_TARGET" cargo build --example "$EXAMPLE_NAME" --release >/dev/null
+env LZMA_API_STATIC=1 CARGO_TARGET_DIR="$C_TARGET" cargo build --example "$EXAMPLE_NAME" --release --no-default-features --features liblzma-sys >/dev/null
 
 hyperfine \
   --shell=none \

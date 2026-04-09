@@ -332,7 +332,7 @@ unsafe extern "C" fn stream_decoder_memconfig(
     }
     LZMA_OK
 }
-pub unsafe extern "C" fn lzma_stream_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_stream_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     memlimit: u64,

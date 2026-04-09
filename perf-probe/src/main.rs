@@ -1,9 +1,9 @@
 #![cfg(not(target_family = "wasm"))]
 
-#[cfg(all(feature = "c-sys", feature = "rs-sys"))]
-compile_error!("Enable exactly one backend feature: c-sys or rs-sys");
-#[cfg(not(any(feature = "c-sys", feature = "rs-sys")))]
-compile_error!("Enable one backend feature: c-sys or rs-sys");
+#[cfg(all(feature = "liblzma-sys", feature = "xz-sys"))]
+compile_error!("Enable exactly one backend feature: liblzma-sys or xz-sys");
+#[cfg(not(any(feature = "liblzma-sys", feature = "xz-sys")))]
+compile_error!("Enable one backend feature: liblzma-sys or xz-sys");
 
 use std::env;
 use std::fs;
@@ -12,14 +12,33 @@ use std::path::PathBuf;
 use std::ptr;
 use std::time::{Duration, Instant};
 
-#[cfg(feature = "c-sys")]
-use liblzma_c_sys as backend_sys;
-#[cfg(feature = "rs-sys")]
-use xz_sys as backend_sys;
+#[cfg(feature = "liblzma-sys")]
+use liblzma_c_sys::{
+    lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_index as BackendIndex,
+    lzma_index_buffer_decode, lzma_index_end, lzma_index_uncompressed_size,
+    lzma_stream_buffer_bound, lzma_stream_buffer_decode, lzma_stream_flags as BackendStreamFlags,
+    lzma_stream_footer_decode, LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE,
+};
+#[cfg(feature = "xz-sys")]
+use xz::check::{crc32_fast::lzma_crc32, crc64_fast::lzma_crc64};
+#[cfg(feature = "xz-sys")]
+use xz::common::{
+    easy_buffer_encoder::lzma_easy_buffer_encode,
+    index::{lzma_index_end, lzma_index_uncompressed_size},
+    index_decoder::lzma_index_buffer_decode,
+    stream_buffer_decoder::lzma_stream_buffer_decode,
+    stream_buffer_encoder::lzma_stream_buffer_bound,
+    stream_flags_decoder::lzma_stream_footer_decode,
+};
+#[cfg(feature = "xz-sys")]
+use xz::types::{
+    lzma_index as BackendIndex, lzma_stream_flags as BackendStreamFlags, LZMA_CHECK_CRC64, LZMA_OK,
+    LZMA_STREAM_HEADER_SIZE,
+};
 
-#[cfg(feature = "c-sys")]
+#[cfg(feature = "liblzma-sys")]
 const BACKEND_NAME: &str = "c";
-#[cfg(feature = "rs-sys")]
+#[cfg(feature = "xz-sys")]
 const BACKEND_NAME: &str = "rust";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -193,7 +212,7 @@ fn usage() -> String {
     let mut message = String::new();
     message.push_str("Usage:\n");
     message.push_str(
-        "  cargo run -p perf-probe --release --no-default-features --features <c-sys|rs-sys> -- \\\n",
+        "  cargo run -p perf-probe --release --no-default-features --features <liblzma-sys|xz-sys> -- \\\n",
     );
     message.push_str("    --workload <encode|decode|size|crc32|crc64> [options]\n\n");
     message.push_str("Options:\n");
@@ -378,15 +397,15 @@ fn run_crc32(config: &Config) {
         eprintln!("failed to load input: {err}");
         std::process::exit(1);
     });
-    let measurement = measure(input.len(), config.iters, config.warmup, || unsafe {
+    let measurement = measure(input.len(), config.iters, config.warmup, || {
         let slice = black_box(input.as_slice());
         let mut crc = 0u32;
         if let Some(chunk_size) = config.chunk_size {
             for chunk in slice.chunks(chunk_size) {
-                crc = backend_sys::lzma_crc32(chunk.as_ptr(), chunk.len(), crc);
+                crc = unsafe { lzma_crc32(chunk.as_ptr(), chunk.len(), crc) };
             }
         } else {
-            crc = backend_sys::lzma_crc32(slice.as_ptr(), slice.len(), crc);
+            crc = unsafe { lzma_crc32(slice.as_ptr(), slice.len(), crc) };
         }
         crc as u64
     });
@@ -398,15 +417,15 @@ fn run_crc64(config: &Config) {
         eprintln!("failed to load input: {err}");
         std::process::exit(1);
     });
-    let measurement = measure(input.len(), config.iters, config.warmup, || unsafe {
+    let measurement = measure(input.len(), config.iters, config.warmup, || {
         let slice = black_box(input.as_slice());
         let mut crc = 0u64;
         if let Some(chunk_size) = config.chunk_size {
             for chunk in slice.chunks(chunk_size) {
-                crc = backend_sys::lzma_crc64(chunk.as_ptr(), chunk.len(), crc);
+                crc = unsafe { lzma_crc64(chunk.as_ptr(), chunk.len(), crc) };
             }
         } else {
-            crc = backend_sys::lzma_crc64(slice.as_ptr(), slice.len(), crc);
+            crc = unsafe { lzma_crc64(slice.as_ptr(), slice.len(), crc) };
         }
         crc
     });
@@ -456,13 +475,13 @@ fn fold_bytes(len: usize, data: &[u8]) -> u64 {
 }
 
 unsafe fn backend_encode(input: &[u8], preset: u32) -> Vec<u8> {
-    let bound = backend_sys::lzma_stream_buffer_bound(input.len());
+    let bound = lzma_stream_buffer_bound(input.len());
     let mut out = vec![0u8; bound];
     let mut out_pos: usize = 0;
     let ret = unsafe {
-        backend_sys::lzma_easy_buffer_encode(
+        lzma_easy_buffer_encode(
             preset,
-            backend_sys::LZMA_CHECK_CRC64,
+            LZMA_CHECK_CRC64,
             ptr::null(),
             input.as_ptr(),
             input.len(),
@@ -471,11 +490,7 @@ unsafe fn backend_encode(input: &[u8], preset: u32) -> Vec<u8> {
             out.len(),
         )
     };
-    assert_eq!(
-        ret,
-        backend_sys::LZMA_OK,
-        "{BACKEND_NAME} encode failed with {ret}"
-    );
+    assert_eq!(ret, LZMA_OK, "{BACKEND_NAME} encode failed with {ret}");
     out.truncate(out_pos);
     out
 }
@@ -486,7 +501,7 @@ unsafe fn backend_decode(compressed: &[u8], out_size: usize) -> Vec<u8> {
     let mut in_pos = 0usize;
     let mut out_pos = 0usize;
     let ret = unsafe {
-        backend_sys::lzma_stream_buffer_decode(
+        lzma_stream_buffer_decode(
             &mut memlimit,
             0,
             ptr::null(),
@@ -498,29 +513,23 @@ unsafe fn backend_decode(compressed: &[u8], out_size: usize) -> Vec<u8> {
             out.len(),
         )
     };
-    assert_eq!(
-        ret,
-        backend_sys::LZMA_OK,
-        "{BACKEND_NAME} decode failed with {ret}"
-    );
+    assert_eq!(ret, LZMA_OK, "{BACKEND_NAME} decode failed with {ret}");
     out.truncate(out_pos);
     out
 }
 
 unsafe fn backend_uncompressed_size(compressed: &[u8]) -> u64 {
-    let footer_len = backend_sys::LZMA_STREAM_HEADER_SIZE as usize;
+    let footer_len = LZMA_STREAM_HEADER_SIZE as usize;
     let footer_offset = compressed
         .len()
         .checked_sub(footer_len)
         .expect("compressed payload must contain at least a footer");
     let footer = compressed[footer_offset..].as_ptr();
 
-    let mut footer_flags = std::mem::MaybeUninit::<backend_sys::lzma_stream_flags>::uninit();
-    let footer_ret =
-        unsafe { backend_sys::lzma_stream_footer_decode(footer_flags.as_mut_ptr(), footer) };
+    let mut footer_flags = std::mem::MaybeUninit::<BackendStreamFlags>::uninit();
+    let footer_ret = unsafe { lzma_stream_footer_decode(footer_flags.as_mut_ptr(), footer) };
     assert_eq!(
-        footer_ret,
-        backend_sys::LZMA_OK,
+        footer_ret, LZMA_OK,
         "{BACKEND_NAME} stream_footer_decode failed with {footer_ret}"
     );
     let footer_flags = unsafe { footer_flags.assume_init() };
@@ -528,10 +537,10 @@ unsafe fn backend_uncompressed_size(compressed: &[u8]) -> u64 {
     let index_plus_footer = footer_len + footer_flags.backward_size as usize;
     let mut index_pos = 0usize;
     let mut memlimit = u64::MAX;
-    let mut index = std::mem::MaybeUninit::<*mut backend_sys::lzma_index>::uninit();
+    let mut index = std::mem::MaybeUninit::<*mut BackendIndex>::uninit();
     let index_bytes = &compressed[compressed.len() - index_plus_footer..];
     let index_ret = unsafe {
-        backend_sys::lzma_index_buffer_decode(
+        lzma_index_buffer_decode(
             index.as_mut_ptr(),
             &mut memlimit,
             ptr::null(),
@@ -541,12 +550,11 @@ unsafe fn backend_uncompressed_size(compressed: &[u8]) -> u64 {
         )
     };
     assert_eq!(
-        index_ret,
-        backend_sys::LZMA_OK,
+        index_ret, LZMA_OK,
         "{BACKEND_NAME} index_buffer_decode failed with {index_ret}"
     );
     let index = unsafe { index.assume_init() };
-    let size = unsafe { backend_sys::lzma_index_uncompressed_size(index) };
-    unsafe { backend_sys::lzma_index_end(index, ptr::null()) };
+    let size = unsafe { lzma_index_uncompressed_size(index) };
+    unsafe { lzma_index_end(index, ptr::null()) };
     size
 }

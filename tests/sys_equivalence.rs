@@ -1,7 +1,7 @@
 #![cfg(all(
     not(target_family = "wasm"),
-    feature = "rust-backend",
-    feature = "c-backend"
+    feature = "xz-sys",
+    feature = "liblzma-sys",
 ))]
 
 use std::collections::BTreeMap;
@@ -9,8 +9,8 @@ use std::fs;
 use std::path::Path;
 use std::ptr;
 
-use liblzma_c_sys as c_sys;
-use liblzma_sys as rs_sys;
+use liblzma_sys_c as c_sys;
+use xz_sys_rs as rs_sys;
 
 fn parse_feature_table(cargo_toml: &str) -> BTreeMap<String, Vec<String>> {
     let mut in_features = false;

@@ -149,7 +149,7 @@ unsafe fn index_encoder_reset(coder: *mut lzma_index_coder, i: *const lzma_index
     (*coder).pos = 0;
     (*coder).crc32 = 0;
 }
-pub unsafe extern "C" fn lzma_index_encoder_init(
+pub(crate) unsafe extern "C" fn lzma_index_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     i: *const lzma_index,

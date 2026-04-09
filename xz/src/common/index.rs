@@ -76,11 +76,11 @@ pub struct index_cat_info {
 pub type iter_mode = c_uint;
 pub type iter_method = c_uint;
 #[inline]
-extern "C" fn bsr32(n: u32) -> u32 {
+fn bsr32(n: u32) -> u32 {
     n.leading_zeros() as i32 as u32 ^ 31
 }
 #[inline]
-extern "C" fn ctz32(n: u32) -> u32 {
+fn ctz32(n: u32) -> u32 {
     n.trailing_zeros() as i32 as u32
 }
 pub const INDEX_GROUP_SIZE: u32 = 512;

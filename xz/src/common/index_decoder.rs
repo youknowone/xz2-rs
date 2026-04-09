@@ -224,7 +224,7 @@ unsafe fn index_decoder_reset(
     (*coder).crc32 = 0;
     LZMA_OK
 }
-pub unsafe extern "C" fn lzma_index_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     i: *mut *mut lzma_index,

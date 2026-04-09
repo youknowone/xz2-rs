@@ -66,12 +66,12 @@ SYSTEST_C_TARGET="target/perf-systest-c"
 
 ROOT_RUST_CMD="./scripts/run_root_test_bins.sh $ROOT_RUST_TARGET $ROOT_REPEATS"
 ROOT_C_CMD="./scripts/run_root_test_bins.sh $ROOT_C_TARGET $ROOT_REPEATS"
-SYSTEST_RUST_CMD="env CARGO_TARGET_DIR=$SYSTEST_RUST_TARGET cargo test -p systest --release --no-default-features --features rs-sys -- --test-threads=1"
-SYSTEST_C_CMD="env CARGO_TARGET_DIR=$SYSTEST_C_TARGET cargo test -p systest --release --no-default-features --features c-sys -- --test-threads=1"
+SYSTEST_RUST_CMD="env CARGO_TARGET_DIR=$SYSTEST_RUST_TARGET cargo test -p systest --release --no-default-features --features xz-sys -- --test-threads=1"
+SYSTEST_C_CMD="env LZMA_API_STATIC=1 CARGO_TARGET_DIR=$SYSTEST_C_TARGET cargo test -p systest --release --no-default-features --features liblzma-sys -- --test-threads=1"
 
 echo "prebuilding root test binaries..."
-env CARGO_TARGET_DIR="$ROOT_RUST_TARGET" cargo test --release --no-default-features --features rust-backend --no-run >/dev/null
-env CARGO_TARGET_DIR="$ROOT_C_TARGET" cargo test --release --no-default-features --features c-backend --no-run >/dev/null
+env CARGO_TARGET_DIR="$ROOT_RUST_TARGET" cargo test --release --no-run >/dev/null
+env LZMA_API_STATIC=1 CARGO_TARGET_DIR="$ROOT_C_TARGET" cargo test --release --no-default-features --features liblzma-sys --no-run >/dev/null
 
 hyperfine \
   --shell=none \
@@ -86,8 +86,8 @@ hyperfine \
 
 if [[ "$INCLUDE_SYSTEST" -eq 1 ]]; then
   echo "prebuilding systest binaries..."
-  env CARGO_TARGET_DIR="$SYSTEST_RUST_TARGET" cargo test -p systest --release --no-default-features --features rs-sys --no-run >/dev/null
-  env CARGO_TARGET_DIR="$SYSTEST_C_TARGET" cargo test -p systest --release --no-default-features --features c-sys --no-run >/dev/null
+  env CARGO_TARGET_DIR="$SYSTEST_RUST_TARGET" cargo test -p systest --release --no-default-features --features xz-sys --no-run >/dev/null
+  env LZMA_API_STATIC=1 CARGO_TARGET_DIR="$SYSTEST_C_TARGET" cargo test -p systest --release --no-default-features --features liblzma-sys --no-run >/dev/null
 
   hyperfine \
     --shell=none \

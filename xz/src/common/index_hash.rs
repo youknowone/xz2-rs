@@ -30,7 +30,7 @@ pub const SEQ_COUNT: index_hash_seq = 1;
 pub const SEQ_BLOCK: index_hash_seq = 0;
 pub type lzma_index_hash = lzma_index_hash_s;
 #[inline]
-extern "C" fn index_stream_size(
+fn index_stream_size(
     blocks_size: lzma_vli,
     count: lzma_vli,
     index_list_size: lzma_vli,

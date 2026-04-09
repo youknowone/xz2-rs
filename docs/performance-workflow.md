@@ -4,14 +4,19 @@ This repository now has a repeatable loop for backend comparison, profiling, and
 
 Important: the C and Rust sys backends must never be linked into the same process when comparing performance. Both export the same `lzma_*` symbols, so shared-process comparisons can silently resolve to the wrong implementation.
 
+The comparison scripts in this document force the C backend to build from the vendored
+`liblzma-sys/xz` source tree by setting `LZMA_API_STATIC=1`. This avoids silently
+benchmarking a system `liblzma` from `pkg-config`, which would make the C/Rust
+comparison depend on host packaging and compiler choices instead of the ported source.
+
 ## 1. Baseline correctness
 
 Keep correctness green before taking timings:
 
 ```bash
-cargo test --no-default-features --features rust-backend
-cargo test --no-default-features --features c-backend
-cargo test --no-default-features --features rust-backend,c-backend --test sys_equivalence
+cargo test
+cargo test --no-default-features --features liblzma-sys
+cargo test --features liblzma-sys --test sys_equivalence
 ```
 
 ## 2. Compare the full test suite

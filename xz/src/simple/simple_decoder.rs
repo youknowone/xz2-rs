@@ -1,5 +1,5 @@
 use crate::types::*;
-pub unsafe extern "C" fn lzma_simple_props_decode(
+pub(crate) unsafe extern "C" fn lzma_simple_props_decode(
     options: *mut *mut c_void,
     allocator: *const lzma_allocator,
     props: *const u8,

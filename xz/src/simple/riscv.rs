@@ -1,6 +1,6 @@
 use crate::types::*;
 #[inline]
-extern "C" fn read32be(buf: *const u8) -> u32 {
+fn read32be(buf: *const u8) -> u32 {
     return unsafe {
         let mut num: u32 = (*buf as u32) << 24;
         num |= (*buf.offset(1) as u32) << 16;
@@ -10,7 +10,7 @@ extern "C" fn read32be(buf: *const u8) -> u32 {
     };
 }
 #[inline]
-extern "C" fn write32be(buf: *mut u8, num: u32) {
+fn write32be(buf: *mut u8, num: u32) {
     unsafe {
         *buf = (num >> 24) as u8;
         *buf.offset(1) = (num >> 16) as u8;
@@ -95,7 +95,7 @@ unsafe extern "C" fn riscv_encode(
     }
     i
 }
-pub unsafe extern "C" fn lzma_simple_riscv_encoder_init(
+pub(crate) unsafe extern "C" fn lzma_simple_riscv_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -190,7 +190,7 @@ unsafe extern "C" fn riscv_decode(
     }
     i
 }
-pub unsafe extern "C" fn lzma_simple_riscv_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_simple_riscv_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,

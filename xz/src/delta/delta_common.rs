@@ -48,7 +48,7 @@ pub unsafe fn lzma_delta_coder_init(
         filters.offset(1),
     )
 }
-pub unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u64 {
+pub(crate) unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u64 {
     let opt: *const lzma_options_delta = options as *const lzma_options_delta;
     if opt.is_null()
         || (*opt).type_0 != LZMA_DELTA_TYPE_BYTE

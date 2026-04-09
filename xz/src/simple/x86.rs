@@ -116,7 +116,7 @@ extern "C" fn x86_coder_init(
         ret
     };
 }
-pub unsafe extern "C" fn lzma_simple_x86_encoder_init(
+pub(crate) unsafe extern "C" fn lzma_simple_x86_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -136,7 +136,7 @@ pub unsafe fn lzma_bcj_x86_encode(start_offset: u32, buf: *mut u8, size: size_t)
         size,
     )
 }
-pub unsafe extern "C" fn lzma_simple_x86_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_simple_x86_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,

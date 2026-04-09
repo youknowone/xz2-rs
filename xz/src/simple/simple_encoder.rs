@@ -1,5 +1,5 @@
 use crate::types::*;
-pub unsafe extern "C" fn lzma_simple_props_size(
+pub(crate) unsafe extern "C" fn lzma_simple_props_size(
     size: *mut u32,
     options: *const c_void,
 ) -> lzma_ret {
@@ -11,7 +11,7 @@ pub unsafe extern "C" fn lzma_simple_props_size(
     }) as u32;
     LZMA_OK
 }
-pub unsafe extern "C" fn lzma_simple_props_encode(
+pub(crate) unsafe extern "C" fn lzma_simple_props_encode(
     options: *const c_void,
     out: *mut u8,
 ) -> lzma_ret {

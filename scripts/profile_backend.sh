@@ -26,12 +26,14 @@ mkdir -p target/perf-results
 
 case "$BACKEND" in
   c)
-    FEATURE="c-sys"
+    FEATURE="liblzma-sys"
     TARGET_DIR="target/profile-bench-c"
+    BACKEND_ENV=(LZMA_API_STATIC=1)
     ;;
   rust)
-    FEATURE="rs-sys"
+    FEATURE="xz-sys"
     TARGET_DIR="target/profile-bench-rust"
+    BACKEND_ENV=()
     ;;
   both)
     echo "profile_backend.sh profiles one backend at a time; use c or rust" >&2
@@ -68,16 +70,16 @@ esac
 
 if [[ "$PROFILER" == "samply" ]]; then
   OUT="${PROFILE_OUT:-target/perf-results/${BACKEND}-${WORKLOAD}.json}"
-  CARGO_TARGET_DIR="$TARGET_DIR" CARGO_PROFILE_RELEASE_DEBUG=1 \
+  env "${BACKEND_ENV[@]}" CARGO_TARGET_DIR="$TARGET_DIR" CARGO_PROFILE_RELEASE_DEBUG=1 \
     samply record --save-only -o "$OUT" -- "${COMMON_CMD[@]}"
   echo "profile written to $OUT"
 elif [[ "$PROFILER" == "perf" ]]; then
   OUT="${PROFILE_OUT:-target/perf-results/${BACKEND}-${WORKLOAD}.perf.data}"
-  CARGO_TARGET_DIR="$TARGET_DIR" CARGO_PROFILE_RELEASE_DEBUG=1 \
+  env "${BACKEND_ENV[@]}" CARGO_TARGET_DIR="$TARGET_DIR" CARGO_PROFILE_RELEASE_DEBUG=1 \
     perf record -g --output "$OUT" -- "${COMMON_CMD[@]}"
   echo "profile written to $OUT"
 elif [[ "$PROFILER" == "plain" ]]; then
-  CARGO_TARGET_DIR="$TARGET_DIR" CARGO_PROFILE_RELEASE_DEBUG=1 "${COMMON_CMD[@]}"
+  env "${BACKEND_ENV[@]}" CARGO_TARGET_DIR="$TARGET_DIR" CARGO_PROFILE_RELEASE_DEBUG=1 "${COMMON_CMD[@]}"
 else
   echo "unsupported PROFILER=$PROFILER" >&2
   exit 2

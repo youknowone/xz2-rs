@@ -1,6 +1,6 @@
 use crate::types::*;
 #[inline]
-extern "C" fn rotr_32(num: u32, amount: c_uint) -> u32 {
+fn rotr_32(num: u32, amount: c_uint) -> u32 {
     num >> amount | num << 32u32.wrapping_sub(amount)
 }
 static mut SHA256_K: [u32; 64] = [

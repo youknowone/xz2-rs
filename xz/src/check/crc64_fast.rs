@@ -1033,7 +1033,24 @@ pub static lzma_crc64_table: [[u64; 256]; 4] = [
         0x1e5cd90c6ec2440d,
     ],
 ];
-#[inline]
+#[inline(always)]
+unsafe fn crc64_step4(
+    table0: *const u64,
+    table1: *const u64,
+    table2: *const u64,
+    table3: *const u64,
+    buf: *const u8,
+    crc: u64,
+) -> u64 {
+    let tmp = crc as u32 ^ aligned_read32ne(buf);
+    *table3.add((tmp & 0xff) as usize)
+        ^ *table2.add((tmp >> 8 & 0xff) as usize)
+        ^ crc >> 32
+        ^ *table1.add((tmp >> 16 & 0xff) as usize)
+        ^ *table0.add((tmp >> 24) as usize)
+}
+
+#[inline(always)]
 unsafe fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mut crc: u64) -> u64 {
     let table0 = lzma_crc64_table[0].as_ptr();
     let table1 = lzma_crc64_table[1].as_ptr();
@@ -1046,17 +1063,20 @@ unsafe fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mut crc: u64)
             buf = buf.offset(1);
             size -= 1;
         }
-        let limit: *const u8 = buf.offset((size & !(3)) as isize);
-        size &= 3;
-        while buf < limit {
-            let tmp: u32 = crc as u32 ^ aligned_read32ne(buf) as u32;
+        let limit8 = buf.offset((size & !(7)) as isize);
+        while buf < limit8 {
+            crc = crc64_step4(table0, table1, table2, table3, buf, crc);
             buf = buf.offset(4);
-            crc = *table3.add((tmp & 0xff) as usize)
-                ^ *table2.add((tmp >> 8 & 0xff) as usize)
-                ^ crc >> 32
-                ^ *table1.add((tmp >> 16 & 0xff) as usize)
-                ^ *table0.add((tmp >> 24) as usize);
+            crc = crc64_step4(table0, table1, table2, table3, buf, crc);
+            buf = buf.offset(4);
         }
+
+        if size & 4 != 0 {
+            crc = crc64_step4(table0, table1, table2, table3, buf, crc);
+            buf = buf.offset(4);
+        }
+
+        size &= 3;
     }
     loop {
         let old_size = size;

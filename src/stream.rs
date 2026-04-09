@@ -10,6 +10,19 @@ use std::fmt;
 use std::io;
 use std::mem;
 
+#[cfg(feature = "xz-sys")]
+use liblzma_sys::{
+    lzma_alone_decoder_rs, lzma_alone_encoder_rs, lzma_auto_decoder_rs, lzma_check_is_supported_rs,
+    lzma_code_rs, lzma_easy_encoder_rs, lzma_end_rs, lzma_lzip_decoder_rs, lzma_lzma_preset_rs,
+    lzma_memlimit_get_rs, lzma_memlimit_set_rs, lzma_mf_is_supported_rs, lzma_properties_decode_rs,
+    lzma_raw_decoder_rs, lzma_raw_encoder_rs, lzma_stream_decoder_rs, lzma_stream_encoder_rs,
+};
+#[cfg(all(feature = "xz-sys", feature = "parallel"))]
+use liblzma_sys::{
+    lzma_mt_block_size_rs, lzma_stream_decoder_mt_rs, lzma_stream_encoder_mt_memusage_rs,
+    lzma_stream_encoder_mt_rs,
+};
+
 /// Representation of an in-memory LZMA encoding or decoding stream.
 ///
 /// Wraps the raw underlying `lzma_stream` type and provides the ability to
@@ -285,7 +298,7 @@ impl Stream {
     pub fn new_easy_encoder(preset: u32, check: Check) -> Result<Stream, Error> {
         let mut init = unsafe { Stream::zeroed() };
         cvt(unsafe {
-            liblzma_sys::lzma_easy_encoder(&mut init.raw, preset, check as liblzma_sys::lzma_check)
+            stream_easy_encoder(&mut init.raw, preset, check as liblzma_sys::lzma_check)
         })?;
         Ok(init)
     }
@@ -305,7 +318,7 @@ impl Stream {
     #[inline]
     pub fn new_lzma_encoder(options: &LzmaOptions) -> Result<Stream, Error> {
         let mut init = unsafe { Stream::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_alone_encoder(&mut init.raw, &options.raw) })?;
+        cvt(unsafe { stream_alone_encoder(&mut init.raw, &options.raw) })?;
         Ok(init)
     }
 
@@ -317,7 +330,7 @@ impl Stream {
     pub fn new_stream_encoder(filters: &Filters, check: Check) -> Result<Stream, Error> {
         let mut init = unsafe { Stream::zeroed() };
         cvt(unsafe {
-            liblzma_sys::lzma_stream_encoder(
+            stream_encoder(
                 &mut init.raw,
                 filters.inner.as_ptr(),
                 check as liblzma_sys::lzma_check,
@@ -330,7 +343,7 @@ impl Stream {
     #[inline]
     pub fn new_raw_encoder(filters: &Filters) -> Result<Stream, Error> {
         let mut init = unsafe { Self::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_raw_encoder(&mut init.raw, filters.inner.as_ptr()) })?;
+        cvt(unsafe { stream_raw_encoder(&mut init.raw, filters.inner.as_ptr()) })?;
         Ok(init)
     }
 }
@@ -342,7 +355,7 @@ impl Stream {
     #[inline]
     pub fn new_auto_decoder(memlimit: u64, flags: u32) -> Result<Stream, Error> {
         let mut init = unsafe { Self::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_auto_decoder(&mut init.raw, memlimit, flags) })?;
+        cvt(unsafe { stream_auto_decoder(&mut init.raw, memlimit, flags) })?;
         Ok(init)
     }
 
@@ -354,7 +367,7 @@ impl Stream {
     #[inline]
     pub fn new_stream_decoder(memlimit: u64, flags: u32) -> Result<Stream, Error> {
         let mut init = unsafe { Self::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_stream_decoder(&mut init.raw, memlimit, flags) })?;
+        cvt(unsafe { stream_decoder(&mut init.raw, memlimit, flags) })?;
         Ok(init)
     }
 
@@ -364,7 +377,7 @@ impl Stream {
     #[inline]
     pub fn new_lzma_decoder(memlimit: u64) -> Result<Stream, Error> {
         let mut init = unsafe { Self::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_alone_decoder(&mut init.raw, memlimit) })?;
+        cvt(unsafe { stream_alone_decoder(&mut init.raw, memlimit) })?;
         Ok(init)
     }
 
@@ -372,7 +385,7 @@ impl Stream {
     #[inline]
     pub fn new_lzip_decoder(memlimit: u64, flags: u32) -> Result<Self, Error> {
         let mut init = unsafe { Self::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_lzip_decoder(&mut init.raw, memlimit, flags) })?;
+        cvt(unsafe { stream_lzip_decoder(&mut init.raw, memlimit, flags) })?;
         Ok(init)
     }
 
@@ -380,7 +393,7 @@ impl Stream {
     #[inline]
     pub fn new_raw_decoder(filters: &Filters) -> Result<Stream, Error> {
         let mut init = unsafe { Self::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_raw_decoder(&mut init.raw, filters.inner.as_ptr()) })?;
+        cvt(unsafe { stream_raw_decoder(&mut init.raw, filters.inner.as_ptr()) })?;
         Ok(init)
     }
 }
@@ -407,7 +420,7 @@ impl Stream {
         self.raw.next_out = output_ptr;
         self.raw.avail_out = output_len;
         let action = action as liblzma_sys::lzma_action;
-        unsafe { cvt(liblzma_sys::lzma_code(&mut self.raw, action)) }
+        unsafe { cvt(stream_code(&mut self.raw, action)) }
     }
 
     /// Processes some data from input into an output buffer.
@@ -490,7 +503,7 @@ impl Stream {
     /// This is only supported if the underlying stream supports a memlimit.
     #[inline]
     pub fn memlimit(&self) -> u64 {
-        unsafe { liblzma_sys::lzma_memlimit_get(&self.raw) }
+        unsafe { stream_memlimit_get(&self.raw) }
     }
 
     /// Set the current memory usage limit.
@@ -499,7 +512,7 @@ impl Stream {
     /// [`Error::Program`] if this stream doesn't take a memory limit.
     #[inline]
     pub fn set_memlimit(&mut self, limit: u64) -> Result<(), Error> {
-        cvt(unsafe { liblzma_sys::lzma_memlimit_set(&mut self.raw, limit) }).map(|_| ())
+        cvt(unsafe { stream_memlimit_set(&mut self.raw, limit) }).map(|_| ())
     }
 }
 
@@ -521,7 +534,7 @@ impl LzmaOptions {
     pub fn new_preset(preset: u32) -> Result<LzmaOptions, Error> {
         unsafe {
             let mut options = Self::new();
-            let ret = liblzma_sys::lzma_lzma_preset(&mut options.raw, preset);
+            let ret = stream_lzma_preset(&mut options.raw, preset);
             if ret != 0 {
                 Err(Error::Program)
             } else {
@@ -664,7 +677,7 @@ impl Check {
     /// Test if this check is supported in this build of liblzma.
     #[inline]
     pub fn is_supported(&self) -> bool {
-        let ret = unsafe { liblzma_sys::lzma_check_is_supported(*self as liblzma_sys::lzma_check) };
+        let ret = unsafe { stream_check_is_supported(*self as liblzma_sys::lzma_check) };
         ret != 0
     }
 }
@@ -673,8 +686,7 @@ impl MatchFinder {
     /// Test if this match finder is supported in this build of liblzma.
     #[inline]
     pub fn is_supported(&self) -> bool {
-        let ret =
-            unsafe { liblzma_sys::lzma_mf_is_supported(*self as liblzma_sys::lzma_match_finder) };
+        let ret = unsafe { stream_mf_is_supported(*self as liblzma_sys::lzma_match_finder) };
         ret != 0
     }
 }
@@ -1116,7 +1128,7 @@ impl Filters {
         properties: &[u8],
     ) -> Result<&mut Filters, Error> {
         cvt(unsafe {
-            liblzma_sys::lzma_properties_decode(
+            stream_properties_decode(
                 &mut filter,
                 std::ptr::null(),
                 properties.as_ptr(),
@@ -1144,7 +1156,7 @@ impl Filters {
     #[cfg(feature = "parallel")]
     #[inline]
     pub fn mt_block_size(&self) -> u64 {
-        unsafe { liblzma_sys::lzma_mt_block_size(self.inner.as_ptr()) }
+        unsafe { stream_mt_block_size(self.inner.as_ptr()) }
     }
 }
 
@@ -1264,14 +1276,14 @@ impl MtStreamBuilder {
     /// Calculate approximate memory usage of multithreaded .xz encoder
     #[inline]
     pub fn memusage(&self) -> u64 {
-        unsafe { liblzma_sys::lzma_stream_encoder_mt_memusage(&self.raw) }
+        unsafe { stream_encoder_mt_memusage(&self.raw) }
     }
 
     /// Initialize multithreaded .xz stream encoder.
     #[inline]
     pub fn encoder(&self) -> Result<Stream, Error> {
         let mut init = unsafe { Stream::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_stream_encoder_mt(&mut init.raw, &self.raw) })?;
+        cvt(unsafe { stream_encoder_mt(&mut init.raw, &self.raw) })?;
         Ok(init)
     }
 
@@ -1279,7 +1291,7 @@ impl MtStreamBuilder {
     #[inline]
     pub fn decoder(&self) -> Result<Stream, Error> {
         let mut init = unsafe { Stream::zeroed() };
-        cvt(unsafe { liblzma_sys::lzma_stream_decoder_mt(&mut init.raw, &self.raw) })?;
+        cvt(unsafe { stream_decoder_mt(&mut init.raw, &self.raw) })?;
         Ok(init)
     }
 }
@@ -1343,7 +1355,371 @@ impl Drop for Stream {
     #[inline]
     fn drop(&mut self) {
         unsafe {
-            liblzma_sys::lzma_end(&mut self.raw);
+            stream_end(&mut self.raw);
         }
     }
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_easy_encoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    preset: u32,
+    check: liblzma_sys::lzma_check,
+) -> liblzma_sys::lzma_ret {
+    lzma_easy_encoder_rs(raw, preset, check)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_easy_encoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    preset: u32,
+    check: liblzma_sys::lzma_check,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_easy_encoder(raw, preset, check)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_alone_encoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    options: *const liblzma_sys::lzma_options_lzma,
+) -> liblzma_sys::lzma_ret {
+    lzma_alone_encoder_rs(raw, options)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_alone_encoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    options: *const liblzma_sys::lzma_options_lzma,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_alone_encoder(raw, options)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_encoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    filters: *const liblzma_sys::lzma_filter,
+    check: liblzma_sys::lzma_check,
+) -> liblzma_sys::lzma_ret {
+    lzma_stream_encoder_rs(raw, filters, check)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_encoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    filters: *const liblzma_sys::lzma_filter,
+    check: liblzma_sys::lzma_check,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_stream_encoder(raw, filters, check)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_raw_encoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    filters: *const liblzma_sys::lzma_filter,
+) -> liblzma_sys::lzma_ret {
+    lzma_raw_encoder_rs(raw, filters)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_raw_encoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    filters: *const liblzma_sys::lzma_filter,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_raw_encoder(raw, filters)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_auto_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> liblzma_sys::lzma_ret {
+    lzma_auto_decoder_rs(raw, memlimit, flags)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_auto_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_auto_decoder(raw, memlimit, flags)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> liblzma_sys::lzma_ret {
+    lzma_stream_decoder_rs(raw, memlimit, flags)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_stream_decoder(raw, memlimit, flags)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_alone_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    memlimit: u64,
+) -> liblzma_sys::lzma_ret {
+    lzma_alone_decoder_rs(raw, memlimit)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_alone_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    memlimit: u64,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_alone_decoder(raw, memlimit)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_lzip_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> liblzma_sys::lzma_ret {
+    lzma_lzip_decoder_rs(raw, memlimit, flags)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_lzip_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    memlimit: u64,
+    flags: u32,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_lzip_decoder(raw, memlimit, flags)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_raw_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    filters: *const liblzma_sys::lzma_filter,
+) -> liblzma_sys::lzma_ret {
+    lzma_raw_decoder_rs(raw, filters)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_raw_decoder(
+    raw: *mut liblzma_sys::lzma_stream,
+    filters: *const liblzma_sys::lzma_filter,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_raw_decoder(raw, filters)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_code(
+    raw: *mut liblzma_sys::lzma_stream,
+    action: liblzma_sys::lzma_action,
+) -> liblzma_sys::lzma_ret {
+    lzma_code_rs(raw, action)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_code(
+    raw: *mut liblzma_sys::lzma_stream,
+    action: liblzma_sys::lzma_action,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_code(raw, action)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_end(raw: *mut liblzma_sys::lzma_stream) {
+    lzma_end_rs(raw)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_end(raw: *mut liblzma_sys::lzma_stream) {
+    liblzma_sys::lzma_end(raw)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_memlimit_get(raw: *const liblzma_sys::lzma_stream) -> u64 {
+    lzma_memlimit_get_rs(raw)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_memlimit_get(raw: *const liblzma_sys::lzma_stream) -> u64 {
+    liblzma_sys::lzma_memlimit_get(raw)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_memlimit_set(
+    raw: *mut liblzma_sys::lzma_stream,
+    limit: u64,
+) -> liblzma_sys::lzma_ret {
+    lzma_memlimit_set_rs(raw, limit)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_memlimit_set(
+    raw: *mut liblzma_sys::lzma_stream,
+    limit: u64,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_memlimit_set(raw, limit)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_lzma_preset(
+    options: *mut liblzma_sys::lzma_options_lzma,
+    preset: u32,
+) -> liblzma_sys::lzma_bool {
+    lzma_lzma_preset_rs(options, preset)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_lzma_preset(
+    options: *mut liblzma_sys::lzma_options_lzma,
+    preset: u32,
+) -> liblzma_sys::lzma_bool {
+    liblzma_sys::lzma_lzma_preset(options, preset)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_check_is_supported(check: liblzma_sys::lzma_check) -> liblzma_sys::lzma_bool {
+    lzma_check_is_supported_rs(check)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_check_is_supported(check: liblzma_sys::lzma_check) -> liblzma_sys::lzma_bool {
+    liblzma_sys::lzma_check_is_supported(check)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_mf_is_supported(mf: liblzma_sys::lzma_match_finder) -> liblzma_sys::lzma_bool {
+    lzma_mf_is_supported_rs(mf)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_mf_is_supported(mf: liblzma_sys::lzma_match_finder) -> liblzma_sys::lzma_bool {
+    liblzma_sys::lzma_mf_is_supported(mf)
+}
+
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_properties_decode(
+    filter: *mut liblzma_sys::lzma_filter,
+    allocator: *const liblzma_sys::lzma_allocator,
+    props: *const u8,
+    props_size: usize,
+) -> liblzma_sys::lzma_ret {
+    lzma_properties_decode_rs(filter, allocator, props, props_size)
+}
+
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_properties_decode(
+    filter: *mut liblzma_sys::lzma_filter,
+    allocator: *const liblzma_sys::lzma_allocator,
+    props: *const u8,
+    props_size: usize,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_properties_decode(filter, allocator, props, props_size)
+}
+
+#[cfg(feature = "parallel")]
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_mt_block_size(filters: *const liblzma_sys::lzma_filter) -> u64 {
+    lzma_mt_block_size_rs(filters)
+}
+
+#[cfg(feature = "parallel")]
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_mt_block_size(filters: *const liblzma_sys::lzma_filter) -> u64 {
+    liblzma_sys::lzma_mt_block_size(filters)
+}
+
+#[cfg(feature = "parallel")]
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_encoder_mt_memusage(options: *const liblzma_sys::lzma_mt) -> u64 {
+    lzma_stream_encoder_mt_memusage_rs(options)
+}
+
+#[cfg(feature = "parallel")]
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_encoder_mt_memusage(options: *const liblzma_sys::lzma_mt) -> u64 {
+    liblzma_sys::lzma_stream_encoder_mt_memusage(options)
+}
+
+#[cfg(feature = "parallel")]
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_encoder_mt(
+    raw: *mut liblzma_sys::lzma_stream,
+    options: *const liblzma_sys::lzma_mt,
+) -> liblzma_sys::lzma_ret {
+    lzma_stream_encoder_mt_rs(raw, options)
+}
+
+#[cfg(feature = "parallel")]
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_encoder_mt(
+    raw: *mut liblzma_sys::lzma_stream,
+    options: *const liblzma_sys::lzma_mt,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_stream_encoder_mt(raw, options)
+}
+
+#[cfg(feature = "parallel")]
+#[cfg(feature = "xz-sys")]
+#[inline(always)]
+unsafe fn stream_decoder_mt(
+    raw: *mut liblzma_sys::lzma_stream,
+    options: *const liblzma_sys::lzma_mt,
+) -> liblzma_sys::lzma_ret {
+    lzma_stream_decoder_mt_rs(raw, options)
+}
+
+#[cfg(feature = "parallel")]
+#[cfg(not(feature = "xz-sys"))]
+#[inline(always)]
+unsafe fn stream_decoder_mt(
+    raw: *mut liblzma_sys::lzma_stream,
+    options: *const liblzma_sys::lzma_mt,
+) -> liblzma_sys::lzma_ret {
+    liblzma_sys::lzma_stream_decoder_mt(raw, options)
 }

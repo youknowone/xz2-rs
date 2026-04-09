@@ -6,11 +6,11 @@ use std::time::{Duration, Instant};
 use liblzma::read;
 use liblzma::write;
 
-#[cfg(all(feature = "rust-backend", not(feature = "c-backend")))]
+#[cfg(all(feature = "xz-sys", not(feature = "liblzma-sys")))]
 const BACKEND_NAME: &str = "rust";
-#[cfg(all(feature = "c-backend", not(feature = "rust-backend")))]
+#[cfg(all(feature = "liblzma-sys", not(feature = "xz-sys")))]
 const BACKEND_NAME: &str = "c";
-#[cfg(all(feature = "rust-backend", feature = "c-backend"))]
+#[cfg(all(feature = "xz-sys", feature = "liblzma-sys"))]
 const BACKEND_NAME: &str = "both";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -126,7 +126,10 @@ fn usage() -> String {
     let mut message = String::new();
     message.push_str("Usage:\n");
     message.push_str(
-        "  cargo run --example qc_probe --release --no-default-features --features <rust-backend|c-backend> -- [options]\n\n",
+        "  cargo run --example qc_probe --release -- [options]\n\
+         \n\
+         To use the C backend instead:\n\
+           cargo run --example qc_probe --release --no-default-features --features liblzma-sys -- [options]\n\n",
     );
     message.push_str("Options:\n");
     message.push_str("  --mode <read|write|both>\n");

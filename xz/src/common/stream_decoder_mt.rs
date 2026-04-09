@@ -566,13 +566,13 @@ unsafe fn decode_block_header(
     (*coder).block_options.ignore_check = (*coder).ignore_check as lzma_bool;
     LZMA_STREAM_END
 }
-extern "C" fn comp_blk_size(coder: *const lzma_stream_coder) -> size_t {
+fn comp_blk_size(coder: *const lzma_stream_coder) -> size_t {
     unsafe {
         (vli_ceil4((*coder).block_options.compressed_size)
             + lzma_check_size((*coder).stream_flags.check) as lzma_vli) as size_t
     }
 }
-extern "C" fn is_direct_mode_needed(size: lzma_vli) -> bool {
+fn is_direct_mode_needed(size: lzma_vli) -> bool {
     size == LZMA_VLI_UNKNOWN || size > SIZE_MAX.wrapping_div(3 as c_ulong) as lzma_vli
 }
 unsafe fn stream_decoder_reset(

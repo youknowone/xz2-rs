@@ -62,7 +62,7 @@ extern "C" fn arm64_coder_init(
         )
     }
 }
-pub unsafe extern "C" fn lzma_simple_arm64_encoder_init(
+pub(crate) unsafe extern "C" fn lzma_simple_arm64_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -73,7 +73,7 @@ pub unsafe fn lzma_bcj_arm64_encode(mut start_offset: u32, buf: *mut u8, size: s
     start_offset = (start_offset & !3u32) as u32;
     arm64_code(core::ptr::null_mut(), start_offset, true, buf, size)
 }
-pub unsafe extern "C" fn lzma_simple_arm64_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_simple_arm64_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,

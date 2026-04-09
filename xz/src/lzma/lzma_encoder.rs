@@ -844,7 +844,7 @@ unsafe extern "C" fn lzma_lzma_set_out_limit(
     (*coder).use_eopm = false;
     LZMA_OK
 }
-extern "C" fn is_options_valid(options: *const lzma_options_lzma) -> bool {
+fn is_options_valid(options: *const lzma_options_lzma) -> bool {
     unsafe {
         is_lclppb_valid(options)
             && (*options).nice_len >= MATCH_LEN_MIN
@@ -852,7 +852,7 @@ extern "C" fn is_options_valid(options: *const lzma_options_lzma) -> bool {
             && ((*options).mode == LZMA_MODE_FAST || (*options).mode == LZMA_MODE_NORMAL)
     }
 }
-extern "C" fn set_lz_options(lz_options: *mut lzma_lz_options, options: *const lzma_options_lzma) {
+fn set_lz_options(lz_options: *mut lzma_lz_options, options: *const lzma_options_lzma) {
     unsafe {
         (*lz_options).before_size = OPTS as size_t;
         (*lz_options).dict_size = (*options).dict_size as size_t;
@@ -1063,7 +1063,7 @@ unsafe extern "C" fn lzma_encoder_init(
         lz_options,
     )
 }
-pub unsafe extern "C" fn lzma_lzma_encoder_init(
+pub(crate) unsafe extern "C" fn lzma_lzma_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -1084,7 +1084,7 @@ pub unsafe extern "C" fn lzma_lzma_encoder_init(
         ),
     )
 }
-pub extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
+pub(crate) extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     if !is_options_valid(options as *const lzma_options_lzma) {
         return UINT64_MAX;
     }
@@ -1116,7 +1116,10 @@ pub unsafe fn lzma_lzma_lclppb_encode(options: *const lzma_options_lzma, byte: *
     *byte = (((*options).pb * 5 + (*options).lp) * 9 + (*options).lc) as u8;
     false
 }
-pub unsafe extern "C" fn lzma_lzma_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
+pub(crate) unsafe extern "C" fn lzma_lzma_props_encode(
+    options: *const c_void,
+    out: *mut u8,
+) -> lzma_ret {
     if options.is_null() {
         return LZMA_PROG_ERROR;
     }

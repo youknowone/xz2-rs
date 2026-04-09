@@ -15,7 +15,7 @@ libc = "0.2"
 ctest2 = "0.4"
 
 [features]
-default = ["c-sys"]
-c-sys = ["liblzma-c-sys"]
-rs-sys = ["xz-sys"]
-bindgen = ["c-sys", "liblzma-c-sys/bindgen"]
+default = ["liblzma-sys"]
+liblzma-sys = ["liblzma-c-sys"]
+xz-sys = ["dep:xz-sys"]
+bindgen = ["liblzma-sys", "liblzma-c-sys/bindgen"]

@@ -635,21 +635,12 @@ pub struct lzma_lzma1_encoder_s {
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
 #[inline]
 pub fn read32le(buf: *const u8) -> u32 {
-    return unsafe {
-        let mut num: u32 = *buf as u32;
-        num |= (*buf.offset(1) as u32) << 8;
-        num |= (*buf.offset(2) as u32) << 16;
-        num |= (*buf.offset(3) as u32) << 24;
-        num
-    };
+    unsafe { core::ptr::read_unaligned(buf.cast::<u32>()).to_le() }
 }
 #[inline]
 pub fn write32le(buf: *mut u8, num: u32) {
     unsafe {
-        *buf = num as u8;
-        *buf.offset(1) = (num >> 8) as u8;
-        *buf.offset(2) = (num >> 16) as u8;
-        *buf.offset(3) = (num >> 24) as u8;
+        core::ptr::write_unaligned(buf.cast::<u32>(), num.to_le());
     }
 }
 pub type __uint32_t = u32;
@@ -1328,14 +1319,15 @@ pub use crate::check::check::{
     lzma_check_finish, lzma_check_init, lzma_check_is_supported, lzma_check_size, lzma_check_update,
 };
 pub use crate::check::crc32_fast::lzma_crc32;
-pub use crate::common::block_decoder::lzma_block_decoder_init;
-pub use crate::common::block_encoder::lzma_block_encoder_init;
+pub(crate) use crate::common::block_decoder::lzma_block_decoder_init;
+pub(crate) use crate::common::block_encoder::lzma_block_encoder_init;
 pub use crate::common::block_header_decoder::lzma_block_header_decode;
 pub use crate::common::block_header_encoder::{lzma_block_header_encode, lzma_block_header_size};
 pub use crate::common::block_util::lzma_block_unpadded_size;
+pub(crate) use crate::common::common::lzma_free;
 pub use crate::common::common::{
-    lzma_alloc, lzma_alloc_zero, lzma_bufcpy, lzma_end, lzma_free, lzma_next_end,
-    lzma_next_filter_init, lzma_next_filter_update, lzma_strm_init,
+    lzma_alloc, lzma_alloc_zero, lzma_bufcpy, lzma_end, lzma_next_end, lzma_next_filter_init,
+    lzma_next_filter_update, lzma_strm_init,
 };
 pub use crate::common::easy_preset::lzma_easy_preset;
 pub use crate::common::filter_common::{
@@ -1347,7 +1339,7 @@ pub use crate::common::index::{
     lzma_index_append, lzma_index_end, lzma_index_init, lzma_index_memusage,
     lzma_index_padding_size, lzma_index_size,
 };
-pub use crate::common::index_encoder::lzma_index_encoder_init;
+pub(crate) use crate::common::index_encoder::lzma_index_encoder_init;
 pub use crate::common::index_hash::{
     lzma_index_hash_append, lzma_index_hash_decode, lzma_index_hash_end, lzma_index_hash_init,
     lzma_index_hash_size,
@@ -1356,7 +1348,7 @@ pub use crate::common::outqueue::{
     lzma_outq_end, lzma_outq_get_buf, lzma_outq_init, lzma_outq_is_readable,
     lzma_outq_prealloc_buf, lzma_outq_read,
 };
-pub use crate::common::stream_decoder::lzma_stream_decoder_init;
+pub(crate) use crate::common::stream_decoder::lzma_stream_decoder_init;
 pub use crate::common::stream_flags_common::lzma_stream_flags_compare;
 pub use crate::common::stream_flags_decoder::{
     lzma_stream_footer_decode, lzma_stream_header_decode,
@@ -1367,15 +1359,16 @@ pub use crate::common::stream_flags_encoder::{
 pub use crate::common::vli_decoder::lzma_vli_decode;
 pub use crate::common::vli_encoder::lzma_vli_encode;
 pub use crate::common::vli_size::lzma_vli_size;
-pub use crate::delta::delta_common::{lzma_delta_coder_init, lzma_delta_coder_memusage};
+pub use crate::delta::delta_common::lzma_delta_coder_init;
+pub(crate) use crate::delta::delta_common::lzma_delta_coder_memusage;
 pub use crate::lz::lz_encoder_mf::{lzma_mf_find, lzma_mf_find_raw};
 pub use crate::lzma::fastpos_table::lzma_fastpos;
-pub use crate::lzma::lzma_decoder::{
-    lzma_lzma_decoder_init, lzma_lzma_decoder_memusage_nocheck, lzma_lzma_lclppb_decode,
+pub use crate::lzma::lzma_decoder::lzma_lzma_lclppb_decode;
+pub(crate) use crate::lzma::lzma_decoder::{
+    lzma_lzma_decoder_init, lzma_lzma_decoder_memusage_nocheck,
 };
-pub use crate::lzma::lzma_encoder::{
-    lzma_lzma_encoder_init, lzma_lzma_encoder_memusage, lzma_lzma_lclppb_encode,
-};
+pub use crate::lzma::lzma_encoder::lzma_lzma_lclppb_encode;
+pub(crate) use crate::lzma::lzma_encoder::{lzma_lzma_encoder_init, lzma_lzma_encoder_memusage};
 pub use crate::lzma::lzma_encoder_presets::lzma_lzma_preset;
 pub use crate::rangecoder::price_table::lzma_rc_prices;
 pub use crate::simple::simple_coder::lzma_simple_coder_init;

@@ -110,7 +110,7 @@ unsafe fn get_padding_size(buf: *const u8, mut buf_size: size_t) -> size_t {
     }
     padding
 }
-extern "C" fn hide_format_error(mut ret: lzma_ret) -> lzma_ret {
+fn hide_format_error(mut ret: lzma_ret) -> lzma_ret {
     if ret == LZMA_FORMAT_ERROR {
         ret = LZMA_DATA_ERROR;
     }

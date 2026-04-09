@@ -18,7 +18,7 @@ pub const SEQ_CHECK: block_decoder_seq = 2;
 pub const SEQ_PADDING: block_decoder_seq = 1;
 pub const SEQ_CODE: block_decoder_seq = 0;
 #[inline]
-extern "C" fn is_size_valid(size: lzma_vli, reference: lzma_vli) -> bool {
+fn is_size_valid(size: lzma_vli, reference: lzma_vli) -> bool {
     reference == LZMA_VLI_UNKNOWN || reference == size
 }
 unsafe extern "C" fn block_decode(
@@ -162,7 +162,7 @@ unsafe extern "C" fn block_decoder_end(coder_ptr: *mut c_void, allocator: *const
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-pub unsafe extern "C" fn lzma_block_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_block_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     block: *mut lzma_block,

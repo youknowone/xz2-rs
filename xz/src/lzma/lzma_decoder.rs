@@ -3376,7 +3376,7 @@ unsafe extern "C" fn lzma_decoder_init(
     lzma_decoder_uncompressed((*lz).coder, uncomp_size, allow_eopm);
     LZMA_OK
 }
-pub unsafe extern "C" fn lzma_lzma_decoder_init(
+pub(crate) unsafe extern "C" fn lzma_lzma_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -3407,20 +3407,20 @@ pub unsafe fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, mut byte:
     (*options).lc = (byte as u32).wrapping_sub((*options).lp.wrapping_mul(9));
     (*options).lc.wrapping_add((*options).lp) > LZMA_LCLP_MAX
 }
-pub extern "C" fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64 {
+pub(crate) extern "C" fn lzma_lzma_decoder_memusage_nocheck(options: *const c_void) -> u64 {
     return unsafe {
         let opt: *const lzma_options_lzma = options as *const lzma_options_lzma;
         (core::mem::size_of::<lzma_lzma1_decoder>() as u64)
             .wrapping_add(lzma_lz_decoder_memusage((*opt).dict_size as size_t))
     };
 }
-pub extern "C" fn lzma_lzma_decoder_memusage(options: *const c_void) -> u64 {
+pub(crate) extern "C" fn lzma_lzma_decoder_memusage(options: *const c_void) -> u64 {
     if !unsafe { is_lclppb_valid(options as *const lzma_options_lzma) } {
         return UINT64_MAX;
     }
     lzma_lzma_decoder_memusage_nocheck(options)
 }
-pub unsafe extern "C" fn lzma_lzma_props_decode(
+pub(crate) unsafe extern "C" fn lzma_lzma_props_decode(
     options: *mut *mut c_void,
     allocator: *const lzma_allocator,
     props: *const u8,
