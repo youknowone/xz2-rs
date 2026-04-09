@@ -33,7 +33,7 @@ while [[ $# -gt 0 ]]; do
       cat <<'EOF'
 Usage: scripts/compare_backends.sh [options]
 
-Compare full test-suite wall clock time for the Rust and C backends using hyperfine.
+Compare full test-suite wall clock time for the direct `xz` backend and C backend using hyperfine.
 Results are written under target/perf-results by default.
 
 Options:
@@ -79,7 +79,7 @@ hyperfine \
   --warmup "$WARMUP" \
   --export-json "$RESULTS_DIR/root-tests.json" \
   --export-markdown "$RESULTS_DIR/root-tests.md" \
-  --command-name rust-tests \
+  --command-name xz-tests \
   "$ROOT_RUST_CMD" \
   --command-name c-tests \
   "$ROOT_C_CMD"
@@ -95,7 +95,7 @@ if [[ "$INCLUDE_SYSTEST" -eq 1 ]]; then
     --warmup "$WARMUP" \
     --export-json "$RESULTS_DIR/systest.json" \
     --export-markdown "$RESULTS_DIR/systest.md" \
-    --command-name rust-systest \
+    --command-name xz-sys-systest \
     "$SYSTEST_RUST_CMD" \
     --command-name c-systest \
     "$SYSTEST_C_CMD"

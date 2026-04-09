@@ -8,6 +8,7 @@ use std::io::prelude::*;
 #[cfg(feature = "parallel")]
 use crate::stream::MtStreamBuilder;
 use crate::stream::{Action, Check, Status, Stream};
+use crate::sys as liblzma_sys;
 pub use auto_finish::{AutoFinishXzDecoder, AutoFinishXzEncoder};
 
 /// A compression stream which will have uncompressed data written to it and

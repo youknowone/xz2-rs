@@ -4,30 +4,41 @@ use std::ptr;
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 
-#[cfg(all(feature = "xz-sys", feature = "liblzma-sys"))]
+#[cfg(any(
+    all(feature = "xz", feature = "xz-sys"),
+    all(feature = "xz", feature = "liblzma-sys"),
+    all(feature = "xz-sys", feature = "liblzma-sys"),
+))]
 compile_error!("backend_comparison bench must be built with exactly one backend feature");
-#[cfg(not(any(feature = "xz-sys", feature = "liblzma-sys")))]
-compile_error!("backend_comparison bench requires `xz-sys` or `liblzma-sys`");
+#[cfg(not(any(feature = "xz", feature = "xz-sys", feature = "liblzma-sys")))]
+compile_error!("backend_comparison bench requires `xz`, `xz-sys`, or `liblzma-sys`");
 
 #[cfg(feature = "liblzma-sys")]
-use liblzma_sys_c::{
+use liblzma_sys::{
     lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_stream_buffer_bound,
     lzma_stream_buffer_decode, LZMA_CHECK_CRC64,
 };
-#[cfg(feature = "xz-sys")]
+#[cfg(feature = "xz")]
 use xz::check::{crc32_fast::lzma_crc32, crc64_fast::lzma_crc64};
-#[cfg(feature = "xz-sys")]
+#[cfg(feature = "xz")]
 use xz::common::{
     easy_buffer_encoder::lzma_easy_buffer_encode, stream_buffer_decoder::lzma_stream_buffer_decode,
     stream_buffer_encoder::lzma_stream_buffer_bound,
 };
-#[cfg(feature = "xz-sys")]
+#[cfg(feature = "xz")]
 use xz::types::LZMA_CHECK_CRC64;
-
-#[cfg(feature = "liblzma-sys")]
-const BACKEND_NAME: &str = "c";
 #[cfg(feature = "xz-sys")]
-const BACKEND_NAME: &str = "rust";
+use xz_sys::{
+    lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_stream_buffer_bound,
+    lzma_stream_buffer_decode, LZMA_CHECK_CRC64,
+};
+
+#[cfg(feature = "xz")]
+const BACKEND_NAME: &str = "xz";
+#[cfg(feature = "liblzma-sys")]
+const BACKEND_NAME: &str = "liblzma-sys";
+#[cfg(feature = "xz-sys")]
+const BACKEND_NAME: &str = "xz-sys";
 
 fn make_payload(size: usize) -> Vec<u8> {
     let mut x: u64 = 0x9E3779B97F4A7C15;

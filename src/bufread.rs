@@ -6,6 +6,7 @@ use std::io::prelude::*;
 #[cfg(feature = "parallel")]
 use crate::stream::MtStreamBuilder;
 use crate::stream::{Action, Check, Status, Stream};
+use crate::sys as liblzma_sys;
 
 /// A xz encoder, or compressor.
 ///

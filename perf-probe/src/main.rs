@@ -1,9 +1,13 @@
 #![cfg(not(target_family = "wasm"))]
 
-#[cfg(all(feature = "liblzma-sys", feature = "xz-sys"))]
-compile_error!("Enable exactly one backend feature: liblzma-sys or xz-sys");
-#[cfg(not(any(feature = "liblzma-sys", feature = "xz-sys")))]
-compile_error!("Enable one backend feature: liblzma-sys or xz-sys");
+#[cfg(any(
+    all(feature = "xz", feature = "xz-sys"),
+    all(feature = "xz", feature = "liblzma-sys"),
+    all(feature = "xz-sys", feature = "liblzma-sys"),
+))]
+compile_error!("Enable exactly one backend feature: xz, xz-sys, or liblzma-sys");
+#[cfg(not(any(feature = "xz", feature = "xz-sys", feature = "liblzma-sys")))]
+compile_error!("Enable one backend feature: xz, xz-sys, or liblzma-sys");
 
 use std::env;
 use std::fs;
@@ -13,15 +17,15 @@ use std::ptr;
 use std::time::{Duration, Instant};
 
 #[cfg(feature = "liblzma-sys")]
-use liblzma_c_sys::{
+use liblzma_sys::{
     lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_index as BackendIndex,
     lzma_index_buffer_decode, lzma_index_end, lzma_index_uncompressed_size,
     lzma_stream_buffer_bound, lzma_stream_buffer_decode, lzma_stream_flags as BackendStreamFlags,
     lzma_stream_footer_decode, LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE,
 };
-#[cfg(feature = "xz-sys")]
+#[cfg(feature = "xz")]
 use xz::check::{crc32_fast::lzma_crc32, crc64_fast::lzma_crc64};
-#[cfg(feature = "xz-sys")]
+#[cfg(feature = "xz")]
 use xz::common::{
     easy_buffer_encoder::lzma_easy_buffer_encode,
     index::{lzma_index_end, lzma_index_uncompressed_size},
@@ -30,16 +34,25 @@ use xz::common::{
     stream_buffer_encoder::lzma_stream_buffer_bound,
     stream_flags_decoder::lzma_stream_footer_decode,
 };
-#[cfg(feature = "xz-sys")]
+#[cfg(feature = "xz")]
 use xz::types::{
     lzma_index as BackendIndex, lzma_stream_flags as BackendStreamFlags, LZMA_CHECK_CRC64, LZMA_OK,
     LZMA_STREAM_HEADER_SIZE,
 };
-
-#[cfg(feature = "liblzma-sys")]
-const BACKEND_NAME: &str = "c";
 #[cfg(feature = "xz-sys")]
-const BACKEND_NAME: &str = "rust";
+use xz_sys::{
+    lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_index as BackendIndex,
+    lzma_index_buffer_decode, lzma_index_end, lzma_index_uncompressed_size,
+    lzma_stream_buffer_bound, lzma_stream_buffer_decode, lzma_stream_flags as BackendStreamFlags,
+    lzma_stream_footer_decode, LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE,
+};
+
+#[cfg(feature = "xz")]
+const BACKEND_NAME: &str = "xz";
+#[cfg(feature = "liblzma-sys")]
+const BACKEND_NAME: &str = "liblzma-sys";
+#[cfg(feature = "xz-sys")]
+const BACKEND_NAME: &str = "xz-sys";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Workload {

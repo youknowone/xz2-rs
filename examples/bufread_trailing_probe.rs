@@ -5,12 +5,12 @@ use std::time::{Duration, Instant};
 
 use liblzma::bufread;
 
-#[cfg(all(feature = "xz-sys", not(feature = "liblzma-sys")))]
-const BACKEND_NAME: &str = "rust";
-#[cfg(all(feature = "liblzma-sys", not(feature = "xz-sys")))]
-const BACKEND_NAME: &str = "c";
-#[cfg(all(feature = "xz-sys", feature = "liblzma-sys"))]
-const BACKEND_NAME: &str = "both";
+#[cfg(feature = "xz")]
+const BACKEND_NAME: &str = "xz";
+#[cfg(feature = "xz-sys")]
+const BACKEND_NAME: &str = "xz-sys";
+#[cfg(feature = "liblzma-sys")]
+const BACKEND_NAME: &str = "liblzma-sys";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Mode {

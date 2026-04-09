@@ -30,7 +30,7 @@ C_TARGET="target/perf-probe-c"
 RUST_BIN="$RUST_TARGET/release/perf-probe"
 C_BIN="$C_TARGET/release/perf-probe"
 
-env CARGO_TARGET_DIR="$RUST_TARGET" cargo build -p perf-probe --release --no-default-features --features xz-sys >/dev/null
+env CARGO_TARGET_DIR="$RUST_TARGET" cargo build -p perf-probe --release --no-default-features --features xz >/dev/null
 env LZMA_API_STATIC=1 CARGO_TARGET_DIR="$C_TARGET" cargo build -p perf-probe --release --no-default-features --features liblzma-sys >/dev/null
 
 if [[ "$WORKLOAD" == "decode" ]]; then
@@ -78,7 +78,7 @@ hyperfine \
   --warmup 2 \
   --export-json "$RESULTS_DIR/${WORKLOAD}.json" \
   --export-markdown "$RESULTS_DIR/${WORKLOAD}.md" \
-  --command-name rust \
+  --command-name xz \
   "${RUST_CMD[*]}" \
   --command-name c \
   "${C_CMD[*]}"

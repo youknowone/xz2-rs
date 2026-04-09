@@ -6,7 +6,7 @@ compile_error!("Enable exactly one backend feature: liblzma-sys or xz-sys");
 compile_error!("Enable one backend feature: liblzma-sys or xz-sys");
 
 #[cfg(feature = "liblzma-sys")]
-use liblzma_c_sys::*;
+use liblzma_sys::*;
 #[cfg(feature = "xz-sys")]
 use xz_sys::*;
 

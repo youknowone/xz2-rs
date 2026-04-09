@@ -20,13 +20,16 @@ exclude = [".github/"]
 members = ["systest", "xz", "xz-sys", "perf-probe"]
 
 [dependencies]
-xz-sys-rs = { package = "xz-sys", path = "xz-sys", optional = true }
-liblzma-sys-c = { package = "liblzma-sys", path = "liblzma-sys", version = "0.4.5", optional = true, default-features = false }
+xz = { path = "xz", optional = true }
+xz-sys = { path = "xz-sys", optional = true }
+liblzma-sys = { path = "liblzma-sys", version = "0.4.5", optional = true, default-features = false }
+cfg-if = "1"
 num_cpus = { version = "1.16.0", optional = true }
 criterion = { version = "0.5", features = ["html_reports"], optional = true }
 
 [dev-dependencies]
-xz = { path = "xz" }
+xz-sys = { path = "xz-sys" }
+liblzma-sys = { path = "liblzma-sys" }
 rand = "=0.8.0"
 regex = "=1.9.0"
 log = "=0.4.20"
@@ -46,18 +49,19 @@ quickcheck = "=1.0.1"
 wasm-bindgen-test = "0.3"
 
 [features]
-default = ["xz-sys"]
-xz-sys = ["dep:xz-sys-rs"]
-liblzma-sys = ["dep:liblzma-sys-c", "liblzma-sys-c/bindgen"]
-static = ["liblzma-sys-c?/static"]
-parallel = ["xz-sys-rs?/parallel", "liblzma-sys-c?/parallel", "num_cpus"]
-bindgen = ["liblzma-sys-c?/bindgen"] # only affects liblzma-sys
-wasm = ["xz-sys-rs?/wasm", "liblzma-sys-c?/wasm"]
-uncheck_liblzma_version = ["liblzma-sys-c?/uncheck_liblzma_version"] # only affects liblzma-sys
+default = ["xz"]
+xz = ["dep:xz"]
+xz-sys = ["dep:xz-sys"]
+liblzma-sys = ["dep:liblzma-sys", "liblzma-sys/bindgen"]
+static = ["liblzma-sys?/static"]
+parallel = ["xz-sys?/parallel", "liblzma-sys?/parallel", "num_cpus"]
+bindgen = ["liblzma-sys?/bindgen"] # only affects liblzma-sys
+wasm = ["xz-sys?/wasm", "liblzma-sys?/wasm"]
+uncheck_liblzma_version = ["liblzma-sys?/uncheck_liblzma_version"] # only affects liblzma-sys
 bench = ["criterion"]
 # These two are for cross-language LTO with liblzma-sys.
-fat-lto = ["liblzma-sys-c?/fat-lto"]
-thin-lto = ["liblzma-sys-c?/thin-lto"]
+fat-lto = ["liblzma-sys?/fat-lto"]
+thin-lto = ["liblzma-sys?/thin-lto"]
 
 [package.metadata.docs.rs]
 features = ["parallel"]

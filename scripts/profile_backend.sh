@@ -3,12 +3,12 @@ set -euo pipefail
 
 if [[ $# -lt 2 ]]; then
   cat <<'EOF' >&2
-Usage: scripts/profile_backend.sh <c|rust|both> <encode|decode|size|crc32|crc64> [backend_probe args...]
+Usage: scripts/profile_backend.sh <c|liblzma-sys|xz|rust|xz-sys|both> <encode|decode|size|crc32|crc64> [backend_probe args...]
 
 Examples:
-  scripts/profile_backend.sh rust decode --size 1048576 --iters 500 --warmup 50
+  scripts/profile_backend.sh xz decode --size 1048576 --iters 500 --warmup 50
   scripts/profile_backend.sh both encode --input-kind random --size 8388608
-  scripts/profile_backend.sh rust size --input-kind random --size 1048576 --iters 800 --warmup 80
+  scripts/profile_backend.sh xz size --input-kind random --size 1048576 --iters 800 --warmup 80
 
 Environment:
   PROFILER=auto|samply|perf|plain   default: auto
@@ -25,18 +25,23 @@ PROFILER="${PROFILER:-auto}"
 mkdir -p target/perf-results
 
 case "$BACKEND" in
-  c)
+  c|liblzma-sys)
     FEATURE="liblzma-sys"
     TARGET_DIR="target/profile-bench-c"
     BACKEND_ENV=(LZMA_API_STATIC=1)
     ;;
-  rust)
-    FEATURE="xz-sys"
+  xz|rust)
+    FEATURE="xz"
     TARGET_DIR="target/profile-bench-rust"
     BACKEND_ENV=()
     ;;
+  xz-sys)
+    FEATURE="xz-sys"
+    TARGET_DIR="target/profile-bench-xz-sys"
+    BACKEND_ENV=()
+    ;;
   both)
-    echo "profile_backend.sh profiles one backend at a time; use c or rust" >&2
+    echo "profile_backend.sh profiles one backend at a time; use xz, xz-sys, or liblzma-sys" >&2
     exit 2
     ;;
   *)

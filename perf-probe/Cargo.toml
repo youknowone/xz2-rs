@@ -6,9 +6,11 @@ publish = false
 
 [features]
 default = []
-liblzma-sys = ["dep:liblzma-c-sys"]
-xz-sys = ["dep:xz"]
+xz = ["dep:xz"]
+xz-sys = ["dep:xz-sys"]
+liblzma-sys = ["dep:liblzma-sys"]
 
 [dependencies]
-liblzma-c-sys = { package = "liblzma-sys", path = "../liblzma-sys", optional = true }
+liblzma-sys = { path = "../liblzma-sys", optional = true }
 xz = { path = "../xz", optional = true }
+xz-sys = { path = "../xz-sys", optional = true }

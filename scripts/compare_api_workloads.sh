@@ -58,7 +58,7 @@ hyperfine \
   --warmup 2 \
   --export-json "$RESULTS_DIR/api-${WORKLOAD}.json" \
   --export-markdown "$RESULTS_DIR/api-${WORKLOAD}.md" \
-  --command-name rust \
+  --command-name xz \
   "$RUST_BIN ${RAW_ARGS[*]}" \
   --command-name c \
   "$C_BIN ${RAW_ARGS[*]}"

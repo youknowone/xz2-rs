@@ -4,6 +4,12 @@ This repository now has a repeatable loop for backend comparison, profiling, and
 
 Important: the C and Rust sys backends must never be linked into the same process when comparing performance. Both export the same `lzma_*` symbols, so shared-process comparisons can silently resolve to the wrong implementation.
 
+The root crate now has three backend modes:
+
+- `xz`: direct Rust ABI calls into the pure Rust port
+- `xz-sys`: C ABI calls into the pure Rust port through the `xz-sys` shell
+- `liblzma-sys`: C ABI calls into vendored C `liblzma`
+
 The comparison scripts in this document force the C backend to build from the vendored
 `liblzma-sys/xz` source tree by setting `LZMA_API_STATIC=1`. This avoids silently
 benchmarking a system `liblzma` from `pkg-config`, which would make the C/Rust
@@ -15,13 +21,14 @@ Keep correctness green before taking timings:
 
 ```bash
 cargo test
+cargo test --no-default-features --features xz-sys
 cargo test --no-default-features --features liblzma-sys
-cargo test --features liblzma-sys --test sys_equivalence
+cargo test --test sys_equivalence
 ```
 
 ## 2. Compare the full test suite
 
-Use `hyperfine` to compare end-to-end wall clock time of the deterministic root test bundle and `systest` with isolated target directories per backend:
+Use `hyperfine` to compare end-to-end wall clock time of the deterministic root test bundle (`xz` vs C) and `systest` with isolated target directories per backend:
 
 ```bash
 scripts/compare_backends.sh --runs 10 --warmup 2
@@ -40,7 +47,7 @@ The root bundle intentionally skips QuickCheck-based unit tests because they gen
 
 ## 3. Compare focused workloads
 
-Use `perf-probe`, a small standalone binary crate that links exactly one backend at a time.
+Use `perf-probe`, a small standalone binary crate that links exactly one backend at a time. The comparison scripts use the direct `xz` backend by default; `xz-sys` remains available for ABI-shell checks.
 
 Examples:
 
@@ -97,9 +104,9 @@ Use `--name-pattern <substring>` to isolate a file family inside the XZ corpus w
 Examples:
 
 ```bash
-scripts/profile_backend.sh rust decode --size 1048576 --iters 800 --warmup 80
-scripts/profile_backend.sh rust size --input-kind random --size 1048576 --iters 800 --warmup 80
-scripts/profile_backend.sh rust encode --input-kind random --size 8388608 --iters 150 --warmup 20
+scripts/profile_backend.sh xz decode --size 1048576 --iters 800 --warmup 80
+scripts/profile_backend.sh xz size --input-kind random --size 1048576 --iters 800 --warmup 80
+scripts/profile_backend.sh xz encode --input-kind random --size 8388608 --iters 150 --warmup 20
 scripts/profile_backend.sh c crc64 --size 16777216 --iters 400
 ```
 

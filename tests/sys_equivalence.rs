@@ -1,16 +1,9 @@
-#![cfg(all(
-    not(target_family = "wasm"),
-    feature = "xz-sys",
-    feature = "liblzma-sys",
-))]
+#![cfg(not(target_family = "wasm"))]
 
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 use std::ptr;
-
-use liblzma_sys_c as c_sys;
-use xz_sys_rs as rs_sys;
 
 fn parse_feature_table(cargo_toml: &str) -> BTreeMap<String, Vec<String>> {
     let mut in_features = false;
@@ -124,8 +117,8 @@ fn api_constants_match_c_backend() {
         ($($name:ident),+ $(,)?) => {
             $(
                 assert_eq!(
-                    rs_sys::$name as u128,
-                    c_sys::$name as u128,
+                    xz_sys::$name as u128,
+                    liblzma_sys::$name as u128,
                     "constant mismatch: {}",
                     stringify!($name)
                 );
@@ -207,7 +200,7 @@ fn api_constant_types_match_c_backend() {
     macro_rules! assert_const_type_eq {
         ($($name:ident),+ $(,)?) => {
             $(
-                assert_same_type(c_sys::$name, rs_sys::$name);
+                assert_same_type(liblzma_sys::$name, xz_sys::$name);
             )+
         };
     }
@@ -284,14 +277,14 @@ fn api_type_layout_matches_c_backend() {
     macro_rules! assert_layout_eq {
         ($name:ident) => {
             assert_eq!(
-                std::mem::size_of::<rs_sys::$name>(),
-                std::mem::size_of::<c_sys::$name>(),
+                std::mem::size_of::<xz_sys::$name>(),
+                std::mem::size_of::<liblzma_sys::$name>(),
                 "size mismatch: {}",
                 stringify!($name)
             );
             assert_eq!(
-                std::mem::align_of::<rs_sys::$name>(),
-                std::mem::align_of::<c_sys::$name>(),
+                std::mem::align_of::<xz_sys::$name>(),
+                std::mem::align_of::<liblzma_sys::$name>(),
                 "align mismatch: {}",
                 stringify!($name)
             );
@@ -316,10 +309,10 @@ fn api_type_layout_matches_c_backend() {
     assert_layout_eq!(lzma_mt);
 
     // Opaque types can have intentionally different concrete representations.
-    let _: *mut rs_sys::lzma_internal = std::ptr::null_mut();
-    let _: *mut c_sys::lzma_internal = std::ptr::null_mut();
-    let _: *mut rs_sys::lzma_index = std::ptr::null_mut();
-    let _: *mut c_sys::lzma_index = std::ptr::null_mut();
+    let _: *mut xz_sys::lzma_internal = std::ptr::null_mut();
+    let _: *mut liblzma_sys::lzma_internal = std::ptr::null_mut();
+    let _: *mut xz_sys::lzma_index = std::ptr::null_mut();
+    let _: *mut liblzma_sys::lzma_index = std::ptr::null_mut();
 }
 
 #[test]
@@ -327,8 +320,8 @@ fn api_functions_are_exported() {
     macro_rules! assert_fn_exported {
         ($($name:ident),+ $(,)?) => {
             $(
-                let _ = c_sys::$name as *const () as usize;
-                let _ = rs_sys::$name as *const () as usize;
+                let _ = liblzma_sys::$name as *const () as usize;
+                let _ = xz_sys::$name as *const () as usize;
             )+
         };
     }
@@ -399,102 +392,75 @@ fn api_functions_are_exported() {
     );
 }
 
+macro_rules! encode_easy_impl {
+    ($sys:ident, $input:expr) => {{
+        let bound = $sys::lzma_stream_buffer_bound($input.len());
+        let mut out = vec![0u8; bound];
+        let mut out_pos: usize = 0;
+        let ret = $sys::lzma_easy_buffer_encode(
+            6,
+            $sys::LZMA_CHECK_CRC64,
+            ptr::null(),
+            $input.as_ptr(),
+            $input.len(),
+            out.as_mut_ptr(),
+            &mut out_pos,
+            out.len(),
+        );
+        out.truncate(out_pos);
+        (ret as u32, out)
+    }};
+}
+
+macro_rules! decode_stream_buffer_impl {
+    ($sys:ident, $input:expr, $expected_size_hint:expr) => {{
+        let mut cap = $expected_size_hint.max($input.len() * 6 + 128).max(256);
+        let max_cap = 64 * 1024 * 1024;
+
+        loop {
+            let mut out = vec![0u8; cap];
+            let mut memlimit = u64::MAX;
+            let mut in_pos = 0usize;
+            let mut out_pos = 0usize;
+            let ret = $sys::lzma_stream_buffer_decode(
+                &mut memlimit,
+                0,
+                ptr::null(),
+                $input.as_ptr(),
+                &mut in_pos,
+                $input.len(),
+                out.as_mut_ptr(),
+                &mut out_pos,
+                out.len(),
+            );
+            if ret as u32 == $sys::LZMA_BUF_ERROR as u32 && cap < max_cap {
+                cap = (cap * 2).min(max_cap);
+                continue;
+            }
+            out.truncate(out_pos);
+            return (ret as u32, out);
+        }
+    }};
+}
+
 #[inline]
 unsafe fn c_encode_easy(input: &[u8]) -> (u32, Vec<u8>) {
-    let bound = c_sys::lzma_stream_buffer_bound(input.len());
-    let mut out = vec![0u8; bound];
-    let mut out_pos: usize = 0;
-    let ret = c_sys::lzma_easy_buffer_encode(
-        6,
-        c_sys::LZMA_CHECK_CRC64,
-        ptr::null(),
-        input.as_ptr(),
-        input.len(),
-        out.as_mut_ptr(),
-        &mut out_pos,
-        out.len(),
-    );
-    out.truncate(out_pos);
-    (ret as u32, out)
+    encode_easy_impl!(liblzma_sys, input)
 }
 
 #[inline]
 unsafe fn rs_encode_easy(input: &[u8]) -> (u32, Vec<u8>) {
-    let bound = rs_sys::lzma_stream_buffer_bound(input.len());
-    let mut out = vec![0u8; bound];
-    let mut out_pos: usize = 0;
-    let ret = rs_sys::lzma_easy_buffer_encode(
-        6,
-        rs_sys::LZMA_CHECK_CRC64,
-        ptr::null(),
-        input.as_ptr(),
-        input.len(),
-        out.as_mut_ptr(),
-        &mut out_pos,
-        out.len(),
-    );
-    out.truncate(out_pos);
-    (ret as u32, out)
+    encode_easy_impl!(xz_sys, input)
 }
 
 #[inline]
 unsafe fn c_decode_stream_buffer(input: &[u8], expected_size_hint: usize) -> (u32, Vec<u8>) {
-    let mut cap = expected_size_hint.max(input.len() * 6 + 128).max(256);
-    let max_cap = 64 * 1024 * 1024;
-
-    loop {
-        let mut out = vec![0u8; cap];
-        let mut memlimit = u64::MAX;
-        let mut in_pos = 0usize;
-        let mut out_pos = 0usize;
-        let ret = c_sys::lzma_stream_buffer_decode(
-            &mut memlimit,
-            0,
-            ptr::null(),
-            input.as_ptr(),
-            &mut in_pos,
-            input.len(),
-            out.as_mut_ptr(),
-            &mut out_pos,
-            out.len(),
-        );
-        if ret as u32 == c_sys::LZMA_BUF_ERROR as u32 && cap < max_cap {
-            cap = (cap * 2).min(max_cap);
-            continue;
-        }
-        out.truncate(out_pos);
-        return (ret as u32, out);
-    }
+    decode_stream_buffer_impl!(liblzma_sys, input, expected_size_hint)
 }
 
 #[inline]
 unsafe fn rs_decode_stream_buffer(input: &[u8], expected_size_hint: usize) -> (u32, Vec<u8>) {
-    let mut cap = expected_size_hint.max(input.len() * 6 + 128).max(256);
-    let max_cap = 64 * 1024 * 1024;
-
-    loop {
-        let mut out = vec![0u8; cap];
-        let mut memlimit = u64::MAX;
-        let mut in_pos = 0usize;
-        let mut out_pos = 0usize;
-        let ret = rs_sys::lzma_stream_buffer_decode(
-            &mut memlimit,
-            0,
-            ptr::null(),
-            input.as_ptr(),
-            &mut in_pos,
-            input.len(),
-            out.as_mut_ptr(),
-            &mut out_pos,
-            out.len(),
-        );
-        if ret as u32 == rs_sys::LZMA_BUF_ERROR as u32 && cap < max_cap {
-            cap = (cap * 2).min(max_cap);
-            continue;
-        }
-        out.truncate(out_pos);
-        return (ret as u32, out);
-    }
+    decode_stream_buffer_impl!(xz_sys, input, expected_size_hint)
 }
 
 fn deterministic_payload(case: usize) -> Vec<u8> {
@@ -531,7 +497,7 @@ fn differential_roundtrip_across_backends() {
             );
             assert_eq!(
                 c_enc_ret,
-                c_sys::LZMA_OK as u32,
+                liblzma_sys::LZMA_OK as u32,
                 "C encoder failed at case {case} with ret {c_enc_ret}"
             );
 
