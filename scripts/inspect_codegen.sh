@@ -6,14 +6,14 @@ print_usage() {
 Usage: scripts/inspect_codegen.sh <symbol> [options]
 
 Options:
-  --package <name>     Cargo package to inspect (default: liblzma-rs)
+  --package <name>     Cargo package to inspect (default: xz)
   --format <asm|llvm|mir>  Output format for cargo-asm (default: asm)
   --features <list>    Cargo feature list passed to cargo-asm
   --target-dir <dir>   Cargo target dir (default: target/codegen)
 
 Example:
-  scripts/inspect_codegen.sh liblzma_rs::lzma::lzma2_encoder::lzma2_encode \
-    --package liblzma-rs --format asm
+  scripts/inspect_codegen.sh xz::lzma::lzma2_encoder::lzma2_encode \
+    --package xz --format asm
 EOF
 }
 
@@ -30,7 +30,7 @@ fi
 SYMBOL="$1"
 shift
 
-PACKAGE="liblzma-rs"
+PACKAGE="xz"
 FORMAT="asm"
 FEATURES=""
 TARGET_DIR="target/codegen"

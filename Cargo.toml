@@ -17,11 +17,11 @@ rust-version = "1.63"
 exclude = [".github/"]
 
 [workspace]
-members = ["systest", "liblzma-rs", "liblzma-rs-sys", "perf-probe"]
+members = ["systest", "xz", "xz-sys", "perf-probe"]
 
 [dependencies]
 # Rust backend (default) - pure Rust implementation
-liblzma-sys = { package = "liblzma-rs-sys", path = "liblzma-rs-sys", optional = true }
+liblzma-sys = { package = "xz-sys", path = "xz-sys", optional = true }
 # C backend - original liblzma C library via FFI
 liblzma-c-sys = { package = "liblzma-sys", path = "liblzma-sys", version = "0.4.5", optional = true, default-features = false }
 num_cpus = { version = "1.16.0", optional = true }

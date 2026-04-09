@@ -1,9 +1,9 @@
 [package]
-name = "liblzma-rs-sys"
+name = "xz-sys"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-description = "liblzma-sys compatible API layer backed by pure Rust liblzma-rs"
+description = "liblzma-sys compatible API layer backed by pure Rust xz"
 
 [lib]
 crate-type = ["rlib", "staticlib"]
@@ -22,5 +22,5 @@ parallel = []
 wasm = ["static", "bindgen"]
 
 [dependencies]
-liblzma-rs = { path = "../liblzma-rs" }
+xz = { path = "../xz" }
 libc = "0.2"

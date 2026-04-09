@@ -65,7 +65,7 @@ fn parse_feature_table(cargo_toml: &str) -> BTreeMap<String, Vec<String>> {
 
 #[test]
 fn rs_sys_avoids_literal_lzma_const_defs() {
-    let src = include_str!("../liblzma-rs-sys/src/lib.rs");
+    let src = include_str!("../xz-sys/src/lib.rs");
     let mut stmt = String::new();
     let mut start_line = 0usize;
     let mut in_const = false;
@@ -83,8 +83,8 @@ fn rs_sys_avoids_literal_lzma_const_defs() {
             stmt.push(' ');
             if trimmed.ends_with(';') {
                 assert!(
-                    stmt.contains("= liblzma_rs::"),
-                    "LZMA const must alias liblzma_rs symbol, not use local literal (line {}): {}",
+                    stmt.contains("= xz::"),
+                    "LZMA const must alias xz symbol, not use local literal (line {}): {}",
                     start_line,
                     stmt
                 );
@@ -96,10 +96,10 @@ fn rs_sys_avoids_literal_lzma_const_defs() {
 
 #[test]
 fn rs_sys_uses_libc_size_t() {
-    let src = include_str!("../liblzma-rs-sys/src/lib.rs");
+    let src = include_str!("../xz-sys/src/lib.rs");
     assert!(
         src.contains("use libc::size_t;"),
-        "liblzma-rs-sys must import libc::size_t directly"
+        "xz-sys must import libc::size_t directly"
     );
     assert!(
         !src.contains("type size_t ="),
@@ -110,11 +110,11 @@ fn rs_sys_uses_libc_size_t() {
 #[test]
 fn cargo_features_match_c_backend() {
     let c_sys_features = parse_feature_table(include_str!("../liblzma-sys/Cargo.toml"));
-    let rs_sys_features = parse_feature_table(include_str!("../liblzma-rs-sys/Cargo.toml"));
+    let rs_sys_features = parse_feature_table(include_str!("../xz-sys/Cargo.toml"));
 
     assert_eq!(
         rs_sys_features, c_sys_features,
-        "liblzma-rs-sys feature table must stay compatible with liblzma-sys",
+        "xz-sys feature table must stay compatible with liblzma-sys",
     );
 }
 

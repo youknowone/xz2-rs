@@ -8,7 +8,7 @@ publish = false
 
 [dependencies]
 liblzma-c-sys = { package = "liblzma-sys", path = "../liblzma-sys", optional = true }
-liblzma-rs-sys = { path = "../liblzma-rs-sys", optional = true }
+xz-sys = { path = "../xz-sys", optional = true }
 libc = "0.2"
 
 [build-dependencies]
@@ -17,5 +17,5 @@ ctest2 = "0.4"
 [features]
 default = ["c-sys"]
 c-sys = ["liblzma-c-sys"]
-rs-sys = ["liblzma-rs-sys"]
+rs-sys = ["xz-sys"]
 bindgen = ["c-sys", "liblzma-c-sys/bindgen"]

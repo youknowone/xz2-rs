@@ -15,7 +15,7 @@ use std::time::{Duration, Instant};
 #[cfg(feature = "c-sys")]
 use liblzma_c_sys as backend_sys;
 #[cfg(feature = "rs-sys")]
-use liblzma_rs_sys as backend_sys;
+use xz_sys as backend_sys;
 
 #[cfg(feature = "c-sys")]
 const BACKEND_NAME: &str = "c";
@@ -516,7 +516,8 @@ unsafe fn backend_uncompressed_size(compressed: &[u8]) -> u64 {
     let footer = compressed[footer_offset..].as_ptr();
 
     let mut footer_flags = std::mem::MaybeUninit::<backend_sys::lzma_stream_flags>::uninit();
-    let footer_ret = unsafe { backend_sys::lzma_stream_footer_decode(footer_flags.as_mut_ptr(), footer) };
+    let footer_ret =
+        unsafe { backend_sys::lzma_stream_footer_decode(footer_flags.as_mut_ptr(), footer) };
     assert_eq!(
         footer_ret,
         backend_sys::LZMA_OK,

@@ -62,6 +62,7 @@ scripts/compare_api_workloads.sh standard-files --mode all --iters 200 --warmup 
 scripts/compare_api_workloads.sh standard-files --mode good --iters 400 --warmup 40
 scripts/compare_api_workloads.sh standard-files --mode good --name-pattern delta --iters 400 --warmup 40
 scripts/compare_api_workloads.sh qc --mode both --cases 128 --max-size 4096 --iters 200 --warmup 20
+scripts/compare_api_workloads.sh bufread-trailing --mode both --input-size 1024 --trailing-size 123 --iters 1000 --warmup 100
 ```
 
 This uses [`examples/standard_files_probe.rs`](../examples/standard_files_probe.rs), which mirrors the `tests/xz.rs` `standard_files` path and writes reports to:
@@ -73,6 +74,11 @@ The `qc` workload uses [`examples/qc_probe.rs`](../examples/qc_probe.rs) to repr
 small-input repeated round-trip pattern from the root crate tests. This is useful when
 overall regressions show up in `root-tests` even though large encode/decode probes look
 good.
+
+The `bufread-trailing` workload uses
+[`examples/bufread_trailing_probe.rs`](../examples/bufread_trailing_probe.rs) to reproduce
+the `bufread::tests::compressed_and_trailing_data` path with enough in-process repetition
+to reduce test process startup noise.
 
 The `size` workload isolates the `uncompressed_size()` path from [`src/lib.rs`](../src/lib.rs),
 which corresponds to the QuickCheck-based `tests::size` unit test but with deterministic input.
@@ -113,8 +119,8 @@ On macOS the script prefers `samply`; on Linux it falls back to `perf`; otherwis
 After a profile points to a hot Rust function, inspect its optimized output:
 
 ```bash
-scripts/inspect_codegen.sh liblzma_rs::lzma::lzma_encoder::lzma_encode --package liblzma-rs
-scripts/inspect_codegen.sh liblzma_rs::check::crc64_fast::lzma_crc64 --package liblzma-rs --format llvm
+scripts/inspect_codegen.sh xz::lzma::lzma_encoder::lzma_encode --package xz
+scripts/inspect_codegen.sh xz::check::crc64_fast::lzma_crc64 --package xz --format llvm
 ```
 
 This uses `cargo-asm` and builds under `target/codegen` by default.

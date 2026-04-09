@@ -1226,7 +1226,7 @@ pub fn lzma_outq_outbuf_memusage(buf_size: size_t) -> u64 {
 pub unsafe fn aligned_read32ne(buf: *const u8) -> u32 {
     *(buf as *const u32)
 }
-pub type rc_symbol = c_uint;
+pub type rc_symbol = u8;
 pub const RC_FLUSH: rc_symbol = 4;
 pub const RC_DIRECT_1: rc_symbol = 3;
 pub const RC_DIRECT_0: rc_symbol = 2;

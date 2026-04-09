@@ -40,7 +40,7 @@ unsafe fn coder_rep_slot_mut(coder: *mut lzma_lzma1_encoder, index: usize) -> *m
     debug_assert!(index < REPS as usize);
     (::core::ptr::addr_of_mut!((*coder).reps) as *mut u32).add(index)
 }
-#[inline]
+#[inline(always)]
 unsafe fn rc_bittree(
     rc: *mut lzma_range_encoder,
     probs: *mut probability,
@@ -62,7 +62,7 @@ unsafe fn rc_bittree(
         }
     }
 }
-#[inline]
+#[inline(always)]
 unsafe fn rc_bittree_reverse(
     rc: *mut lzma_range_encoder,
     probs: *mut probability,
@@ -85,7 +85,7 @@ unsafe fn rc_bittree_reverse(
         }
     }
 }
-#[inline]
+#[inline(always)]
 unsafe fn rc_direct(rc: *mut lzma_range_encoder, value: u32, mut bit_count: u32) {
     loop {
         bit_count -= 1;
@@ -97,7 +97,7 @@ unsafe fn rc_direct(rc: *mut lzma_range_encoder, value: u32, mut bit_count: u32)
         }
     }
 }
-#[inline]
+#[inline(always)]
 unsafe fn rc_flush(rc: *mut lzma_range_encoder) {
     let mut i: size_t = 0;
     while i < 5 {
@@ -162,7 +162,7 @@ unsafe fn rc_shift_low_dummy(
     *low = (*low & 0xffffff as u64) << RC_SHIFT_BITS;
     false
 }
-#[inline]
+#[inline(always)]
 unsafe fn rc_encode(
     rc: *mut lzma_range_encoder,
     out: *mut u8,
@@ -334,7 +334,7 @@ unsafe fn rc_pending(rc: *const lzma_range_encoder) -> u64 {
 }
 pub const LEN_SYMBOLS: u32 = LEN_LOW_SYMBOLS + LEN_MID_SYMBOLS + LEN_HIGH_SYMBOLS;
 pub const MATCH_LEN_MAX: u32 = MATCH_LEN_MIN + LEN_SYMBOLS - 1;
-#[inline]
+#[inline(always)]
 unsafe fn literal_matched(
     rc: *mut lzma_range_encoder,
     subcoder: *mut probability,
@@ -360,7 +360,7 @@ unsafe fn literal_matched(
         }
     }
 }
-#[inline]
+#[inline(always)]
 unsafe fn literal(coder: *mut lzma_lzma1_encoder, mf: *mut lzma_mf, position: u32) {
     let cur_byte: u8 = *(*mf)
         .buffer
@@ -465,7 +465,7 @@ unsafe fn length_update_prices(lc: *mut lzma_length_encoder, pos_state: u32) {
         i += 1;
     }
 }
-#[inline]
+#[inline(always)]
 unsafe fn length(
     rc: *mut lzma_range_encoder,
     lc: *mut lzma_length_encoder,
@@ -501,7 +501,7 @@ unsafe fn length(
         }
     }
 }
-#[inline]
+#[inline(always)]
 unsafe fn match_0(coder: *mut lzma_lzma1_encoder, pos_state: u32, distance: u32, len: u32) {
     (*coder).state = (if ((*coder).state as u32) < LIT_STATES {
         STATE_LIT_MATCH
@@ -564,7 +564,7 @@ unsafe fn match_0(coder: *mut lzma_lzma1_encoder, pos_state: u32, distance: u32,
     *coder_rep_slot_mut(coder, 0) = distance;
     (*coder).match_price_count += 1;
 }
-#[inline]
+#[inline(always)]
 unsafe fn rep_match(coder: *mut lzma_lzma1_encoder, pos_state: u32, rep: u32, len: u32) {
     if rep == 0 {
         rc_bit(
@@ -638,6 +638,7 @@ unsafe fn rep_match(coder: *mut lzma_lzma1_encoder, pos_state: u32, rep: u32, le
         }) as lzma_lzma_state;
     };
 }
+#[inline(always)]
 unsafe fn encode_symbol(
     coder: *mut lzma_lzma1_encoder,
     mf: *mut lzma_mf,

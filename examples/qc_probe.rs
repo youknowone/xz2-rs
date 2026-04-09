@@ -6,10 +6,12 @@ use std::time::{Duration, Instant};
 use liblzma::read;
 use liblzma::write;
 
-#[cfg(feature = "rust-backend")]
+#[cfg(all(feature = "rust-backend", not(feature = "c-backend")))]
 const BACKEND_NAME: &str = "rust";
-#[cfg(feature = "c-backend")]
+#[cfg(all(feature = "c-backend", not(feature = "rust-backend")))]
 const BACKEND_NAME: &str = "c";
+#[cfg(all(feature = "rust-backend", feature = "c-backend"))]
+const BACKEND_NAME: &str = "both";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Mode {

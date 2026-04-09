@@ -12,6 +12,11 @@ fn main() {
     if use_c_sys {
         if let Ok(out) = env::var("DEP_LZMA_INCLUDE") {
             cfg.include(&out);
+        } else {
+            // pkg-config-backed liblzma-sys builds can return early without exporting
+            // cargo:include metadata. Fall back to the vendored upstream API headers so
+            // systest can still compile its generated probe.
+            cfg.include("../liblzma-sys/xz/src/liblzma/api");
         }
     } else {
         // Reuse vendored upstream headers to verify C header compatibility.
@@ -26,7 +31,7 @@ fn main() {
     let rust_api = if use_c_sys {
         "../liblzma-sys/src/lib.rs"
     } else {
-        "../liblzma-rs-sys/src/lib.rs"
+        "../xz-sys/src/lib.rs"
     };
     cfg.generate(rust_api, "all.rs");
 }
