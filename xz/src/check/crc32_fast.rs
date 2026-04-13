@@ -316,40 +316,33 @@ pub static lzma_crc32_table: [[u32; 256]; 8] = [
         0x646e019b, 0xeae10678, 0x264b06e6,
     ],
 ];
-unsafe fn lzma_crc32_generic(mut buf: *const u8, mut size: size_t, mut crc: u32) -> u32 {
+fn lzma_crc32_generic(mut buf: &[u8], mut crc: u32) -> u32 {
     crc = !crc;
-    if size > 8 {
-        while buf as uintptr_t & 7 as uintptr_t != 0 {
-            crc = lzma_crc32_table[0][(*buf as u32 ^ crc & 0xff) as usize] ^ crc >> 8;
-            buf = buf.offset(1);
-            size -= 1;
+    if buf.len() > 8 {
+        while buf.as_ptr() as uintptr_t & 7 as uintptr_t != 0 {
+            crc = lzma_crc32_table[0][(buf[0] as u32 ^ crc & 0xff) as usize] ^ crc >> 8;
+            buf = &buf[1..];
         }
-        let limit: *const u8 = buf.offset((size & !(7)) as isize);
-        size &= 7;
-        while buf < limit {
-            crc ^= aligned_read32ne(buf);
-            buf = buf.offset(4);
+        let (mut bulk, tail) = buf.split_at(buf.len() & !7);
+        while !bulk.is_empty() {
+            crc ^= unsafe { aligned_read32ne(bulk.as_ptr()) };
+            bulk = &bulk[4..];
             crc = lzma_crc32_table[7][(crc & 0xff) as usize]
                 ^ lzma_crc32_table[6][(crc >> 8 & 0xff) as usize]
                 ^ lzma_crc32_table[5][(crc >> 16 & 0xff) as usize]
                 ^ lzma_crc32_table[4][(crc >> 24) as usize];
-            let tmp: u32 = aligned_read32ne(buf) as u32;
-            buf = buf.offset(4);
+            let tmp: u32 = unsafe { aligned_read32ne(bulk.as_ptr()) } as u32;
+            bulk = &bulk[4..];
             crc = lzma_crc32_table[3][(tmp & 0xff) as usize]
                 ^ lzma_crc32_table[2][(tmp >> 8 & 0xff) as usize]
                 ^ crc
                 ^ lzma_crc32_table[1][(tmp >> 16 & 0xff) as usize]
                 ^ lzma_crc32_table[0][(tmp >> 24) as usize];
         }
+        buf = tail;
     }
-    loop {
-        let old_size = size;
-        size = size.wrapping_sub(1);
-        if old_size == 0 {
-            break;
-        }
-        crc = lzma_crc32_table[0][(*buf as u32 ^ crc & 0xff) as usize] ^ crc >> 8;
-        buf = buf.offset(1);
+    for &byte in buf {
+        crc = lzma_crc32_table[0][(byte as u32 ^ crc & 0xff) as usize] ^ crc >> 8;
     }
     !crc
 }
@@ -374,62 +367,69 @@ unsafe fn aligned_read64le(buf: *const u8) -> u64 {
 
 #[cfg(target_arch = "aarch64")]
 #[target_feature(enable = "crc")]
-unsafe fn lzma_crc32_arm64(mut buf: *const u8, mut size: size_t, mut crc: u32) -> u32 {
+unsafe fn lzma_crc32_arm64(buf: &[u8], mut crc: u32) -> u32 {
+    let mut ptr = buf.as_ptr();
+    let mut size = buf.len();
     crc = !crc;
 
     if size >= 8 {
-        let align = (0usize.wrapping_sub(buf as usize)) & 7;
+        let align = (0usize.wrapping_sub(ptr as usize)) & 7;
 
         if align & 1 != 0 {
-            crc = __crc32b(crc, *buf);
-            buf = buf.add(1);
+            crc = __crc32b(crc, *ptr);
+            ptr = ptr.add(1);
         }
 
         if align & 2 != 0 {
-            crc = __crc32h(crc, aligned_read16le(buf));
-            buf = buf.add(2);
+            crc = __crc32h(crc, aligned_read16le(ptr));
+            ptr = ptr.add(2);
         }
 
         if align & 4 != 0 {
-            crc = __crc32w(crc, aligned_read32le(buf));
-            buf = buf.add(4);
+            crc = __crc32w(crc, aligned_read32le(ptr));
+            ptr = ptr.add(4);
         }
 
         size -= align;
 
-        let limit = buf.add(size & !7);
-        while buf < limit {
-            crc = __crc32d(crc, aligned_read64le(buf));
-            buf = buf.add(8);
+        let limit = ptr.add(size & !7);
+        while ptr < limit {
+            crc = __crc32d(crc, aligned_read64le(ptr));
+            ptr = ptr.add(8);
         }
 
         size &= 7;
     }
 
     if size & 4 != 0 {
-        crc = __crc32w(crc, aligned_read32le(buf));
-        buf = buf.add(4);
+        crc = __crc32w(crc, aligned_read32le(ptr));
+        ptr = ptr.add(4);
     }
 
     if size & 2 != 0 {
-        crc = __crc32h(crc, aligned_read16le(buf));
-        buf = buf.add(2);
+        crc = __crc32h(crc, aligned_read16le(ptr));
+        ptr = ptr.add(2);
     }
 
     if size & 1 != 0 {
-        crc = __crc32b(crc, *buf);
+        crc = __crc32b(crc, *ptr);
     }
 
     !crc
 }
 
 pub unsafe fn lzma_crc32(buf: *const u8, size: size_t, crc: u32) -> u32 {
+    let buf = if size == 0 {
+        &[][..]
+    } else {
+        core::slice::from_raw_parts(buf, size)
+    };
     #[cfg(target_arch = "aarch64")]
     {
         if std::arch::is_aarch64_feature_detected!("crc") {
-            return lzma_crc32_arm64(buf, size, crc);
+            return lzma_crc32_arm64(buf, crc);
         }
     }
 
-    lzma_crc32_generic(buf, size, crc)
+    lzma_crc32_generic(buf, crc)
 }

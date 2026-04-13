@@ -51,7 +51,7 @@ fn ia64_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t {
     }
     i
 }
-unsafe extern "C" fn ia64_code(
+unsafe fn ia64_code(
     _simple: *mut c_void,
     now_pos: u32,
     is_encoder: bool,
@@ -77,21 +77,21 @@ unsafe fn ia64_coder_init(
         next,
         allocator,
         filters,
-        Some(ia64_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
+        Some(ia64_code as unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
         16,
         16,
         is_encoder,
     )
 }
-pub(crate) unsafe extern "C" fn lzma_simple_ia64_encoder_init(
+pub(crate) unsafe fn lzma_simple_ia64_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
     ia64_coder_init(next, allocator, filters, true)
 }
-pub(crate) unsafe extern "C" fn lzma_simple_ia64_decoder_init(
+pub(crate) unsafe fn lzma_simple_ia64_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,

@@ -26,25 +26,23 @@ pub const SEQ_DICT_SIZE: lzip_decoder_seq = 2;
 pub const SEQ_VERSION: lzip_decoder_seq = 1;
 pub const SEQ_ID_STRING: lzip_decoder_seq = 0;
 #[inline]
-fn read64le(buf: *const u8) -> u64 {
-    return unsafe {
-        let mut num: u64 = *buf as u64;
-        num |= (*buf.offset(1) as u64) << 8;
-        num |= (*buf.offset(2) as u64) << 16;
-        num |= (*buf.offset(3) as u64) << 24;
-        num |= (*buf.offset(4) as u64) << 32;
-        num |= (*buf.offset(5) as u64) << 40;
-        num |= (*buf.offset(6) as u64) << 48;
-        num |= (*buf.offset(7) as u64) << 56;
-        num
-    };
+fn read64le(buf: &[u8; 8]) -> u64 {
+    let mut num: u64 = buf[0] as u64;
+    num |= (buf[1] as u64) << 8;
+    num |= (buf[2] as u64) << 16;
+    num |= (buf[3] as u64) << 24;
+    num |= (buf[4] as u64) << 32;
+    num |= (buf[5] as u64) << 40;
+    num |= (buf[6] as u64) << 48;
+    num |= (buf[7] as u64) << 56;
+    num
 }
 pub const LZIP_V0_FOOTER_SIZE: u32 = 12;
 pub const LZIP_V1_FOOTER_SIZE: u32 = 20;
 pub const LZIP_LC: u32 = 3;
 pub const LZIP_LP: u32 = 0;
 pub const LZIP_PB: u32 = 2;
-unsafe extern "C" fn lzip_decode(
+unsafe fn lzip_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -160,12 +158,11 @@ unsafe extern "C" fn lzip_decode(
                         id: LZMA_FILTER_LZMA1,
                         init: Some(
                             lzma_lzma_decoder_init
-                                as unsafe extern "C" fn(
+                                as unsafe fn(
                                     *mut lzma_next_coder,
                                     *const lzma_allocator,
                                     *const lzma_filter_info,
-                                )
-                                    -> lzma_ret,
+                                ) -> lzma_ret,
                         ),
                         options: ::core::ptr::addr_of_mut!((*coder).options) as *mut c_void,
                     },
@@ -236,25 +233,15 @@ unsafe extern "C" fn lzip_decode(
         }
         (*coder).pos = 0;
         (*coder).member_size += footer_size as u64;
-        if !(*coder).ignore_check
-            && (*coder).crc32
-                != read32le((::core::ptr::addr_of_mut!((*coder).buffer) as *mut u8) as *mut u8)
-        {
+        let footer = ::core::ptr::addr_of!((*coder).buffer) as *const u8;
+        if !(*coder).ignore_check && (*coder).crc32 != read32le(&*footer.cast::<[u8; 4]>()) {
             return LZMA_DATA_ERROR;
         }
-        if (*coder).uncompressed_size
-            != read64le(
-                (::core::ptr::addr_of_mut!((*coder).buffer) as *mut u8).offset(4) as *mut u8,
-            )
-        {
+        if (*coder).uncompressed_size != read64le(&*footer.add(4).cast::<[u8; 8]>()) {
             return LZMA_DATA_ERROR;
         }
         if (*coder).version > 0 {
-            if (*coder).member_size
-                != read64le(
-                    (::core::ptr::addr_of_mut!((*coder).buffer) as *mut u8).offset(12) as *mut u8,
-                )
-            {
+            if (*coder).member_size != read64le(&*footer.add(12).cast::<[u8; 8]>()) {
                 return LZMA_DATA_ERROR;
             }
         }
@@ -265,15 +252,15 @@ unsafe extern "C" fn lzip_decode(
         (*coder).sequence = SEQ_ID_STRING;
     }
 }
-unsafe extern "C" fn lzip_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn lzip_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_lzip_coder = coder_ptr as *mut lzma_lzip_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).lzma_decoder), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-extern "C" fn lzip_decoder_get_check(_coder_ptr: *const c_void) -> lzma_check {
+unsafe fn lzip_decoder_get_check(_coder_ptr: *const c_void) -> lzma_check {
     LZMA_CHECK_CRC32
 }
-unsafe extern "C" fn lzip_decoder_memconfig(
+unsafe fn lzip_decoder_memconfig(
     coder_ptr: *mut c_void,
     memusage: *mut u64,
     old_memlimit: *mut u64,
@@ -290,42 +277,28 @@ unsafe extern "C" fn lzip_decoder_memconfig(
     }
     LZMA_OK
 }
-pub(crate) unsafe extern "C" fn lzma_lzip_decoder_init(
+pub(crate) unsafe fn lzma_lzip_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     memlimit: u64,
     flags: u32,
 ) -> lzma_ret {
     if core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret>,
         uintptr_t,
     >(Some(
         lzma_lzip_decoder_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                u64,
-                u32,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
     )) != (*next).init
     {
         lzma_next_end(next, allocator);
     }
     (*next).init = core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret>,
         uintptr_t,
     >(Some(
         lzma_lzip_decoder_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                u64,
-                u32,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
     ));
     if flags & !(LZMA_SUPPORTED_FLAGS as u32) != 0 {
         return LZMA_OPTIONS_ERROR;
@@ -339,7 +312,7 @@ pub(crate) unsafe extern "C" fn lzma_lzip_decoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             lzip_decode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -351,14 +324,10 @@ pub(crate) unsafe extern "C" fn lzma_lzip_decoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            lzip_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
-        (*next).get_check =
-            Some(lzip_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check);
+        (*next).end = Some(lzip_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
+        (*next).get_check = Some(lzip_decoder_get_check as unsafe fn(*const c_void) -> lzma_check);
         (*next).memconfig = Some(
-            lzip_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+            lzip_decoder_memconfig as unsafe fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         );
         (*coder).lzma_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),

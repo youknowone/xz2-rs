@@ -18,9 +18,7 @@ unsafe fn coder_match(coder: *const lzma_lzma1_encoder, index: u32) -> *const lz
 }
 
 #[inline(always)]
-unsafe fn mf_find_callback(
-    mf: *const lzma_mf,
-) -> unsafe extern "C" fn(*mut lzma_mf, *mut lzma_match) -> u32 {
+unsafe fn mf_find_callback(mf: *const lzma_mf) -> unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32 {
     debug_assert!((*mf).find.is_some());
     match (*mf).find {
         Some(find) => find,
@@ -29,7 +27,7 @@ unsafe fn mf_find_callback(
 }
 
 #[inline(always)]
-unsafe fn mf_skip_callback(mf: *const lzma_mf) -> unsafe extern "C" fn(*mut lzma_mf, u32) -> () {
+unsafe fn mf_skip_callback(mf: *const lzma_mf) -> unsafe fn(*mut lzma_mf, u32) -> () {
     debug_assert!((*mf).skip.is_some());
     match (*mf).skip {
         Some(skip) => skip,

@@ -7,6 +7,13 @@ fn target_deps_dir() -> PathBuf {
     let workspace_root = manifest_dir.parent().unwrap();
     let target_root = env::var_os("CARGO_TARGET_DIR")
         .map(PathBuf::from)
+        .map(|path| {
+            if path.is_relative() {
+                workspace_root.join(path)
+            } else {
+                path
+            }
+        })
         .unwrap_or_else(|| workspace_root.join("target"));
     let profile = env::var("PROFILE").unwrap();
     let target = env::var("TARGET").unwrap();

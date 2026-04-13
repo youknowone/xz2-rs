@@ -102,7 +102,7 @@ unsafe fn lzma2_header_uncompressed(coder: *mut lzma_lzma2_coder) {
     (*coder).buf[2] = ((*coder).uncompressed_size - 1 & 0xff) as u8;
     (*coder).buf_pos = 0;
 }
-unsafe extern "C" fn lzma2_encode(
+unsafe fn lzma2_encode(
     coder_ptr: *mut c_void,
     mf: *mut lzma_mf,
     out: *mut u8,
@@ -241,12 +241,12 @@ unsafe extern "C" fn lzma2_encode(
     }
     LZMA_OK
 }
-unsafe extern "C" fn lzma2_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn lzma2_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_lzma2_coder = coder_ptr as *mut lzma_lzma2_coder;
     crate::alloc::internal_free((*coder).lzma, allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn lzma2_encoder_options_update(
+unsafe fn lzma2_encoder_options_update(
     coder_ptr: *mut c_void,
     filter: *const lzma_filter,
 ) -> lzma_ret {
@@ -274,7 +274,7 @@ unsafe extern "C" fn lzma2_encoder_options_update(
     }
     LZMA_OK
 }
-unsafe extern "C" fn lzma2_encoder_init(
+unsafe fn lzma2_encoder_init(
     lz: *mut lzma_lz_encoder,
     allocator: *const lzma_allocator,
     _id: lzma_vli,
@@ -293,20 +293,11 @@ unsafe extern "C" fn lzma2_encoder_init(
         (*lz).coder = coder as *mut c_void;
         (*lz).code = Some(
             lzma2_encode
-                as unsafe extern "C" fn(
-                    *mut c_void,
-                    *mut lzma_mf,
-                    *mut u8,
-                    *mut size_t,
-                    size_t,
-                ) -> lzma_ret,
+                as unsafe fn(*mut c_void, *mut lzma_mf, *mut u8, *mut size_t, size_t) -> lzma_ret,
         );
-        (*lz).end = Some(
-            lzma2_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*lz).end = Some(lzma2_encoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*lz).options_update = Some(
-            lzma2_encoder_options_update
-                as unsafe extern "C" fn(*mut c_void, *const lzma_filter) -> lzma_ret,
+            lzma2_encoder_options_update as unsafe fn(*mut c_void, *const lzma_filter) -> lzma_ret,
         );
         (*coder).lzma = core::ptr::null_mut();
     }
@@ -331,7 +322,7 @@ unsafe extern "C" fn lzma2_encoder_init(
     }
     LZMA_OK
 }
-pub(crate) unsafe extern "C" fn lzma_lzma2_encoder_init(
+pub(crate) unsafe fn lzma_lzma2_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -342,7 +333,7 @@ pub(crate) unsafe extern "C" fn lzma_lzma2_encoder_init(
         filters,
         Some(
             lzma2_encoder_init
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut lzma_lz_encoder,
                     *const lzma_allocator,
                     lzma_vli,
@@ -352,17 +343,14 @@ pub(crate) unsafe extern "C" fn lzma_lzma2_encoder_init(
         ),
     )
 }
-pub(crate) extern "C" fn lzma_lzma2_encoder_memusage(options: *const c_void) -> u64 {
+pub(crate) unsafe fn lzma_lzma2_encoder_memusage(options: *const c_void) -> u64 {
     let lzma_mem: u64 = lzma_lzma_encoder_memusage(options) as u64;
     if lzma_mem == UINT64_MAX {
         return UINT64_MAX;
     }
     (core::mem::size_of::<lzma_lzma2_coder>() as u64) + lzma_mem
 }
-pub(crate) unsafe extern "C" fn lzma_lzma2_props_encode(
-    options: *const c_void,
-    out: *mut u8,
-) -> lzma_ret {
+pub(crate) unsafe fn lzma_lzma2_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
     if options.is_null() {
         return LZMA_PROG_ERROR;
     }
@@ -385,7 +373,7 @@ pub(crate) unsafe extern "C" fn lzma_lzma2_props_encode(
     }
     LZMA_OK
 }
-pub(crate) unsafe extern "C" fn lzma_lzma2_block_size(options: *const c_void) -> u64 {
+pub(crate) unsafe fn lzma_lzma2_block_size(options: *const c_void) -> u64 {
     let opt: *const lzma_options_lzma = options as *const lzma_options_lzma;
     if (*opt).dict_size < LZMA_DICT_SIZE_MIN as u32 || (*opt).dict_size > (1u32 << 30) + (1 << 29) {
         return UINT64_MAX;

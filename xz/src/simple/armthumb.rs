@@ -31,7 +31,7 @@ fn armthumb_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size
     }
     i
 }
-unsafe extern "C" fn armthumb_code(
+unsafe fn armthumb_code(
     _simple: *mut c_void,
     now_pos: u32,
     is_encoder: bool,
@@ -57,24 +57,21 @@ unsafe fn armthumb_coder_init(
         next,
         allocator,
         filters,
-        Some(
-            armthumb_code
-                as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t,
-        ),
+        Some(armthumb_code as unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
         4,
         2,
         is_encoder,
     )
 }
-pub(crate) unsafe extern "C" fn lzma_simple_armthumb_encoder_init(
+pub(crate) unsafe fn lzma_simple_armthumb_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
     armthumb_coder_init(next, allocator, filters, true)
 }
-pub(crate) unsafe extern "C" fn lzma_simple_armthumb_decoder_init(
+pub(crate) unsafe fn lzma_simple_armthumb_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,

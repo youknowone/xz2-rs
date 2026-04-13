@@ -4,7 +4,8 @@ fn arm64_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t 
     let mut i: size_t = 0;
     while i < size {
         let mut pc: u32 = now_pos.wrapping_add(i as u32);
-        let mut instr: u32 = read32le(buffer.as_mut_ptr().wrapping_add(i));
+        let word: &mut [u8; 4] = unsafe { &mut *buffer.as_mut_ptr().add(i).cast::<[u8; 4]>() };
+        let mut instr: u32 = read32le(word);
         if instr >> 26 == 0x25 {
             let src: u32 = instr;
             instr = 0x94000000;
@@ -13,7 +14,7 @@ fn arm64_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t 
                 pc = 0u32.wrapping_sub(pc);
             }
             instr |= src.wrapping_add(pc) & 0x3ffffff;
-            write32le(buffer.as_mut_ptr().wrapping_add(i), instr);
+            write32le(word, instr);
         } else if instr & 0x9f000000 == 0x90000000 {
             let src: u32 = instr >> 29 & 3 | instr >> 3 & 0x1ffffc;
             if src.wrapping_add(0x20000) & 0x1c0000 == 0 {
@@ -26,14 +27,14 @@ fn arm64_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t 
                 instr |= (dest & 3) << 29;
                 instr |= (dest & 0x3fffc) << 3;
                 instr |= 0u32.wrapping_sub(dest & 0x20000) & 0xe00000;
-                write32le(buffer.as_mut_ptr().wrapping_add(i), instr);
+                write32le(word, instr);
             }
         }
         i += 4;
     }
     i
 }
-unsafe extern "C" fn arm64_code(
+unsafe fn arm64_code(
     _simple: *mut c_void,
     now_pos: u32,
     is_encoder: bool,
@@ -59,14 +60,14 @@ unsafe fn arm64_coder_init(
         next,
         allocator,
         filters,
-        Some(arm64_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
+        Some(arm64_code as unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
         4,
         4,
         is_encoder,
     )
 }
-pub(crate) unsafe extern "C" fn lzma_simple_arm64_encoder_init(
+pub(crate) unsafe fn lzma_simple_arm64_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -84,7 +85,7 @@ pub unsafe fn lzma_bcj_arm64_encode(mut start_offset: u32, buf: *mut u8, size: s
         core::slice::from_raw_parts_mut(buf, size),
     )
 }
-pub(crate) unsafe extern "C" fn lzma_simple_arm64_decoder_init(
+pub(crate) unsafe fn lzma_simple_arm64_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,

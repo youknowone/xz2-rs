@@ -6,9 +6,7 @@ pub struct filter_codec_def {
     pub name: [c_char; 12],
     pub opts_size: u32,
     pub id: lzma_vli,
-    pub parse: Option<
-        unsafe extern "C" fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
-    >,
+    pub parse: Option<unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char>,
     pub optmap: *const option_map,
     pub strfy_encoder: u8,
     pub strfy_decoder: u8,
@@ -162,7 +160,7 @@ static mut bcj_optmap: [option_map; 1] = unsafe {
         },
     }]
 };
-extern "C" fn parse_bcj(
+fn parse_bcj(
     str: *mut *const c_char,
     str_end: *const c_char,
     filter_options: *mut c_void,
@@ -191,7 +189,7 @@ static mut delta_optmap: [option_map; 1] = unsafe {
         },
     }]
 };
-extern "C" fn parse_delta(
+fn parse_delta(
     str: *mut *const c_char,
     str_end: *const c_char,
     filter_options: *mut c_void,
@@ -307,7 +305,7 @@ static mut lzma12_optmap: [option_map; 9] = [option_map {
         map: core::ptr::null(),
     },
 }; 9];
-unsafe extern "C" fn parse_lzma12(
+unsafe fn parse_lzma12(
     str: *mut *const c_char,
     str_end: *const c_char,
     filter_options: *mut c_void,
@@ -337,11 +335,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_LZMA1,
             parse: Some(
                 parse_lzma12
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(lzma12_optmap) as *const option_map,
             strfy_encoder: 9,
@@ -354,11 +348,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_LZMA2,
             parse: Some(
                 parse_lzma12
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(lzma12_optmap) as *const option_map,
             strfy_encoder: 9,
@@ -371,11 +361,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_X86,
             parse: Some(
                 parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
             strfy_encoder: 1,
@@ -388,11 +374,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_ARM,
             parse: Some(
                 parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
             strfy_encoder: 1,
@@ -405,11 +387,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_ARMTHUMB,
             parse: Some(
                 parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
             strfy_encoder: 1,
@@ -422,11 +400,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_ARM64,
             parse: Some(
                 parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
             strfy_encoder: 1,
@@ -439,11 +413,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_RISCV,
             parse: Some(
                 parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
             strfy_encoder: 1,
@@ -456,11 +426,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_POWERPC,
             parse: Some(
                 parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
             strfy_encoder: 1,
@@ -473,11 +439,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_IA64,
             parse: Some(
                 parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
             strfy_encoder: 1,
@@ -490,11 +452,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_SPARC,
             parse: Some(
                 parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
             strfy_encoder: 1,
@@ -507,11 +465,7 @@ static mut filter_name_map: [filter_codec_def; 11] = unsafe {
             id: LZMA_FILTER_DELTA,
             parse: Some(
                 parse_delta
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
+                    as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
             ),
             optmap: ::core::ptr::addr_of!(delta_optmap) as *const option_map,
             strfy_encoder: 1,

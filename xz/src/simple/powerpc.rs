@@ -23,7 +23,7 @@ fn powerpc_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_
     }
     i
 }
-unsafe extern "C" fn powerpc_code(
+unsafe fn powerpc_code(
     _simple: *mut c_void,
     now_pos: u32,
     is_encoder: bool,
@@ -49,23 +49,21 @@ unsafe fn powerpc_coder_init(
         next,
         allocator,
         filters,
-        Some(
-            powerpc_code as unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t,
-        ),
+        Some(powerpc_code as unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
         0,
         4,
         4,
         is_encoder,
     )
 }
-pub(crate) unsafe extern "C" fn lzma_simple_powerpc_encoder_init(
+pub(crate) unsafe fn lzma_simple_powerpc_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
     powerpc_coder_init(next, allocator, filters, true)
 }
-pub(crate) unsafe extern "C" fn lzma_simple_powerpc_decoder_init(
+pub(crate) unsafe fn lzma_simple_powerpc_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,

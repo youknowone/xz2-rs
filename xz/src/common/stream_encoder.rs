@@ -37,7 +37,7 @@ unsafe fn block_encoder_init(
         ::core::ptr::addr_of_mut!((*coder).block_options),
     )
 }
-unsafe extern "C" fn stream_encode(
+unsafe fn stream_encode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -177,7 +177,7 @@ unsafe extern "C" fn stream_encode(
     }
     LZMA_OK
 }
-unsafe extern "C" fn stream_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn stream_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).block_encoder), allocator);
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).index_encoder), allocator);
@@ -221,7 +221,7 @@ unsafe fn stream_encoder_update_mid_block(
     )
 }
 
-unsafe extern "C" fn stream_encoder_update(
+unsafe fn stream_encoder_update(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter,
@@ -254,7 +254,7 @@ unsafe extern "C" fn stream_encoder_update(
     (*coder).filters = temp;
     LZMA_OK
 }
-unsafe extern "C" fn stream_encoder_init(
+unsafe fn stream_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter,
@@ -262,7 +262,7 @@ unsafe extern "C" fn stream_encoder_init(
 ) -> lzma_ret {
     if core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *const lzma_filter,
@@ -272,7 +272,7 @@ unsafe extern "C" fn stream_encoder_init(
         uintptr_t,
     >(Some(
         stream_encoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *const lzma_filter,
@@ -284,7 +284,7 @@ unsafe extern "C" fn stream_encoder_init(
     }
     (*next).init = core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *const lzma_filter,
@@ -294,7 +294,7 @@ unsafe extern "C" fn stream_encoder_init(
         uintptr_t,
     >(Some(
         stream_encoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *const lzma_filter,
@@ -313,7 +313,7 @@ unsafe extern "C" fn stream_encoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             stream_encode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -325,12 +325,11 @@ unsafe extern "C" fn stream_encoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            stream_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*next).end =
+            Some(stream_encoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*next).update = Some(
             stream_encoder_update
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const lzma_filter,

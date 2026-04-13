@@ -64,7 +64,7 @@ unsafe fn rust_free_impl(ptr: *mut c_void) {
     dealloc(base, layout);
 }
 
-pub(crate) unsafe extern "C" fn lzma_rust_alloc(
+pub(crate) unsafe fn lzma_rust_alloc(
     _opaque: *mut c_void,
     nmemb: size_t,
     size: size_t,
@@ -76,7 +76,7 @@ pub(crate) unsafe extern "C" fn lzma_rust_alloc(
     rust_alloc_impl(size, RUST_ALLOC_ALIGN, false)
 }
 
-pub(crate) unsafe extern "C" fn lzma_rust_free(_opaque: *mut c_void, ptr: *mut c_void) {
+pub(crate) unsafe fn lzma_rust_free(_opaque: *mut c_void, ptr: *mut c_void) {
     rust_free_impl(ptr);
 }
 

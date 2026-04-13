@@ -811,7 +811,7 @@ pub unsafe fn lzma_lzma_encode(
     }
     finish_lzma_stream(coder, out, out_pos, out_size)
 }
-unsafe extern "C" fn lzma_encode(
+unsafe fn lzma_encode(
     coder: *mut c_void,
     mf: *mut lzma_mf,
     out: *mut u8,
@@ -830,7 +830,7 @@ unsafe extern "C" fn lzma_encode(
         UINT32_MAX,
     )
 }
-unsafe extern "C" fn lzma_lzma_set_out_limit(
+unsafe fn lzma_lzma_set_out_limit(
     coder_ptr: *mut c_void,
     uncomp_size: *mut u64,
     out_limit: u64,
@@ -1032,7 +1032,7 @@ pub unsafe fn lzma_lzma_encoder_create(
     set_lz_options(lz_options, options);
     lzma_lzma_encoder_reset(coder, options)
 }
-unsafe extern "C" fn lzma_encoder_init(
+unsafe fn lzma_encoder_init(
     lz: *mut lzma_lz_encoder,
     allocator: *const lzma_allocator,
     id: lzma_vli,
@@ -1044,17 +1044,10 @@ unsafe extern "C" fn lzma_encoder_init(
     }
     (*lz).code = Some(
         lzma_encode
-            as unsafe extern "C" fn(
-                *mut c_void,
-                *mut lzma_mf,
-                *mut u8,
-                *mut size_t,
-                size_t,
-            ) -> lzma_ret,
+            as unsafe fn(*mut c_void, *mut lzma_mf, *mut u8, *mut size_t, size_t) -> lzma_ret,
     );
-    (*lz).set_out_limit = Some(
-        lzma_lzma_set_out_limit as unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret,
-    );
+    (*lz).set_out_limit =
+        Some(lzma_lzma_set_out_limit as unsafe fn(*mut c_void, *mut u64, u64) -> lzma_ret);
     lzma_lzma_encoder_create(
         ::core::ptr::addr_of_mut!((*lz).coder),
         allocator,
@@ -1063,7 +1056,7 @@ unsafe extern "C" fn lzma_encoder_init(
         lz_options,
     )
 }
-pub(crate) unsafe extern "C" fn lzma_lzma_encoder_init(
+pub(crate) unsafe fn lzma_lzma_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -1074,7 +1067,7 @@ pub(crate) unsafe extern "C" fn lzma_lzma_encoder_init(
         filters,
         Some(
             lzma_encoder_init
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut lzma_lz_encoder,
                     *const lzma_allocator,
                     lzma_vli,
@@ -1084,7 +1077,7 @@ pub(crate) unsafe extern "C" fn lzma_lzma_encoder_init(
         ),
     )
 }
-pub(crate) extern "C" fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
+pub(crate) unsafe fn lzma_lzma_encoder_memusage(options: *const c_void) -> u64 {
     if !is_options_valid(options as *const lzma_options_lzma) {
         return UINT64_MAX;
     }
@@ -1116,10 +1109,7 @@ pub unsafe fn lzma_lzma_lclppb_encode(options: *const lzma_options_lzma, byte: *
     *byte = (((*options).pb * 5 + (*options).lp) * 9 + (*options).lc) as u8;
     false
 }
-pub(crate) unsafe extern "C" fn lzma_lzma_props_encode(
-    options: *const c_void,
-    out: *mut u8,
-) -> lzma_ret {
+pub(crate) unsafe fn lzma_lzma_props_encode(options: *const c_void, out: *mut u8) -> lzma_ret {
     if options.is_null() {
         return LZMA_PROG_ERROR;
     }
@@ -1127,7 +1117,7 @@ pub(crate) unsafe extern "C" fn lzma_lzma_props_encode(
     if lzma_lzma_lclppb_encode(opt, out) {
         return LZMA_PROG_ERROR;
     }
-    write32le(out.offset(1), (*opt).dict_size);
+    write32le(&mut *out.add(1).cast::<[u8; 4]>(), (*opt).dict_size);
     LZMA_OK
 }
 pub fn lzma_mode_is_supported(mode: lzma_mode) -> lzma_bool {

@@ -47,8 +47,8 @@ pub type probability = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_allocator {
-    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
-    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
+    pub alloc: Option<unsafe fn(*mut c_void, size_t, size_t) -> *mut c_void>,
+    pub free: Option<unsafe fn(*mut c_void, *mut c_void) -> ()>,
     pub opaque: *mut c_void,
 }
 #[derive(Copy, Clone)]
@@ -57,9 +57,9 @@ pub struct lzma_filter {
     pub id: lzma_vli,
     pub options: *mut c_void,
 }
-pub type lzma_end_function = Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>;
+pub type lzma_end_function = Option<unsafe fn(*mut c_void, *const lzma_allocator) -> ()>;
 pub type lzma_code_function = Option<
-    unsafe extern "C" fn(
+    unsafe fn(
         *mut c_void,
         *const lzma_allocator,
         *const u8,
@@ -80,25 +80,21 @@ pub struct lzma_next_coder_s {
     pub init: uintptr_t,
     pub code: lzma_code_function,
     pub end: lzma_end_function,
-    pub get_progress: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>,
-    pub get_check: Option<unsafe extern "C" fn(*const c_void) -> lzma_check>,
-    pub memconfig: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>,
+    pub get_progress: Option<unsafe fn(*mut c_void, *mut u64, *mut u64) -> ()>,
+    pub get_check: Option<unsafe fn(*const c_void) -> lzma_check>,
+    pub memconfig: Option<unsafe fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>,
     pub update: Option<
-        unsafe extern "C" fn(
+        unsafe fn(
             *mut c_void,
             *const lzma_allocator,
             *const lzma_filter,
             *const lzma_filter,
         ) -> lzma_ret,
     >,
-    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
+    pub set_out_limit: Option<unsafe fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
 }
 pub type lzma_init_function = Option<
-    unsafe extern "C" fn(
-        *mut lzma_next_coder,
-        *const lzma_allocator,
-        *const lzma_filter_info,
-    ) -> lzma_ret,
+    unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_filter_info) -> lzma_ret,
 >;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -495,18 +491,11 @@ pub struct lzma_dict {
 #[repr(C)]
 pub struct lzma_lz_decoder {
     pub coder: *mut c_void,
-    pub code: Option<
-        unsafe extern "C" fn(
-            *mut c_void,
-            *mut lzma_dict,
-            *const u8,
-            *mut size_t,
-            size_t,
-        ) -> lzma_ret,
-    >,
-    pub reset: Option<unsafe extern "C" fn(*mut c_void, *const c_void) -> ()>,
-    pub set_uncompressed: Option<unsafe extern "C" fn(*mut c_void, lzma_vli, bool) -> ()>,
-    pub end: Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>,
+    pub code:
+        Option<unsafe fn(*mut c_void, *mut lzma_dict, *const u8, *mut size_t, size_t) -> lzma_ret>,
+    pub reset: Option<unsafe fn(*mut c_void, *const c_void) -> ()>,
+    pub set_uncompressed: Option<unsafe fn(*mut c_void, lzma_vli, bool) -> ()>,
+    pub end: Option<unsafe fn(*mut c_void, *const lzma_allocator) -> ()>,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -527,8 +516,8 @@ pub struct lzma_mf_s {
     pub read_limit: u32,
     pub write_pos: u32,
     pub pending: u32,
-    pub find: Option<unsafe extern "C" fn(*mut lzma_mf, *mut lzma_match) -> u32>,
-    pub skip: Option<unsafe extern "C" fn(*mut lzma_mf, u32) -> ()>,
+    pub find: Option<unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32>,
+    pub skip: Option<unsafe fn(*mut lzma_mf, u32) -> ()>,
     pub hash: *mut u32,
     pub son: *mut u32,
     pub cyclic_pos: u32,
@@ -554,12 +543,11 @@ pub struct lzma_delta_coder {
 #[repr(C)]
 pub struct lzma_lz_encoder {
     pub coder: *mut c_void,
-    pub code: Option<
-        unsafe extern "C" fn(*mut c_void, *mut lzma_mf, *mut u8, *mut size_t, size_t) -> lzma_ret,
-    >,
-    pub end: Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>,
-    pub options_update: Option<unsafe extern "C" fn(*mut c_void, *const lzma_filter) -> lzma_ret>,
-    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
+    pub code:
+        Option<unsafe fn(*mut c_void, *mut lzma_mf, *mut u8, *mut size_t, size_t) -> lzma_ret>,
+    pub end: Option<unsafe fn(*mut c_void, *const lzma_allocator) -> ()>,
+    pub options_update: Option<unsafe fn(*mut c_void, *const lzma_filter) -> lzma_ret>,
+    pub set_out_limit: Option<unsafe fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -634,14 +622,12 @@ pub struct lzma_lzma1_encoder_s {
 }
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
 #[inline]
-pub fn read32le(buf: *const u8) -> u32 {
-    unsafe { core::ptr::read_unaligned(buf.cast::<u32>()).to_le() }
+pub fn read32le(buf: &[u8; 4]) -> u32 {
+    u32::from_le_bytes(*buf)
 }
 #[inline]
-pub fn write32le(buf: *mut u8, num: u32) {
-    unsafe {
-        core::ptr::write_unaligned(buf.cast::<u32>(), num.to_le());
-    }
+pub fn write32le(buf: &mut [u8; 4], num: u32) {
+    *buf = num.to_le_bytes();
 }
 pub type __uint32_t = u32;
 pub type __darwin_time_t = c_long;
@@ -1079,20 +1065,18 @@ pub unsafe fn mf_skip(mf: *mut lzma_mf, amount: u32) {
 }
 
 #[inline(always)]
-pub unsafe fn mf_skip_raw(
-    mf: *mut lzma_mf,
-    amount: u32,
-    skip: unsafe extern "C" fn(*mut lzma_mf, u32) -> (),
-) {
+pub unsafe fn mf_skip_raw(mf: *mut lzma_mf, amount: u32, skip: unsafe fn(*mut lzma_mf, u32) -> ()) {
     if amount != 0 {
         skip(mf, amount);
         (*mf).read_ahead = (*mf).read_ahead.wrapping_add(amount);
     }
 }
 #[inline(always)]
-pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, mut len: u32, limit: u32) -> u32 {
+fn lzma_memcmplen_impl(buf1: &[u8], buf2: &[u8], mut len: u32, limit: u32) -> u32 {
     debug_assert!(len <= limit);
     debug_assert!(limit <= u32::MAX / 2);
+    debug_assert!(buf1.len() >= limit as usize);
+    debug_assert!(buf2.len() >= limit as usize);
 
     #[cfg(all(
         target_endian = "little",
@@ -1100,8 +1084,10 @@ pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, mut len: u32, lim
     ))]
     {
         while len < limit {
-            let lhs = core::ptr::read_unaligned(buf1.add(len as usize) as *const u64);
-            let rhs = core::ptr::read_unaligned(buf2.add(len as usize) as *const u64);
+            let lhs =
+                unsafe { core::ptr::read_unaligned(buf1.as_ptr().add(len as usize) as *const u64) };
+            let rhs =
+                unsafe { core::ptr::read_unaligned(buf2.as_ptr().add(len as usize) as *const u64) };
             let diff = lhs.wrapping_sub(rhs);
             if diff != 0 {
                 return core::cmp::min(len + (diff.trailing_zeros() >> 3), limit);
@@ -1115,7 +1101,7 @@ pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, mut len: u32, lim
         target_endian = "little",
         any(target_arch = "aarch64", target_arch = "x86_64")
     )))]
-    while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
+    while len < limit && buf1[len as usize] == buf2[len as usize] {
         len += 1;
     }
 
@@ -1126,6 +1112,15 @@ pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, mut len: u32, lim
     {
         len
     }
+}
+#[inline(always)]
+pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, len: u32, limit: u32) -> u32 {
+    lzma_memcmplen_impl(
+        core::slice::from_raw_parts(buf1, limit as usize),
+        core::slice::from_raw_parts(buf2, limit as usize),
+        len,
+        limit,
+    )
 }
 #[inline]
 pub unsafe fn get_dist_slot(dist: u32) -> u32 {
@@ -1297,23 +1292,23 @@ pub struct lzma_mt {
 pub struct lzma_filter_coder {
     pub id: lzma_vli,
     pub init: lzma_init_function,
-    pub memusage: Option<unsafe extern "C" fn(*const c_void) -> u64>,
+    pub memusage: Option<unsafe fn(*const c_void) -> u64>,
 }
-pub type lzma_filter_find = Option<unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder>;
+pub type lzma_filter_find = Option<unsafe fn(lzma_vli) -> *const lzma_filter_coder>;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_simple_coder {
-    pub next: lzma_next_coder,
-    pub end_was_reached: bool,
-    pub is_encoder: bool,
-    pub filter: Option<unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t>,
-    pub simple: *mut c_void,
-    pub now_pos: u32,
-    pub allocated: size_t,
-    pub pos: size_t,
-    pub filtered: size_t,
-    pub size: size_t,
-    pub buffer: [u8; 0],
+pub(crate) struct lzma_simple_coder {
+    pub(crate) next: lzma_next_coder,
+    pub(crate) end_was_reached: bool,
+    pub(crate) is_encoder: bool,
+    pub(crate) filter: Option<unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t>,
+    pub(crate) simple: *mut c_void,
+    pub(crate) now_pos: u32,
+    pub(crate) allocated: size_t,
+    pub(crate) pos: size_t,
+    pub(crate) filtered: size_t,
+    pub(crate) size: size_t,
+    pub(crate) buffer: [u8; 0],
 }
 pub use crate::check::check::{
     lzma_check_finish, lzma_check_init, lzma_check_is_supported, lzma_check_size, lzma_check_update,
@@ -1370,7 +1365,7 @@ pub use crate::lzma::lzma_encoder::lzma_lzma_lclppb_encode;
 pub(crate) use crate::lzma::lzma_encoder::{lzma_lzma_encoder_init, lzma_lzma_encoder_memusage};
 pub use crate::lzma::lzma_encoder_presets::lzma_lzma_preset;
 pub use crate::rangecoder::price_table::lzma_rc_prices;
-pub use crate::simple::simple_coder::lzma_simple_coder_init;
+pub(crate) use crate::simple::simple_coder::lzma_simple_coder_init;
 #[cfg(not(windows))]
 extern "C" {
     pub fn clock_gettime(__clock_id: clockid_t, __tp: *mut timespec) -> c_int;

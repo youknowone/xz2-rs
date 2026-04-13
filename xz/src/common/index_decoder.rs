@@ -22,7 +22,7 @@ pub const SEQ_UNPADDED: index_decoder_seq = 3;
 pub const SEQ_MEMUSAGE: index_decoder_seq = 2;
 pub const SEQ_COUNT: index_decoder_seq = 1;
 pub const SEQ_INDICATOR: index_decoder_seq = 0;
-unsafe extern "C" fn index_decode(
+unsafe fn index_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -183,12 +183,12 @@ unsafe extern "C" fn index_decode(
     }
     ret
 }
-unsafe extern "C" fn index_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn index_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_index_coder = coder_ptr as *mut lzma_index_coder;
     lzma_index_end((*coder).index, allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn index_decoder_memconfig(
+unsafe fn index_decoder_memconfig(
     coder_ptr: *mut c_void,
     memusage: *mut u64,
     old_memlimit: *mut u64,
@@ -224,7 +224,7 @@ unsafe fn index_decoder_reset(
     (*coder).crc32 = 0;
     LZMA_OK
 }
-pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
+pub(crate) unsafe fn lzma_index_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     i: *mut *mut lzma_index,
@@ -232,7 +232,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
 ) -> lzma_ret {
     if core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut *mut lzma_index,
@@ -242,7 +242,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
         uintptr_t,
     >(Some(
         lzma_index_decoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut *mut lzma_index,
@@ -254,7 +254,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
     }
     (*next).init = core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut *mut lzma_index,
@@ -264,7 +264,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
         uintptr_t,
     >(Some(
         lzma_index_decoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut *mut lzma_index,
@@ -283,7 +283,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             index_decode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -295,12 +295,10 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            index_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*next).end =
+            Some(index_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*next).memconfig = Some(
-            index_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+            index_decoder_memconfig as unsafe fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         );
         (*coder).index = core::ptr::null_mut();
     } else {

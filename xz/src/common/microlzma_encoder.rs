@@ -5,7 +5,7 @@ pub struct lzma_microlzma_coder {
     pub lzma: lzma_next_coder,
     pub props: u8,
 }
-unsafe extern "C" fn microlzma_encode(
+unsafe fn microlzma_encode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -59,22 +59,19 @@ unsafe extern "C" fn microlzma_encode(
     *in_pos = in_start + uncomp_size as size_t;
     ret
 }
-unsafe extern "C" fn microlzma_encoder_end(
-    coder_ptr: *mut c_void,
-    allocator: *const lzma_allocator,
-) {
+unsafe fn microlzma_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_microlzma_coder = coder_ptr as *mut lzma_microlzma_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).lzma), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn microlzma_encoder_init(
+unsafe fn microlzma_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     options: *const lzma_options_lzma,
 ) -> lzma_ret {
     if core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *const lzma_options_lzma,
@@ -83,7 +80,7 @@ unsafe extern "C" fn microlzma_encoder_init(
         uintptr_t,
     >(Some(
         microlzma_encoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *const lzma_options_lzma,
@@ -94,7 +91,7 @@ unsafe extern "C" fn microlzma_encoder_init(
     }
     (*next).init = core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *const lzma_options_lzma,
@@ -103,7 +100,7 @@ unsafe extern "C" fn microlzma_encoder_init(
         uintptr_t,
     >(Some(
         microlzma_encoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *const lzma_options_lzma,
@@ -118,7 +115,7 @@ unsafe extern "C" fn microlzma_encoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             microlzma_encode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -130,9 +127,8 @@ unsafe extern "C" fn microlzma_encoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            microlzma_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*next).end =
+            Some(microlzma_encoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*coder).lzma = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -154,7 +150,7 @@ unsafe extern "C" fn microlzma_encoder_init(
             id: LZMA_FILTER_LZMA1,
             init: Some(
                 lzma_lzma_encoder_init
-                    as unsafe extern "C" fn(
+                    as unsafe fn(
                         *mut lzma_next_coder,
                         *const lzma_allocator,
                         *const lzma_filter_info,

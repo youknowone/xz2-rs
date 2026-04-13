@@ -12,7 +12,7 @@ pub struct lzma_auto_coder {
     pub flags: u32,
     pub sequence: auto_decoder_seq,
 }
-unsafe extern "C" fn auto_decode(
+unsafe fn auto_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -102,12 +102,12 @@ unsafe extern "C" fn auto_decode(
         LZMA_OK
     }
 }
-unsafe extern "C" fn auto_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn auto_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-extern "C" fn auto_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
+unsafe fn auto_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
     return unsafe {
         let coder: *const lzma_auto_coder = coder_ptr as *const lzma_auto_coder;
         (if (*coder).next.get_check.is_none() {
@@ -117,7 +117,7 @@ extern "C" fn auto_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
         }) as lzma_check
     };
 }
-unsafe extern "C" fn auto_decoder_memconfig(
+unsafe fn auto_decoder_memconfig(
     coder_ptr: *mut c_void,
     memusage: *mut u64,
     old_memlimit: *mut u64,
@@ -145,42 +145,28 @@ unsafe extern "C" fn auto_decoder_memconfig(
     }
     ret
 }
-unsafe extern "C" fn auto_decoder_init(
+unsafe fn auto_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     memlimit: u64,
     flags: u32,
 ) -> lzma_ret {
     if core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret>,
         uintptr_t,
     >(Some(
         auto_decoder_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                u64,
-                u32,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
     )) != (*next).init
     {
         lzma_next_end(next, allocator);
     }
     (*next).init = core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret>,
         uintptr_t,
     >(Some(
         auto_decoder_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                u64,
-                u32,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, u32) -> lzma_ret,
     ));
     if flags & !(LZMA_SUPPORTED_FLAGS as u32) != 0 {
         return LZMA_OPTIONS_ERROR;
@@ -194,7 +180,7 @@ unsafe extern "C" fn auto_decoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             auto_decode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -206,14 +192,10 @@ unsafe extern "C" fn auto_decoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            auto_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
-        (*next).get_check =
-            Some(auto_decoder_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check);
+        (*next).end = Some(auto_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
+        (*next).get_check = Some(auto_decoder_get_check as unsafe fn(*const c_void) -> lzma_check);
         (*next).memconfig = Some(
-            auto_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+            auto_decoder_memconfig as unsafe fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         );
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),

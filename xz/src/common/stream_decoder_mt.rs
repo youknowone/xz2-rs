@@ -81,7 +81,7 @@ pub const SEQ_BLOCK_THR_INIT: stream_decoder_mt_seq = 3;
 pub const SEQ_BLOCK_INIT: stream_decoder_mt_seq = 2;
 pub const SEQ_BLOCK_HEADER: stream_decoder_mt_seq = 1;
 pub const SEQ_STREAM_HEADER: stream_decoder_mt_seq = 0;
-unsafe extern "C" fn worker_enable_partial_update(thr_ptr: *mut c_void) {
+unsafe fn worker_enable_partial_update(thr_ptr: *mut c_void) {
     let thr: *mut worker_thread = thr_ptr as *mut worker_thread;
     let mut mythread_i_325: c_uint = 0;
     while if mythread_i_325 != 0 {
@@ -438,10 +438,7 @@ unsafe fn read_output_and_wait(
                     if ret == LZMA_STREAM_END {
                         lzma_outq_enable_partial_output(
                             ::core::ptr::addr_of_mut!((*coder).outq),
-                            Some(
-                                worker_enable_partial_update
-                                    as unsafe extern "C" fn(*mut c_void) -> (),
-                            ),
+                            Some(worker_enable_partial_update as unsafe fn(*mut c_void) -> ()),
                         );
                     }
                     if ret != LZMA_STREAM_END {
@@ -814,7 +811,7 @@ unsafe fn stream_decode_mt_thread_init(
         while mythread_j_1486 == 0 {
             lzma_outq_enable_partial_output(
                 ::core::ptr::addr_of_mut!((*coder).outq),
-                Some(worker_enable_partial_update as unsafe extern "C" fn(*mut c_void) -> ()),
+                Some(worker_enable_partial_update as unsafe fn(*mut c_void) -> ()),
             );
             mythread_j_1486 = 1;
         }
@@ -824,7 +821,7 @@ unsafe fn stream_decode_mt_thread_init(
     None
 }
 
-unsafe extern "C" fn stream_decode_mt(
+unsafe fn stream_decode_mt(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -1287,10 +1284,7 @@ unsafe extern "C" fn stream_decode_mt(
         }
     }
 }
-unsafe extern "C" fn stream_decoder_mt_end(
-    coder_ptr: *mut c_void,
-    allocator: *const lzma_allocator,
-) {
+unsafe fn stream_decoder_mt_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
     threads_end(coder, allocator);
     lzma_outq_end(::core::ptr::addr_of_mut!((*coder).outq), allocator);
@@ -1302,13 +1296,13 @@ unsafe extern "C" fn stream_decoder_mt_end(
     lzma_index_hash_end((*coder).index_hash, allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-extern "C" fn stream_decoder_mt_get_check(coder_ptr: *const c_void) -> lzma_check {
+unsafe fn stream_decoder_mt_get_check(coder_ptr: *const c_void) -> lzma_check {
     return unsafe {
         let coder: *const lzma_stream_coder = coder_ptr as *const lzma_stream_coder;
         (*coder).stream_flags.check
     };
 }
-unsafe extern "C" fn stream_decoder_mt_memconfig(
+unsafe fn stream_decoder_mt_memconfig(
     coder_ptr: *mut c_void,
     memusage: *mut u64,
     old_memlimit: *mut u64,
@@ -1346,7 +1340,7 @@ unsafe extern "C" fn stream_decoder_mt_memconfig(
     }
     LZMA_OK
 }
-unsafe extern "C" fn stream_decoder_mt_get_progress(
+unsafe fn stream_decoder_mt_get_progress(
     coder_ptr: *mut c_void,
     progress_in: *mut u64,
     progress_out: *mut u64,
@@ -1395,7 +1389,7 @@ unsafe extern "C" fn stream_decoder_mt_get_progress(
         mythread_i_1862 = 1;
     }
 }
-unsafe extern "C" fn stream_decoder_mt_init(
+unsafe fn stream_decoder_mt_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     options: *const lzma_mt,
@@ -1408,41 +1402,21 @@ unsafe extern "C" fn stream_decoder_mt_init(
         return LZMA_OPTIONS_ERROR;
     }
     if core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *const lzma_mt,
-            ) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_mt) -> lzma_ret>,
         uintptr_t,
     >(Some(
         stream_decoder_mt_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *const lzma_mt,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_mt) -> lzma_ret,
     )) != (*next).init
     {
         lzma_next_end(next, allocator);
     }
     (*next).init = core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *const lzma_mt,
-            ) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_mt) -> lzma_ret>,
         uintptr_t,
     >(Some(
         stream_decoder_mt_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *const lzma_mt,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_mt) -> lzma_ret,
     ));
     coder = (*next).coder as *mut lzma_stream_coder;
     if coder.is_null() {
@@ -1462,7 +1436,7 @@ unsafe extern "C" fn stream_decoder_mt_init(
         }
         (*next).code = Some(
             stream_decode_mt
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -1474,18 +1448,16 @@ unsafe extern "C" fn stream_decoder_mt_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            stream_decoder_mt_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*next).end =
+            Some(stream_decoder_mt_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*next).get_check =
-            Some(stream_decoder_mt_get_check as unsafe extern "C" fn(*const c_void) -> lzma_check);
+            Some(stream_decoder_mt_get_check as unsafe fn(*const c_void) -> lzma_check);
         (*next).memconfig = Some(
             stream_decoder_mt_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+                as unsafe fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         );
         (*next).get_progress = Some(
-            stream_decoder_mt_get_progress
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> (),
+            stream_decoder_mt_get_progress as unsafe fn(*mut c_void, *mut u64, *mut u64) -> (),
         );
         (*coder).filters[0].id = LZMA_VLI_UNKNOWN;
         core::ptr::write_bytes(

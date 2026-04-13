@@ -97,7 +97,7 @@ unsafe fn decode_buffer(
         }
     }
 }
-unsafe extern "C" fn lz_decode(
+unsafe fn lz_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -161,7 +161,7 @@ unsafe extern "C" fn lz_decode(
     }
     LZMA_OK
 }
-unsafe extern "C" fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free((*coder).dict.buf as *mut c_void, allocator);
@@ -177,7 +177,7 @@ pub unsafe fn lzma_lz_decoder_init(
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
     lz_init: Option<
-        unsafe extern "C" fn(
+        unsafe fn(
             *mut lzma_lz_decoder,
             *const lzma_allocator,
             lzma_vli,
@@ -195,7 +195,7 @@ pub unsafe fn lzma_lz_decoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             lz_decode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -207,8 +207,7 @@ pub unsafe fn lzma_lz_decoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end =
-            Some(lz_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ());
+        (*next).end = Some(lz_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*coder).dict.buf = core::ptr::null_mut();
         (*coder).dict.size = 0;
         (*coder).lz = LZMA_LZ_DECODER_INIT;

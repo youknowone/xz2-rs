@@ -17,7 +17,7 @@ pub const SEQ_CODER_INIT: alone_decoder_seq = 3;
 pub const SEQ_UNCOMPRESSED_SIZE: alone_decoder_seq = 2;
 pub const SEQ_DICTIONARY_SIZE: alone_decoder_seq = 1;
 pub const SEQ_PROPERTIES: alone_decoder_seq = 0;
-unsafe extern "C" fn alone_decode(
+unsafe fn alone_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -121,12 +121,11 @@ unsafe extern "C" fn alone_decode(
                         id: LZMA_FILTER_LZMA1EXT,
                         init: Some(
                             lzma_lzma_decoder_init
-                                as unsafe extern "C" fn(
+                                as unsafe fn(
                                     *mut lzma_next_coder,
                                     *const lzma_allocator,
                                     *const lzma_filter_info,
-                                )
-                                    -> lzma_ret,
+                                ) -> lzma_ret,
                         ),
                         options: ::core::ptr::addr_of_mut!((*coder).options) as *mut c_void,
                     },
@@ -151,12 +150,12 @@ unsafe extern "C" fn alone_decode(
     }
     LZMA_OK
 }
-unsafe extern "C" fn alone_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn alone_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_alone_coder = coder_ptr as *mut lzma_alone_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn alone_decoder_memconfig(
+unsafe fn alone_decoder_memconfig(
     coder_ptr: *mut c_void,
     memusage: *mut u64,
     old_memlimit: *mut u64,
@@ -173,52 +172,28 @@ unsafe extern "C" fn alone_decoder_memconfig(
     }
     LZMA_OK
 }
-pub(crate) unsafe extern "C" fn lzma_alone_decoder_init(
+pub(crate) unsafe fn lzma_alone_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     memlimit: u64,
     picky: bool,
 ) -> lzma_ret {
     if core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                u64,
-                bool,
-            ) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, bool) -> lzma_ret>,
         uintptr_t,
     >(Some(
         lzma_alone_decoder_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                u64,
-                bool,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, bool) -> lzma_ret,
     )) != (*next).init
     {
         lzma_next_end(next, allocator);
     }
     (*next).init = core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                u64,
-                bool,
-            ) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, bool) -> lzma_ret>,
         uintptr_t,
     >(Some(
         lzma_alone_decoder_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                u64,
-                bool,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, u64, bool) -> lzma_ret,
     ));
     let mut coder: *mut lzma_alone_coder = (*next).coder as *mut lzma_alone_coder;
     if coder.is_null() {
@@ -229,7 +204,7 @@ pub(crate) unsafe extern "C" fn lzma_alone_decoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             alone_decode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -241,12 +216,10 @@ pub(crate) unsafe extern "C" fn lzma_alone_decoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            alone_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*next).end =
+            Some(alone_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*next).memconfig = Some(
-            alone_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+            alone_decoder_memconfig as unsafe fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         );
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),

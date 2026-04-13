@@ -22,7 +22,7 @@ pub unsafe fn lzma_block_header_decode(
         return LZMA_PROG_ERROR;
     }
     let in_size: size_t = ((*block).header_size - 4) as size_t;
-    if lzma_crc32(in_0, in_size, 0) != read32le(in_0.offset(in_size as isize)) {
+    if lzma_crc32(in_0, in_size, 0) != read32le(&*in_0.add(in_size).cast::<[u8; 4]>()) {
         return LZMA_DATA_ERROR;
     }
     if *in_0.offset(1) & 0x3c != 0 {

@@ -14,7 +14,7 @@ pub type block_encoder_seq = c_uint;
 pub const SEQ_CHECK: block_encoder_seq = 2;
 pub const SEQ_PADDING: block_encoder_seq = 1;
 pub const SEQ_CODE: block_encoder_seq = 0;
-unsafe extern "C" fn block_encode(
+unsafe fn block_encode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -110,12 +110,12 @@ unsafe extern "C" fn block_encode(
     );
     LZMA_STREAM_END
 }
-unsafe extern "C" fn block_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn block_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_block_coder = coder_ptr as *mut lzma_block_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn block_encoder_update(
+unsafe fn block_encoder_update(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     _filters: *const lzma_filter,
@@ -131,47 +131,27 @@ unsafe extern "C" fn block_encoder_update(
         reversed_filters,
     )
 }
-pub(crate) unsafe extern "C" fn lzma_block_encoder_init(
+pub(crate) unsafe fn lzma_block_encoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     block: *mut lzma_block,
 ) -> lzma_ret {
     if core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *mut lzma_block,
-            ) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *mut lzma_block) -> lzma_ret>,
         uintptr_t,
     >(Some(
         lzma_block_encoder_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *mut lzma_block,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *mut lzma_block) -> lzma_ret,
     )) != (*next).init
     {
         lzma_next_end(next, allocator);
     }
     (*next).init = core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *mut lzma_block,
-            ) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *mut lzma_block) -> lzma_ret>,
         uintptr_t,
     >(Some(
         lzma_block_encoder_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *mut lzma_block,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *mut lzma_block) -> lzma_ret,
     ));
     if block.is_null() {
         return LZMA_PROG_ERROR;
@@ -194,7 +174,7 @@ pub(crate) unsafe extern "C" fn lzma_block_encoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             block_encode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -206,12 +186,11 @@ pub(crate) unsafe extern "C" fn lzma_block_encoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            block_encoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*next).end =
+            Some(block_encoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*next).update = Some(
             block_encoder_update
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const lzma_filter,

@@ -106,6 +106,9 @@ pub unsafe fn lzma_block_header_encode(block: *const lzma_block, out: *mut u8) -
         0 as u8,
         out_size - out_pos,
     );
-    write32le(out.offset(out_size as isize), lzma_crc32(out, out_size, 0));
+    write32le(
+        &mut *out.add(out_size).cast::<[u8; 4]>(),
+        lzma_crc32(out, out_size, 0),
+    );
     LZMA_OK
 }
