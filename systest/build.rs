@@ -118,13 +118,6 @@ fn main() {
     cfg.header("lzma.h");
     cfg.rename_struct_ty(|ty| Some(ty.to_string()));
     cfg.rename_union_ty(|ty| Some(ty.to_string()));
-    cfg.rename_struct_field(|s, field| {
-        if s.ident() == "lzma_options_delta" && field.ident() == "type_" {
-            Some("type".to_string())
-        } else {
-            None
-        }
-    });
     cfg.define("LZMA_API_STATIC", None);
     cfg.skip_struct(move |s| {
         use_bindgen && (s.ident().ends_with("_s") || s.ident().contains("__bindgen_ty_"))

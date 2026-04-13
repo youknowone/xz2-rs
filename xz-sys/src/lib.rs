@@ -69,7 +69,7 @@ pub struct lzma_options_bcj {
 
 #[repr(C)]
 pub struct lzma_options_delta {
-    pub type_: lzma_delta_type,
+    pub r#type: lzma_delta_type,
     pub dist: u32,
     pub reserved_int1: u32,
     pub reserved_int2: u32,
