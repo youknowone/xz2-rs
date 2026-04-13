@@ -75,6 +75,7 @@ pub const LZMA_PB_DEFAULT: u32 = 2;
 
 pub const LZMA_BACKWARD_SIZE_MIN: lzma_vli = 4;
 pub const LZMA_BACKWARD_SIZE_MAX: lzma_vli = 1 << 34;
+pub const LZMA_STREAM_HEADER_SIZE: u32 = 12;
 
 pub const LZMA_VLI_MAX: lzma_vli = u64::MAX / 2;
 pub const LZMA_VLI_UNKNOWN: lzma_vli = u64::MAX;
@@ -99,6 +100,7 @@ pub struct lzma_allocator {
     pub opaque: *mut c_void,
 }
 
+pub enum lzma_index {}
 pub enum lzma_internal {}
 
 #[repr(C)]
@@ -343,6 +345,17 @@ extern "C" {
         a: *const lzma_stream_flags,
         b: *const lzma_stream_flags,
     ) -> lzma_ret;
+
+    pub fn lzma_index_buffer_decode(
+        i: *mut *mut lzma_index,
+        memlimit: *mut u64,
+        allocator: *const lzma_allocator,
+        input: *const u8,
+        in_pos: *mut size_t,
+        in_size: size_t,
+    ) -> lzma_ret;
+    pub fn lzma_index_uncompressed_size(i: *const lzma_index) -> lzma_vli;
+    pub fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocator);
 
     pub fn lzma_version_number() -> u32;
     pub fn lzma_version_string() -> *const c_char;
