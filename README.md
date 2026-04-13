@@ -45,6 +45,16 @@ so you can migrate simply.
 - XZ upgraded to 5.8
 - Dropped `tokio` support (If you need async I/O, use [`async-compression`](https://github.com/Nullus157/async-compression) crate with `lzma` feature flag)
 
+## Backend selection
+
+The default build uses the pure Rust backend via `xz-sys`.
+
+Use the original C backend only when you explicitly opt into it:
+
+```toml
+liblzma = { version = "0.4", default-features = false, features = ["liblzma-sys"] }
+```
+
 ## License
 
 This project is licensed under either of

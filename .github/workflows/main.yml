@@ -63,28 +63,33 @@ jobs:
       run: |
         cp Cargo.lock.msrv Cargo.lock
     - run: |
-        cargo test --no-default-features --features rust-backend
+        cargo test
         cargo clean -p liblzma -p liblzma-sys
     - run: |
         cargo test --features parallel
         cargo clean -p liblzma -p liblzma-sys
     - run: |
-        cargo test --features bindgen
+        cargo test --no-default-features --features xz-sys
+        cargo clean -p liblzma -p xz-sys
+    - run: |
+        cargo test --no-default-features --features liblzma-sys
         cargo clean -p liblzma -p liblzma-sys
     # thin-lto and fat-lto feature required use clang as a linker, but linux default linker is gcc. so exclude thin-lto and fat-lto.
     - run: |
-        cargo test --features parallel,static
+        cargo test --no-default-features --features liblzma-sys,parallel,static
         cargo clean -p liblzma -p liblzma-sys
       if: ${{ startsWith(matrix.os, 'ubuntu') }}
     - run: |
-        cargo test --all-features
+        cargo test --test sys_equivalence
         cargo clean -p liblzma -p liblzma-sys
       if: ${{ !startsWith(matrix.os, 'ubuntu') }}
     - run: |
-        cargo run --manifest-path systest/Cargo.toml
+        cargo run --manifest-path systest/Cargo.toml --no-default-features --features xz-sys
+        cargo clean -p xz-sys
+        cargo run --manifest-path systest/Cargo.toml --no-default-features --features liblzma-sys
         cargo clean -p liblzma -p liblzma-sys
       if: matrix.static == 'yes'
-    - run: cargo run --manifest-path systest/Cargo.toml --features bindgen
+    - run: cargo run --manifest-path systest/Cargo.toml --no-default-features --features liblzma-sys,bindgen
       if: matrix.static == 'yes'
 
 

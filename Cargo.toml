@@ -17,18 +17,18 @@ rust-version = "1.63"
 exclude = [".github/"]
 
 [workspace]
-members = ["systest", "liblzma-rs", "liblzma-rs-sys"]
+members = ["systest", "xz", "xz-sys", "perf-probe"]
 
 [dependencies]
-# Rust backend (default) - pure Rust implementation
-liblzma-sys = { package = "liblzma-rs-sys", path = "liblzma-rs-sys", optional = true }
-# C backend - original liblzma C library via FFI
-liblzma-c-sys = { package = "liblzma-sys", path = "liblzma-sys", version = "0.4.5", optional = true, default-features = false }
+xz = { path = "xz", optional = true }
+xz-sys = { path = "xz-sys", optional = true }
+liblzma-sys = { path = "liblzma-sys", version = "0.4.5", optional = true, default-features = false }
 num_cpus = { version = "1.16.0", optional = true }
 criterion = { version = "0.5", features = ["html_reports"], optional = true }
 
 [dev-dependencies]
-rand = "=0.8.0"
+rand = "0.8.0"
+quickcheck = "=1.0.1"
 regex = "=1.9.0"
 log = "=0.4.20"
 
@@ -41,25 +41,26 @@ required-features = ["bench"]
 getrandom = { version = "0.2", features = ["js"] }
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
-quickcheck = "=1.0.1"
+xz-sys = { path = "xz-sys" }
+liblzma-sys = { path = "liblzma-sys" }
 
 [target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dev-dependencies]
 wasm-bindgen-test = "0.3"
 
 [features]
-default = ["rust-backend"]
-rust-backend = ["liblzma-sys"]
-c-backend = ["liblzma-c-sys/bindgen"]
-static = ["liblzma-c-sys?/static"]
-parallel = ["liblzma-sys?/parallel", "liblzma-c-sys?/parallel", "num_cpus"]
-bindgen = ["liblzma-c-sys?/bindgen"] # ignored for rust-backend
-wasm = ["liblzma-sys?/wasm", "liblzma-c-sys?/wasm"]
-uncheck_liblzma_version = ["liblzma-c-sys?/uncheck_liblzma_version"] # ignored for rust-backend
+default = ["xz"]
+xz = ["dep:xz"]
+xz-sys = ["dep:xz-sys"]
+liblzma-sys = ["dep:liblzma-sys", "liblzma-sys/bindgen"]
+static = ["liblzma-sys?/static"]
+parallel = ["xz-sys?/parallel", "liblzma-sys?/parallel", "num_cpus"]
+bindgen = ["liblzma-sys?/bindgen"] # only affects liblzma-sys
+wasm = ["xz-sys?/wasm", "liblzma-sys?/wasm"]
+uncheck_liblzma_version = ["liblzma-sys?/uncheck_liblzma_version"] # only affects liblzma-sys
 bench = ["criterion"]
-# These two are for cross-language LTO with the C backend.
-# Ignored for rust-backend.
-fat-lto = ["liblzma-c-sys?/fat-lto"]
-thin-lto = ["liblzma-c-sys?/thin-lto"]
+# These two are for cross-language LTO with liblzma-sys.
+fat-lto = ["liblzma-sys?/fat-lto"]
+thin-lto = ["liblzma-sys?/thin-lto"]
 
 [package.metadata.docs.rs]
 features = ["parallel"]

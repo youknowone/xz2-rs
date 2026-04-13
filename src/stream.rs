@@ -4,11 +4,15 @@
 //! encoding/decoding of LZMA streams. Each [`Stream`] is either an encoder or
 //! decoder and processes data in a streaming fashion.
 
+#![cfg_attr(feature = "xz", allow(unused_unsafe))]
+
 use std::collections::LinkedList;
 use std::error;
 use std::fmt;
 use std::io;
 use std::mem;
+
+use crate::sys as liblzma_sys;
 
 /// Representation of an in-memory LZMA encoding or decoding stream.
 ///
@@ -665,6 +669,7 @@ impl Check {
     #[inline]
     pub fn is_supported(&self) -> bool {
         let ret = unsafe { liblzma_sys::lzma_check_is_supported(*self as liblzma_sys::lzma_check) };
+
         ret != 0
     }
 }
@@ -675,6 +680,7 @@ impl MatchFinder {
     pub fn is_supported(&self) -> bool {
         let ret =
             unsafe { liblzma_sys::lzma_mf_is_supported(*self as liblzma_sys::lzma_match_finder) };
+
         ret != 0
     }
 }
