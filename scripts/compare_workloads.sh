@@ -26,11 +26,14 @@ mkdir -p "$RESULTS_DIR"
 
 RAW_ARGS=("$@")
 RUST_TARGET="target/perf-probe-rust"
+RUST_SYS_TARGET="target/perf-probe-rust-sys"
 C_TARGET="target/perf-probe-c"
 RUST_BIN="$RUST_TARGET/release/perf-probe"
+RUST_SYS_BIN="$RUST_SYS_TARGET/release/perf-probe"
 C_BIN="$C_TARGET/release/perf-probe"
 
 env CARGO_TARGET_DIR="$RUST_TARGET" cargo build -p perf-probe --release --no-default-features --features xz >/dev/null
+env CARGO_TARGET_DIR="$RUST_SYS_TARGET" cargo build -p perf-probe --release --no-default-features --features xz-sys >/dev/null
 env LZMA_API_STATIC=1 CARGO_TARGET_DIR="$C_TARGET" cargo build -p perf-probe --release --no-default-features --features liblzma-sys >/dev/null
 
 if [[ "$WORKLOAD" == "decode" ]]; then
@@ -56,6 +59,12 @@ if [[ "$WORKLOAD" == "decode" ]]; then
     --compressed-input "$COMPRESSED_INPUT"
     --expected-size "$SIZE"
   )
+  RUST_SYS_CMD=(
+    "$RUST_SYS_BIN"
+    --workload decode
+    --compressed-input "$COMPRESSED_INPUT"
+    --expected-size "$SIZE"
+  )
   C_CMD=(
     "$C_BIN"
     --workload decode
@@ -65,6 +74,10 @@ if [[ "$WORKLOAD" == "decode" ]]; then
 else
   RUST_CMD=(
     "$RUST_BIN"
+    --workload "$WORKLOAD" "${RAW_ARGS[@]}"
+  )
+  RUST_SYS_CMD=(
+    "$RUST_SYS_BIN"
     --workload "$WORKLOAD" "${RAW_ARGS[@]}"
   )
   C_CMD=(
@@ -80,6 +93,8 @@ hyperfine \
   --export-markdown "$RESULTS_DIR/${WORKLOAD}.md" \
   --command-name xz \
   "${RUST_CMD[*]}" \
+  --command-name xz-sys \
+  "${RUST_SYS_CMD[*]}" \
   --command-name c \
   "${C_CMD[*]}"
 

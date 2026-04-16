@@ -21,9 +21,11 @@ fn x86_code_impl(
         prev_pos = now_pos.wrapping_sub(5);
     }
     let limit: size_t = buffer.len() - 5;
+    let ptr = buffer.as_mut_ptr();
     let mut buffer_pos: size_t = 0;
     while buffer_pos <= limit {
-        let mut b: u8 = buffer[buffer_pos];
+        let cur = unsafe { ptr.add(buffer_pos) };
+        let mut b: u8 = unsafe { *cur };
         if b != 0xe8 && b != 0xe9 {
             buffer_pos += 1;
         } else {
@@ -41,12 +43,14 @@ fn x86_code_impl(
                     i += 1;
                 }
             }
-            b = buffer[buffer_pos + 4];
+            b = unsafe { *cur.add(4) };
             if (b == 0 || b == 0xff) && prev_mask >> 1 <= 4 && prev_mask >> 1 != 3 {
-                let mut src: u32 = (b as u32) << 24
-                    | (buffer[buffer_pos + 3] as u32) << 16
-                    | (buffer[buffer_pos + 2] as u32) << 8
-                    | buffer[buffer_pos + 1] as u32;
+                let mut src: u32 = unsafe {
+                    (b as u32) << 24
+                        | (*cur.add(3) as u32) << 16
+                        | (*cur.add(2) as u32) << 8
+                        | *cur.add(1) as u32
+                };
                 let dest: u32 = loop {
                     let dest = if is_encoder {
                         src.wrapping_add(now_pos.wrapping_add(buffer_pos as u32).wrapping_add(5))
@@ -56,7 +60,8 @@ fn x86_code_impl(
                     if prev_mask == 0 {
                         break dest;
                     }
-                    let i_0: u32 = MASK_TO_BIT_NUMBER[(prev_mask >> 1) as usize];
+                    let i_0: u32 =
+                        unsafe { *MASK_TO_BIT_NUMBER.as_ptr().add((prev_mask >> 1) as usize) };
                     b = (dest >> (24u32).wrapping_sub(i_0.wrapping_mul(8))) as u8;
                     if b != 0 && b != 0xff {
                         break dest;
@@ -64,10 +69,12 @@ fn x86_code_impl(
                     src =
                         dest ^ (1u32 << (32u32).wrapping_sub(i_0.wrapping_mul(8))).wrapping_sub(1);
                 };
-                buffer[buffer_pos + 4] = !(dest >> 24 & 1).wrapping_sub(1) as u8;
-                buffer[buffer_pos + 3] = (dest >> 16) as u8;
-                buffer[buffer_pos + 2] = (dest >> 8) as u8;
-                buffer[buffer_pos + 1] = dest as u8;
+                unsafe {
+                    *cur.add(4) = !(dest >> 24 & 1).wrapping_sub(1) as u8;
+                    *cur.add(3) = (dest >> 16) as u8;
+                    *cur.add(2) = (dest >> 8) as u8;
+                    *cur.add(1) = dest as u8;
+                }
                 buffer_pos += 5;
                 prev_mask = 0;
             } else {

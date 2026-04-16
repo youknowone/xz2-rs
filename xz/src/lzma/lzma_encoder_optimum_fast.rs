@@ -16,6 +16,11 @@ unsafe fn coder_match(coder: *const lzma_lzma1_encoder, index: u32) -> *const lz
     debug_assert!((index as usize) < (*coder).matches.len());
     (::core::ptr::addr_of!((*coder).matches) as *const lzma_match).add(index as usize)
 }
+#[inline(always)]
+unsafe fn coder_rep(coder: *const lzma_lzma1_encoder, index: u32) -> u32 {
+    debug_assert!((index as usize) < REPS as usize);
+    *((::core::ptr::addr_of!((*coder).reps) as *const u32).add(index as usize))
+}
 
 pub unsafe fn lzma_lzma_optimum_fast(
     coder: *mut lzma_lzma1_encoder,
@@ -51,7 +56,7 @@ pub unsafe fn lzma_lzma_optimum_fast(
     let mut rep_index: u32 = 0;
     let mut i: u32 = 0;
     while i < REPS {
-        let buf_back: *const u8 = buf.offset(-((*coder).reps[i as usize] as isize)).offset(-1);
+        let buf_back: *const u8 = buf.offset(-(coder_rep(coder, i) as isize)).offset(-1);
         if not_equal_16(buf, buf_back) {
             i += 1;
             continue;
@@ -132,8 +137,7 @@ pub unsafe fn lzma_lzma_optimum_fast(
     while i_0 < REPS {
         if memcmp(
             buf as *const c_void,
-            buf.offset(-((*coder).reps[i_0 as usize] as isize))
-                .offset(-1) as *const c_void,
+            buf.offset(-(coder_rep(coder, i_0) as isize)).offset(-1) as *const c_void,
             limit as size_t,
         ) == 0
         {

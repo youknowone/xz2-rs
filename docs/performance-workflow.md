@@ -58,7 +58,7 @@ The root bundle intentionally skips QuickCheck-based unit tests because they gen
 
 ## 3. Compare focused workloads
 
-Use `perf-probe`, a small standalone binary crate that links exactly one backend at a time. The comparison scripts use the direct `xz` backend by default; `xz-sys` remains available for ABI-shell checks.
+Use `perf-probe`, a small standalone binary crate that links exactly one backend at a time. `scripts/compare_workloads.sh` compares all three backends in separate processes: direct `xz`, `xz-sys`, and vendored C `liblzma-sys`.
 
 Examples:
 

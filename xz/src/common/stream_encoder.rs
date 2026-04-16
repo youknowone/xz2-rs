@@ -14,6 +14,11 @@ pub struct lzma_stream_coder {
     pub buffer_size: size_t,
     pub buffer: [u8; LZMA_BLOCK_HEADER_SIZE_MAX as usize],
 }
+#[inline(always)]
+unsafe fn supported_action_slot(actions: *mut bool, index: u32) -> *mut bool {
+    debug_assert!((index as usize) < 5);
+    actions.add(index as usize)
+}
 pub type stream_encoder_seq = c_uint;
 pub const SEQ_STREAM_FOOTER: stream_encoder_seq = 5;
 pub const SEQ_INDEX_ENCODE: stream_encoder_seq = 4;
@@ -48,6 +53,18 @@ unsafe fn stream_encode(
     out_size: size_t,
     action: lzma_action,
 ) -> lzma_ret {
+    #[inline(always)]
+    unsafe fn convert_action(action: lzma_action) -> lzma_action {
+        static CONVERT: [lzma_action; 5] = [
+            LZMA_RUN,
+            LZMA_SYNC_FLUSH,
+            LZMA_FINISH,
+            LZMA_FINISH,
+            LZMA_FINISH,
+        ];
+        debug_assert!((action as usize) < CONVERT.len());
+        *CONVERT.as_ptr().add(action as usize)
+    }
     let coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
     while *out_pos < out_size {
         match (*coder).sequence {
@@ -107,13 +124,6 @@ unsafe fn stream_encode(
                 }
             }
             3 => {
-                static CONVERT: [lzma_action; 5] = [
-                    LZMA_RUN,
-                    LZMA_SYNC_FLUSH,
-                    LZMA_FINISH,
-                    LZMA_FINISH,
-                    LZMA_FINISH,
-                ];
                 let code = match (*coder).block_encoder.code {
                     Some(code) => code,
                     None => return LZMA_PROG_ERROR,
@@ -127,7 +137,7 @@ unsafe fn stream_encode(
                     out,
                     out_pos,
                     out_size,
-                    CONVERT[action as usize],
+                    convert_action(action),
                 );
                 if ret != LZMA_STREAM_END || action == LZMA_SYNC_FLUSH {
                     return ret;
@@ -417,10 +427,25 @@ pub unsafe fn lzma_stream_encoder(
         lzma_end(strm);
         return ret__0;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
-    (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true;
-    (*(*strm).internal).supported_actions[LZMA_FULL_FLUSH as usize] = true;
-    (*(*strm).internal).supported_actions[LZMA_FULL_BARRIER as usize] = true;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
+    *supported_action_slot(
+        ::core::ptr::addr_of_mut!((*(*strm).internal).supported_actions) as *mut bool,
+        LZMA_RUN,
+    ) = true;
+    *supported_action_slot(
+        ::core::ptr::addr_of_mut!((*(*strm).internal).supported_actions) as *mut bool,
+        LZMA_SYNC_FLUSH,
+    ) = true;
+    *supported_action_slot(
+        ::core::ptr::addr_of_mut!((*(*strm).internal).supported_actions) as *mut bool,
+        LZMA_FULL_FLUSH,
+    ) = true;
+    *supported_action_slot(
+        ::core::ptr::addr_of_mut!((*(*strm).internal).supported_actions) as *mut bool,
+        LZMA_FULL_BARRIER,
+    ) = true;
+    *supported_action_slot(
+        ::core::ptr::addr_of_mut!((*(*strm).internal).supported_actions) as *mut bool,
+        LZMA_FINISH,
+    ) = true;
     LZMA_OK
 }

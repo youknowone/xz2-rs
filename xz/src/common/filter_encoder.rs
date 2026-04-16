@@ -255,13 +255,25 @@ static encoders: [lzma_filter_encoder; 12] = [
         ),
     },
 ];
+#[inline(always)]
+unsafe fn reversed_filter_slot(filters: *mut [lzma_filter; 5], index: usize) -> *mut lzma_filter {
+    debug_assert!(index < 5);
+    (filters as *mut lzma_filter).add(index)
+}
+#[inline(always)]
+unsafe fn supported_action_slot(actions: *mut bool, index: u32) -> *mut bool {
+    debug_assert!((index as usize) < 5);
+    actions.add(index as usize)
+}
 fn encoder_find(id: lzma_vli) -> *const lzma_filter_encoder {
+    let encoders_ptr = encoders.as_ptr();
     let mut i: size_t = 0;
     while i < core::mem::size_of::<[lzma_filter_encoder; 12]>()
         / core::mem::size_of::<lzma_filter_encoder>()
     {
-        if encoders[i as usize].id == id {
-            return &encoders[i as usize];
+        let encoder = unsafe { encoders_ptr.add(i as usize) };
+        if unsafe { (*encoder).id } == id {
+            return encoder;
         }
         i += 1;
     }
@@ -290,10 +302,14 @@ pub unsafe fn lzma_filters_update(strm: *mut lzma_stream, filters: *const lzma_f
     }; 5];
     let mut i: size_t = 0;
     while i < count {
-        reversed_filters[count - i - 1] = *filters.offset(i as isize);
+        *reversed_filter_slot(
+            ::core::ptr::addr_of_mut!(reversed_filters),
+            (count - i - 1) as usize,
+        ) = *filters.offset(i as isize);
         i += 1;
     }
-    reversed_filters[count as usize].id = LZMA_VLI_UNKNOWN;
+    (*reversed_filter_slot(::core::ptr::addr_of_mut!(reversed_filters), count as usize)).id =
+        LZMA_VLI_UNKNOWN;
     let update = match (*(*strm).internal).next.update {
         Some(update) => update,
         None => return LZMA_PROG_ERROR,
@@ -334,9 +350,18 @@ pub unsafe fn lzma_raw_encoder(strm: *mut lzma_stream, filters: *const lzma_filt
         lzma_end(strm);
         return ret;
     }
-    (*(*strm).internal).supported_actions[LZMA_RUN as usize] = true;
-    (*(*strm).internal).supported_actions[LZMA_SYNC_FLUSH as usize] = true;
-    (*(*strm).internal).supported_actions[LZMA_FINISH as usize] = true;
+    *supported_action_slot(
+        ::core::ptr::addr_of_mut!((*(*strm).internal).supported_actions) as *mut bool,
+        LZMA_RUN,
+    ) = true;
+    *supported_action_slot(
+        ::core::ptr::addr_of_mut!((*(*strm).internal).supported_actions) as *mut bool,
+        LZMA_SYNC_FLUSH,
+    ) = true;
+    *supported_action_slot(
+        ::core::ptr::addr_of_mut!((*(*strm).internal).supported_actions) as *mut bool,
+        LZMA_FINISH,
+    ) = true;
     LZMA_OK
 }
 pub unsafe fn lzma_raw_encoder_memusage(filters: *const lzma_filter) -> u64 {

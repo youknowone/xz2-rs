@@ -5,10 +5,12 @@ fn ia64_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t {
         0, 0,
     ];
     let size = buffer.len() & !15;
+    let ptr = buffer.as_mut_ptr();
     let mut i: size_t = 0;
     while i < size {
-        let instr_template: u32 = (buffer[i] & 0x1f) as u32;
-        let mask: u32 = BRANCH_TABLE[instr_template as usize];
+        let cur = unsafe { ptr.add(i) };
+        let instr_template: u32 = unsafe { (*cur & 0x1f) as u32 };
+        let mask: u32 = unsafe { *BRANCH_TABLE.as_ptr().add(instr_template as usize) };
         let mut bit_pos: u32 = 5;
         let mut slot: size_t = 0;
         while slot < 3 {
@@ -18,7 +20,7 @@ fn ia64_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t {
                 let mut instruction: u64 = 0;
                 let mut j: size_t = 0;
                 while j < 6 {
-                    instruction += (buffer[i + j + byte_pos] as u64) << (8 * j);
+                    instruction += unsafe { (*cur.add(j + byte_pos) as u64) << (8 * j) };
                     j += 1;
                 }
                 let mut inst_norm: u64 = instruction >> bit_res;
@@ -39,7 +41,9 @@ fn ia64_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t {
                     instruction |= inst_norm << bit_res;
                     let mut j: size_t = 0;
                     while j < 6 {
-                        buffer[i + j + byte_pos] = (instruction >> (8 * j)) as u8;
+                        unsafe {
+                            *cur.add(j + byte_pos) = (instruction >> (8 * j)) as u8;
+                        }
                         j += 1;
                     }
                 }

@@ -41,6 +41,48 @@ unsafe fn coder_rep_slot_mut(coder: *mut lzma_lzma1_encoder, index: usize) -> *m
     (::core::ptr::addr_of_mut!((*coder).reps) as *mut u32).add(index)
 }
 #[inline(always)]
+unsafe fn encoder_is_match_row(coder: *mut lzma_lzma1_encoder, state: u32) -> *mut probability {
+    debug_assert!((state as usize) < STATES as usize);
+    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_match)
+        as *mut [probability; 16])
+        .add(state as usize)) as *mut probability
+}
+#[inline(always)]
+unsafe fn encoder_is_rep0_long_row(coder: *mut lzma_lzma1_encoder, state: u32) -> *mut probability {
+    debug_assert!((state as usize) < STATES as usize);
+    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_rep0_long)
+        as *mut [probability; 16])
+        .add(state as usize)) as *mut probability
+}
+#[inline(always)]
+unsafe fn encoder_is_rep_slot(
+    probs: *mut [probability; STATES as usize],
+    state: u32,
+) -> *mut probability {
+    debug_assert!((state as usize) < STATES as usize);
+    (probs as *mut probability).add(state as usize)
+}
+#[inline(always)]
+unsafe fn encoder_dist_special_prob(
+    coder: *mut lzma_lzma1_encoder,
+    index: usize,
+) -> *mut probability {
+    debug_assert!(index < (FULL_DISTANCES - DIST_MODEL_END) as usize);
+    (::core::ptr::addr_of_mut!((*coder).dist_special) as *mut probability).add(index)
+}
+#[inline(always)]
+unsafe fn encoder_dist_slot_row(coder: *mut lzma_lzma1_encoder, state: u32) -> *mut probability {
+    debug_assert!((state as usize) < DIST_STATES as usize);
+    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).dist_slot)
+        as *mut [probability; 64])
+        .add(state as usize)) as *mut probability
+}
+#[inline(always)]
+unsafe fn encoder_dist_align_prob(coder: *mut lzma_lzma1_encoder, index: u32) -> *mut probability {
+    debug_assert!((index as usize) < ALIGN_SIZE as usize);
+    (::core::ptr::addr_of_mut!((*coder).dist_align) as *mut probability).add(index as usize)
+}
+#[inline(always)]
 unsafe fn rc_bittree(
     rc: *mut lzma_range_encoder,
     probs: *mut probability,
@@ -269,6 +311,8 @@ unsafe fn rc_encode(
 }
 #[inline]
 unsafe fn rc_encode_dummy(rc: *const lzma_range_encoder, out_limit: u64) -> bool {
+    let symbols = ::core::ptr::addr_of!((*rc).symbols) as *const rc_symbol;
+    let probs = ::core::ptr::addr_of!((*rc).probs) as *const *mut probability;
     let mut low: u64 = (*rc).low;
     let mut cache_size: u64 = (*rc).cache_size;
     let mut range: u32 = (*rc).range;
@@ -291,13 +335,13 @@ unsafe fn rc_encode_dummy(rc: *const lzma_range_encoder, out_limit: u64) -> bool
         if pos == (*rc).count {
             break;
         }
-        match (*rc).symbols[pos as usize] {
+        match *symbols.add(pos) {
             0 => {
-                let prob: probability = *(*rc).probs[pos as usize];
+                let prob: probability = **probs.add(pos);
                 range = (range >> RC_BIT_MODEL_TOTAL_BITS).wrapping_mul(prob as u32);
             }
             1 => {
-                let prob_0: probability = *(*rc).probs[pos as usize];
+                let prob_0: probability = **probs.add(pos);
                 let bound: u32 = (prob_0 as u32).wrapping_mul(range >> RC_BIT_MODEL_TOTAL_BITS);
                 low = low.wrapping_add(bound as u64);
                 range = range.wrapping_sub(bound);
@@ -422,6 +466,10 @@ unsafe fn length_mid_probs(lc: *mut lzma_length_encoder, pos_state: u32) -> *mut
     ::core::ptr::addr_of_mut!(
         *(::core::ptr::addr_of_mut!((*lc).mid) as *mut [probability; 8]).add(pos_state as usize)
     ) as *mut probability
+}
+#[inline(always)]
+unsafe fn length_high_probs(lc: *mut lzma_length_encoder) -> *mut probability {
+    ::core::ptr::addr_of_mut!((*lc).high) as *mut probability
 }
 #[inline(always)]
 unsafe fn length_counter(lc: *mut lzma_length_encoder, pos_state: u32) -> *mut u32 {
@@ -879,23 +927,24 @@ unsafe fn length_encoder_reset(
     (*lencoder).choice2 = (RC_BIT_MODEL_TOTAL >> 1) as probability;
     let mut pos_state: size_t = 0;
     while pos_state < num_pos_states as size_t {
+        let low = length_low_probs(lencoder, pos_state as u32);
+        let mid = length_mid_probs(lencoder, pos_state as u32);
         let mut bt_i: u32 = 0;
         while bt_i < (1 << 3) as u32 {
-            (*lencoder).low[pos_state as usize][bt_i as usize] =
-                (RC_BIT_MODEL_TOTAL >> 1) as probability;
+            *low.add(bt_i as usize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
             bt_i += 1;
         }
         let mut bt_i_0: u32 = 0;
         while bt_i_0 < (1 << 3) as u32 {
-            (*lencoder).mid[pos_state as usize][bt_i_0 as usize] =
-                (RC_BIT_MODEL_TOTAL >> 1) as probability;
+            *mid.add(bt_i_0 as usize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
             bt_i_0 += 1;
         }
         pos_state += 1;
     }
+    let high = length_high_probs(lencoder);
     let mut bt_i_1: u32 = 0;
     while bt_i_1 < (1 << 8) as u32 {
-        (*lencoder).high[bt_i_1 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
+        *high.add(bt_i_1 as usize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
         bt_i_1 += 1;
     }
     if !fast_mode {
@@ -920,7 +969,7 @@ pub unsafe fn lzma_lzma_encoder_reset(
     (*coder).state = STATE_LIT_LIT;
     let mut i: size_t = 0;
     while i < REPS as size_t {
-        (*coder).reps[i as usize] = 0;
+        *coder_rep_slot_mut(coder, i as usize) = 0;
         i += 1;
     }
     literal_init(
@@ -930,37 +979,42 @@ pub unsafe fn lzma_lzma_encoder_reset(
     );
     let mut i_0: size_t = 0;
     while i_0 < STATES as size_t {
+        let is_match = encoder_is_match_row(coder, i_0 as u32);
+        let is_rep0_long = encoder_is_rep0_long_row(coder, i_0 as u32);
         let mut j: size_t = 0;
         while j <= (*coder).pos_mask as size_t {
-            (*coder).is_match[i_0 as usize][j as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-            (*coder).is_rep0_long[i_0 as usize][j as usize] =
-                (RC_BIT_MODEL_TOTAL >> 1) as probability;
+            *is_match.add(j as usize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
+            *is_rep0_long.add(j as usize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
             j += 1;
         }
-        (*coder).is_rep[i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        (*coder).is_rep0[i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        (*coder).is_rep1[i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
-        (*coder).is_rep2[i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
+        *encoder_is_rep_slot(::core::ptr::addr_of_mut!((*coder).is_rep), i_0 as u32) =
+            (RC_BIT_MODEL_TOTAL >> 1) as probability;
+        *encoder_is_rep_slot(::core::ptr::addr_of_mut!((*coder).is_rep0), i_0 as u32) =
+            (RC_BIT_MODEL_TOTAL >> 1) as probability;
+        *encoder_is_rep_slot(::core::ptr::addr_of_mut!((*coder).is_rep1), i_0 as u32) =
+            (RC_BIT_MODEL_TOTAL >> 1) as probability;
+        *encoder_is_rep_slot(::core::ptr::addr_of_mut!((*coder).is_rep2), i_0 as u32) =
+            (RC_BIT_MODEL_TOTAL >> 1) as probability;
         i_0 += 1;
     }
     let mut i_1: size_t = 0;
     while i_1 < (FULL_DISTANCES - DIST_MODEL_END) as size_t {
-        (*coder).dist_special[i_1 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
+        *encoder_dist_special_prob(coder, i_1 as usize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
         i_1 += 1;
     }
     let mut i_2: size_t = 0;
     while i_2 < DIST_STATES as size_t {
+        let dist_slot = encoder_dist_slot_row(coder, i_2 as u32);
         let mut bt_i: u32 = 0;
         while bt_i < (1 << 6) as u32 {
-            (*coder).dist_slot[i_2 as usize][bt_i as usize] =
-                (RC_BIT_MODEL_TOTAL >> 1) as probability;
+            *dist_slot.add(bt_i as usize) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
             bt_i += 1;
         }
         i_2 += 1;
     }
     let mut bt_i_0: u32 = 0;
     while bt_i_0 < (1 << 4) as u32 {
-        (*coder).dist_align[bt_i_0 as usize] = (RC_BIT_MODEL_TOTAL >> 1) as probability;
+        *encoder_dist_align_prob(coder, bt_i_0) = (RC_BIT_MODEL_TOTAL >> 1) as probability;
         bt_i_0 += 1;
     }
     length_encoder_reset(

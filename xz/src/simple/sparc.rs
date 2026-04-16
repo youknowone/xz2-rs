@@ -1,15 +1,19 @@
 use crate::types::*;
 fn sparc_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t {
     let size = buffer.len() & !3;
+    let ptr = buffer.as_mut_ptr();
     let mut i: size_t = 0;
     while i < size {
-        if buffer[i] == 0x40 && buffer[i + 1] & 0xc0 == 0
-            || buffer[i] == 0x7f && buffer[i + 1] & 0xc0 == 0xc0
-        {
-            let mut src: u32 = (buffer[i] as u32) << 24
-                | (buffer[i + 1] as u32) << 16
-                | (buffer[i + 2] as u32) << 8
-                | buffer[i + 3] as u32;
+        let cur = unsafe { ptr.add(i) };
+        let b0 = unsafe { *cur };
+        let b1 = unsafe { *cur.add(1) };
+        if b0 == 0x40 && b1 & 0xc0 == 0 || b0 == 0x7f && b1 & 0xc0 == 0xc0 {
+            let mut src: u32 = unsafe {
+                (b0 as u32) << 24
+                    | (b1 as u32) << 16
+                    | (*cur.add(2) as u32) << 8
+                    | *cur.add(3) as u32
+            };
             src <<= 2;
             let dest = if is_encoder {
                 now_pos.wrapping_add(i as u32).wrapping_add(src)
@@ -19,10 +23,12 @@ fn sparc_code_impl(now_pos: u32, is_encoder: bool, buffer: &mut [u8]) -> size_t 
             let mut dest = dest >> 2;
             dest =
                 0u32.wrapping_sub(dest >> 22 & 1) << 22 & 0x3fffffff | dest & 0x3fffff | 0x40000000;
-            buffer[i] = (dest >> 24) as u8;
-            buffer[i + 1] = (dest >> 16) as u8;
-            buffer[i + 2] = (dest >> 8) as u8;
-            buffer[i + 3] = dest as u8;
+            unsafe {
+                *cur = (dest >> 24) as u8;
+                *cur.add(1) = (dest >> 16) as u8;
+                *cur.add(2) = (dest >> 8) as u8;
+                *cur.add(3) = dest as u8;
+            }
         }
         i += 4;
     }

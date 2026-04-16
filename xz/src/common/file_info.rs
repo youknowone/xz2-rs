@@ -100,12 +100,11 @@ unsafe fn reverse_seek(
     }
     LZMA_OK
 }
-fn get_padding_size(buf: &[u8]) -> size_t {
+unsafe fn get_padding_size(buf: *const u8, mut buf_size: size_t) -> size_t {
     let mut padding: size_t = 0;
-    let mut buf_size = buf.len();
     while buf_size > 0 && {
         buf_size -= 1;
-        buf[buf_size] == 0
+        *buf.add(buf_size) == 0
     } {
         padding += 1;
     }
@@ -196,7 +195,8 @@ unsafe fn file_info_decode(
                 if fill_temp(coder, input, in_pos, in_size) {
                     return LZMA_OK;
                 }
-                let new_padding: size_t = get_padding_size(&(&(*coder).temp)[..(*coder).temp_size]);
+                let new_padding: size_t =
+                    get_padding_size((*coder).temp.as_ptr(), (*coder).temp_size);
                 (*coder).stream_padding += new_padding as lzma_vli;
                 (*coder).file_target_pos -= new_padding as u64;
                 if new_padding == (*coder).temp_size {
