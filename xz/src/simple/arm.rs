@@ -50,7 +50,7 @@ unsafe fn arm_coder_init(
         next,
         allocator,
         filters,
-        Some(arm_code as unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
+        arm_code as lzma_simple_filter_function,
         0,
         4,
         4,

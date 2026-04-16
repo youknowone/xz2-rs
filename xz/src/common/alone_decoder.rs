@@ -97,7 +97,11 @@ unsafe fn alone_decode(
                 current_block_42 = 14763689060501151050;
             }
             4 => {
-                return (*coder).next.code.unwrap()(
+                let code = match (*coder).next.code {
+                    Some(code) => code,
+                    None => return LZMA_PROG_ERROR,
+                };
+                return code(
                     (*coder).next.coder,
                     allocator,
                     input,

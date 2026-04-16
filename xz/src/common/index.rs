@@ -104,7 +104,9 @@ unsafe fn index_tree_node_end(
     if !(*node).right.is_null() {
         index_tree_node_end((*node).right, allocator, free_func);
     }
-    free_func.unwrap()(node as *mut c_void, allocator);
+    if let Some(free_func) = free_func {
+        free_func(node as *mut c_void, allocator);
+    }
 }
 unsafe fn index_tree_end(
     tree: *mut index_tree,

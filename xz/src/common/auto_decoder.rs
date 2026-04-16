@@ -109,10 +109,9 @@ unsafe fn auto_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_alloca
 }
 unsafe fn auto_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
     let coder: *const lzma_auto_coder = coder_ptr as *const lzma_auto_coder;
-    if (*coder).next.get_check.is_none() {
-        LZMA_CHECK_NONE
-    } else {
-        (*coder).next.get_check.unwrap()((*coder).next.coder)
+    match (*coder).next.get_check {
+        Some(get_check) => get_check((*coder).next.coder),
+        None => LZMA_CHECK_NONE,
     }
 }
 pub unsafe fn lzma_auto_decoder(strm: *mut lzma_stream, memlimit: u64, flags: u32) -> lzma_ret {
@@ -142,13 +141,8 @@ unsafe fn auto_decoder_memconfig(
 ) -> lzma_ret {
     let coder: *mut lzma_auto_coder = coder_ptr as *mut lzma_auto_coder;
     let mut ret: lzma_ret = LZMA_OK;
-    if (*coder).next.memconfig.is_some() {
-        ret = (*coder).next.memconfig.unwrap()(
-            (*coder).next.coder,
-            memusage,
-            old_memlimit,
-            new_memlimit,
-        );
+    if let Some(memconfig) = (*coder).next.memconfig {
+        ret = memconfig((*coder).next.coder, memusage, old_memlimit, new_memlimit);
     } else {
         *memusage = LZMA_MEMUSAGE_BASE;
         *old_memlimit = (*coder).memlimit;

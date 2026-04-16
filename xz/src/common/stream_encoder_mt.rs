@@ -174,7 +174,14 @@ unsafe fn worker_encode(
             in_limit = in_pos + IN_CHUNK_MAX;
             action = LZMA_RUN;
         }
-        ret = (*thr).block_encoder.code.unwrap()(
+        let code = match (*thr).block_encoder.code {
+            Some(code) => code,
+            None => {
+                worker_error(thr, LZMA_PROG_ERROR);
+                return THR_STOP;
+            }
+        };
+        ret = code(
             (*thr).block_encoder.coder,
             (*thr).allocator,
             (*thr).in_0,
@@ -834,7 +841,11 @@ unsafe fn stream_encode_mt_index(
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    let ret: lzma_ret = (*coder).index_encoder.code.unwrap()(
+    let code = match (*coder).index_encoder.code {
+        Some(code) => code,
+        None => return LZMA_PROG_ERROR,
+    };
+    let ret: lzma_ret = code(
         (*coder).index_encoder.coder,
         allocator,
         core::ptr::null(),

@@ -126,7 +126,11 @@ unsafe fn decode_index(
     update_file_cur_pos: bool,
 ) -> lzma_ret {
     let in_start: size_t = *in_pos;
-    let ret: lzma_ret = (*coder).index_decoder.code.unwrap()(
+    let code = match (*coder).index_decoder.code {
+        Some(code) => code,
+        None => return LZMA_PROG_ERROR,
+    };
+    let ret: lzma_ret = code(
         (*coder).index_decoder.coder,
         allocator,
         input,
@@ -405,7 +409,11 @@ unsafe fn file_info_decoder_memconfig(
         this_index_memusage = lzma_index_memused((*coder).this_index);
     } else if (*coder).sequence == SEQ_INDEX_DECODE {
         let mut dummy: u64 = 0;
-        if (*coder).index_decoder.memconfig.unwrap()(
+        let memconfig = match (*coder).index_decoder.memconfig {
+            Some(memconfig) => memconfig,
+            None => return LZMA_PROG_ERROR,
+        };
+        if memconfig(
             (*coder).index_decoder.coder,
             ::core::ptr::addr_of_mut!(this_index_memusage),
             ::core::ptr::addr_of_mut!(dummy),
@@ -428,7 +436,11 @@ unsafe fn file_info_decoder_memconfig(
             let idec_new_memlimit: u64 = new_memlimit - combined_index_memusage;
             let mut dummy1: u64 = 0;
             let mut dummy2: u64 = 0;
-            if (*coder).index_decoder.memconfig.unwrap()(
+            let memconfig = match (*coder).index_decoder.memconfig {
+                Some(memconfig) => memconfig,
+                None => return LZMA_PROG_ERROR,
+            };
+            if memconfig(
                 (*coder).index_decoder.coder,
                 ::core::ptr::addr_of_mut!(dummy1),
                 ::core::ptr::addr_of_mut!(dummy2),

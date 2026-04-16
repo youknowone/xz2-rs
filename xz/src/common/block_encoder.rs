@@ -35,7 +35,11 @@ unsafe fn block_encode(
         0 => {
             let in_start: size_t = *in_pos;
             let out_start: size_t = *out_pos;
-            let ret: lzma_ret = (*coder).next.code.unwrap()(
+            let code = match (*coder).next.code {
+                Some(code) => code,
+                None => return LZMA_PROG_ERROR,
+            };
+            let ret: lzma_ret = code(
                 (*coder).next.coder,
                 allocator,
                 input,

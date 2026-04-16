@@ -239,6 +239,10 @@ pub unsafe fn lzma_raw_coder_init(
     if ret != LZMA_OK {
         return ret;
     }
+    let coder_find = match coder_find {
+        Some(coder_find) => coder_find,
+        None => return LZMA_PROG_ERROR,
+    };
     let mut filters: [lzma_filter_info; 5] = [lzma_filter_info_s {
         id: 0,
         init: None,
@@ -249,7 +253,7 @@ pub unsafe fn lzma_raw_coder_init(
         while i < count {
             let j: size_t = count - i - 1;
             let fc: *const lzma_filter_coder =
-                coder_find.unwrap()((*options.offset(i as isize)).id) as *const lzma_filter_coder;
+                coder_find((*options.offset(i as isize)).id) as *const lzma_filter_coder;
             if fc.is_null() || (*fc).init.is_none() {
                 return LZMA_OPTIONS_ERROR;
             }
@@ -262,7 +266,7 @@ pub unsafe fn lzma_raw_coder_init(
         let mut i_0: size_t = 0;
         while i_0 < count {
             let fc_0: *const lzma_filter_coder =
-                coder_find.unwrap()((*options.offset(i_0 as isize)).id) as *const lzma_filter_coder;
+                coder_find((*options.offset(i_0 as isize)).id) as *const lzma_filter_coder;
             if fc_0.is_null() || (*fc_0).init.is_none() {
                 return LZMA_OPTIONS_ERROR;
             }
@@ -292,22 +296,26 @@ pub unsafe fn lzma_raw_coder_memusage(
     if lzma_validate_chain(filters, ::core::ptr::addr_of_mut!(tmp)) != LZMA_OK {
         return UINT64_MAX;
     }
+    let coder_find = match coder_find {
+        Some(coder_find) => coder_find,
+        None => return UINT64_MAX,
+    };
     let mut total: u64 = 0;
     let mut i: size_t = 0;
     loop {
         let fc: *const lzma_filter_coder =
-            coder_find.unwrap()((*filters.offset(i as isize)).id) as *const lzma_filter_coder;
+            coder_find((*filters.offset(i as isize)).id) as *const lzma_filter_coder;
         if fc.is_null() {
             return UINT64_MAX;
         }
-        if (*fc).memusage.is_none() {
-            total += 1024;
-        } else {
-            let usage: u64 = (*fc).memusage.unwrap()((*filters.offset(i as isize)).options) as u64;
+        if let Some(memusage) = (*fc).memusage {
+            let usage: u64 = memusage((*filters.offset(i as isize)).options) as u64;
             if usage == UINT64_MAX {
                 return UINT64_MAX;
             }
             total += usage;
+        } else {
+            total += 1024;
         }
         i += 1;
         if (*filters.offset(i as isize)).id == LZMA_VLI_UNKNOWN {

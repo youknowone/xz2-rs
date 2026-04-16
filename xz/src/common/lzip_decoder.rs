@@ -190,7 +190,11 @@ unsafe fn lzip_decode(
             13394712405657322686 => {
                 let in_start: size_t = *in_pos;
                 let out_start: size_t = *out_pos;
-                let ret: lzma_ret = (*coder).lzma_decoder.code.unwrap()(
+                let code = match (*coder).lzma_decoder.code {
+                    Some(code) => code,
+                    None => return LZMA_PROG_ERROR,
+                };
+                let ret: lzma_ret = code(
                     (*coder).lzma_decoder.coder,
                     allocator,
                     input,

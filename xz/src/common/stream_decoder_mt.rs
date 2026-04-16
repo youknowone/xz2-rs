@@ -146,17 +146,20 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
         if in_filled - (*thr).in_pos > chunk_size {
             in_filled = (*thr).in_pos + chunk_size;
         }
-        ret = (*thr).block_decoder.code.unwrap()(
-            (*thr).block_decoder.coder,
-            (*thr).allocator,
-            (*thr).in_0,
-            ::core::ptr::addr_of_mut!((*thr).in_pos),
-            in_filled,
-            ::core::ptr::addr_of_mut!((*(*thr).outbuf).buf) as *mut u8,
-            ::core::ptr::addr_of_mut!((*thr).out_pos),
-            (*(*thr).outbuf).allocated,
-            LZMA_RUN,
-        );
+        ret = match (*thr).block_decoder.code {
+            Some(code) => code(
+                (*thr).block_decoder.coder,
+                (*thr).allocator,
+                (*thr).in_0,
+                ::core::ptr::addr_of_mut!((*thr).in_pos),
+                in_filled,
+                ::core::ptr::addr_of_mut!((*(*thr).outbuf).buf) as *mut u8,
+                ::core::ptr::addr_of_mut!((*thr).out_pos),
+                (*(*thr).outbuf).allocated,
+                LZMA_RUN,
+            ),
+            None => LZMA_PROG_ERROR,
+        };
         if ret == LZMA_OK {
             if partial_update_enabled {
                 (*thr).partial_update_started = true;
@@ -1002,7 +1005,11 @@ unsafe fn stream_decode_mt(
             7173345243791314703 => {
                 let in_old_1: size_t = *in_pos;
                 let out_old: size_t = *out_pos;
-                let ret_4: lzma_ret = (*coder).block_decoder.code.unwrap()(
+                let code = match (*coder).block_decoder.code {
+                    Some(code) => code,
+                    None => return LZMA_PROG_ERROR,
+                };
+                let ret_4: lzma_ret = code(
                     (*coder).block_decoder.coder,
                     allocator,
                     in_0,

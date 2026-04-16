@@ -99,7 +99,11 @@ unsafe fn microlzma_decode(
         }
         let dummy_in: u8 = 0;
         let mut dummy_in_pos: size_t = 0;
-        if (*coder).lzma.code.unwrap()(
+        let code = match (*coder).lzma.code {
+            Some(code) => code,
+            None => return LZMA_PROG_ERROR,
+        };
+        if code(
             (*coder).lzma.coder,
             allocator,
             ::core::ptr::addr_of!(dummy_in),
@@ -115,7 +119,11 @@ unsafe fn microlzma_decode(
         }
         (*coder).props_decoded = true;
     }
-    let mut ret: lzma_ret = (*coder).lzma.code.unwrap()(
+    let code = match (*coder).lzma.code {
+        Some(code) => code,
+        None => return LZMA_PROG_ERROR,
+    };
+    let mut ret: lzma_ret = code(
         (*coder).lzma.coder,
         allocator,
         input,

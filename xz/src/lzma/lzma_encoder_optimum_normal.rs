@@ -231,9 +231,11 @@ unsafe fn fill_dist_prices(coder: *mut lzma_lzma1_encoder) {
             dist_slot_0 += 1;
         }
         let mut i: u32 = 0;
+        let dist_prices: *mut u32 = (::core::ptr::addr_of_mut!((*coder).dist_prices)
+            as *mut [u32; 128])
+            .add(dist_state as usize) as *mut u32;
         while i < DIST_MODEL_START {
-            (*coder).dist_prices[dist_state as usize][i as usize] =
-                *dist_slot_prices.offset(i as isize);
+            *dist_prices.add(i as usize) = *dist_slot_prices.offset(i as isize);
             i += 1;
         }
         dist_state += 1;
@@ -253,8 +255,13 @@ unsafe fn fill_dist_prices(coder: *mut lzma_lzma1_encoder) {
         ) as u32;
         let mut dist_state_0: u32 = 0;
         while dist_state_0 < DIST_STATES {
-            (*coder).dist_prices[dist_state_0 as usize][i_0 as usize] =
-                price + (*coder).dist_slot_prices[dist_state_0 as usize][dist_slot_1 as usize];
+            let dist_prices: *mut u32 = (::core::ptr::addr_of_mut!((*coder).dist_prices)
+                as *mut [u32; 128])
+                .add(dist_state_0 as usize) as *mut u32;
+            let dist_slot_prices: *mut u32 =
+                (::core::ptr::addr_of_mut!((*coder).dist_slot_prices) as *mut [u32; 64])
+                    .add(dist_state_0 as usize) as *mut u32;
+            *dist_prices.add(i_0 as usize) = price + *dist_slot_prices.add(dist_slot_1 as usize);
             dist_state_0 += 1;
         }
         i_0 += 1;
@@ -263,8 +270,9 @@ unsafe fn fill_dist_prices(coder: *mut lzma_lzma1_encoder) {
 }
 unsafe fn fill_align_prices(coder: *mut lzma_lzma1_encoder) {
     let mut i: u32 = 0;
+    let align_prices = ::core::ptr::addr_of_mut!((*coder).align_prices) as *mut u32;
     while i < ALIGN_SIZE {
-        (*coder).align_prices[i as usize] = rc_bittree_reverse_price(
+        *align_prices.add(i as usize) = rc_bittree_reverse_price(
             ::core::ptr::addr_of_mut!((*coder).dist_align) as *mut probability,
             ALIGN_BITS,
             i,

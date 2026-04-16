@@ -3,6 +3,7 @@ use crate::lz::lz_encoder_mf::{
     lzma_mf_bt4_skip, lzma_mf_hc3_find, lzma_mf_hc3_skip, lzma_mf_hc4_find, lzma_mf_hc4_skip,
 };
 use crate::types::*;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_lz_options {
@@ -68,7 +69,11 @@ unsafe fn fill_window(
             LZMA_OK
         }
     } else {
-        (*coder).next.code.unwrap()(
+        let code = match (*coder).next.code {
+            Some(code) => code,
+            None => core::hint::unreachable_unchecked(),
+        };
+        code(
             (*coder).next.coder,
             allocator,
             input,
@@ -98,7 +103,7 @@ unsafe fn fill_window(
         (*coder).mf.pending = 0;
         debug_assert!((*coder).mf.read_pos >= pending);
         (*coder).mf.read_pos -= pending;
-        (*coder).mf.skip.unwrap()(::core::ptr::addr_of_mut!((*coder).mf), pending);
+        ((*coder).mf.skip)(::core::ptr::addr_of_mut!((*coder).mf), pending);
     }
     ret
 }
@@ -121,7 +126,7 @@ unsafe fn lz_encode(
                 return ret_;
             }
         }
-        let ret: lzma_ret = (*coder).lz.code.unwrap()(
+        let ret: lzma_ret = ((*coder).lz.code)(
             (*coder).lz.coder,
             ::core::ptr::addr_of_mut!((*coder).mf),
             out,
@@ -166,24 +171,24 @@ unsafe fn lz_encoder_prepare(
     (*mf).cyclic_size = (*lz_options).dict_size as u32 + 1;
     match (*lz_options).match_finder {
         3 => {
-            (*mf).find = Some(lzma_mf_hc3_find as unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32);
-            (*mf).skip = Some(lzma_mf_hc3_skip as unsafe fn(*mut lzma_mf, u32) -> ());
+            (*mf).find = lzma_mf_hc3_find as lzma_mf_find_function;
+            (*mf).skip = lzma_mf_hc3_skip as lzma_mf_skip_function;
         }
         4 => {
-            (*mf).find = Some(lzma_mf_hc4_find as unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32);
-            (*mf).skip = Some(lzma_mf_hc4_skip as unsafe fn(*mut lzma_mf, u32) -> ());
+            (*mf).find = lzma_mf_hc4_find as lzma_mf_find_function;
+            (*mf).skip = lzma_mf_hc4_skip as lzma_mf_skip_function;
         }
         18 => {
-            (*mf).find = Some(lzma_mf_bt2_find as unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32);
-            (*mf).skip = Some(lzma_mf_bt2_skip as unsafe fn(*mut lzma_mf, u32) -> ());
+            (*mf).find = lzma_mf_bt2_find as lzma_mf_find_function;
+            (*mf).skip = lzma_mf_bt2_skip as lzma_mf_skip_function;
         }
         19 => {
-            (*mf).find = Some(lzma_mf_bt3_find as unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32);
-            (*mf).skip = Some(lzma_mf_bt3_skip as unsafe fn(*mut lzma_mf, u32) -> ());
+            (*mf).find = lzma_mf_bt3_find as lzma_mf_find_function;
+            (*mf).skip = lzma_mf_bt3_skip as lzma_mf_skip_function;
         }
         20 => {
-            (*mf).find = Some(lzma_mf_bt4_find as unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32);
-            (*mf).skip = Some(lzma_mf_bt4_skip as unsafe fn(*mut lzma_mf, u32) -> ());
+            (*mf).find = lzma_mf_bt4_find as lzma_mf_find_function;
+            (*mf).skip = lzma_mf_bt4_skip as lzma_mf_skip_function;
         }
         _ => return true,
     }
@@ -299,7 +304,7 @@ unsafe fn lz_encoder_init(
             (*mf).write_pos as size_t,
         );
         (*mf).action = LZMA_SYNC_FLUSH;
-        (*mf).skip.unwrap()(mf, (*mf).write_pos);
+        ((*mf).skip)(mf, (*mf).write_pos);
     }
     (*mf).action = LZMA_RUN;
     false
@@ -316,8 +321,8 @@ pub fn lzma_lz_encoder_memusage(lz_options: *const lzma_lz_options) -> u64 {
         read_limit: 0,
         write_pos: 0,
         pending: 0,
-        find: None,
-        skip: None,
+        find: lzma_mf_find_uninitialized,
+        skip: lzma_mf_skip_uninitialized,
         hash: core::ptr::null_mut(),
         son: core::ptr::null_mut(),
         cyclic_pos: 0,
@@ -343,8 +348,8 @@ unsafe fn lz_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocato
     crate::alloc::internal_free((*coder).mf.son as *mut c_void, allocator);
     crate::alloc::internal_free((*coder).mf.hash as *mut c_void, allocator);
     crate::alloc::internal_free((*coder).mf.buffer as *mut c_void, allocator);
-    if (*coder).lz.end.is_some() {
-        (*coder).lz.end.unwrap()((*coder).lz.coder, allocator);
+    if let Some(end) = (*coder).lz.end {
+        end((*coder).lz.coder, allocator);
     } else {
         crate::alloc::internal_free((*coder).lz.coder, allocator);
     }
@@ -360,7 +365,11 @@ unsafe fn lz_encoder_update(
     if (*coder).lz.options_update.is_none() {
         return LZMA_PROG_ERROR;
     }
-    let ret_: lzma_ret = (*coder).lz.options_update.unwrap()((*coder).lz.coder, reversed_filters);
+    let options_update = match (*coder).lz.options_update {
+        Some(options_update) => options_update,
+        None => return LZMA_PROG_ERROR,
+    };
+    let ret_: lzma_ret = options_update((*coder).lz.coder, reversed_filters);
     if ret_ != LZMA_OK {
         return ret_;
     }
@@ -376,8 +385,10 @@ unsafe fn lz_encoder_set_out_limit(
     out_limit: u64,
 ) -> lzma_ret {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
-    if (*coder).next.code.is_none() && (*coder).lz.set_out_limit.is_some() {
-        return (*coder).lz.set_out_limit.unwrap()((*coder).lz.coder, uncomp_size, out_limit);
+    if (*coder).next.code.is_none() {
+        if let Some(set_out_limit) = (*coder).lz.set_out_limit {
+            return set_out_limit((*coder).lz.coder, uncomp_size, out_limit);
+        }
     }
     LZMA_OPTIONS_ERROR
 }
@@ -429,7 +440,7 @@ pub unsafe fn lzma_lz_encoder_init(
         (*next).set_out_limit =
             Some(lz_encoder_set_out_limit as unsafe fn(*mut c_void, *mut u64, u64) -> lzma_ret);
         (*coder).lz.coder = core::ptr::null_mut();
-        (*coder).lz.code = None;
+        (*coder).lz.code = lzma_lz_encoder_code_uninitialized;
         (*coder).lz.end = None;
         (*coder).lz.options_update = None;
         (*coder).lz.set_out_limit = None;
@@ -478,7 +489,7 @@ pub unsafe fn lzma_lz_encoder_init(
     if ret_ != LZMA_OK {
         return ret_;
     }
-    if (*coder).lz.code.is_none() {
+    if (*coder).lz.coder.is_null() {
         return LZMA_PROG_ERROR;
     }
     if lz_encoder_prepare(

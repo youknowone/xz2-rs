@@ -294,7 +294,11 @@ pub unsafe fn lzma_filters_update(strm: *mut lzma_stream, filters: *const lzma_f
         i += 1;
     }
     reversed_filters[count as usize].id = LZMA_VLI_UNKNOWN;
-    (*(*strm).internal).next.update.unwrap()(
+    let update = match (*(*strm).internal).next.update {
+        Some(update) => update,
+        None => return LZMA_PROG_ERROR,
+    };
+    update(
         (*(*strm).internal).next.coder,
         (*strm).allocator,
         filters,
@@ -353,8 +357,8 @@ pub unsafe fn lzma_mt_block_size(filters: *const lzma_filter) -> u64 {
         if fe.is_null() {
             return UINT64_MAX;
         }
-        if (*fe).block_size.is_some() {
-            let size: u64 = (*fe).block_size.unwrap()((*filters.offset(i as isize)).options) as u64;
+        if let Some(block_size) = (*fe).block_size {
+            let size: u64 = block_size((*filters.offset(i as isize)).options) as u64;
             if size > max {
                 max = size;
             }
@@ -376,19 +380,21 @@ pub unsafe fn lzma_properties_size(size: *mut u32, filter: *const lzma_filter) -
             LZMA_PROG_ERROR
         };
     }
-    if (*fe).props_size_get.is_none() {
+    if let Some(props_size_get) = (*fe).props_size_get {
+        props_size_get(size, (*filter).options)
+    } else {
         *size = (*fe).props_size_fixed;
-        return LZMA_OK;
+        LZMA_OK
     }
-    (*fe).props_size_get.unwrap()(size, (*filter).options)
 }
 pub unsafe fn lzma_properties_encode(filter: *const lzma_filter, props: *mut u8) -> lzma_ret {
     let fe: *const lzma_filter_encoder = encoder_find((*filter).id) as *const lzma_filter_encoder;
     if fe.is_null() {
         return LZMA_PROG_ERROR;
     }
-    if (*fe).props_encode.is_none() {
-        return LZMA_OK;
+    if let Some(props_encode) = (*fe).props_encode {
+        props_encode((*filter).options, props)
+    } else {
+        LZMA_OK
     }
-    (*fe).props_encode.unwrap()((*filter).options, props)
 }

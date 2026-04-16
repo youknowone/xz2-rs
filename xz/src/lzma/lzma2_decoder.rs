@@ -24,7 +24,7 @@ pub const SEQ_UNCOMPRESSED_1: sequence = 1;
 pub const SEQ_CONTROL: sequence = 0;
 pub const LZMA_LZ_DECODER_INIT: lzma_lz_decoder = lzma_lz_decoder {
     coder: core::ptr::null_mut(),
-    code: None,
+    code: lzma_lz_decoder_code_uninitialized,
     reset: None,
     set_uncompressed: None,
     end: None,
@@ -89,7 +89,11 @@ unsafe fn lzma2_decode(
                     } else {
                         (*coder).next_sequence = SEQ_LZMA;
                         if control >= 0xa0 {
-                            (*coder).lzma.reset.unwrap()(
+                            let reset = match (*coder).lzma.reset {
+                                Some(reset) => reset,
+                                None => return LZMA_PROG_ERROR,
+                            };
+                            reset(
                                 (*coder).lzma.coder,
                                 ::core::ptr::addr_of_mut!((*coder).options) as *const c_void,
                             );
@@ -121,7 +125,11 @@ unsafe fn lzma2_decode(
                 );
                 *in_pos += 1;
                 (*coder).sequence = SEQ_COMPRESSED_0;
-                (*coder).lzma.set_uncompressed.unwrap()(
+                let set_uncompressed = match (*coder).lzma.set_uncompressed {
+                    Some(set_uncompressed) => set_uncompressed,
+                    None => return LZMA_PROG_ERROR,
+                };
+                set_uncompressed(
                     (*coder).lzma.coder,
                     (*coder).uncompressed_size as lzma_vli,
                     false,
@@ -146,7 +154,11 @@ unsafe fn lzma2_decode(
                 if lzma_lzma_lclppb_decode(::core::ptr::addr_of_mut!((*coder).options), prop_byte) {
                     return LZMA_DATA_ERROR;
                 }
-                (*coder).lzma.reset.unwrap()(
+                let reset = match (*coder).lzma.reset {
+                    Some(reset) => reset,
+                    None => return LZMA_PROG_ERROR,
+                };
+                reset(
                     (*coder).lzma.coder,
                     ::core::ptr::addr_of_mut!((*coder).options) as *const c_void,
                 );
@@ -155,7 +167,7 @@ unsafe fn lzma2_decode(
             6 => {
                 let in_start: size_t = *in_pos;
                 let ret: lzma_ret =
-                    (*coder).lzma.code.unwrap()((*coder).lzma.coder, dict, input, in_pos, in_size);
+                    ((*coder).lzma.code)((*coder).lzma.coder, dict, input, in_pos, in_size);
                 let in_used: size_t = (*in_pos).wrapping_sub(in_start);
                 if in_used > (*coder).compressed_size {
                     return LZMA_DATA_ERROR;
@@ -206,16 +218,7 @@ unsafe fn lzma2_decoder_init(
             return LZMA_MEM_ERROR;
         }
         (*lz).coder = coder as *mut c_void;
-        (*lz).code = Some(
-            lzma2_decode
-                as unsafe fn(
-                    *mut c_void,
-                    *mut lzma_dict,
-                    *const u8,
-                    *mut size_t,
-                    size_t,
-                ) -> lzma_ret,
-        );
+        (*lz).code = lzma2_decode as lzma_lz_decoder_code_function;
         (*lz).end = Some(lzma2_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*coder).lzma = LZMA_LZ_DECODER_INIT;
     }

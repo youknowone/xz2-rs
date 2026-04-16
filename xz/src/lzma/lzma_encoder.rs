@@ -495,8 +495,9 @@ unsafe fn length(
         }
     }
     if !fast_mode {
-        (*lc).counters[pos_state as usize] -= 1;
-        if (*lc).counters[pos_state as usize] == 0 {
+        let counter = length_counter(lc, pos_state);
+        *counter -= 1;
+        if *counter == 0 {
             length_update_prices(lc, pos_state);
         }
     }
@@ -1042,10 +1043,7 @@ unsafe fn lzma_encoder_init(
     if options.is_null() {
         return LZMA_PROG_ERROR;
     }
-    (*lz).code = Some(
-        lzma_encode
-            as unsafe fn(*mut c_void, *mut lzma_mf, *mut u8, *mut size_t, size_t) -> lzma_ret,
-    );
+    (*lz).code = lzma_encode as lzma_lz_encoder_code_function;
     (*lz).set_out_limit =
         Some(lzma_lzma_set_out_limit as unsafe fn(*mut c_void, *mut u64, u64) -> lzma_ret);
     lzma_lzma_encoder_create(

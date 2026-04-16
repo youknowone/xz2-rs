@@ -97,11 +97,12 @@ pub(crate) unsafe fn internal_alloc_bytes(
     allocator: *const lzma_allocator,
 ) -> *mut c_void {
     let size = if size == 0 { 1 } else { size };
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        (*allocator).alloc.unwrap()((*allocator).opaque, 1, size)
-    } else {
-        rust_alloc_impl(size as usize, RUST_ALLOC_ALIGN, false)
+    if !allocator.is_null() {
+        if let Some(alloc) = (*allocator).alloc {
+            return alloc((*allocator).opaque, 1, size);
+        }
     }
+    rust_alloc_impl(size as usize, RUST_ALLOC_ALIGN, false)
 }
 
 pub(crate) unsafe fn internal_alloc_zeroed_bytes(
@@ -109,24 +110,23 @@ pub(crate) unsafe fn internal_alloc_zeroed_bytes(
     allocator: *const lzma_allocator,
 ) -> *mut c_void {
     let size = if size == 0 { 1 } else { size };
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        let ptr = (*allocator).alloc.unwrap()((*allocator).opaque, 1, size);
-        if !ptr.is_null() {
-            core::ptr::write_bytes(ptr as *mut u8, 0, size);
+    if !allocator.is_null() {
+        if let Some(alloc) = (*allocator).alloc {
+            let ptr = alloc((*allocator).opaque, 1, size);
+            if !ptr.is_null() {
+                core::ptr::write_bytes(ptr as *mut u8, 0, size);
+            }
+            return ptr;
         }
-        ptr
-    } else {
-        rust_alloc_impl(size as usize, RUST_ALLOC_ALIGN, true)
     }
+    rust_alloc_impl(size as usize, RUST_ALLOC_ALIGN, true)
 }
 
 pub(crate) unsafe fn internal_alloc_object<T>(allocator: *const lzma_allocator) -> *mut T {
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        return (*allocator).alloc.unwrap()(
-            (*allocator).opaque,
-            1,
-            core::mem::size_of::<T>() as size_t,
-        ) as *mut T;
+    if !allocator.is_null() {
+        if let Some(alloc) = (*allocator).alloc {
+            return alloc((*allocator).opaque, 1, core::mem::size_of::<T>() as size_t) as *mut T;
+        }
     }
     rust_alloc_impl(core::mem::size_of::<T>(), core::mem::align_of::<T>(), false) as *mut T
 }
@@ -139,8 +139,10 @@ pub(crate) unsafe fn internal_alloc_array<T>(
         Some(size) => size,
         None => return core::ptr::null_mut(),
     };
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        return (*allocator).alloc.unwrap()((*allocator).opaque, 1, size as size_t) as *mut T;
+    if !allocator.is_null() {
+        if let Some(alloc) = (*allocator).alloc {
+            return alloc((*allocator).opaque, 1, size as size_t) as *mut T;
+        }
     }
     rust_alloc_impl(size, core::mem::align_of::<T>(), false) as *mut T
 }
@@ -153,22 +155,26 @@ pub(crate) unsafe fn internal_alloc_zeroed_array<T>(
         Some(size) => size,
         None => return core::ptr::null_mut(),
     };
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        let ptr = (*allocator).alloc.unwrap()((*allocator).opaque, 1, size as size_t) as *mut T;
-        if !ptr.is_null() {
-            core::ptr::write_bytes(ptr as *mut u8, 0, size);
+    if !allocator.is_null() {
+        if let Some(alloc) = (*allocator).alloc {
+            let ptr = alloc((*allocator).opaque, 1, size as size_t) as *mut T;
+            if !ptr.is_null() {
+                core::ptr::write_bytes(ptr as *mut u8, 0, size);
+            }
+            return ptr;
         }
-        return ptr;
     }
     rust_alloc_impl(size, core::mem::align_of::<T>(), true) as *mut T
 }
 
 pub(crate) unsafe fn internal_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
-    if !allocator.is_null() && (*allocator).free.is_some() {
-        (*allocator).free.unwrap()((*allocator).opaque, ptr);
-    } else {
-        rust_free_impl(ptr);
+    if !allocator.is_null() {
+        if let Some(free) = (*allocator).free {
+            free((*allocator).opaque, ptr);
+            return;
+        }
     }
+    rust_free_impl(ptr);
 }
 
 #[cfg(test)]
@@ -178,10 +184,9 @@ mod tests {
     #[test]
     fn rust_allocator_round_trip() {
         unsafe {
-            let allocator = rust_allocator();
-            let ptr = allocator.alloc.unwrap()(allocator.opaque, 4, 8);
+            let ptr = lzma_rust_alloc(core::ptr::null_mut(), 4, 8);
             assert!(!ptr.is_null());
-            allocator.free.unwrap()(allocator.opaque, ptr);
+            lzma_rust_free(core::ptr::null_mut(), ptr);
         }
     }
 

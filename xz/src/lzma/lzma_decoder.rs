@@ -3319,16 +3319,7 @@ pub unsafe fn lzma_lzma_decoder_create(
         if (*lz).coder.is_null() {
             return LZMA_MEM_ERROR;
         }
-        (*lz).code = Some(
-            lzma_decode
-                as unsafe fn(
-                    *mut c_void,
-                    *mut lzma_dict,
-                    *const u8,
-                    *mut size_t,
-                    size_t,
-                ) -> lzma_ret,
-        );
+        (*lz).code = lzma_decode as lzma_lz_decoder_code_function;
         (*lz).reset = Some(lzma_decoder_reset as unsafe fn(*mut c_void, *const c_void) -> ());
         (*lz).set_uncompressed =
             Some(lzma_decoder_uncompressed as unsafe fn(*mut c_void, lzma_vli, bool) -> ());

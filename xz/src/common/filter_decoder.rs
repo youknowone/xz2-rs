@@ -342,17 +342,16 @@ pub unsafe fn lzma_properties_decode(
     if fd.is_null() {
         return LZMA_OPTIONS_ERROR;
     }
-    if (*fd).props_decode.is_none() {
-        return if props_size == 0 {
-            LZMA_OK
-        } else {
-            LZMA_OPTIONS_ERROR
-        };
+    if let Some(props_decode) = (*fd).props_decode {
+        props_decode(
+            ::core::ptr::addr_of_mut!((*filter).options),
+            allocator,
+            props,
+            props_size,
+        )
+    } else if props_size == 0 {
+        LZMA_OK
+    } else {
+        LZMA_OPTIONS_ERROR
     }
-    (*fd).props_decode.unwrap()(
-        ::core::ptr::addr_of_mut!((*filter).options),
-        allocator,
-        props,
-        props_size,
-    )
 }

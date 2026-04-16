@@ -17,7 +17,11 @@ unsafe fn copy_or_code(
             (*coder).end_was_reached = true;
         }
     } else {
-        let ret: lzma_ret = (*coder).next.code.unwrap()(
+        let code = match (*coder).next.code {
+            Some(code) => code,
+            None => return LZMA_PROG_ERROR,
+        };
+        let ret: lzma_ret = code(
             (*coder).next.coder,
             allocator,
             input,
@@ -37,7 +41,7 @@ unsafe fn copy_or_code(
     LZMA_OK
 }
 unsafe fn call_filter(coder: *mut lzma_simple_coder, buffer: &mut [u8]) -> size_t {
-    let filtered: size_t = (*coder).filter.unwrap()(
+    let filtered: size_t = ((*coder).filter)(
         (*coder).simple,
         (*coder).now_pos,
         (*coder).is_encoder,
@@ -192,7 +196,7 @@ pub(crate) unsafe fn lzma_simple_coder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
-    filter: Option<unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t>,
+    filter: lzma_simple_filter_function,
     simple_size: size_t,
     unfiltered_max: size_t,
     alignment: u32,

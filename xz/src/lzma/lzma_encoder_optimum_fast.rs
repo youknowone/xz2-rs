@@ -17,32 +17,14 @@ unsafe fn coder_match(coder: *const lzma_lzma1_encoder, index: u32) -> *const lz
     (::core::ptr::addr_of!((*coder).matches) as *const lzma_match).add(index as usize)
 }
 
-#[inline(always)]
-unsafe fn mf_find_callback(mf: *const lzma_mf) -> unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32 {
-    debug_assert!((*mf).find.is_some());
-    match (*mf).find {
-        Some(find) => find,
-        None => core::hint::unreachable_unchecked(),
-    }
-}
-
-#[inline(always)]
-unsafe fn mf_skip_callback(mf: *const lzma_mf) -> unsafe fn(*mut lzma_mf, u32) -> () {
-    debug_assert!((*mf).skip.is_some());
-    match (*mf).skip {
-        Some(skip) => skip,
-        None => core::hint::unreachable_unchecked(),
-    }
-}
-
 pub unsafe fn lzma_lzma_optimum_fast(
     coder: *mut lzma_lzma1_encoder,
     mf: *mut lzma_mf,
     back_res: *mut u32,
     len_res: *mut u32,
 ) {
-    let mf_find = mf_find_callback(mf);
-    let mf_skip = mf_skip_callback(mf);
+    let mf_find = (*mf).find;
+    let mf_skip = (*mf).skip;
     let nice_len: u32 = (*mf).nice_len;
     let mut len_main: u32 = 0;
     let mut matches_count: u32 = 0;

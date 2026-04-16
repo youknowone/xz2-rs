@@ -27,7 +27,7 @@ pub const LZMA_BUFFER_SIZE: u32 = 4096;
 pub const LZ_DICT_EXTRA: u32 = 0;
 pub const LZMA_LZ_DECODER_INIT: lzma_lz_decoder = lzma_lz_decoder {
     coder: core::ptr::null_mut(),
-    code: None,
+    code: lzma_lz_decoder_code_uninitialized,
     reset: None,
     set_uncompressed: None,
     end: None,
@@ -71,7 +71,7 @@ unsafe fn decode_buffer(
                 (*coder).dict.size.wrapping_sub((*coder).dict.pos)
             },
         );
-        let ret: lzma_ret = (*coder).lz.code.unwrap()(
+        let ret: lzma_ret = ((*coder).lz.code)(
             (*coder).lz.coder,
             ::core::ptr::addr_of_mut!((*coder).dict),
             input,
@@ -116,7 +116,11 @@ unsafe fn lz_decode(
         if !(*coder).next_finished && (*coder).temp.pos == (*coder).temp.size {
             (*coder).temp.pos = 0;
             (*coder).temp.size = 0;
-            let ret: lzma_ret = (*coder).next.code.unwrap()(
+            let next_code = match (*coder).next.code {
+                Some(code) => code,
+                None => return LZMA_PROG_ERROR,
+            };
+            let ret: lzma_ret = next_code(
                 (*coder).next.coder,
                 allocator,
                 input,
@@ -165,8 +169,8 @@ unsafe fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocato
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free((*coder).dict.buf as *mut c_void, allocator);
-    if (*coder).lz.end.is_some() {
-        (*coder).lz.end.unwrap()((*coder).lz.coder, allocator);
+    if let Some(end) = (*coder).lz.end {
+        end((*coder).lz.coder, allocator);
     } else {
         crate::alloc::internal_free((*coder).lz.coder, allocator);
     }
@@ -244,7 +248,7 @@ pub unsafe fn lzma_lz_decoder_init(
     if ret != LZMA_OK {
         return ret;
     }
-    if (*coder).lz.code.is_none() {
+    if (*coder).lz.coder.is_null() {
         return LZMA_PROG_ERROR;
     }
     if lz_options.dict_size < 4096 {

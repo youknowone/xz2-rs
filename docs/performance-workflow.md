@@ -34,6 +34,17 @@ Use `hyperfine` to compare end-to-end wall clock time of the deterministic root 
 scripts/compare_backends.sh --runs 10 --warmup 2
 ```
 
+For the full no-regression gate across the standard root, systest, focused, and
+API workloads, use the trimmed comparison wrapper:
+
+```bash
+scripts/compare_all_trimmed.sh
+```
+
+It measures each Rust/C pair five times, discards the fastest and slowest runs,
+averages the remaining runs, and exits with failure if Rust is slower than C
+after trimming. Reports are written under `target/perf-results/trimmed/`.
+
 This writes:
 
 - `target/perf-results/root-tests.json`

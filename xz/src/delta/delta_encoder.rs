@@ -63,7 +63,11 @@ unsafe fn delta_encode(
         };
     } else {
         let out_start: size_t = *out_pos;
-        ret = coder.next.code.unwrap()(
+        let code = match coder.next.code {
+            Some(code) => code,
+            None => return LZMA_PROG_ERROR,
+        };
+        ret = code(
             coder.next.coder,
             allocator,
             input,

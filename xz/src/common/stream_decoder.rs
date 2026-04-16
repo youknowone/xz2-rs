@@ -277,7 +277,11 @@ unsafe fn stream_decode(
         }
         match current_block_100 {
             721385680381463314 => {
-                let ret_1: lzma_ret = (*coder).block_decoder.code.unwrap()(
+                let code = match (*coder).block_decoder.code {
+                    Some(code) => code,
+                    None => return LZMA_PROG_ERROR,
+                };
+                let ret_1: lzma_ret = code(
                     (*coder).block_decoder.coder,
                     allocator,
                     input,

@@ -57,7 +57,7 @@ unsafe fn armthumb_coder_init(
         next,
         allocator,
         filters,
-        Some(armthumb_code as unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
+        armthumb_code as lzma_simple_filter_function,
         0,
         4,
         2,

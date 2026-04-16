@@ -154,17 +154,20 @@ unsafe fn block_encode_normal(
     );
     if ret == LZMA_OK {
         let mut in_pos: size_t = 0;
-        ret = raw_encoder.code.unwrap()(
-            raw_encoder.coder,
-            allocator,
-            input,
-            ::core::ptr::addr_of_mut!(in_pos),
-            in_size,
-            out,
-            out_pos,
-            out_size,
-            LZMA_FINISH,
-        );
+        ret = match raw_encoder.code {
+            Some(code) => code(
+                raw_encoder.coder,
+                allocator,
+                input,
+                ::core::ptr::addr_of_mut!(in_pos),
+                in_size,
+                out,
+                out_pos,
+                out_size,
+                LZMA_FINISH,
+            ),
+            None => LZMA_PROG_ERROR,
+        };
     }
     lzma_next_end(::core::ptr::addr_of_mut!(raw_encoder), allocator);
     if ret == LZMA_STREAM_END {

@@ -87,8 +87,12 @@ pub unsafe fn lzma_alloc(mut size: size_t, allocator: *const lzma_allocator) -> 
         size = 1;
     }
     let mut ptr: *mut c_void = core::ptr::null_mut();
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        ptr = (*allocator).alloc.unwrap()((*allocator).opaque, 1, size);
+    if !allocator.is_null() {
+        if let Some(alloc) = (*allocator).alloc {
+            ptr = alloc((*allocator).opaque, 1, size);
+        } else {
+            ptr = malloc(size);
+        }
     } else {
         ptr = malloc(size);
     }
@@ -99,8 +103,12 @@ pub unsafe fn lzma_alloc_zero(mut size: size_t, allocator: *const lzma_allocator
         size = 1;
     }
     let mut ptr: *mut c_void = core::ptr::null_mut();
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        ptr = (*allocator).alloc.unwrap()((*allocator).opaque, 1, size);
+    if !allocator.is_null() {
+        if let Some(alloc) = (*allocator).alloc {
+            ptr = alloc((*allocator).opaque, 1, size);
+        } else {
+            ptr = calloc(1, size);
+        }
         if !ptr.is_null() {
             core::ptr::write_bytes(ptr as *mut u8, 0, size);
         }
@@ -110,8 +118,12 @@ pub unsafe fn lzma_alloc_zero(mut size: size_t, allocator: *const lzma_allocator
     ptr
 }
 pub unsafe fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
-    if !allocator.is_null() && (*allocator).free.is_some() {
-        (*allocator).free.unwrap()((*allocator).opaque, ptr);
+    if !allocator.is_null() {
+        if let Some(free_func) = (*allocator).free {
+            free_func((*allocator).opaque, ptr);
+        } else {
+            free(ptr);
+        }
     } else {
         free(ptr);
     };
@@ -163,10 +175,10 @@ pub unsafe fn lzma_next_filter_init(
     }
     (*next).init = core::mem::transmute::<lzma_init_function, uintptr_t>((*filters).init);
     (*next).id = (*filters).id;
-    if (*filters).init.is_none() {
-        LZMA_OK
+    if let Some(init) = (*filters).init {
+        init(next, allocator, filters)
     } else {
-        (*filters).init.unwrap()(next, allocator, filters)
+        LZMA_OK
     }
 }
 pub unsafe fn lzma_next_filter_update(
@@ -194,8 +206,8 @@ pub unsafe fn lzma_next_filter_update(
 }
 pub unsafe fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator) {
     if (*next).init != 0 {
-        if (*next).end.is_some() {
-            (*next).end.unwrap()((*next).coder, allocator);
+        if let Some(end) = (*next).end {
+            end((*next).coder, allocator);
         } else {
             lzma_free((*next).coder, allocator);
         }
@@ -310,7 +322,11 @@ pub unsafe fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret
     }
     let mut in_pos: size_t = 0;
     let mut out_pos: size_t = 0;
-    let mut ret: lzma_ret = (*(*strm).internal).next.code.unwrap()(
+    let code = match (*(*strm).internal).next.code {
+        Some(code) => code,
+        None => return LZMA_PROG_ERROR,
+    };
+    let mut ret: lzma_ret = code(
         (*(*strm).internal).next.coder,
         (*strm).allocator,
         (*strm).next_in,
@@ -410,12 +426,8 @@ pub unsafe fn lzma_get_progress(
         return;
     }
 
-    if (*(*strm).internal).next.get_progress.is_some() {
-        (*(*strm).internal).next.get_progress.unwrap()(
-            (*(*strm).internal).next.coder,
-            progress_in,
-            progress_out,
-        );
+    if let Some(get_progress) = (*(*strm).internal).next.get_progress {
+        get_progress((*(*strm).internal).next.coder, progress_in, progress_out);
     } else {
         *progress_in = (*strm).total_in;
         *progress_out = (*strm).total_out;
@@ -426,25 +438,30 @@ pub fn lzma_get_check(strm: *const lzma_stream) -> lzma_check {
         if strm.is_null() || (*strm).internal.is_null() {
             return LZMA_CHECK_NONE;
         }
-        if (*(*strm).internal).next.get_check.is_none() {
-            return LZMA_CHECK_NONE;
+        if let Some(get_check) = (*(*strm).internal).next.get_check {
+            get_check((*(*strm).internal).next.coder)
+        } else {
+            LZMA_CHECK_NONE
         }
-        (*(*strm).internal).next.get_check.unwrap()((*(*strm).internal).next.coder)
     }
 }
 pub fn lzma_memusage(strm: *const lzma_stream) -> u64 {
     unsafe {
         let mut memusage: u64 = 0;
         let mut old_memlimit: u64 = 0;
-        if strm.is_null()
-            || (*strm).internal.is_null()
-            || (*(*strm).internal).next.memconfig.is_none()
-            || (*(*strm).internal).next.memconfig.unwrap()(
-                (*(*strm).internal).next.coder,
-                ::core::ptr::addr_of_mut!(memusage),
-                ::core::ptr::addr_of_mut!(old_memlimit),
-                0,
-            ) != LZMA_OK
+        if strm.is_null() || (*strm).internal.is_null() {
+            return 0;
+        }
+        let memconfig = match (*(*strm).internal).next.memconfig {
+            Some(memconfig) => memconfig,
+            None => return 0,
+        };
+        if memconfig(
+            (*(*strm).internal).next.coder,
+            ::core::ptr::addr_of_mut!(memusage),
+            ::core::ptr::addr_of_mut!(old_memlimit),
+            0,
+        ) != LZMA_OK
         {
             return 0;
         }
@@ -455,15 +472,19 @@ pub fn lzma_memlimit_get(strm: *const lzma_stream) -> u64 {
     unsafe {
         let mut old_memlimit: u64 = 0;
         let mut memusage: u64 = 0;
-        if strm.is_null()
-            || (*strm).internal.is_null()
-            || (*(*strm).internal).next.memconfig.is_none()
-            || (*(*strm).internal).next.memconfig.unwrap()(
-                (*(*strm).internal).next.coder,
-                ::core::ptr::addr_of_mut!(memusage),
-                ::core::ptr::addr_of_mut!(old_memlimit),
-                0,
-            ) != LZMA_OK
+        if strm.is_null() || (*strm).internal.is_null() {
+            return 0;
+        }
+        let memconfig = match (*(*strm).internal).next.memconfig {
+            Some(memconfig) => memconfig,
+            None => return 0,
+        };
+        if memconfig(
+            (*(*strm).internal).next.coder,
+            ::core::ptr::addr_of_mut!(memusage),
+            ::core::ptr::addr_of_mut!(old_memlimit),
+            0,
+        ) != LZMA_OK
         {
             return 0;
         }
@@ -473,14 +494,17 @@ pub fn lzma_memlimit_get(strm: *const lzma_stream) -> u64 {
 pub unsafe fn lzma_memlimit_set(strm: *mut lzma_stream, mut new_memlimit: u64) -> lzma_ret {
     let mut old_memlimit: u64 = 0;
     let mut memusage: u64 = 0;
-    if strm.is_null() || (*strm).internal.is_null() || (*(*strm).internal).next.memconfig.is_none()
-    {
+    if strm.is_null() || (*strm).internal.is_null() {
         return LZMA_PROG_ERROR;
     }
+    let memconfig = match (*(*strm).internal).next.memconfig {
+        Some(memconfig) => memconfig,
+        None => return LZMA_PROG_ERROR,
+    };
     if new_memlimit == 0 {
         new_memlimit = 1;
     }
-    (*(*strm).internal).next.memconfig.unwrap()(
+    memconfig(
         (*(*strm).internal).next.coder,
         ::core::ptr::addr_of_mut!(memusage),
         ::core::ptr::addr_of_mut!(old_memlimit),

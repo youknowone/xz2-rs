@@ -114,7 +114,11 @@ unsafe fn stream_encode(
                     LZMA_FINISH,
                     LZMA_FINISH,
                 ];
-                let ret: lzma_ret = (*coder).block_encoder.code.unwrap()(
+                let code = match (*coder).block_encoder.code {
+                    Some(code) => code,
+                    None => return LZMA_PROG_ERROR,
+                };
+                let ret: lzma_ret = code(
                     (*coder).block_encoder.coder,
                     allocator,
                     input,
@@ -143,7 +147,11 @@ unsafe fn stream_encode(
                 (*coder).sequence = SEQ_BLOCK_INIT;
             }
             4 => {
-                let ret_0: lzma_ret = (*coder).index_encoder.code.unwrap()(
+                let code = match (*coder).index_encoder.code {
+                    Some(code) => code,
+                    None => return LZMA_PROG_ERROR,
+                };
+                let ret_0: lzma_ret = code(
                     (*coder).index_encoder.coder,
                     allocator,
                     core::ptr::null(),
@@ -213,7 +221,11 @@ unsafe fn stream_encoder_update_mid_block(
     filters: *const lzma_filter,
     reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
-    (*coder).block_encoder.update.unwrap()(
+    let update = match (*coder).block_encoder.update {
+        Some(update) => update,
+        None => return LZMA_PROG_ERROR,
+    };
+    update(
         (*coder).block_encoder.coder,
         allocator,
         filters,

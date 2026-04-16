@@ -680,8 +680,14 @@ unsafe fn parse_filter(
                 return crate::c_str!("Memory allocation failed");
             }
             *str = opts_start;
-            let errmsg: *const c_char =
-                filter_name_map[i as usize].parse.unwrap()(str, str_end, options);
+            let parse = match filter_name_map[i as usize].parse {
+                Some(parse) => parse,
+                None => {
+                    lzma_free(options, allocator);
+                    return crate::c_str!("Internal error");
+                }
+            };
+            let errmsg: *const c_char = parse(str, str_end, options);
             if !errmsg.is_null() {
                 lzma_free(options, allocator);
                 return errmsg;

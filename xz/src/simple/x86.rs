@@ -110,7 +110,7 @@ unsafe fn x86_coder_init(
         next,
         allocator,
         filters,
-        Some(x86_code as unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t),
+        x86_code as lzma_simple_filter_function,
         core::mem::size_of::<lzma_simple_x86>(),
         5,
         1,
