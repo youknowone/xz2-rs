@@ -124,10 +124,8 @@ unsafe fn stream_encode(
                 }
             }
             3 => {
-                let code = match (*coder).block_encoder.code {
-                    Some(code) => code,
-                    None => return LZMA_PROG_ERROR,
-                };
+                debug_assert!((*coder).block_encoder.code.is_some());
+                let code = (*coder).block_encoder.code.unwrap_unchecked();
                 let ret: lzma_ret = code(
                     (*coder).block_encoder.coder,
                     allocator,
@@ -157,10 +155,8 @@ unsafe fn stream_encode(
                 (*coder).sequence = SEQ_BLOCK_INIT;
             }
             4 => {
-                let code = match (*coder).index_encoder.code {
-                    Some(code) => code,
-                    None => return LZMA_PROG_ERROR,
-                };
+                debug_assert!((*coder).index_encoder.code.is_some());
+                let code = (*coder).index_encoder.code.unwrap_unchecked();
                 let ret_0: lzma_ret = code(
                     (*coder).index_encoder.coder,
                     allocator,
@@ -206,7 +202,7 @@ unsafe fn stream_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allo
     );
     crate::common::common::lzma_free(coder as *mut c_void, allocator);
 }
-#[inline(never)]
+#[inline(always)]
 unsafe fn stream_encoder_update_before_block(
     coder: *mut lzma_stream_coder,
     allocator: *const lzma_allocator,
@@ -224,17 +220,15 @@ unsafe fn stream_encoder_update_before_block(
     LZMA_OK
 }
 
-#[inline(never)]
+#[inline(always)]
 unsafe fn stream_encoder_update_mid_block(
     coder: *mut lzma_stream_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter,
     reversed_filters: *const lzma_filter,
 ) -> lzma_ret {
-    let update = match (*coder).block_encoder.update {
-        Some(update) => update,
-        None => return LZMA_PROG_ERROR,
-    };
+    debug_assert!((*coder).block_encoder.update.is_some());
+    let update = (*coder).block_encoder.update.unwrap_unchecked();
     update(
         (*coder).block_encoder.coder,
         allocator,

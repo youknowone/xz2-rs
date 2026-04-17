@@ -53,10 +53,8 @@ unsafe fn block_decode(
                 } else {
                     (*coder).uncompressed_limit - (*coder).uncompressed_size
                 }) as size_t;
-            let code = match (*coder).next.code {
-                Some(code) => code,
-                None => return LZMA_PROG_ERROR,
-            };
+            debug_assert!((*coder).next.code.is_some());
+            let code = (*coder).next.code.unwrap_unchecked();
             let ret: lzma_ret = code(
                 (*coder).next.coder,
                 allocator,

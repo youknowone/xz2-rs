@@ -327,10 +327,8 @@ pub unsafe fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret
     }
     let mut in_pos: size_t = 0;
     let mut out_pos: size_t = 0;
-    let code = match (*(*strm).internal).next.code {
-        Some(code) => code,
-        None => return LZMA_PROG_ERROR,
-    };
+    debug_assert!((*(*strm).internal).next.code.is_some());
+    let code = (*(*strm).internal).next.code.unwrap_unchecked();
     let mut ret: lzma_ret = code(
         (*(*strm).internal).next.coder,
         (*strm).allocator,

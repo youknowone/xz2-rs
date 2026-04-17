@@ -116,10 +116,8 @@ unsafe fn lz_decode(
         if !(*coder).next_finished && (*coder).temp.pos == (*coder).temp.size {
             (*coder).temp.pos = 0;
             (*coder).temp.size = 0;
-            let next_code = match (*coder).next.code {
-                Some(code) => code,
-                None => return LZMA_PROG_ERROR,
-            };
+            debug_assert!((*coder).next.code.is_some());
+            let next_code = (*coder).next.code.unwrap_unchecked();
             let ret: lzma_ret = next_code(
                 (*coder).next.coder,
                 allocator,

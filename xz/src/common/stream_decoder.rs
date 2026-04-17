@@ -166,10 +166,8 @@ unsafe fn stream_decode(
                 continue;
             }
             SEQ_BLOCK_RUN => {
-                let code = match (*coder).block_decoder.code {
-                    Some(code) => code,
-                    None => return LZMA_PROG_ERROR,
-                };
+                debug_assert!((*coder).block_decoder.code.is_some());
+                let code = (*coder).block_decoder.code.unwrap_unchecked();
                 let ret: lzma_ret = code(
                     (*coder).block_decoder.coder,
                     allocator,

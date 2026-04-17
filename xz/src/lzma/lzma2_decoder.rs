@@ -89,10 +89,8 @@ unsafe fn lzma2_decode(
                     } else {
                         (*coder).next_sequence = SEQ_LZMA;
                         if control >= 0xa0 {
-                            let reset = match (*coder).lzma.reset {
-                                Some(reset) => reset,
-                                None => return LZMA_PROG_ERROR,
-                            };
+                            debug_assert!((*coder).lzma.reset.is_some());
+                            let reset = (*coder).lzma.reset.unwrap_unchecked();
                             reset(
                                 (*coder).lzma.coder,
                                 ::core::ptr::addr_of_mut!((*coder).options) as *const c_void,
@@ -125,10 +123,8 @@ unsafe fn lzma2_decode(
                 );
                 *in_pos += 1;
                 (*coder).sequence = SEQ_COMPRESSED_0;
-                let set_uncompressed = match (*coder).lzma.set_uncompressed {
-                    Some(set_uncompressed) => set_uncompressed,
-                    None => return LZMA_PROG_ERROR,
-                };
+                debug_assert!((*coder).lzma.set_uncompressed.is_some());
+                let set_uncompressed = (*coder).lzma.set_uncompressed.unwrap_unchecked();
                 set_uncompressed(
                     (*coder).lzma.coder,
                     (*coder).uncompressed_size as lzma_vli,
@@ -154,10 +150,8 @@ unsafe fn lzma2_decode(
                 if lzma_lzma_lclppb_decode(::core::ptr::addr_of_mut!((*coder).options), prop_byte) {
                     return LZMA_DATA_ERROR;
                 }
-                let reset = match (*coder).lzma.reset {
-                    Some(reset) => reset,
-                    None => return LZMA_PROG_ERROR,
-                };
+                debug_assert!((*coder).lzma.reset.is_some());
+                let reset = (*coder).lzma.reset.unwrap_unchecked();
                 reset(
                     (*coder).lzma.coder,
                     ::core::ptr::addr_of_mut!((*coder).options) as *const c_void,
