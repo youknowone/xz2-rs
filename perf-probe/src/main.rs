@@ -400,7 +400,8 @@ fn run_size(config: &Config) {
     );
 
     let measurement = measure(compressed.len(), config.iters, config.warmup, || unsafe {
-        backend_uncompressed_size(&compressed)
+        let input = black_box(compressed.as_slice());
+        backend_uncompressed_size(input)
     });
     print_measurement(&measurement, config.iters);
 }

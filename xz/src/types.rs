@@ -615,11 +615,9 @@ pub unsafe fn mf_skip_raw(mf: *mut lzma_mf, amount: u32, skip: unsafe fn(*mut lz
     }
 }
 #[inline(always)]
-fn lzma_memcmplen_impl(buf1: &[u8], buf2: &[u8], mut len: u32, limit: u32) -> u32 {
+pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, mut len: u32, limit: u32) -> u32 {
     debug_assert!(len <= limit);
     debug_assert!(limit <= u32::MAX / 2);
-    debug_assert!(buf1.len() >= limit as usize);
-    debug_assert!(buf2.len() >= limit as usize);
 
     #[cfg(all(
         target_endian = "little",
@@ -627,10 +625,8 @@ fn lzma_memcmplen_impl(buf1: &[u8], buf2: &[u8], mut len: u32, limit: u32) -> u3
     ))]
     {
         while len < limit {
-            let lhs =
-                unsafe { core::ptr::read_unaligned(buf1.as_ptr().add(len as usize) as *const u64) };
-            let rhs =
-                unsafe { core::ptr::read_unaligned(buf2.as_ptr().add(len as usize) as *const u64) };
+            let lhs = core::ptr::read_unaligned(buf1.add(len as usize) as *const u64);
+            let rhs = core::ptr::read_unaligned(buf2.add(len as usize) as *const u64);
             let diff = lhs.wrapping_sub(rhs);
             if diff != 0 {
                 return core::cmp::min(len + (diff.trailing_zeros() >> 3), limit);
@@ -644,26 +640,12 @@ fn lzma_memcmplen_impl(buf1: &[u8], buf2: &[u8], mut len: u32, limit: u32) -> u3
         target_endian = "little",
         any(target_arch = "aarch64", target_arch = "x86_64")
     )))]
-    while len < limit && buf1[len as usize] == buf2[len as usize] {
-        len += 1;
-    }
-
-    #[cfg(not(all(
-        target_endian = "little",
-        any(target_arch = "aarch64", target_arch = "x86_64")
-    )))]
     {
+        while len < limit && *buf1.add(len as usize) == *buf2.add(len as usize) {
+            len += 1;
+        }
         len
     }
-}
-#[inline(always)]
-pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, len: u32, limit: u32) -> u32 {
-    lzma_memcmplen_impl(
-        core::slice::from_raw_parts(buf1, limit as usize),
-        core::slice::from_raw_parts(buf2, limit as usize),
-        len,
-        limit,
-    )
 }
 #[inline]
 pub fn get_dist_slot(dist: u32) -> u32 {

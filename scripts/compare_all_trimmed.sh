@@ -175,9 +175,9 @@ record_pair \
   size \
   "focused uncompressed_size random 1MiB" \
   xz \
-  "$PROBE_RUST_BIN --workload size --input-kind random --size 1048576 --iters 400 --warmup 40" \
+  "$PROBE_RUST_BIN --workload size --compressed-input $DECODE_INPUT --expected-size 1048576 --iters 10000000 --warmup 1000000" \
   c \
-  "$PROBE_C_BIN --workload size --input-kind random --size 1048576 --iters 400 --warmup 40"
+  "$PROBE_C_BIN --workload size --compressed-input $DECODE_INPUT --expected-size 1048576 --iters 10000000 --warmup 1000000"
 
 record_pair \
   crc32 \
@@ -215,9 +215,9 @@ record_pair \
   api-standard-files-good \
   "API standard files good" \
   xz \
-  "$API_RUST_EXAMPLES/standard_files_probe --mode good --iters 400 --warmup 40" \
+  "$API_RUST_EXAMPLES/standard_files_probe --mode good --iters 1000 --warmup 100" \
   c \
-  "$API_C_EXAMPLES/standard_files_probe --mode good --iters 400 --warmup 40"
+  "$API_C_EXAMPLES/standard_files_probe --mode good --iters 1000 --warmup 100"
 
 record_pair \
   api-standard-files-delta \

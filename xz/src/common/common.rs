@@ -128,6 +128,11 @@ pub unsafe fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
         free(ptr);
     };
 }
+#[inline]
+pub unsafe fn lzma_alloc_object<T>(allocator: *const lzma_allocator) -> *mut T {
+    debug_assert!(core::mem::align_of::<T>() <= 16);
+    lzma_alloc(core::mem::size_of::<T>() as size_t, allocator) as *mut T
+}
 pub unsafe fn lzma_bufcpy(
     input: *const u8,
     in_pos: *mut size_t,
@@ -230,7 +235,7 @@ pub unsafe fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
         return LZMA_PROG_ERROR;
     }
     if (*strm).internal.is_null() {
-        (*strm).internal = crate::alloc::internal_alloc_object::<lzma_internal>((*strm).allocator);
+        (*strm).internal = lzma_alloc_object::<lzma_internal>((*strm).allocator);
         if (*strm).internal.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -407,7 +412,7 @@ pub unsafe fn lzma_end(strm: *mut lzma_stream) {
             ::core::ptr::addr_of_mut!((*(*strm).internal).next),
             (*strm).allocator,
         );
-        crate::alloc::internal_free((*strm).internal as *mut c_void, (*strm).allocator);
+        lzma_free((*strm).internal as *mut c_void, (*strm).allocator);
         (*strm).internal = core::ptr::null_mut();
     }
 }

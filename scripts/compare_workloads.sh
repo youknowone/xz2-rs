@@ -8,7 +8,7 @@ Usage: scripts/compare_workloads.sh <encode|decode|size|crc32|crc64> [perf-probe
 Examples:
   scripts/compare_workloads.sh encode --input-kind random --size 1048576 --iters 20 --warmup 3
   scripts/compare_workloads.sh decode --input-kind random --size 1048576 --iters 50 --warmup 5
-  scripts/compare_workloads.sh size --input-kind random --size 1048576 --iters 400 --warmup 40
+  scripts/compare_workloads.sh size --input-kind random --size 1048576 --iters 10000000 --warmup 1000000
 EOF
   exit 2
 fi
@@ -36,40 +36,69 @@ env CARGO_TARGET_DIR="$RUST_TARGET" cargo build -p perf-probe --release --no-def
 env CARGO_TARGET_DIR="$RUST_SYS_TARGET" cargo build -p perf-probe --release --no-default-features --features xz-sys >/dev/null
 env LZMA_API_STATIC=1 CARGO_TARGET_DIR="$C_TARGET" cargo build -p perf-probe --release --no-default-features --features liblzma-sys >/dev/null
 
-if [[ "$WORKLOAD" == "decode" ]]; then
+if [[ "$WORKLOAD" == "decode" || "$WORKLOAD" == "size" ]]; then
   SIZE=""
+  COMPRESSED_INPUT=""
+  EXPECTED_SIZE=""
+  PASSTHROUGH_ARGS=()
   for ((i = 0; i < ${#RAW_ARGS[@]}; i++)); do
-    if [[ "${RAW_ARGS[$i]}" == "--size" ]]; then
-      SIZE="${RAW_ARGS[$((i + 1))]}"
-      break
-    fi
+    case "${RAW_ARGS[$i]}" in
+      --size)
+        SIZE="${RAW_ARGS[$((i + 1))]}"
+        ((i += 1))
+        ;;
+      --compressed-input)
+        COMPRESSED_INPUT="${RAW_ARGS[$((i + 1))]}"
+        ((i += 1))
+        ;;
+      --expected-size)
+        EXPECTED_SIZE="${RAW_ARGS[$((i + 1))]}"
+        ((i += 1))
+        ;;
+      --input-kind)
+        ((i += 1))
+        ;;
+      *)
+        PASSTHROUGH_ARGS+=("${RAW_ARGS[$i]}")
+        ;;
+    esac
   done
-  if [[ -z "$SIZE" ]]; then
-    echo "decode comparison currently requires --size so expected output size is known" >&2
+
+  if [[ -z "$COMPRESSED_INPUT" ]]; then
+    if [[ -z "$SIZE" ]]; then
+      echo "$WORKLOAD comparison currently requires --size so expected output size is known" >&2
+      exit 2
+    fi
+
+    COMPRESSED_INPUT="$RESULTS_DIR/${WORKLOAD}-input-${SIZE}.xz"
+    "$C_BIN" \
+      --workload encode "${RAW_ARGS[@]}" --iters 1 --warmup 0 --save-output "$COMPRESSED_INPUT" >/dev/null
+    EXPECTED_SIZE="$SIZE"
+  elif [[ -z "$EXPECTED_SIZE" ]]; then
+    echo "$WORKLOAD comparison currently requires --expected-size with --compressed-input" >&2
     exit 2
   fi
 
-  COMPRESSED_INPUT="$RESULTS_DIR/decode-input-${SIZE}.xz"
-  "$C_BIN" \
-    --workload encode "${RAW_ARGS[@]}" --iters 1 --warmup 0 --save-output "$COMPRESSED_INPUT" >/dev/null
-
   RUST_CMD=(
     "$RUST_BIN"
-    --workload decode
+    --workload "$WORKLOAD"
     --compressed-input "$COMPRESSED_INPUT"
-    --expected-size "$SIZE"
+    --expected-size "$EXPECTED_SIZE"
+    "${PASSTHROUGH_ARGS[@]}"
   )
   RUST_SYS_CMD=(
     "$RUST_SYS_BIN"
-    --workload decode
+    --workload "$WORKLOAD"
     --compressed-input "$COMPRESSED_INPUT"
-    --expected-size "$SIZE"
+    --expected-size "$EXPECTED_SIZE"
+    "${PASSTHROUGH_ARGS[@]}"
   )
   C_CMD=(
     "$C_BIN"
-    --workload decode
+    --workload "$WORKLOAD"
     --compressed-input "$COMPRESSED_INPUT"
-    --expected-size "$SIZE"
+    --expected-size "$EXPECTED_SIZE"
+    "${PASSTHROUGH_ARGS[@]}"
   )
 else
   RUST_CMD=(

@@ -7,7 +7,7 @@ Usage: scripts/compare_api_workloads.sh <standard-files|qc|bufread-trailing> [ex
 
 Examples:
   scripts/compare_api_workloads.sh standard-files --mode all --iters 200 --warmup 20
-  scripts/compare_api_workloads.sh standard-files --mode good --iters 400 --warmup 40
+  scripts/compare_api_workloads.sh standard-files --mode good --iters 1000 --warmup 100
   scripts/compare_api_workloads.sh standard-files --mode good --name-pattern delta --iters 400 --warmup 40
   scripts/compare_api_workloads.sh qc --mode both --cases 128 --max-size 4096 --iters 200 --warmup 20
   scripts/compare_api_workloads.sh bufread-trailing --mode both --input-size 1024 --trailing-size 123 --iters 1000 --warmup 100
