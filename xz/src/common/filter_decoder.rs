@@ -1,8 +1,8 @@
 use crate::delta::delta_decoder::{lzma_delta_decoder_init, lzma_delta_props_decode};
+use crate::lzma::lzma_decoder::{lzma_lzma_decoder_memusage, lzma_lzma_props_decode};
 use crate::lzma::lzma2_decoder::{
     lzma_lzma2_decoder_init, lzma_lzma2_decoder_memusage, lzma_lzma2_props_decode,
 };
-use crate::lzma::lzma_decoder::{lzma_lzma_decoder_memusage, lzma_lzma_props_decode};
 use crate::simple::arm::lzma_simple_arm_decoder_init;
 use crate::simple::arm64::lzma_simple_arm64_decoder_init;
 use crate::simple::armthumb::lzma_simple_armthumb_decoder_init;

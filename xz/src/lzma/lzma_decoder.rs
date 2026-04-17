@@ -199,9 +199,10 @@ fn resume_block_for_sequence(sequence: lzma_decoder_seq) -> u64 {
 #[inline(always)]
 unsafe fn decoder_is_match_row(coder: *mut lzma_lzma1_decoder, state: u32) -> *mut probability {
     debug_assert!((state as usize) < STATES as usize);
-    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_match)
-        as *mut [probability; 16])
-        .add(state as usize)) as *mut probability
+    ::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*coder).is_match) as *mut [probability; 16])
+            .add(state as usize)
+    ) as *mut probability
 }
 #[inline(always)]
 unsafe fn decoder_is_rep_prob(coder: *mut lzma_lzma1_decoder, state: u32) -> *mut probability {
@@ -226,9 +227,10 @@ unsafe fn decoder_is_rep2_prob(coder: *mut lzma_lzma1_decoder, state: u32) -> *m
 #[inline(always)]
 unsafe fn decoder_is_rep0_long_row(coder: *mut lzma_lzma1_decoder, state: u32) -> *mut probability {
     debug_assert!((state as usize) < STATES as usize);
-    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_rep0_long)
-        as *mut [probability; 16])
-        .add(state as usize)) as *mut probability
+    ::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*coder).is_rep0_long) as *mut [probability; 16])
+            .add(state as usize)
+    ) as *mut probability
 }
 #[inline(always)]
 unsafe fn decoder_dist_slot_row(
@@ -236,9 +238,10 @@ unsafe fn decoder_dist_slot_row(
     dist_state: u32,
 ) -> *mut probability {
     debug_assert!((dist_state as usize) < DIST_STATES as usize);
-    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).dist_slot)
-        as *mut [probability; 64])
-        .add(dist_state as usize)) as *mut probability
+    ::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*coder).dist_slot) as *mut [probability; 64])
+            .add(dist_state as usize)
+    ) as *mut probability
 }
 #[inline(always)]
 unsafe fn decoder_pos_align_prob(coder: *mut lzma_lzma1_decoder, index: u32) -> *mut probability {
@@ -251,9 +254,10 @@ unsafe fn length_low_row(
     pos_state: u32,
 ) -> *mut probability {
     debug_assert!((pos_state as usize) < (1 << LZMA_PB_MAX) as usize);
-    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*len_decoder).low)
-        as *mut [probability; 8])
-        .add(pos_state as usize)) as *mut probability
+    ::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*len_decoder).low) as *mut [probability; 8])
+            .add(pos_state as usize)
+    ) as *mut probability
 }
 #[inline(always)]
 unsafe fn length_mid_row(
@@ -261,9 +265,10 @@ unsafe fn length_mid_row(
     pos_state: u32,
 ) -> *mut probability {
     debug_assert!((pos_state as usize) < (1 << LZMA_PB_MAX) as usize);
-    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*len_decoder).mid)
-        as *mut [probability; 8])
-        .add(pos_state as usize)) as *mut probability
+    ::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*len_decoder).mid) as *mut [probability; 8])
+            .add(pos_state as usize)
+    ) as *mut probability
 }
 #[inline(always)]
 unsafe fn length_high_probs(len_decoder: *mut lzma_length_decoder) -> *mut probability {
@@ -547,12 +552,11 @@ unsafe fn lzma_decode(
                             RC_BIT_MODEL_TOTAL.wrapping_sub((*coder).rep_len_decoder.choice as u32)
                                 >> RC_MOVE_BITS,
                         ) as probability;
-                    probs = ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!(
-                        (*coder).rep_len_decoder.low
-                    )
-                        as *mut [probability; 8])
-                        .offset(pos_state as isize))
-                        as *mut probability;
+                    probs = ::core::ptr::addr_of_mut!(
+                        *(::core::ptr::addr_of_mut!((*coder).rep_len_decoder.low)
+                            as *mut [probability; 8])
+                            .offset(pos_state as isize)
+                    ) as *mut probability;
                     limit = LEN_LOW_SYMBOLS;
                     len = MATCH_LEN_MIN;
                 } else {
@@ -964,15 +968,16 @@ unsafe fn lzma_decode(
                     continue;
                 }
                 len = len.wrapping_add(symbol.wrapping_sub(limit));
-                probs = ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).dist_slot)
-                    as *mut [probability; 64])
-                    .offset(
-                        (if len < (DIST_STATES + MATCH_LEN_MIN) as u32 {
-                            len.wrapping_sub(MATCH_LEN_MIN)
-                        } else {
-                            (DIST_STATES - 1) as u32
-                        }) as isize,
-                    )) as *mut probability;
+                probs = ::core::ptr::addr_of_mut!(
+                    *(::core::ptr::addr_of_mut!((*coder).dist_slot) as *mut [probability; 64])
+                        .offset(
+                            (if len < (DIST_STATES + MATCH_LEN_MIN) as u32 {
+                                len.wrapping_sub(MATCH_LEN_MIN)
+                            } else {
+                                (DIST_STATES - 1) as u32
+                            }) as isize,
+                        )
+                ) as *mut probability;
                 symbol = 1;
                 current_block = 4174862988780014241;
                 continue;
@@ -999,12 +1004,11 @@ unsafe fn lzma_decode(
                                 .wrapping_sub((*coder).match_len_decoder.choice2 as u32)
                                 >> RC_MOVE_BITS,
                         ) as probability;
-                    probs = ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!(
-                        (*coder).match_len_decoder.mid
-                    )
-                        as *mut [probability; 8])
-                        .offset(pos_state as isize))
-                        as *mut probability;
+                    probs = ::core::ptr::addr_of_mut!(
+                        *(::core::ptr::addr_of_mut!((*coder).match_len_decoder.mid)
+                            as *mut [probability; 8])
+                            .offset(pos_state as isize)
+                    ) as *mut probability;
                     limit = LEN_MID_SYMBOLS;
                     len = (MATCH_LEN_MIN + LEN_LOW_SYMBOLS) as u32;
                 } else {
@@ -1041,12 +1045,11 @@ unsafe fn lzma_decode(
                                 .wrapping_sub((*coder).match_len_decoder.choice as u32)
                                 >> RC_MOVE_BITS,
                         ) as probability;
-                    probs = ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!(
-                        (*coder).match_len_decoder.low
-                    )
-                        as *mut [probability; 8])
-                        .offset(pos_state as isize))
-                        as *mut probability;
+                    probs = ::core::ptr::addr_of_mut!(
+                        *(::core::ptr::addr_of_mut!((*coder).match_len_decoder.low)
+                            as *mut [probability; 8])
+                            .offset(pos_state as isize)
+                    ) as *mut probability;
                     limit = LEN_LOW_SYMBOLS;
                     len = MATCH_LEN_MIN;
                 } else {
@@ -1300,12 +1303,11 @@ unsafe fn lzma_decode(
                                 .wrapping_sub((*coder).rep_len_decoder.choice2 as u32)
                                 >> RC_MOVE_BITS,
                         ) as probability;
-                    probs = ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!(
-                        (*coder).rep_len_decoder.mid
-                    )
-                        as *mut [probability; 8])
-                        .offset(pos_state as isize))
-                        as *mut probability;
+                    probs = ::core::ptr::addr_of_mut!(
+                        *(::core::ptr::addr_of_mut!((*coder).rep_len_decoder.mid)
+                            as *mut [probability; 8])
+                            .offset(pos_state as isize)
+                    ) as *mut probability;
                     limit = LEN_MID_SYMBOLS;
                     len = (MATCH_LEN_MIN + LEN_LOW_SYMBOLS) as u32;
                 } else {
@@ -1548,17 +1550,17 @@ unsafe fn lzma_decode(
                                 len = symbol;
                             }
                         }
-                        probs = ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!(
-                            (*coder).dist_slot
-                        )
-                            as *mut [probability; 64])
-                            .offset(
-                                (if len < (DIST_STATES + MATCH_LEN_MIN) as u32 {
-                                    len.wrapping_sub(MATCH_LEN_MIN)
-                                } else {
-                                    (DIST_STATES - 1) as u32
-                                }) as isize,
-                            )) as *mut probability;
+                        probs = ::core::ptr::addr_of_mut!(
+                            *(::core::ptr::addr_of_mut!((*coder).dist_slot)
+                                as *mut [probability; 64])
+                                .offset(
+                                    (if len < (DIST_STATES + MATCH_LEN_MIN) as u32 {
+                                        len.wrapping_sub(MATCH_LEN_MIN)
+                                    } else {
+                                        (DIST_STATES - 1) as u32
+                                    }) as isize,
+                                )
+                        ) as *mut probability;
                         symbol = 1;
                         if rc.range < RC_TOP_VALUE as u32 {
                             rc.range <<= RC_SHIFT_BITS;

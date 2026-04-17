@@ -183,6 +183,5 @@ fn main() {
         &path_externs,
     );
     env::set_var("RUSTC", &rustc_wrapper);
-
     ctest::generate_test(&mut cfg, rust_api, "all.rs").unwrap();
 }

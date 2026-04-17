@@ -175,9 +175,9 @@ record_pair \
   size \
   "focused uncompressed_size random 1MiB" \
   xz \
-  "$PROBE_RUST_BIN --workload size --compressed-input $DECODE_INPUT --expected-size 1048576 --iters 10000000 --warmup 1000000" \
+  "$PROBE_RUST_BIN --workload size --compressed-input $DECODE_INPUT --expected-size 1048576 --iters 2000000 --warmup 200000" \
   c \
-  "$PROBE_C_BIN --workload size --compressed-input $DECODE_INPUT --expected-size 1048576 --iters 10000000 --warmup 1000000"
+  "$PROBE_C_BIN --workload size --compressed-input $DECODE_INPUT --expected-size 1048576 --iters 2000000 --warmup 200000"
 
 record_pair \
   crc32 \

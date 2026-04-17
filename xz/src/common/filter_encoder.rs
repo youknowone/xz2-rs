@@ -1,9 +1,9 @@
 use crate::delta::delta_encoder::{lzma_delta_encoder_init, lzma_delta_props_encode};
+use crate::lzma::lzma_encoder::lzma_lzma_props_encode;
 use crate::lzma::lzma2_encoder::{
     lzma_lzma2_block_size, lzma_lzma2_encoder_init, lzma_lzma2_encoder_memusage,
     lzma_lzma2_props_encode,
 };
-use crate::lzma::lzma_encoder::lzma_lzma_props_encode;
 use crate::simple::arm::lzma_simple_arm_encoder_init;
 use crate::simple::arm64::lzma_simple_arm64_encoder_init;
 use crate::simple::armthumb::lzma_simple_armthumb_encoder_init;
@@ -390,11 +390,7 @@ pub unsafe fn lzma_mt_block_size(filters: *const lzma_filter) -> u64 {
         }
         i += 1;
     }
-    if max == 0 {
-        UINT64_MAX
-    } else {
-        max
-    }
+    if max == 0 { UINT64_MAX } else { max }
 }
 pub unsafe fn lzma_properties_size(size: *mut u32, filter: *const lzma_filter) -> lzma_ret {
     let fe: *const lzma_filter_encoder = encoder_find((*filter).id) as *const lzma_filter_encoder;

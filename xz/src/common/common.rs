@@ -1,9 +1,9 @@
 use crate::types::*;
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
-use std::alloc::{alloc, alloc_zeroed, dealloc, Layout};
+use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
 
 #[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
-extern "C" {
+unsafe extern "C" {
     fn malloc(__size: size_t) -> *mut c_void;
     fn calloc(__count: size_t, __size: size_t) -> *mut c_void;
     fn free(_: *mut c_void);
@@ -26,7 +26,7 @@ fn malloc(size: size_t) -> *mut c_void {
         Some(layout) => layout,
         None => return core::ptr::null_mut(),
     };
-    let base = alloc(layout);
+    let base = unsafe { alloc(layout) };
     if base.is_null() {
         return core::ptr::null_mut();
     }
@@ -46,7 +46,7 @@ fn calloc(count: size_t, size: size_t) -> *mut c_void {
         Some(layout) => layout,
         None => return core::ptr::null_mut(),
     };
-    let base = alloc_zeroed(layout);
+    let base = unsafe { alloc_zeroed(layout) };
     if base.is_null() {
         return core::ptr::null_mut();
     }
@@ -61,10 +61,10 @@ unsafe fn free(ptr: *mut c_void) {
     if ptr.is_null() {
         return;
     }
-    let base = (ptr as *mut u8).sub(LZMA_ALLOC_HEADER_SIZE);
-    let total_size = *(base as *const usize);
-    let layout = Layout::from_size_align_unchecked(total_size, LZMA_ALLOC_ALIGN);
-    dealloc(base, layout);
+    let base = unsafe { (ptr as *mut u8).sub(LZMA_ALLOC_HEADER_SIZE) };
+    let total_size = unsafe { *(base as *const usize) };
+    let layout = unsafe { Layout::from_size_align_unchecked(total_size, LZMA_ALLOC_ALIGN) };
+    unsafe { dealloc(base, layout) };
 }
 pub const LZMA_VERSION_MAJOR: u32 = 5;
 pub const LZMA_VERSION_MINOR: u32 = 8;

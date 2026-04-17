@@ -6,9 +6,9 @@ use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, WAIT_OBJECT_0};
 use windows_sys::Win32::System::SystemInformation::GetTickCount;
 #[cfg(windows)]
 use windows_sys::Win32::System::Threading::{
-    DeleteCriticalSection, EnterCriticalSection, InitializeConditionVariable,
-    InitializeCriticalSection, LeaveCriticalSection, SleepConditionVariableCS, WaitForSingleObject,
-    WakeConditionVariable, CONDITION_VARIABLE, CRITICAL_SECTION, INFINITE,
+    CONDITION_VARIABLE, CRITICAL_SECTION, DeleteCriticalSection, EnterCriticalSection, INFINITE,
+    InitializeConditionVariable, InitializeCriticalSection, LeaveCriticalSection,
+    SleepConditionVariableCS, WaitForSingleObject, WakeConditionVariable,
 };
 
 #[cfg(windows)]

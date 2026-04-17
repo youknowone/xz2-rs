@@ -36,10 +36,11 @@ pub struct lzma_filter {
     pub options: *mut c_void,
 }
 pub use crate::common::common_types::{
+    ISEQ_END, ISEQ_ERROR, ISEQ_FINISH, ISEQ_FULL_BARRIER, ISEQ_FULL_FLUSH, ISEQ_RUN,
+    ISEQ_SYNC_FLUSH, LZMA_MEMUSAGE_BASE, LZMA_SUPPORTED_FLAGS, LZMA_THREADS_MAX,
     lzma_code_function, lzma_end_function, lzma_filter_info, lzma_filter_info_s,
     lzma_init_function, lzma_internal, lzma_internal_s, lzma_internal_sequence, lzma_next_coder,
-    lzma_next_coder_s, ISEQ_END, ISEQ_ERROR, ISEQ_FINISH, ISEQ_FULL_BARRIER, ISEQ_FULL_FLUSH,
-    ISEQ_RUN, ISEQ_SYNC_FLUSH, LZMA_MEMUSAGE_BASE, LZMA_SUPPORTED_FLAGS, LZMA_THREADS_MAX,
+    lzma_next_coder_s,
 };
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -875,14 +876,14 @@ pub use crate::common::stream_flags_encoder::{
     lzma_stream_footer_encode, lzma_stream_header_encode,
 };
 pub use crate::common::threading::{
-    __darwin_time_t, clockid_t, mythread, mythread_cond, mythread_cond_destroy, mythread_cond_init,
-    mythread_cond_signal, mythread_cond_timedwait, mythread_cond_wait, mythread_condtime,
-    mythread_condtime_set, mythread_create, mythread_join, mythread_mutex, mythread_mutex_destroy,
-    mythread_mutex_init, mythread_mutex_lock, mythread_mutex_unlock, mythread_sigmask,
-    pthread_attr_t, pthread_cond_t, pthread_condattr_t, pthread_mutex_t, pthread_mutexattr_t,
-    pthread_t, sigset_t, time_t, timespec, MYTHREAD_RET_VALUE, SIG_SETMASK, _CLOCK_MONOTONIC,
-    _CLOCK_MONOTONIC_RAW, _CLOCK_MONOTONIC_RAW_APPROX, _CLOCK_PROCESS_CPUTIME_ID, _CLOCK_REALTIME,
-    _CLOCK_THREAD_CPUTIME_ID, _CLOCK_UPTIME_RAW, _CLOCK_UPTIME_RAW_APPROX,
+    __darwin_time_t, _CLOCK_MONOTONIC, _CLOCK_MONOTONIC_RAW, _CLOCK_MONOTONIC_RAW_APPROX,
+    _CLOCK_PROCESS_CPUTIME_ID, _CLOCK_REALTIME, _CLOCK_THREAD_CPUTIME_ID, _CLOCK_UPTIME_RAW,
+    _CLOCK_UPTIME_RAW_APPROX, MYTHREAD_RET_VALUE, SIG_SETMASK, clockid_t, mythread, mythread_cond,
+    mythread_cond_destroy, mythread_cond_init, mythread_cond_signal, mythread_cond_timedwait,
+    mythread_cond_wait, mythread_condtime, mythread_condtime_set, mythread_create, mythread_join,
+    mythread_mutex, mythread_mutex_destroy, mythread_mutex_init, mythread_mutex_lock,
+    mythread_mutex_unlock, mythread_sigmask, pthread_attr_t, pthread_cond_t, pthread_condattr_t,
+    pthread_mutex_t, pthread_mutexattr_t, pthread_t, sigset_t, time_t, timespec,
 };
 pub use crate::common::vli_decoder::lzma_vli_decode;
 pub use crate::common::vli_encoder::lzma_vli_encode;
@@ -900,7 +901,7 @@ pub(crate) use crate::lzma::lzma_encoder::{lzma_lzma_encoder_init, lzma_lzma_enc
 pub use crate::lzma::lzma_encoder_presets::lzma_lzma_preset;
 pub use crate::rangecoder::price_table::lzma_rc_prices;
 pub(crate) use crate::simple::simple_coder::lzma_simple_coder_init;
-extern "C" {
+unsafe extern "C" {
     pub fn memcmp(s1: *const c_void, s2: *const c_void, n: size_t) -> c_int;
     pub fn strlen(s: *const c_char) -> size_t;
 }

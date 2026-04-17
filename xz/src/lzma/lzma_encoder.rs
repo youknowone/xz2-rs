@@ -43,16 +43,18 @@ unsafe fn coder_rep_slot_mut(coder: *mut lzma_lzma1_encoder, index: usize) -> *m
 #[inline(always)]
 unsafe fn encoder_is_match_row(coder: *mut lzma_lzma1_encoder, state: u32) -> *mut probability {
     debug_assert!((state as usize) < STATES as usize);
-    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_match)
-        as *mut [probability; 16])
-        .add(state as usize)) as *mut probability
+    ::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*coder).is_match) as *mut [probability; 16])
+            .add(state as usize)
+    ) as *mut probability
 }
 #[inline(always)]
 unsafe fn encoder_is_rep0_long_row(coder: *mut lzma_lzma1_encoder, state: u32) -> *mut probability {
     debug_assert!((state as usize) < STATES as usize);
-    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_rep0_long)
-        as *mut [probability; 16])
-        .add(state as usize)) as *mut probability
+    ::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*coder).is_rep0_long) as *mut [probability; 16])
+            .add(state as usize)
+    ) as *mut probability
 }
 #[inline(always)]
 unsafe fn encoder_is_rep_slot(
@@ -73,9 +75,10 @@ unsafe fn encoder_dist_special_prob(
 #[inline(always)]
 unsafe fn encoder_dist_slot_row(coder: *mut lzma_lzma1_encoder, state: u32) -> *mut probability {
     debug_assert!((state as usize) < DIST_STATES as usize);
-    ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).dist_slot)
-        as *mut [probability; 64])
-        .add(state as usize)) as *mut probability
+    ::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*coder).dist_slot) as *mut [probability; 64])
+            .add(state as usize)
+    ) as *mut probability
 }
 #[inline(always)]
 unsafe fn encoder_dist_align_prob(coder: *mut lzma_lzma1_encoder, index: u32) -> *mut probability {
@@ -478,9 +481,10 @@ unsafe fn length_counter(lc: *mut lzma_length_encoder, pos_state: u32) -> *mut u
 }
 #[inline(always)]
 unsafe fn is_match_prob(coder: *mut lzma_lzma1_encoder, pos_state: u32) -> *mut probability {
-    (::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_match)
-        as *mut [probability; 16])
-        .add((*coder).state as usize)) as *mut probability)
+    (::core::ptr::addr_of_mut!(
+        *(::core::ptr::addr_of_mut!((*coder).is_match) as *mut [probability; 16])
+            .add((*coder).state as usize)
+    ) as *mut probability)
         .add(pos_state as usize)
 }
 #[inline(always)]
@@ -572,9 +576,10 @@ unsafe fn match_0(coder: *mut lzma_lzma1_encoder, pos_state: u32, distance: u32,
     };
     rc_bittree(
         ::core::ptr::addr_of_mut!((*coder).rc),
-        ::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).dist_slot)
-            as *mut [probability; 64])
-            .offset(dist_state as isize)) as *mut probability,
+        ::core::ptr::addr_of_mut!(
+            *(::core::ptr::addr_of_mut!((*coder).dist_slot) as *mut [probability; 64])
+                .offset(dist_state as isize)
+        ) as *mut probability,
         DIST_SLOT_BITS,
         dist_slot,
     );
@@ -624,9 +629,10 @@ unsafe fn rep_match(coder: *mut lzma_lzma1_encoder, pos_state: u32, rep: u32, le
         );
         rc_bit(
             ::core::ptr::addr_of_mut!((*coder).rc),
-            (::core::ptr::addr_of_mut!(*(::core::ptr::addr_of_mut!((*coder).is_rep0_long)
-                as *mut [probability; 16])
-                .offset((*coder).state as isize)) as *mut probability)
+            (::core::ptr::addr_of_mut!(
+                *(::core::ptr::addr_of_mut!((*coder).is_rep0_long) as *mut [probability; 16])
+                    .offset((*coder).state as isize)
+            ) as *mut probability)
                 .offset(pos_state as isize) as *mut probability,
             (len != 1) as u32,
         );

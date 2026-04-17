@@ -65,18 +65,20 @@ Examples:
 ```bash
 scripts/compare_workloads.sh encode --input-kind random --size 1048576 --iters 20 --warmup 3
 scripts/compare_workloads.sh decode --input-kind random --size 1048576 --iters 50 --warmup 5
-scripts/compare_workloads.sh size --input-kind random --size 1048576 --iters 10000000 --warmup 1000000
+scripts/compare_workloads.sh size --input-kind random --size 1048576 --iters 2000000 --warmup 200000
 scripts/compare_workloads.sh crc64 --size 16777216 --iters 400 --warmup 20
 scripts/compare_workloads.sh crc64 --size 1048576 --chunk-size 16 --iters 400 --warmup 40
 ```
 
 This writes workload-specific `hyperfine` reports under `target/perf-results/`.
 
-For tiny inputs, increase `--iters` until one benchmarked command takes at least around a
-second. Otherwise process startup noise can dominate the comparison even when the actual
-backend work is near parity. The `size` workload is especially small, so it needs millions
-of in-process iterations; the comparison scripts also pre-generate its compressed input so
-the one-time encode setup doesn't hide the `uncompressed_size()` path.
+For tiny inputs, increase `--iters` until one benchmarked command takes at least a few
+hundred milliseconds. Otherwise process startup noise can dominate the comparison even when
+the actual backend work is near parity. The `size` workload is especially small, so it
+still needs millions of in-process iterations; start around `--iters 2000000 --warmup
+200000` for a 1 MiB random input and scale up only if the results remain noisy. The
+comparison scripts also pre-generate its compressed input so the one-time encode setup
+doesn't hide the `uncompressed_size()` path.
 
 There is still a criterion bench in [`benches/backend_comparison.rs`](../benches/backend_comparison.rs), but it now measures one backend per run. Use it only with exactly one backend feature enabled.
 

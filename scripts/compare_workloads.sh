@@ -8,7 +8,7 @@ Usage: scripts/compare_workloads.sh <encode|decode|size|crc32|crc64> [perf-probe
 Examples:
   scripts/compare_workloads.sh encode --input-kind random --size 1048576 --iters 20 --warmup 3
   scripts/compare_workloads.sh decode --input-kind random --size 1048576 --iters 50 --warmup 5
-  scripts/compare_workloads.sh size --input-kind random --size 1048576 --iters 10000000 --warmup 1000000
+  scripts/compare_workloads.sh size --input-kind random --size 1048576 --iters 2000000 --warmup 200000
 EOF
   exit 2
 fi

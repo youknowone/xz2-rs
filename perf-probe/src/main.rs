@@ -18,10 +18,10 @@ use std::time::{Duration, Instant};
 
 #[cfg(feature = "liblzma-sys")]
 use liblzma_sys::{
-    lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_index as BackendIndex,
-    lzma_index_buffer_decode, lzma_index_end, lzma_index_uncompressed_size,
-    lzma_stream_buffer_bound, lzma_stream_buffer_decode, lzma_stream_flags as BackendStreamFlags,
-    lzma_stream_footer_decode, LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE,
+    LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE, lzma_crc32, lzma_crc64,
+    lzma_easy_buffer_encode, lzma_index as BackendIndex, lzma_index_buffer_decode, lzma_index_end,
+    lzma_index_uncompressed_size, lzma_stream_buffer_bound, lzma_stream_buffer_decode,
+    lzma_stream_flags as BackendStreamFlags, lzma_stream_footer_decode,
 };
 #[cfg(feature = "xz")]
 use xz::check::{crc32_fast::lzma_crc32, crc64_fast::lzma_crc64};
@@ -36,15 +36,15 @@ use xz::common::{
 };
 #[cfg(feature = "xz")]
 use xz::types::{
-    lzma_index as BackendIndex, lzma_stream_flags as BackendStreamFlags, LZMA_CHECK_CRC64, LZMA_OK,
-    LZMA_STREAM_HEADER_SIZE,
+    LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE, lzma_index as BackendIndex,
+    lzma_stream_flags as BackendStreamFlags,
 };
 #[cfg(feature = "xz-sys")]
 use xz_sys::{
-    lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_index as BackendIndex,
-    lzma_index_buffer_decode, lzma_index_end, lzma_index_uncompressed_size,
-    lzma_stream_buffer_bound, lzma_stream_buffer_decode, lzma_stream_flags as BackendStreamFlags,
-    lzma_stream_footer_decode, LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE,
+    LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE, lzma_crc32, lzma_crc64,
+    lzma_easy_buffer_encode, lzma_index as BackendIndex, lzma_index_buffer_decode, lzma_index_end,
+    lzma_index_uncompressed_size, lzma_stream_buffer_bound, lzma_stream_buffer_decode,
+    lzma_stream_flags as BackendStreamFlags, lzma_stream_footer_decode,
 };
 
 #[cfg(feature = "xz")]
@@ -489,7 +489,10 @@ fn fold_bytes(len: usize, data: &[u8]) -> u64 {
 }
 
 unsafe fn backend_encode(input: &[u8], preset: u32) -> Vec<u8> {
+    #[cfg(feature = "xz")]
     let bound = lzma_stream_buffer_bound(input.len());
+    #[cfg(any(feature = "xz-sys", feature = "liblzma-sys"))]
+    let bound = unsafe { lzma_stream_buffer_bound(input.len()) };
     let mut out = vec![0u8; bound];
     let mut out_pos: usize = 0;
     let ret = unsafe {

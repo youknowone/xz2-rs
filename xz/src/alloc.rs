@@ -1,5 +1,5 @@
 use crate::types::*;
-use std::alloc::{alloc, alloc_zeroed, dealloc, Layout};
+use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
 
 const RUST_ALLOC_ALIGN: usize = 16;
 
