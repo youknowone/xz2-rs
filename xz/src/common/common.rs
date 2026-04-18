@@ -1,6 +1,7 @@
+use crate::alloc::allocator_or_rust;
 use crate::types::*;
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
-use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
+use std::alloc::{alloc, alloc_zeroed, dealloc, Layout};
 
 #[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
 unsafe extern "C" {
@@ -86,44 +87,32 @@ pub unsafe fn lzma_alloc(mut size: size_t, allocator: *const lzma_allocator) -> 
     if size == 0 {
         size = 1;
     }
-    let mut ptr: *mut c_void = core::ptr::null_mut();
-    if !allocator.is_null() {
-        if let Some(alloc) = (*allocator).alloc {
-            ptr = alloc((*allocator).opaque, 1, size);
-        } else {
-            ptr = malloc(size);
-        }
+    let allocator = allocator_or_rust(allocator);
+    if let Some(alloc) = (*allocator).alloc {
+        alloc((*allocator).opaque, 1, size)
     } else {
-        ptr = malloc(size);
+        malloc(size)
     }
-    ptr
 }
 pub unsafe fn lzma_alloc_zero(mut size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
     if size == 0 {
         size = 1;
     }
-    let mut ptr: *mut c_void = core::ptr::null_mut();
-    if !allocator.is_null() {
-        if let Some(alloc) = (*allocator).alloc {
-            ptr = alloc((*allocator).opaque, 1, size);
-        } else {
-            ptr = calloc(1, size);
-        }
-        if !ptr.is_null() {
-            core::ptr::write_bytes(ptr as *mut u8, 0, size);
-        }
+    let allocator = allocator_or_rust(allocator);
+    let ptr = if let Some(alloc) = (*allocator).alloc {
+        alloc((*allocator).opaque, 1, size)
     } else {
-        ptr = calloc(1, size);
+        calloc(1, size)
+    };
+    if !ptr.is_null() {
+        core::ptr::write_bytes(ptr as *mut u8, 0, size);
     }
     ptr
 }
 pub unsafe fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
-    if !allocator.is_null() {
-        if let Some(free_func) = (*allocator).free {
-            free_func((*allocator).opaque, ptr);
-        } else {
-            free(ptr);
-        }
+    let allocator = allocator_or_rust(allocator);
+    if let Some(free_func) = (*allocator).free {
+        free_func((*allocator).opaque, ptr);
     } else {
         free(ptr);
     };
