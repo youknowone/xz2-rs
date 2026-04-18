@@ -159,14 +159,8 @@ pub unsafe fn lzma_outq_read(
 }
 pub unsafe fn lzma_outq_enable_partial_output(
     outq: *mut lzma_outq,
-    enable_partial_output: Option<unsafe fn(*mut c_void) -> ()>,
+    enable_partial_output: unsafe fn(*mut c_void) -> (),
 ) {
-    let enable_partial_output = if let Some(enable_partial_output) = enable_partial_output {
-        enable_partial_output
-    } else {
-        return;
-    };
-
     if !(*outq).head.is_null() && !(*(*outq).head).finished && !(*(*outq).head).worker.is_null() {
         enable_partial_output((*(*outq).head).worker);
         (*(*outq).head).worker = core::ptr::null_mut();

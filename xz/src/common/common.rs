@@ -197,11 +197,8 @@ pub unsafe fn lzma_next_filter_update(
     if (*reversed_filters).id == LZMA_VLI_UNKNOWN {
         return LZMA_OK;
     }
-    let update = if let Some(update) = (*next).update {
-        update
-    } else {
-        return LZMA_PROG_ERROR;
-    };
+    debug_assert!((*next).update.is_some());
+    let update = (*next).update.unwrap_unchecked();
     update(
         (*next).coder,
         allocator,

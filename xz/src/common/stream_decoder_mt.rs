@@ -352,7 +352,7 @@ unsafe fn initialize_new_thread(
             (*thr).mem_filters = 0;
             if mythread_create(
                 ::core::ptr::addr_of_mut!((*thr).thread_id),
-                Some(worker_decoder as unsafe extern "C" fn(*mut c_void) -> *mut c_void),
+                worker_decoder as unsafe extern "C" fn(*mut c_void) -> *mut c_void,
                 thr as *mut c_void,
             ) != 0
             {
@@ -441,7 +441,7 @@ unsafe fn read_output_and_wait(
                     if ret == LZMA_STREAM_END {
                         lzma_outq_enable_partial_output(
                             ::core::ptr::addr_of_mut!((*coder).outq),
-                            Some(worker_enable_partial_update as unsafe fn(*mut c_void) -> ()),
+                            worker_enable_partial_update as unsafe fn(*mut c_void) -> (),
                         );
                     }
                     if ret != LZMA_STREAM_END {
@@ -814,7 +814,7 @@ unsafe fn stream_decode_mt_thread_init(
         while mythread_j_1486 == 0 {
             lzma_outq_enable_partial_output(
                 ::core::ptr::addr_of_mut!((*coder).outq),
-                Some(worker_enable_partial_update as unsafe fn(*mut c_void) -> ()),
+                worker_enable_partial_update as unsafe fn(*mut c_void) -> (),
             );
             mythread_j_1486 = 1;
         }

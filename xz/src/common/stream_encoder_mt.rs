@@ -487,7 +487,7 @@ unsafe fn initialize_new_thread(
             (*thr).filters[0].id = LZMA_VLI_UNKNOWN;
             if mythread_create(
                 ::core::ptr::addr_of_mut!((*thr).thread_id),
-                Some(worker_start as unsafe extern "C" fn(*mut c_void) -> *mut c_void),
+                worker_start as unsafe extern "C" fn(*mut c_void) -> *mut c_void,
                 thr as *mut c_void,
             ) != 0
             {

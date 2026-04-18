@@ -2397,16 +2397,14 @@ pub(crate) unsafe fn lzma_lzma_decoder_init(
         next,
         allocator,
         filters,
-        Some(
-            lzma_decoder_init
-                as unsafe fn(
-                    *mut lzma_lz_decoder,
-                    *const lzma_allocator,
-                    lzma_vli,
-                    *const c_void,
-                    *mut lzma_lz_options,
-                ) -> lzma_ret,
-        ),
+        lzma_decoder_init
+            as unsafe fn(
+                *mut lzma_lz_decoder,
+                *const lzma_allocator,
+                lzma_vli,
+                *const c_void,
+                *mut lzma_lz_options,
+            ) -> lzma_ret,
     )
 }
 pub unsafe fn lzma_lzma_lclppb_decode(options: *mut lzma_options_lzma, mut byte: u8) -> bool {

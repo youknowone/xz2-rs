@@ -70,11 +70,8 @@ unsafe fn auto_decode(
     }
     match current_block_28 {
         13935781298497728377 => {
-            let code = if let Some(code) = (*coder).next.code {
-                code
-            } else {
-                return LZMA_PROG_ERROR;
-            };
+            debug_assert!((*coder).next.code.is_some());
+            let code = (*coder).next.code.unwrap_unchecked();
             let ret: lzma_ret = code(
                 (*coder).next.coder,
                 allocator,

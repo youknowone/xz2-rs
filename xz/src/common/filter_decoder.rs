@@ -303,7 +303,7 @@ pub unsafe fn lzma_raw_decoder_init(
         next,
         allocator,
         options,
-        Some(coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder),
+        coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder,
         false,
     )
 }
@@ -327,7 +327,7 @@ pub unsafe fn lzma_raw_decoder(strm: *mut lzma_stream, options: *const lzma_filt
 }
 pub unsafe fn lzma_raw_decoder_memusage(filters: *const lzma_filter) -> u64 {
     lzma_raw_coder_memusage(
-        Some(coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder),
+        coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder,
         filters,
     )
 }

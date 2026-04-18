@@ -330,7 +330,7 @@ pub unsafe fn lzma_raw_encoder_init(
         next,
         allocator,
         filters,
-        Some(coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder),
+        coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder,
         true,
     )
 }
@@ -343,7 +343,7 @@ pub unsafe fn lzma_raw_encoder(strm: *mut lzma_stream, filters: *const lzma_filt
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
         (*strm).allocator,
         filters,
-        Some(coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder),
+        coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder,
         true,
     );
     if ret != LZMA_OK {
@@ -366,7 +366,7 @@ pub unsafe fn lzma_raw_encoder(strm: *mut lzma_stream, filters: *const lzma_filt
 }
 pub unsafe fn lzma_raw_encoder_memusage(filters: *const lzma_filter) -> u64 {
     lzma_raw_coder_memusage(
-        Some(coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder),
+        coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder,
         filters,
     )
 }

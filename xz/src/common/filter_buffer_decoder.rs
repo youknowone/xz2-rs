@@ -34,12 +34,8 @@ pub unsafe fn lzma_raw_buffer_decode(
     if ret != LZMA_OK {
         return ret;
     }
-    let code = if let Some(code) = next.code {
-        code
-    } else {
-        lzma_next_end(::core::ptr::addr_of_mut!(next), allocator);
-        return LZMA_PROG_ERROR;
-    };
+    debug_assert!(next.code.is_some());
+    let code = next.code.unwrap_unchecked();
     let in_start: size_t = *in_pos;
     let out_start: size_t = *out_pos;
     let mut ret: lzma_ret = code(

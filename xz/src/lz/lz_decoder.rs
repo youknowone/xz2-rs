@@ -178,15 +178,13 @@ pub unsafe fn lzma_lz_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
-    lz_init: Option<
-        unsafe fn(
-            *mut lzma_lz_decoder,
-            *const lzma_allocator,
-            lzma_vli,
-            *const c_void,
-            *mut lzma_lz_options,
-        ) -> lzma_ret,
-    >,
+    lz_init: unsafe fn(
+        *mut lzma_lz_decoder,
+        *const lzma_allocator,
+        lzma_vli,
+        *const c_void,
+        *mut lzma_lz_options,
+    ) -> lzma_ret,
 ) -> lzma_ret {
     let mut coder: *mut lzma_coder = (*next).coder as *mut lzma_coder;
     if coder.is_null() {
@@ -230,11 +228,6 @@ pub unsafe fn lzma_lz_decoder_init(
         dict_size: 0,
         preset_dict: core::ptr::null(),
         preset_dict_size: 0,
-    };
-    let lz_init = if let Some(lz_init) = lz_init {
-        lz_init
-    } else {
-        return LZMA_PROG_ERROR;
     };
     let ret: lzma_ret = lz_init(
         ::core::ptr::addr_of_mut!((*coder).lz),

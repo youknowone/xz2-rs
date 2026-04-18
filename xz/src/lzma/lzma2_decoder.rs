@@ -237,16 +237,14 @@ pub(crate) unsafe fn lzma_lzma2_decoder_init(
         next,
         allocator,
         filters,
-        Some(
-            lzma2_decoder_init
-                as unsafe fn(
-                    *mut lzma_lz_decoder,
-                    *const lzma_allocator,
-                    lzma_vli,
-                    *const c_void,
-                    *mut lzma_lz_options,
-                ) -> lzma_ret,
-        ),
+        lzma2_decoder_init
+            as unsafe fn(
+                *mut lzma_lz_decoder,
+                *const lzma_allocator,
+                lzma_vli,
+                *const c_void,
+                *mut lzma_lz_options,
+            ) -> lzma_ret,
     )
 }
 pub(crate) unsafe fn lzma_lzma2_decoder_memusage(options: *const c_void) -> u64 {

@@ -20,16 +20,10 @@ unsafe fn microlzma_encode(
     let out_start: size_t = *out_pos;
     let in_start: size_t = *in_pos;
     let mut uncomp_size: u64 = 0;
-    let set_out_limit = if let Some(set_out_limit) = (*coder).lzma.set_out_limit {
-        set_out_limit
-    } else {
-        return LZMA_PROG_ERROR;
-    };
-    let code = if let Some(code) = (*coder).lzma.code {
-        code
-    } else {
-        return LZMA_PROG_ERROR;
-    };
+    debug_assert!((*coder).lzma.set_out_limit.is_some());
+    let set_out_limit = (*coder).lzma.set_out_limit.unwrap_unchecked();
+    debug_assert!((*coder).lzma.code.is_some());
+    let code = (*coder).lzma.code.unwrap_unchecked();
     if set_out_limit(
         (*coder).lzma.coder,
         ::core::ptr::addr_of_mut!(uncomp_size),

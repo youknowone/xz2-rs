@@ -215,16 +215,14 @@ pub fn mythread_sigmask(_how: c_int, _set: *const sigset_t, _oset: *mut sigset_t
 
 #[cfg(windows)]
 struct mythread_start_info {
-    func: Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
+    func: unsafe extern "C" fn(*mut c_void) -> *mut c_void,
     arg: *mut c_void,
 }
 
 #[cfg(windows)]
 unsafe extern "system" fn mythread_start(param: *mut c_void) -> u32 {
     let info = Box::from_raw(param.cast::<mythread_start_info>());
-    if let Some(func) = info.func {
-        let _ = func(info.arg);
-    }
+    let _ = (info.func)(info.arg);
     0
 }
 
@@ -232,7 +230,7 @@ unsafe extern "system" fn mythread_start(param: *mut c_void) -> u32 {
 #[inline]
 pub fn mythread_create(
     thread: *mut mythread,
-    func: Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
+    func: unsafe extern "C" fn(*mut c_void) -> *mut c_void,
     arg: *mut c_void,
 ) -> c_int {
     let mut old: sigset_t = 0;
@@ -247,7 +245,7 @@ pub fn mythread_create(
         pthread_create(
             thread as *mut pthread_t,
             core::ptr::null(),
-            func as Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
+            Some(func),
             arg as *mut c_void,
         )
     };
@@ -263,7 +261,7 @@ pub fn mythread_create(
 #[inline]
 pub fn mythread_create(
     thread: *mut mythread,
-    func: Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
+    func: unsafe extern "C" fn(*mut c_void) -> *mut c_void,
     arg: *mut c_void,
 ) -> c_int {
     let info = Box::into_raw(Box::new(mythread_start_info { func, arg }));

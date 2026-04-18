@@ -231,7 +231,7 @@ pub unsafe fn lzma_raw_coder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     options: *const lzma_filter,
-    coder_find: lzma_filter_find,
+    coder_find: unsafe fn(lzma_vli) -> *const lzma_filter_coder,
     is_encoder: bool,
 ) -> lzma_ret {
     let mut count: size_t = 0;
@@ -239,10 +239,6 @@ pub unsafe fn lzma_raw_coder_init(
     if ret != LZMA_OK {
         return ret;
     }
-    let coder_find = match coder_find {
-        Some(coder_find) => coder_find,
-        None => return LZMA_PROG_ERROR,
-    };
     let mut filters: [lzma_filter_info; 5] = [lzma_filter_info_s {
         id: 0,
         init: None,
@@ -289,17 +285,13 @@ pub unsafe fn lzma_raw_coder_init(
     ret
 }
 pub unsafe fn lzma_raw_coder_memusage(
-    coder_find: lzma_filter_find,
+    coder_find: unsafe fn(lzma_vli) -> *const lzma_filter_coder,
     filters: *const lzma_filter,
 ) -> u64 {
     let mut tmp: size_t = 0;
     if lzma_validate_chain(filters, ::core::ptr::addr_of_mut!(tmp)) != LZMA_OK {
         return UINT64_MAX;
     }
-    let coder_find = match coder_find {
-        Some(coder_find) => coder_find,
-        None => return UINT64_MAX,
-    };
     let mut total: u64 = 0;
     let mut i: size_t = 0;
     loop {
