@@ -16,25 +16,10 @@ unsafe fn coder_match(coder: *const lzma_lzma1_encoder, index: u32) -> *const lz
     debug_assert!((index as usize) < (*coder).matches.len());
     (::core::ptr::addr_of!((*coder).matches) as *const lzma_match).add(index as usize)
 }
-
 #[inline(always)]
-unsafe fn mf_find_callback(
-    mf: *const lzma_mf,
-) -> unsafe extern "C" fn(*mut lzma_mf, *mut lzma_match) -> u32 {
-    debug_assert!((*mf).find.is_some());
-    match (*mf).find {
-        Some(find) => find,
-        None => core::hint::unreachable_unchecked(),
-    }
-}
-
-#[inline(always)]
-unsafe fn mf_skip_callback(mf: *const lzma_mf) -> unsafe extern "C" fn(*mut lzma_mf, u32) -> () {
-    debug_assert!((*mf).skip.is_some());
-    match (*mf).skip {
-        Some(skip) => skip,
-        None => core::hint::unreachable_unchecked(),
-    }
+unsafe fn coder_rep(coder: *const lzma_lzma1_encoder, index: u32) -> u32 {
+    debug_assert!((index as usize) < REPS as usize);
+    *((::core::ptr::addr_of!((*coder).reps) as *const u32).add(index as usize))
 }
 
 pub unsafe fn lzma_lzma_optimum_fast(
@@ -43,8 +28,8 @@ pub unsafe fn lzma_lzma_optimum_fast(
     back_res: *mut u32,
     len_res: *mut u32,
 ) {
-    let mf_find = mf_find_callback(mf);
-    let mf_skip = mf_skip_callback(mf);
+    let mf_find = (*mf).find;
+    let mf_skip = (*mf).skip;
     let nice_len: u32 = (*mf).nice_len;
     let mut len_main: u32 = 0;
     let mut matches_count: u32 = 0;
@@ -71,7 +56,7 @@ pub unsafe fn lzma_lzma_optimum_fast(
     let mut rep_index: u32 = 0;
     let mut i: u32 = 0;
     while i < REPS {
-        let buf_back: *const u8 = buf.offset(-((*coder).reps[i as usize] as isize)).offset(-1);
+        let buf_back: *const u8 = buf.offset(-(coder_rep(coder, i) as isize)).offset(-1);
         if not_equal_16(buf, buf_back) {
             i += 1;
             continue;
@@ -152,8 +137,7 @@ pub unsafe fn lzma_lzma_optimum_fast(
     while i_0 < REPS {
         if memcmp(
             buf as *const c_void,
-            buf.offset(-((*coder).reps[i_0 as usize] as isize))
-                .offset(-1) as *const c_void,
+            buf.offset(-(coder_rep(coder, i_0) as isize)).offset(-1) as *const c_void,
             limit as size_t,
         ) == 0
         {

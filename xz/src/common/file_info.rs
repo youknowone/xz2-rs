@@ -37,12 +37,12 @@ pub const SEQ_PADDING_SEEK: file_info_seq = 1;
 pub const SEQ_MAGIC_BYTES: file_info_seq = 0;
 unsafe fn fill_temp(
     coder: *mut lzma_file_info_coder,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
 ) -> bool {
     (*coder).file_cur_pos += lzma_bufcpy(
-        in_0,
+        input,
         in_pos,
         in_size,
         ::core::ptr::addr_of_mut!((*coder).temp) as *mut u8,
@@ -104,7 +104,7 @@ unsafe fn get_padding_size(buf: *const u8, mut buf_size: size_t) -> size_t {
     let mut padding: size_t = 0;
     while buf_size > 0 && {
         buf_size -= 1;
-        *buf.offset(buf_size as isize) == 0
+        *buf.add(buf_size) == 0
     } {
         padding += 1;
     }
@@ -119,16 +119,19 @@ fn hide_format_error(mut ret: lzma_ret) -> lzma_ret {
 unsafe fn decode_index(
     coder: *mut lzma_file_info_coder,
     allocator: *const lzma_allocator,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
     update_file_cur_pos: bool,
 ) -> lzma_ret {
     let in_start: size_t = *in_pos;
-    let ret: lzma_ret = (*coder).index_decoder.code.unwrap()(
+    let Some(code) = (*coder).index_decoder.code else {
+        return LZMA_PROG_ERROR;
+    };
+    let ret: lzma_ret = code(
         (*coder).index_decoder.coder,
         allocator,
-        in_0,
+        input,
         in_pos,
         in_size,
         core::ptr::null_mut(),
@@ -142,10 +145,10 @@ unsafe fn decode_index(
     }
     ret
 }
-unsafe extern "C" fn file_info_decode(
+unsafe fn file_info_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     mut in_size: size_t,
     _out: *mut u8,
@@ -164,7 +167,7 @@ unsafe extern "C" fn file_info_decode(
                 if (*coder).file_size < LZMA_STREAM_HEADER_SIZE as u64 {
                     return LZMA_FORMAT_ERROR;
                 }
-                if fill_temp(coder, in_0, in_pos, in_size) {
+                if fill_temp(coder, input, in_pos, in_size) {
                     return LZMA_OK;
                 }
                 let ret: lzma_ret = lzma_stream_header_decode(
@@ -188,13 +191,11 @@ unsafe extern "C" fn file_info_decode(
                 }
             }
             SEQ_PADDING_DECODE => {
-                if fill_temp(coder, in_0, in_pos, in_size) {
+                if fill_temp(coder, input, in_pos, in_size) {
                     return LZMA_OK;
                 }
-                let new_padding: size_t = get_padding_size(
-                    ::core::ptr::addr_of_mut!((*coder).temp) as *mut u8,
-                    (*coder).temp_size,
-                ) as size_t;
+                let new_padding: size_t =
+                    get_padding_size((*coder).temp.as_ptr(), (*coder).temp_size);
                 (*coder).stream_padding += new_padding as lzma_vli;
                 (*coder).file_target_pos -= new_padding as u64;
                 if new_padding == (*coder).temp_size {
@@ -215,7 +216,7 @@ unsafe extern "C" fn file_info_decode(
                 }
             }
             SEQ_FOOTER => {
-                if fill_temp(coder, in_0, in_pos, in_size) {
+                if fill_temp(coder, input, in_pos, in_size) {
                     return LZMA_OK;
                 }
                 (*coder).file_target_pos -= LZMA_STREAM_HEADER_SIZE as u64;
@@ -282,7 +283,7 @@ unsafe extern "C" fn file_info_decode(
                     if (in_size - *in_pos) as lzma_vli > (*coder).index_remaining {
                         in_stop = *in_pos + (*coder).index_remaining as size_t;
                     }
-                    decode_index(coder, allocator, in_0, in_pos, in_stop, true)
+                    decode_index(coder, allocator, input, in_pos, in_stop, true)
                 };
                 match ret {
                     LZMA_OK => {
@@ -329,7 +330,7 @@ unsafe extern "C" fn file_info_decode(
                 }
             }
             SEQ_HEADER_DECODE => {
-                if fill_temp(coder, in_0, in_pos, in_size) {
+                if fill_temp(coder, input, in_pos, in_size) {
                     return LZMA_OK;
                 }
                 (*coder).file_target_pos -= LZMA_STREAM_HEADER_SIZE as u64;
@@ -391,7 +392,7 @@ unsafe extern "C" fn file_info_decode(
         }
     }
 }
-unsafe extern "C" fn file_info_decoder_memconfig(
+unsafe fn file_info_decoder_memconfig(
     coder_ptr: *mut c_void,
     memusage: *mut u64,
     old_memlimit: *mut u64,
@@ -407,7 +408,10 @@ unsafe extern "C" fn file_info_decoder_memconfig(
         this_index_memusage = lzma_index_memused((*coder).this_index);
     } else if (*coder).sequence == SEQ_INDEX_DECODE {
         let mut dummy: u64 = 0;
-        if (*coder).index_decoder.memconfig.unwrap()(
+        let Some(memconfig) = (*coder).index_decoder.memconfig else {
+            return LZMA_PROG_ERROR;
+        };
+        if memconfig(
             (*coder).index_decoder.coder,
             ::core::ptr::addr_of_mut!(this_index_memusage),
             ::core::ptr::addr_of_mut!(dummy),
@@ -430,7 +434,10 @@ unsafe extern "C" fn file_info_decoder_memconfig(
             let idec_new_memlimit: u64 = new_memlimit - combined_index_memusage;
             let mut dummy1: u64 = 0;
             let mut dummy2: u64 = 0;
-            if (*coder).index_decoder.memconfig.unwrap()(
+            let Some(memconfig) = (*coder).index_decoder.memconfig else {
+                return LZMA_PROG_ERROR;
+            };
+            if memconfig(
                 (*coder).index_decoder.coder,
                 ::core::ptr::addr_of_mut!(dummy1),
                 ::core::ptr::addr_of_mut!(dummy2),
@@ -444,17 +451,14 @@ unsafe extern "C" fn file_info_decoder_memconfig(
     }
     LZMA_OK
 }
-unsafe extern "C" fn file_info_decoder_end(
-    coder_ptr: *mut c_void,
-    allocator: *const lzma_allocator,
-) {
+unsafe fn file_info_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_file_info_coder = coder_ptr as *mut lzma_file_info_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).index_decoder), allocator);
     lzma_index_end((*coder).this_index, allocator);
     lzma_index_end((*coder).combined_index, allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn lzma_file_info_decoder_init(
+unsafe fn lzma_file_info_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     seek_pos: *mut u64,
@@ -464,7 +468,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
 ) -> lzma_ret {
     if core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut u64,
@@ -476,7 +480,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
         uintptr_t,
     >(Some(
         lzma_file_info_decoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut u64,
@@ -490,7 +494,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
     }
     (*next).init = core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut u64,
@@ -502,7 +506,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
         uintptr_t,
     >(Some(
         lzma_file_info_decoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut u64,
@@ -523,7 +527,7 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             file_info_decode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -535,12 +539,11 @@ unsafe extern "C" fn lzma_file_info_decoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            file_info_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*next).end =
+            Some(file_info_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*next).memconfig = Some(
             file_info_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+                as unsafe fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         );
         (*coder).index_decoder = lzma_next_coder_s {
             coder: core::ptr::null_mut(),

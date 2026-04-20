@@ -143,11 +143,10 @@ pub unsafe fn lzma_index_hash_append(
 }
 pub unsafe fn lzma_index_hash_decode(
     index_hash: *mut lzma_index_hash,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
 ) -> lzma_ret {
-    let mut current_block: u64;
     if *in_pos >= in_size {
         return LZMA_BUF_ERROR;
     }
@@ -156,7 +155,7 @@ pub unsafe fn lzma_index_hash_decode(
     while *in_pos < in_size {
         match (*index_hash).sequence {
             0 => {
-                let byte = *in_0.offset(*in_pos as isize);
+                let byte = *input.offset(*in_pos as isize);
                 *in_pos += 1;
                 if byte != INDEX_INDICATOR {
                     return LZMA_DATA_ERROR;
@@ -168,7 +167,7 @@ pub unsafe fn lzma_index_hash_decode(
                 ret = lzma_vli_decode(
                     ::core::ptr::addr_of_mut!((*index_hash).remaining),
                     ::core::ptr::addr_of_mut!((*index_hash).pos),
-                    in_0,
+                    input,
                     in_pos,
                     in_size,
                 );
@@ -196,7 +195,7 @@ pub unsafe fn lzma_index_hash_decode(
                 ret = lzma_vli_decode(
                     size,
                     ::core::ptr::addr_of_mut!((*index_hash).pos),
-                    in_0,
+                    input,
                     in_pos,
                     in_size,
                 );
@@ -241,68 +240,54 @@ pub unsafe fn lzma_index_hash_decode(
                     (*index_hash).records.index_list_size,
                 )) & 3) as size_t;
                 (*index_hash).sequence = SEQ_PADDING;
-                current_block = 12753679906265593574;
+                continue;
             }
-            5 => {
-                current_block = 12753679906265593574;
-            }
-            6 => {
-                current_block = 88292361528268742;
-            }
+            5 => {}
+            6 => break,
             _ => return LZMA_PROG_ERROR,
         }
-        match current_block {
-            12753679906265593574 => {
-                if (*index_hash).pos > 0 {
-                    (*index_hash).pos -= 1;
-                    let byte = *in_0.offset(*in_pos as isize);
-                    *in_pos += 1;
-                    if byte != 0 {
-                        return LZMA_DATA_ERROR;
-                    }
-                    continue;
-                } else {
-                    if (*index_hash).blocks.blocks_size != (*index_hash).records.blocks_size
-                        || (*index_hash).blocks.uncompressed_size
-                            != (*index_hash).records.uncompressed_size
-                        || (*index_hash).blocks.index_list_size
-                            != (*index_hash).records.index_list_size
-                    {
-                        return LZMA_DATA_ERROR;
-                    }
-                    lzma_check_finish(
-                        ::core::ptr::addr_of_mut!((*index_hash).blocks.check),
-                        LZMA_CHECK_SHA256,
-                    );
-                    lzma_check_finish(
-                        ::core::ptr::addr_of_mut!((*index_hash).records.check),
-                        LZMA_CHECK_SHA256,
-                    );
-                    if memcmp(
-                        ::core::ptr::addr_of_mut!((*index_hash).blocks.check.buffer.u8_0)
-                            as *const c_void,
-                        ::core::ptr::addr_of_mut!((*index_hash).records.check.buffer.u8_0)
-                            as *const c_void,
-                        lzma_check_size(LZMA_CHECK_SHA256) as size_t,
-                    ) != 0
-                    {
-                        return LZMA_DATA_ERROR;
-                    }
-                    (*index_hash).crc32 = lzma_crc32(
-                        in_0.offset(in_start as isize),
-                        *in_pos - in_start,
-                        (*index_hash).crc32,
-                    );
-                    (*index_hash).sequence = SEQ_CRC32;
-                }
+        if (*index_hash).pos > 0 {
+            (*index_hash).pos -= 1;
+            let byte = *input.offset(*in_pos as isize);
+            *in_pos += 1;
+            if byte != 0 {
+                return LZMA_DATA_ERROR;
             }
-            _ => {}
+            continue;
         }
+        if (*index_hash).blocks.blocks_size != (*index_hash).records.blocks_size
+            || (*index_hash).blocks.uncompressed_size != (*index_hash).records.uncompressed_size
+            || (*index_hash).blocks.index_list_size != (*index_hash).records.index_list_size
+        {
+            return LZMA_DATA_ERROR;
+        }
+        lzma_check_finish(
+            ::core::ptr::addr_of_mut!((*index_hash).blocks.check),
+            LZMA_CHECK_SHA256,
+        );
+        lzma_check_finish(
+            ::core::ptr::addr_of_mut!((*index_hash).records.check),
+            LZMA_CHECK_SHA256,
+        );
+        if memcmp(
+            ::core::ptr::addr_of_mut!((*index_hash).blocks.check.buffer.u8_0) as *const c_void,
+            ::core::ptr::addr_of_mut!((*index_hash).records.check.buffer.u8_0) as *const c_void,
+            lzma_check_size(LZMA_CHECK_SHA256) as size_t,
+        ) != 0
+        {
+            return LZMA_DATA_ERROR;
+        }
+        (*index_hash).crc32 = lzma_crc32(
+            input.offset(in_start as isize),
+            *in_pos - in_start,
+            (*index_hash).crc32,
+        );
+        (*index_hash).sequence = SEQ_CRC32;
         loop {
             if *in_pos == in_size {
                 return LZMA_OK;
             }
-            let val = *in_0.offset(*in_pos as isize);
+            let val = *input.offset(*in_pos as isize);
             *in_pos += 1;
             if (*index_hash).crc32 >> ((*index_hash).pos * 8) & 0xff != val as u32 {
                 return LZMA_DATA_ERROR;
@@ -316,8 +301,11 @@ pub unsafe fn lzma_index_hash_decode(
     }
     let in_used: size_t = *in_pos - in_start;
     if in_used > 0 {
-        (*index_hash).crc32 =
-            lzma_crc32(in_0.offset(in_start as isize), in_used, (*index_hash).crc32);
+        (*index_hash).crc32 = lzma_crc32(
+            input.offset(in_start as isize),
+            in_used,
+            (*index_hash).crc32,
+        );
     }
     ret
 }

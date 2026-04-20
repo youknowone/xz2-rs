@@ -16,21 +16,22 @@ compile_error!("backend_comparison bench requires `xz`, `xz-sys`, or `liblzma-sy
 #[cfg(feature = "liblzma-sys")]
 use liblzma_sys::{
     lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_stream_buffer_bound,
-    lzma_stream_buffer_decode, LZMA_CHECK_CRC64,
+    lzma_stream_buffer_decode, LZMA_CHECK_CRC64, LZMA_OK,
 };
 #[cfg(feature = "xz")]
-use xz::check::{crc32_fast::lzma_crc32, crc64_fast::lzma_crc64};
-#[cfg(feature = "xz")]
-use xz::common::{
-    easy_buffer_encoder::lzma_easy_buffer_encode, stream_buffer_decoder::lzma_stream_buffer_decode,
-    stream_buffer_encoder::lzma_stream_buffer_bound,
+use xz::{
+    check::{crc32_fast::lzma_crc32, crc64_fast::lzma_crc64},
+    common::{
+        easy_buffer_encoder::lzma_easy_buffer_encode,
+        stream_buffer_decoder::lzma_stream_buffer_decode,
+        stream_buffer_encoder::lzma_stream_buffer_bound,
+    },
+    types::{LZMA_CHECK_CRC64, LZMA_OK},
 };
-#[cfg(feature = "xz")]
-use xz::types::LZMA_CHECK_CRC64;
 #[cfg(feature = "xz-sys")]
 use xz_sys::{
     lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_stream_buffer_bound,
-    lzma_stream_buffer_decode, LZMA_CHECK_CRC64,
+    lzma_stream_buffer_decode, LZMA_CHECK_CRC64, LZMA_OK,
 };
 
 #[cfg(feature = "xz")]
@@ -56,7 +57,7 @@ unsafe fn backend_encode(input: &[u8]) -> Vec<u8> {
     let bound = lzma_stream_buffer_bound(input.len());
     let mut out = vec![0u8; bound];
     let mut out_pos: usize = 0;
-    lzma_easy_buffer_encode(
+    let ret = lzma_easy_buffer_encode(
         6,
         LZMA_CHECK_CRC64,
         ptr::null(),
@@ -66,6 +67,7 @@ unsafe fn backend_encode(input: &[u8]) -> Vec<u8> {
         &mut out_pos,
         out.len(),
     );
+    assert_eq!(ret, LZMA_OK, "{BACKEND_NAME} encode failed with {ret}");
     out.truncate(out_pos);
     out
 }
@@ -75,7 +77,7 @@ unsafe fn backend_decode(compressed: &[u8], out_size: usize) -> Vec<u8> {
     let mut memlimit = u64::MAX;
     let mut in_pos = 0usize;
     let mut out_pos = 0usize;
-    lzma_stream_buffer_decode(
+    let ret = lzma_stream_buffer_decode(
         &mut memlimit,
         0,
         ptr::null(),
@@ -85,6 +87,17 @@ unsafe fn backend_decode(compressed: &[u8], out_size: usize) -> Vec<u8> {
         out.as_mut_ptr(),
         &mut out_pos,
         out.len(),
+    );
+    assert_eq!(ret, LZMA_OK, "{BACKEND_NAME} decode failed with {ret}");
+    assert_eq!(
+        in_pos,
+        compressed.len(),
+        "{BACKEND_NAME} decode left trailing input: consumed {in_pos} of {} bytes",
+        compressed.len()
+    );
+    assert_eq!(
+        out_pos, out_size,
+        "{BACKEND_NAME} decode produced {out_pos} bytes, expected {out_size}"
     );
     out.truncate(out_pos);
     out

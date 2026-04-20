@@ -12,7 +12,7 @@ xz-sys = { path = "../xz-sys", optional = true }
 libc = "0.2"
 
 [build-dependencies]
-ctest = "0.5"
+ctest = "0.5.1"
 
 [features]
 liblzma-sys = ["dep:liblzma-sys"]

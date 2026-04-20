@@ -106,7 +106,6 @@ pub unsafe fn lzma_filters_copy(
     real_dest: *mut lzma_filter,
     allocator: *const lzma_allocator,
 ) -> lzma_ret {
-    let current_block: u64;
     if src.is_null() || real_dest.is_null() {
         return LZMA_PROG_ERROR;
     }
@@ -119,13 +118,11 @@ pub unsafe fn lzma_filters_copy(
     i = 0;
     's_15: loop {
         if (*src.offset(i as isize)).id == LZMA_VLI_UNKNOWN {
-            current_block = 7175849428784450219;
             break;
         }
         if i == LZMA_FILTERS_MAX as size_t {
             ret = LZMA_OPTIONS_ERROR;
-            current_block = 6392083060350426025;
-            break;
+            break 's_15;
         } else {
             dest[i as usize].id = (*src.offset(i as isize)).id;
             if (*src.offset(i as isize)).options.is_null() {
@@ -136,7 +133,6 @@ pub unsafe fn lzma_filters_copy(
                 while (*src.offset(i as isize)).id != FEATURES[j as usize].id {
                     if FEATURES[j as usize].id == LZMA_VLI_UNKNOWN {
                         ret = LZMA_OPTIONS_ERROR;
-                        current_block = 6392083060350426025;
                         break 's_15;
                     } else {
                         j += 1;
@@ -145,8 +141,7 @@ pub unsafe fn lzma_filters_copy(
                 dest[i as usize].options = lzma_alloc(FEATURES[j as usize].options_size, allocator);
                 if dest[i as usize].options.is_null() {
                     ret = LZMA_MEM_ERROR;
-                    current_block = 6392083060350426025;
-                    break;
+                    break 's_15;
                 } else {
                     core::ptr::copy_nonoverlapping(
                         (*src.offset(i as isize)).options as *const u8,
@@ -158,25 +153,21 @@ pub unsafe fn lzma_filters_copy(
             i += 1;
         }
     }
-    match current_block {
-        6392083060350426025 => {
-            while i > 0 {
-                i -= 1;
-                lzma_free(dest[i as usize].options, allocator);
-            }
-            return ret;
+    if ret != LZMA_OK {
+        while i > 0 {
+            i -= 1;
+            lzma_free(dest[i as usize].options, allocator);
         }
-        _ => {
-            dest[i as usize].id = LZMA_VLI_UNKNOWN;
-            dest[i as usize].options = core::ptr::null_mut();
-            core::ptr::copy_nonoverlapping(
-                ::core::ptr::addr_of_mut!(dest) as *const u8,
-                real_dest as *mut u8,
-                (i + 1) * core::mem::size_of::<lzma_filter>(),
-            );
-            return LZMA_OK;
-        }
-    };
+        return ret;
+    }
+    dest[i as usize].id = LZMA_VLI_UNKNOWN;
+    dest[i as usize].options = core::ptr::null_mut();
+    core::ptr::copy_nonoverlapping(
+        ::core::ptr::addr_of_mut!(dest) as *const u8,
+        real_dest as *mut u8,
+        (i + 1) * core::mem::size_of::<lzma_filter>(),
+    );
+    LZMA_OK
 }
 pub unsafe fn lzma_filters_free(filters: *mut lzma_filter, allocator: *const lzma_allocator) {
     if filters.is_null() {
@@ -231,13 +222,13 @@ pub unsafe fn lzma_raw_coder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     options: *const lzma_filter,
-    coder_find: lzma_filter_find,
+    coder_find: unsafe fn(lzma_vli) -> *const lzma_filter_coder,
     is_encoder: bool,
 ) -> lzma_ret {
     let mut count: size_t = 0;
-    let ret_: lzma_ret = lzma_validate_chain(options, ::core::ptr::addr_of_mut!(count));
-    if ret_ != LZMA_OK {
-        return ret_;
+    let ret: lzma_ret = lzma_validate_chain(options, ::core::ptr::addr_of_mut!(count));
+    if ret != LZMA_OK {
+        return ret;
     }
     let mut filters: [lzma_filter_info; 5] = [lzma_filter_info_s {
         id: 0,
@@ -249,7 +240,7 @@ pub unsafe fn lzma_raw_coder_init(
         while i < count {
             let j: size_t = count - i - 1;
             let fc: *const lzma_filter_coder =
-                coder_find.unwrap()((*options.offset(i as isize)).id) as *const lzma_filter_coder;
+                coder_find((*options.offset(i as isize)).id) as *const lzma_filter_coder;
             if fc.is_null() || (*fc).init.is_none() {
                 return LZMA_OPTIONS_ERROR;
             }
@@ -262,7 +253,7 @@ pub unsafe fn lzma_raw_coder_init(
         let mut i_0: size_t = 0;
         while i_0 < count {
             let fc_0: *const lzma_filter_coder =
-                coder_find.unwrap()((*options.offset(i_0 as isize)).id) as *const lzma_filter_coder;
+                coder_find((*options.offset(i_0 as isize)).id) as *const lzma_filter_coder;
             if fc_0.is_null() || (*fc_0).init.is_none() {
                 return LZMA_OPTIONS_ERROR;
             }
@@ -285,7 +276,7 @@ pub unsafe fn lzma_raw_coder_init(
     ret
 }
 pub unsafe fn lzma_raw_coder_memusage(
-    coder_find: lzma_filter_find,
+    coder_find: unsafe fn(lzma_vli) -> *const lzma_filter_coder,
     filters: *const lzma_filter,
 ) -> u64 {
     let mut tmp: size_t = 0;
@@ -296,18 +287,18 @@ pub unsafe fn lzma_raw_coder_memusage(
     let mut i: size_t = 0;
     loop {
         let fc: *const lzma_filter_coder =
-            coder_find.unwrap()((*filters.offset(i as isize)).id) as *const lzma_filter_coder;
+            coder_find((*filters.offset(i as isize)).id) as *const lzma_filter_coder;
         if fc.is_null() {
             return UINT64_MAX;
         }
-        if (*fc).memusage.is_none() {
-            total += 1024;
-        } else {
-            let usage: u64 = (*fc).memusage.unwrap()((*filters.offset(i as isize)).options) as u64;
+        if let Some(memusage) = (*fc).memusage {
+            let usage: u64 = memusage((*filters.offset(i as isize)).options) as u64;
             if usage == UINT64_MAX {
                 return UINT64_MAX;
             }
             total += usage;
+        } else {
+            total += 1024;
         }
         i += 1;
         if (*filters.offset(i as isize)).id == LZMA_VLI_UNKNOWN {

@@ -502,7 +502,7 @@ pub type lzma_delta_type = ::std::os::raw::c_uint;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct lzma_options_delta {
-    pub type_: lzma_delta_type,
+    pub r#type: lzma_delta_type,
     pub dist: u32,
     pub reserved_int1: u32,
     pub reserved_int2: u32,
@@ -526,9 +526,9 @@ fn bindgen_test_layout_lzma_options_delta() {
         "Alignment of lzma_options_delta"
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).r#type) as usize - ptr as usize },
         0usize,
-        "Offset of field: lzma_options_delta::type_"
+        "Offset of field: lzma_options_delta::type"
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).dist) as usize - ptr as usize },

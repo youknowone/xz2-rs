@@ -96,7 +96,7 @@ unsafe fn index_tree_init(tree: *mut index_tree) {
 unsafe fn index_tree_node_end(
     node: *mut index_tree_node,
     allocator: *const lzma_allocator,
-    free_func: Option<unsafe fn(*mut c_void, *const lzma_allocator) -> ()>,
+    free_func: unsafe fn(*mut c_void, *const lzma_allocator) -> (),
 ) {
     if !(*node).left.is_null() {
         index_tree_node_end((*node).left, allocator, free_func);
@@ -104,12 +104,12 @@ unsafe fn index_tree_node_end(
     if !(*node).right.is_null() {
         index_tree_node_end((*node).right, allocator, free_func);
     }
-    free_func.unwrap()(node as *mut c_void, allocator);
+    free_func(node as *mut c_void, allocator);
 }
 unsafe fn index_tree_end(
     tree: *mut index_tree,
     allocator: *const lzma_allocator,
-    free_func: Option<unsafe fn(*mut c_void, *const lzma_allocator) -> ()>,
+    free_func: unsafe fn(*mut c_void, *const lzma_allocator) -> (),
 ) {
     if !(*tree).root.is_null() {
         index_tree_node_end((*tree).root, allocator, free_func);
@@ -213,7 +213,7 @@ unsafe fn index_stream_end(node: *mut c_void, allocator: *const lzma_allocator) 
     index_tree_end(
         ::core::ptr::addr_of_mut!((*s).groups),
         allocator,
-        Some(index_node_free as unsafe fn(*mut c_void, *const lzma_allocator) -> ()),
+        index_node_free as unsafe fn(*mut c_void, *const lzma_allocator) -> (),
     );
     lzma_free(s as *mut c_void, allocator);
 }
@@ -252,7 +252,7 @@ pub unsafe fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocato
         index_tree_end(
             ::core::ptr::addr_of_mut!((*i).streams),
             allocator,
-            Some(index_stream_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ()),
+            index_stream_end as unsafe fn(*mut c_void, *const lzma_allocator) -> (),
         );
         lzma_free(i as *mut c_void, allocator);
     }
@@ -261,6 +261,28 @@ pub unsafe fn lzma_index_prealloc(i: *mut lzma_index, mut records: lzma_vli) {
     if records > PREALLOC_MAX as lzma_vli {
         records = PREALLOC_MAX as lzma_vli;
     }
+
+    // If index_decoder.c calls us with records == 0, it's decoding
+    // an Index that has no Records. In that case the decoder won't call
+    // lzma_index_append() at all, and i->prealloc isn't used during
+    // the Index decoding either.
+    //
+    // Normally the first lzma_index_append() call from the Index decoder
+    // would reset i->prealloc to INDEX_GROUP_SIZE. With no Records,
+    // lzma_index_append() isn't called and the resetting of prealloc
+    // won't occur either. Thus, if records == 0, use the default value
+    // INDEX_GROUP_SIZE instead.
+    //
+    // NOTE: lzma_index_append() assumes i->prealloc > 0. liblzma <= 5.8.2
+    // didn't have this check and could set i->prealloc = 0, which would
+    // result in a buffer overflow if the application called
+    // lzma_index_append() after decoding an empty Index. Appending
+    // Records after decoding an Index is a rare thing to do, but
+    // it is supposed to work.
+    if records == 0 {
+        records = INDEX_GROUP_SIZE as lzma_vli;
+    }
+
     (*i).prealloc = records as size_t;
 }
 pub fn lzma_index_memusage(streams: lzma_vli, blocks: lzma_vli) -> u64 {
@@ -376,9 +398,9 @@ pub unsafe fn lzma_index_stream_flags(
     if i.is_null() || stream_flags.is_null() {
         return LZMA_PROG_ERROR;
     }
-    let ret_: lzma_ret = lzma_stream_flags_compare(stream_flags, stream_flags);
-    if ret_ != LZMA_OK {
-        return ret_;
+    let ret: lzma_ret = lzma_stream_flags_compare(stream_flags, stream_flags);
+    if ret != LZMA_OK {
+        return ret;
     }
     let s: *mut index_stream = (*i).streams.rightmost as *mut index_stream;
     (*s).stream_flags = *stream_flags;
@@ -458,6 +480,7 @@ pub unsafe fn lzma_index_append(
     if !g.is_null() && (*g).last + 1 < (*g).allocated {
         (*g).last += 1;
     } else {
+        debug_assert!((*i).prealloc > 0);
         g = lzma_alloc(
             core::mem::size_of::<index_group>()
                 + (*i).prealloc * core::mem::size_of::<index_record>(),
@@ -488,6 +511,28 @@ pub unsafe fn lzma_index_append(
     (*i).record_count += 1;
     (*i).index_list_size += index_list_size_add as lzma_vli;
     LZMA_OK
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn index_prealloc_zero_keeps_append_usable() {
+        unsafe {
+            let allocator = core::ptr::null();
+            let index = lzma_index_init(allocator);
+            assert!(!index.is_null());
+
+            lzma_index_prealloc(index, 0);
+            assert_eq!((*index).prealloc, INDEX_GROUP_SIZE as size_t);
+
+            let ret = lzma_index_append(index, allocator, UNPADDED_SIZE_MIN, 0);
+            assert_eq!(ret, LZMA_OK);
+
+            lzma_index_end(index, allocator);
+        }
+    }
 }
 unsafe fn index_cat_helper(info: *const index_cat_info, this: *mut index_stream) {
     let left: *mut index_stream = (*this).node.left as *mut index_stream;

@@ -13,7 +13,7 @@ in-memory encoding/decoding. forked from xz2.
 """
 categories = ["compression", "api-bindings"]
 edition = "2021"
-rust-version = "1.63"
+rust-version = "1.88"
 exclude = [".github/"]
 
 [workspace]
@@ -51,7 +51,7 @@ wasm-bindgen-test = "0.3"
 default = ["xz"]
 xz = ["dep:xz"]
 xz-sys = ["dep:xz-sys"]
-liblzma-sys = ["dep:liblzma-sys", "liblzma-sys/bindgen"]
+liblzma-sys = ["dep:liblzma-sys"]
 static = ["liblzma-sys?/static"]
 parallel = ["xz-sys?/parallel", "liblzma-sys?/parallel", "num_cpus"]
 bindgen = ["liblzma-sys?/bindgen"] # only affects liblzma-sys
@@ -64,3 +64,6 @@ thin-lto = ["liblzma-sys?/thin-lto"]
 
 [package.metadata.docs.rs]
 features = ["parallel"]
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "allow"

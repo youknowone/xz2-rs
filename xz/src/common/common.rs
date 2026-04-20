@@ -1,9 +1,10 @@
+use crate::alloc::allocator_or_rust;
 use crate::types::*;
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
-use std::alloc::{alloc, alloc_zeroed, dealloc, Layout};
+use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
 
 #[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
-extern "C" {
+unsafe extern "C" {
     fn malloc(__size: size_t) -> *mut c_void;
     fn calloc(__count: size_t, __size: size_t) -> *mut c_void;
     fn free(_: *mut c_void);
@@ -15,41 +16,42 @@ const LZMA_ALLOC_ALIGN: usize = 16;
 const LZMA_ALLOC_HEADER_SIZE: usize = 16;
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
-unsafe fn rust_alloc_layout(size: usize) -> Option<Layout> {
+fn rust_alloc_layout(size: usize) -> Option<Layout> {
     let total_size = size.checked_add(LZMA_ALLOC_HEADER_SIZE)?;
     Layout::from_size_align(total_size, LZMA_ALLOC_ALIGN).ok()
 }
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
-unsafe fn malloc(size: size_t) -> *mut c_void {
-    let layout = match rust_alloc_layout(size as usize) {
-        Some(layout) => layout,
-        None => return core::ptr::null_mut(),
+fn malloc(size: size_t) -> *mut c_void {
+    let Some(layout) = rust_alloc_layout(size as usize) else {
+        return core::ptr::null_mut();
     };
-    let base = alloc(layout);
+    let base = unsafe { alloc(layout) };
     if base.is_null() {
         return core::ptr::null_mut();
     }
-    *(base as *mut usize) = layout.size();
-    base.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
+    unsafe {
+        *(base as *mut usize) = layout.size();
+        base.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
+    }
 }
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
-unsafe fn calloc(count: size_t, size: size_t) -> *mut c_void {
-    let size = match (count as usize).checked_mul(size as usize) {
-        Some(size) => size,
-        None => return core::ptr::null_mut(),
+fn calloc(count: size_t, size: size_t) -> *mut c_void {
+    let Some(size) = (count as usize).checked_mul(size as usize) else {
+        return core::ptr::null_mut();
     };
-    let layout = match rust_alloc_layout(size) {
-        Some(layout) => layout,
-        None => return core::ptr::null_mut(),
+    let Some(layout) = rust_alloc_layout(size) else {
+        return core::ptr::null_mut();
     };
-    let base = alloc_zeroed(layout);
+    let base = unsafe { alloc_zeroed(layout) };
     if base.is_null() {
         return core::ptr::null_mut();
     }
-    *(base as *mut usize) = layout.size();
-    base.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
+    unsafe {
+        *(base as *mut usize) = layout.size();
+        base.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
+    }
 }
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
@@ -57,14 +59,14 @@ unsafe fn free(ptr: *mut c_void) {
     if ptr.is_null() {
         return;
     }
-    let base = (ptr as *mut u8).sub(LZMA_ALLOC_HEADER_SIZE);
-    let total_size = *(base as *const usize);
-    let layout = Layout::from_size_align_unchecked(total_size, LZMA_ALLOC_ALIGN);
-    dealloc(base, layout);
+    let base = unsafe { (ptr as *mut u8).sub(LZMA_ALLOC_HEADER_SIZE) };
+    let total_size = unsafe { *(base as *const usize) };
+    let layout = unsafe { Layout::from_size_align_unchecked(total_size, LZMA_ALLOC_ALIGN) };
+    unsafe { dealloc(base, layout) };
 }
 pub const LZMA_VERSION_MAJOR: u32 = 5;
 pub const LZMA_VERSION_MINOR: u32 = 8;
-pub const LZMA_VERSION_PATCH: u32 = 2;
+pub const LZMA_VERSION_PATCH: u32 = 3;
 pub const LZMA_VERSION_STABILITY: u32 = LZMA_VERSION_STABILITY_STABLE;
 pub const LZMA_VERSION_STABILITY_STABLE: u32 = 2;
 pub const LZMA_VERSION: c_uint = LZMA_VERSION_MAJOR * 10000000
@@ -76,51 +78,62 @@ pub fn lzma_version_number() -> u32 {
     LZMA_VERSION as u32
 }
 pub fn lzma_version_string() -> *const c_char {
-    crate::c_str!("5.8.2")
+    crate::c_str!("5.8.3")
 }
 pub unsafe fn lzma_alloc(mut size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
     if size == 0 {
         size = 1;
     }
-    let mut ptr: *mut c_void = core::ptr::null_mut();
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        ptr = (*allocator).alloc.unwrap()((*allocator).opaque, 1, size);
+    let allocator = allocator_or_rust(allocator);
+    if let Some(alloc) = (*allocator).alloc {
+        alloc((*allocator).opaque, 1, size)
     } else {
-        ptr = malloc(size);
+        malloc(size)
     }
-    ptr
 }
 pub unsafe fn lzma_alloc_zero(mut size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
     if size == 0 {
         size = 1;
     }
-    let mut ptr: *mut c_void = core::ptr::null_mut();
-    if !allocator.is_null() && (*allocator).alloc.is_some() {
-        ptr = (*allocator).alloc.unwrap()((*allocator).opaque, 1, size);
-        if !ptr.is_null() {
-            core::ptr::write_bytes(ptr as *mut u8, 0, size);
-        }
+    let allocator = allocator_or_rust(allocator);
+    let ptr = if let Some(alloc) = (*allocator).alloc {
+        alloc((*allocator).opaque, 1, size)
     } else {
-        ptr = calloc(1, size);
+        calloc(1, size)
+    };
+    if !ptr.is_null() {
+        core::ptr::write_bytes(ptr as *mut u8, 0, size);
     }
     ptr
 }
-pub unsafe extern "C" fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
-    if !allocator.is_null() && (*allocator).free.is_some() {
-        (*allocator).free.unwrap()((*allocator).opaque, ptr);
+pub unsafe fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
+    let allocator = allocator_or_rust(allocator);
+    if let Some(free_func) = (*allocator).free {
+        free_func((*allocator).opaque, ptr);
     } else {
         free(ptr);
     };
 }
+#[inline]
+pub unsafe fn lzma_alloc_object<T>(allocator: *const lzma_allocator) -> *mut T {
+    debug_assert!(core::mem::align_of::<T>() <= 16);
+    lzma_alloc(core::mem::size_of::<T>() as size_t, allocator) as *mut T
+}
 pub unsafe fn lzma_bufcpy(
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
     out: *mut u8,
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> size_t {
-    debug_assert!(!in_0.is_null() || *in_pos == in_size);
+    if *in_pos > in_size || *out_pos > out_size {
+        return 0;
+    }
+    if (input.is_null() && *in_pos != in_size) || (out.is_null() && *out_pos != out_size) {
+        return 0;
+    }
+    debug_assert!(!input.is_null() || *in_pos == in_size);
     debug_assert!(!out.is_null() || *out_pos == out_size);
     debug_assert!(*in_pos <= in_size);
     debug_assert!(*out_pos <= out_size);
@@ -134,7 +147,7 @@ pub unsafe fn lzma_bufcpy(
     };
     if copy_size > 0 {
         core::ptr::copy_nonoverlapping(
-            in_0.offset(*in_pos as isize) as *const u8,
+            input.offset(*in_pos as isize) as *const u8,
             out.offset(*out_pos as isize) as *mut u8,
             copy_size,
         );
@@ -153,10 +166,10 @@ pub unsafe fn lzma_next_filter_init(
     }
     (*next).init = core::mem::transmute::<lzma_init_function, uintptr_t>((*filters).init);
     (*next).id = (*filters).id;
-    if (*filters).init.is_none() {
-        LZMA_OK
+    if let Some(init) = (*filters).init {
+        init(next, allocator, filters)
     } else {
-        (*filters).init.unwrap()(next, allocator, filters)
+        LZMA_OK
     }
 }
 pub unsafe fn lzma_next_filter_update(
@@ -170,11 +183,8 @@ pub unsafe fn lzma_next_filter_update(
     if (*reversed_filters).id == LZMA_VLI_UNKNOWN {
         return LZMA_OK;
     }
-    let update = if let Some(update) = (*next).update {
-        update
-    } else {
-        return LZMA_PROG_ERROR;
-    };
+    debug_assert!((*next).update.is_some());
+    let update = (*next).update.unwrap_unchecked();
     update(
         (*next).coder,
         allocator,
@@ -183,32 +193,33 @@ pub unsafe fn lzma_next_filter_update(
     )
 }
 pub unsafe fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_allocator) {
-    if (*next).init != 0 {
-        if (*next).end.is_some() {
-            (*next).end.unwrap()((*next).coder, allocator);
-        } else {
-            lzma_free((*next).coder, allocator);
-        }
-        *next = lzma_next_coder_s {
-            coder: core::ptr::null_mut(),
-            id: LZMA_VLI_UNKNOWN,
-            init: 0,
-            code: None,
-            end: None,
-            get_progress: None,
-            get_check: None,
-            memconfig: None,
-            update: None,
-            set_out_limit: None,
-        };
+    if (*next).init == 0 {
+        return;
     }
+    if let Some(end) = (*next).end {
+        end((*next).coder, allocator);
+    } else {
+        lzma_free((*next).coder, allocator);
+    }
+    *next = lzma_next_coder_s {
+        coder: core::ptr::null_mut(),
+        id: LZMA_VLI_UNKNOWN,
+        init: 0,
+        code: None,
+        end: None,
+        get_progress: None,
+        get_check: None,
+        memconfig: None,
+        update: None,
+        set_out_limit: None,
+    };
 }
 pub unsafe fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
     if strm.is_null() {
         return LZMA_PROG_ERROR;
     }
     if (*strm).internal.is_null() {
-        (*strm).internal = crate::alloc::internal_alloc_object::<lzma_internal>((*strm).allocator);
+        (*strm).internal = lzma_alloc_object::<lzma_internal>((*strm).allocator);
         if (*strm).internal.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -300,7 +311,9 @@ pub unsafe fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret
     }
     let mut in_pos: size_t = 0;
     let mut out_pos: size_t = 0;
-    let mut ret: lzma_ret = (*(*strm).internal).next.code.unwrap()(
+    debug_assert!((*(*strm).internal).next.code.is_some());
+    let code = (*(*strm).internal).next.code.unwrap_unchecked();
+    let mut ret: lzma_ret = code(
         (*(*strm).internal).next.coder,
         (*strm).allocator,
         (*strm).next_in,
@@ -322,7 +335,6 @@ pub unsafe fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret
         (*strm).total_out = (*strm).total_out.wrapping_add(out_pos as u64);
     }
     (*(*strm).internal).avail_in = (*strm).avail_in;
-    let current_block_49: u64;
     match ret {
         0 => {
             if out_pos == 0 && in_pos == 0 {
@@ -334,19 +346,16 @@ pub unsafe fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret
             } else {
                 (*(*strm).internal).allow_buf_error = false;
             }
-            current_block_49 = 12556861819962772176;
         }
         101 => {
             (*(*strm).internal).allow_buf_error = false;
             ret = LZMA_OK;
-            current_block_49 = 12556861819962772176;
         }
         12 => {
             (*(*strm).internal).allow_buf_error = false;
             if (*(*strm).internal).sequence == ISEQ_FINISH {
                 (*(*strm).internal).sequence = ISEQ_RUN;
             }
-            current_block_49 = 12556861819962772176;
         }
         1 => {
             if (*(*strm).internal).sequence == ISEQ_SYNC_FLUSH
@@ -357,21 +366,14 @@ pub unsafe fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret
             } else {
                 (*(*strm).internal).sequence = ISEQ_END;
             }
-            current_block_49 = 16143107162343188004;
+            (*(*strm).internal).allow_buf_error = false;
         }
         2 | 3 | 4 | 6 => {
-            current_block_49 = 16143107162343188004;
+            (*(*strm).internal).allow_buf_error = false;
         }
         _ => {
             (*(*strm).internal).sequence = ISEQ_ERROR;
-            current_block_49 = 12556861819962772176;
         }
-    }
-    match current_block_49 {
-        16143107162343188004 => {
-            (*(*strm).internal).allow_buf_error = false;
-        }
-        _ => {}
     }
     ret
 }
@@ -381,7 +383,7 @@ pub unsafe fn lzma_end(strm: *mut lzma_stream) {
             ::core::ptr::addr_of_mut!((*(*strm).internal).next),
             (*strm).allocator,
         );
-        crate::alloc::internal_free((*strm).internal as *mut c_void, (*strm).allocator);
+        lzma_free((*strm).internal as *mut c_void, (*strm).allocator);
         (*strm).internal = core::ptr::null_mut();
     }
 }
@@ -400,77 +402,82 @@ pub unsafe fn lzma_get_progress(
         return;
     }
 
-    if (*(*strm).internal).next.get_progress.is_some() {
-        (*(*strm).internal).next.get_progress.unwrap()(
-            (*(*strm).internal).next.coder,
-            progress_in,
-            progress_out,
-        );
+    if let Some(get_progress) = (*(*strm).internal).next.get_progress {
+        get_progress((*(*strm).internal).next.coder, progress_in, progress_out);
     } else {
         *progress_in = (*strm).total_in;
         *progress_out = (*strm).total_out;
     };
 }
 pub fn lzma_get_check(strm: *const lzma_stream) -> lzma_check {
-    return unsafe {
+    unsafe {
         if strm.is_null() || (*strm).internal.is_null() {
             return LZMA_CHECK_NONE;
         }
-        if (*(*strm).internal).next.get_check.is_none() {
-            return LZMA_CHECK_NONE;
+        if let Some(get_check) = (*(*strm).internal).next.get_check {
+            get_check((*(*strm).internal).next.coder)
+        } else {
+            LZMA_CHECK_NONE
         }
-        (*(*strm).internal).next.get_check.unwrap()((*(*strm).internal).next.coder)
-    };
+    }
 }
 pub fn lzma_memusage(strm: *const lzma_stream) -> u64 {
-    return unsafe {
+    unsafe {
         let mut memusage: u64 = 0;
         let mut old_memlimit: u64 = 0;
-        if strm.is_null()
-            || (*strm).internal.is_null()
-            || (*(*strm).internal).next.memconfig.is_none()
-            || (*(*strm).internal).next.memconfig.unwrap()(
-                (*(*strm).internal).next.coder,
-                ::core::ptr::addr_of_mut!(memusage),
-                ::core::ptr::addr_of_mut!(old_memlimit),
-                0,
-            ) != LZMA_OK
+        if strm.is_null() || (*strm).internal.is_null() {
+            return 0;
+        }
+        let Some(memconfig) = (*(*strm).internal).next.memconfig else {
+            return 0;
+        };
+        if memconfig(
+            (*(*strm).internal).next.coder,
+            ::core::ptr::addr_of_mut!(memusage),
+            ::core::ptr::addr_of_mut!(old_memlimit),
+            0,
+        ) != LZMA_OK
         {
             return 0;
         }
         memusage
-    };
+    }
 }
 pub fn lzma_memlimit_get(strm: *const lzma_stream) -> u64 {
-    return unsafe {
+    unsafe {
         let mut old_memlimit: u64 = 0;
         let mut memusage: u64 = 0;
-        if strm.is_null()
-            || (*strm).internal.is_null()
-            || (*(*strm).internal).next.memconfig.is_none()
-            || (*(*strm).internal).next.memconfig.unwrap()(
-                (*(*strm).internal).next.coder,
-                ::core::ptr::addr_of_mut!(memusage),
-                ::core::ptr::addr_of_mut!(old_memlimit),
-                0,
-            ) != LZMA_OK
+        if strm.is_null() || (*strm).internal.is_null() {
+            return 0;
+        }
+        let Some(memconfig) = (*(*strm).internal).next.memconfig else {
+            return 0;
+        };
+        if memconfig(
+            (*(*strm).internal).next.coder,
+            ::core::ptr::addr_of_mut!(memusage),
+            ::core::ptr::addr_of_mut!(old_memlimit),
+            0,
+        ) != LZMA_OK
         {
             return 0;
         }
         old_memlimit
-    };
+    }
 }
 pub unsafe fn lzma_memlimit_set(strm: *mut lzma_stream, mut new_memlimit: u64) -> lzma_ret {
     let mut old_memlimit: u64 = 0;
     let mut memusage: u64 = 0;
-    if strm.is_null() || (*strm).internal.is_null() || (*(*strm).internal).next.memconfig.is_none()
-    {
+    if strm.is_null() || (*strm).internal.is_null() {
         return LZMA_PROG_ERROR;
     }
+    let Some(memconfig) = (*(*strm).internal).next.memconfig else {
+        return LZMA_PROG_ERROR;
+    };
     if new_memlimit == 0 {
         new_memlimit = 1;
     }
-    (*(*strm).internal).next.memconfig.unwrap()(
+    memconfig(
         (*(*strm).internal).next.coder,
         ::core::ptr::addr_of_mut!(memusage),
         ::core::ptr::addr_of_mut!(old_memlimit),

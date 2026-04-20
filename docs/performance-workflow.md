@@ -34,6 +34,17 @@ Use `hyperfine` to compare end-to-end wall clock time of the deterministic root 
 scripts/compare_backends.sh --runs 10 --warmup 2
 ```
 
+For the full no-regression gate across the standard root, systest, focused, and
+API workloads, use the trimmed comparison wrapper:
+
+```bash
+scripts/compare_all_trimmed.sh
+```
+
+It measures each Rust/C pair five times, discards the fastest and slowest runs,
+averages the remaining runs, and exits with failure if Rust is slower than C
+after trimming. Reports are written under `target/perf-results/trimmed/`.
+
 This writes:
 
 - `target/perf-results/root-tests.json`
@@ -47,23 +58,27 @@ The root bundle intentionally skips QuickCheck-based unit tests because they gen
 
 ## 3. Compare focused workloads
 
-Use `perf-probe`, a small standalone binary crate that links exactly one backend at a time. The comparison scripts use the direct `xz` backend by default; `xz-sys` remains available for ABI-shell checks.
+Use `perf-probe`, a small standalone binary crate that links exactly one backend at a time. `scripts/compare_workloads.sh` compares all three backends in separate processes: direct `xz`, `xz-sys`, and vendored C `liblzma-sys`.
 
 Examples:
 
 ```bash
 scripts/compare_workloads.sh encode --input-kind random --size 1048576 --iters 20 --warmup 3
 scripts/compare_workloads.sh decode --input-kind random --size 1048576 --iters 50 --warmup 5
-scripts/compare_workloads.sh size --input-kind random --size 1048576 --iters 400 --warmup 40
+scripts/compare_workloads.sh size --input-kind random --size 1048576 --iters 2000000 --warmup 200000
 scripts/compare_workloads.sh crc64 --size 16777216 --iters 400 --warmup 20
 scripts/compare_workloads.sh crc64 --size 1048576 --chunk-size 16 --iters 400 --warmup 40
 ```
 
 This writes workload-specific `hyperfine` reports under `target/perf-results/`.
 
-For tiny inputs, increase `--iters` until one benchmarked command takes at least around a
-second. Otherwise process startup noise can dominate the comparison even when the actual
-backend work is near parity.
+For tiny inputs, increase `--iters` until one benchmarked command takes at least a few
+hundred milliseconds. Otherwise process startup noise can dominate the comparison even when
+the actual backend work is near parity. The `size` workload is especially small, so it
+still needs millions of in-process iterations; start around `--iters 2000000 --warmup
+200000` for a 1 MiB random input and scale up only if the results remain noisy. The
+comparison scripts also pre-generate its compressed input so the one-time encode setup
+doesn't hide the `uncompressed_size()` path.
 
 There is still a criterion bench in [`benches/backend_comparison.rs`](../benches/backend_comparison.rs), but it now measures one backend per run. Use it only with exactly one backend feature enabled.
 
@@ -71,7 +86,7 @@ For high-level API regressions, compare the root crate against the upstream XZ c
 
 ```bash
 scripts/compare_api_workloads.sh standard-files --mode all --iters 200 --warmup 20
-scripts/compare_api_workloads.sh standard-files --mode good --iters 400 --warmup 40
+scripts/compare_api_workloads.sh standard-files --mode good --iters 1000 --warmup 100
 scripts/compare_api_workloads.sh standard-files --mode good --name-pattern delta --iters 400 --warmup 40
 scripts/compare_api_workloads.sh qc --mode both --cases 128 --max-size 4096 --iters 200 --warmup 20
 scripts/compare_api_workloads.sh bufread-trailing --mode both --input-size 1024 --trailing-size 123 --iters 1000 --warmup 100
@@ -81,6 +96,11 @@ This uses [`examples/standard_files_probe.rs`](../examples/standard_files_probe.
 
 - `target/perf-results/api-standard-files.json`
 - `target/perf-results/api-standard-files.md`
+
+The `good` subset is small enough that a few hundred iterations can still leave
+too much wall-clock noise. Prefer around `--iters 1000 --warmup 100` when
+comparing `--mode good` so the in-process work dominates process scheduling
+variance.
 
 The `qc` workload uses [`examples/qc_probe.rs`](../examples/qc_probe.rs) to reproduce the
 small-input repeated round-trip pattern from the root crate tests. This is useful when

@@ -1,5 +1,5 @@
 use crate::types::*;
-pub(crate) unsafe extern "C" fn lzma_simple_props_decode(
+pub(crate) unsafe fn lzma_simple_props_decode(
     options: *mut *mut c_void,
     allocator: *const lzma_allocator,
     props: *const u8,
@@ -16,7 +16,7 @@ pub(crate) unsafe extern "C" fn lzma_simple_props_decode(
     if opt.is_null() {
         return LZMA_MEM_ERROR;
     }
-    (*opt).start_offset = read32le(props);
+    (*opt).start_offset = read32le(&*props.cast::<[u8; 4]>());
     if (*opt).start_offset == 0 {
         lzma_free(opt as *mut c_void, allocator);
     } else {

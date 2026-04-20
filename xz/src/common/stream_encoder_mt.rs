@@ -168,13 +168,20 @@ unsafe fn worker_encode(
         } else {
             LZMA_RUN
         }) as lzma_action;
-        static mut in_chunk_max: size_t = 16384;
+        const IN_CHUNK_MAX: size_t = 16384;
         let mut in_limit: size_t = in_size;
-        if in_size - in_pos > in_chunk_max {
-            in_limit = in_pos + in_chunk_max;
+        if in_size - in_pos > IN_CHUNK_MAX {
+            in_limit = in_pos + IN_CHUNK_MAX;
             action = LZMA_RUN;
         }
-        ret = (*thr).block_encoder.code.unwrap()(
+        let code = match (*thr).block_encoder.code {
+            Some(code) => code,
+            None => {
+                worker_error(thr, LZMA_PROG_ERROR);
+                return THR_STOP;
+            }
+        };
+        ret = code(
             (*thr).block_encoder.coder,
             (*thr).allocator,
             (*thr).in_0,
@@ -480,7 +487,7 @@ unsafe fn initialize_new_thread(
             (*thr).filters[0].id = LZMA_VLI_UNKNOWN;
             if mythread_create(
                 ::core::ptr::addr_of_mut!((*thr).thread_id),
-                Some(worker_start as unsafe extern "C" fn(*mut c_void) -> *mut c_void),
+                worker_start as unsafe extern "C" fn(*mut c_void) -> *mut c_void,
                 thr as *mut c_void,
             ) != 0
             {
@@ -834,7 +841,10 @@ unsafe fn stream_encode_mt_index(
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    let ret: lzma_ret = (*coder).index_encoder.code.unwrap()(
+    let Some(code) = (*coder).index_encoder.code else {
+        return LZMA_PROG_ERROR;
+    };
+    let ret: lzma_ret = code(
         (*coder).index_encoder.coder,
         allocator,
         core::ptr::null(),
@@ -860,7 +870,7 @@ unsafe fn stream_encode_mt_index(
     LZMA_STREAM_END
 }
 
-unsafe extern "C" fn stream_encode_mt(
+unsafe fn stream_encode_mt(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     in_0: *const u8,
@@ -919,10 +929,7 @@ unsafe extern "C" fn stream_encode_mt(
         LZMA_STREAM_END
     }
 }
-unsafe extern "C" fn stream_encoder_mt_end(
-    coder_ptr: *mut c_void,
-    allocator: *const lzma_allocator,
-) {
+unsafe fn stream_encoder_mt_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
     threads_end(coder, allocator);
     lzma_outq_end(::core::ptr::addr_of_mut!((*coder).outq), allocator);
@@ -940,7 +947,7 @@ unsafe extern "C" fn stream_encoder_mt_end(
     mythread_mutex_destroy(::core::ptr::addr_of_mut!((*coder).mutex));
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn stream_encoder_mt_update(
+unsafe fn stream_encoder_mt_update(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter,
@@ -1018,11 +1025,7 @@ unsafe fn get_options(
     }
     LZMA_OK
 }
-unsafe extern "C" fn get_progress(
-    coder_ptr: *mut c_void,
-    progress_in: *mut u64,
-    progress_out: *mut u64,
-) {
+unsafe fn get_progress(coder_ptr: *mut c_void, progress_in: *mut u64, progress_out: *mut u64) {
     let coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
     let mut mythread_i_1010: c_uint = 0;
     while if mythread_i_1010 != 0 {
@@ -1090,7 +1093,7 @@ unsafe fn stream_encoder_mt_create_coder(
     }
     (*next).code = Some(
         stream_encode_mt
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut c_void,
                 *const lzma_allocator,
                 *const u8,
@@ -1102,13 +1105,11 @@ unsafe fn stream_encoder_mt_create_coder(
                 lzma_action,
             ) -> lzma_ret,
     );
-    (*next).end =
-        Some(stream_encoder_mt_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator));
-    (*next).get_progress =
-        Some(get_progress as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ());
+    (*next).end = Some(stream_encoder_mt_end as unsafe fn(*mut c_void, *const lzma_allocator));
+    (*next).get_progress = Some(get_progress as unsafe fn(*mut c_void, *mut u64, *mut u64) -> ());
     (*next).update = Some(
         stream_encoder_mt_update
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut c_void,
                 *const lzma_allocator,
                 *const lzma_filter,
@@ -1165,47 +1166,27 @@ unsafe fn stream_encoder_mt_prepare_threads(
     LZMA_OK
 }
 
-unsafe extern "C" fn stream_encoder_mt_init(
+unsafe fn stream_encoder_mt_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     options: *const lzma_mt,
 ) -> lzma_ret {
     if core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *const lzma_mt,
-            ) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_mt) -> lzma_ret>,
         uintptr_t,
     >(Some(
         stream_encoder_mt_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *const lzma_mt,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_mt) -> lzma_ret,
     )) != (*next).init
     {
         lzma_next_end(next, allocator);
     }
     (*next).init = core::mem::transmute::<
-        Option<
-            unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *const lzma_mt,
-            ) -> lzma_ret,
-        >,
+        Option<unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_mt) -> lzma_ret>,
         uintptr_t,
     >(Some(
         stream_encoder_mt_init
-            as unsafe extern "C" fn(
-                *mut lzma_next_coder,
-                *const lzma_allocator,
-                *const lzma_mt,
-            ) -> lzma_ret,
+            as unsafe fn(*mut lzma_next_coder, *const lzma_allocator, *const lzma_mt) -> lzma_ret,
     ));
     let mut easy: lzma_options_easy = lzma_options_easy {
         filters: [lzma_filter {

@@ -2,13 +2,14 @@ use crate::types::*;
 pub unsafe fn lzma_raw_buffer_encode(
     filters: *const lzma_filter,
     allocator: *const lzma_allocator,
-    in_0: *const u8,
+    input: *const u8,
     in_size: size_t,
     out: *mut u8,
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    if in_0.is_null() && in_size != 0 || out.is_null() || out_pos.is_null() || *out_pos > out_size {
+    if input.is_null() && in_size != 0 || out.is_null() || out_pos.is_null() || *out_pos > out_size
+    {
         return LZMA_PROG_ERROR;
     }
     let mut next: lzma_next_coder = lzma_next_coder_s {
@@ -23,22 +24,18 @@ pub unsafe fn lzma_raw_buffer_encode(
         update: None,
         set_out_limit: None,
     };
-    let ret_: lzma_ret = lzma_raw_encoder_init(::core::ptr::addr_of_mut!(next), allocator, filters);
-    if ret_ != LZMA_OK {
-        return ret_;
+    let ret: lzma_ret = lzma_raw_encoder_init(::core::ptr::addr_of_mut!(next), allocator, filters);
+    if ret != LZMA_OK {
+        return ret;
     }
-    let code = if let Some(code) = next.code {
-        code
-    } else {
-        lzma_next_end(::core::ptr::addr_of_mut!(next), allocator);
-        return LZMA_PROG_ERROR;
-    };
+    debug_assert!(next.code.is_some());
+    let code = next.code.unwrap_unchecked();
     let out_start: size_t = *out_pos;
     let mut in_pos: size_t = 0;
     let mut ret: lzma_ret = code(
         next.coder,
         allocator,
-        in_0,
+        input,
         ::core::ptr::addr_of_mut!(in_pos),
         in_size,
         out,

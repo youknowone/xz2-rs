@@ -7,7 +7,7 @@ Usage: scripts/compare_api_workloads.sh <standard-files|qc|bufread-trailing> [ex
 
 Examples:
   scripts/compare_api_workloads.sh standard-files --mode all --iters 200 --warmup 20
-  scripts/compare_api_workloads.sh standard-files --mode good --iters 400 --warmup 40
+  scripts/compare_api_workloads.sh standard-files --mode good --iters 1000 --warmup 100
   scripts/compare_api_workloads.sh standard-files --mode good --name-pattern delta --iters 400 --warmup 40
   scripts/compare_api_workloads.sh qc --mode both --cases 128 --max-size 4096 --iters 200 --warmup 20
   scripts/compare_api_workloads.sh bufread-trailing --mode both --input-size 1024 --trailing-size 123 --iters 1000 --warmup 100
@@ -50,7 +50,7 @@ esac
 RUST_BIN="$RUST_TARGET/release/examples/$EXAMPLE_NAME"
 C_BIN="$C_TARGET/release/examples/$EXAMPLE_NAME"
 
-env CARGO_TARGET_DIR="$RUST_TARGET" cargo build --example "$EXAMPLE_NAME" --release >/dev/null
+env CARGO_TARGET_DIR="$RUST_TARGET" cargo build --example "$EXAMPLE_NAME" --release --no-default-features --features xz >/dev/null
 env LZMA_API_STATIC=1 CARGO_TARGET_DIR="$C_TARGET" cargo build --example "$EXAMPLE_NAME" --release --no-default-features --features liblzma-sys >/dev/null
 
 hyperfine \

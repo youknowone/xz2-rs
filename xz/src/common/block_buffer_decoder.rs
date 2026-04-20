@@ -2,7 +2,7 @@ use crate::types::*;
 pub unsafe fn lzma_block_buffer_decode(
     block: *mut lzma_block,
     allocator: *const lzma_allocator,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
     out: *mut u8,
@@ -10,7 +10,7 @@ pub unsafe fn lzma_block_buffer_decode(
     out_size: size_t,
 ) -> lzma_ret {
     if in_pos.is_null()
-        || in_0.is_null() && *in_pos != in_size
+        || input.is_null() && *in_pos != in_size
         || *in_pos > in_size
         || out_pos.is_null()
         || out.is_null() && *out_pos != out_size
@@ -33,18 +33,14 @@ pub unsafe fn lzma_block_buffer_decode(
     let mut ret: lzma_ret =
         lzma_block_decoder_init(::core::ptr::addr_of_mut!(block_decoder), allocator, block);
     if ret == LZMA_OK {
-        let code = if let Some(code) = block_decoder.code {
-            code
-        } else {
-            lzma_next_end(::core::ptr::addr_of_mut!(block_decoder), allocator);
-            return LZMA_PROG_ERROR;
-        };
+        debug_assert!(block_decoder.code.is_some());
+        let code = block_decoder.code.unwrap_unchecked();
         let in_start: size_t = *in_pos;
         let out_start: size_t = *out_pos;
         ret = code(
             block_decoder.coder,
             allocator,
-            in_0,
+            input,
             in_pos,
             in_size,
             out,

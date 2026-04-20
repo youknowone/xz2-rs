@@ -18,10 +18,10 @@ use std::time::{Duration, Instant};
 
 #[cfg(feature = "liblzma-sys")]
 use liblzma_sys::{
-    lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_index as BackendIndex,
-    lzma_index_buffer_decode, lzma_index_end, lzma_index_uncompressed_size,
-    lzma_stream_buffer_bound, lzma_stream_buffer_decode, lzma_stream_flags as BackendStreamFlags,
-    lzma_stream_footer_decode, LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE,
+    LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE, lzma_crc32, lzma_crc64,
+    lzma_easy_buffer_encode, lzma_index as BackendIndex, lzma_index_buffer_decode, lzma_index_end,
+    lzma_index_uncompressed_size, lzma_stream_buffer_bound, lzma_stream_buffer_decode,
+    lzma_stream_flags as BackendStreamFlags, lzma_stream_footer_decode,
 };
 #[cfg(feature = "xz")]
 use xz::check::{crc32_fast::lzma_crc32, crc64_fast::lzma_crc64};
@@ -36,15 +36,15 @@ use xz::common::{
 };
 #[cfg(feature = "xz")]
 use xz::types::{
-    lzma_index as BackendIndex, lzma_stream_flags as BackendStreamFlags, LZMA_CHECK_CRC64, LZMA_OK,
-    LZMA_STREAM_HEADER_SIZE,
+    LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE, lzma_index as BackendIndex,
+    lzma_stream_flags as BackendStreamFlags,
 };
 #[cfg(feature = "xz-sys")]
 use xz_sys::{
-    lzma_crc32, lzma_crc64, lzma_easy_buffer_encode, lzma_index as BackendIndex,
-    lzma_index_buffer_decode, lzma_index_end, lzma_index_uncompressed_size,
-    lzma_stream_buffer_bound, lzma_stream_buffer_decode, lzma_stream_flags as BackendStreamFlags,
-    lzma_stream_footer_decode, LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE,
+    LZMA_CHECK_CRC64, LZMA_OK, LZMA_STREAM_HEADER_SIZE, lzma_crc32, lzma_crc64,
+    lzma_easy_buffer_encode, lzma_index as BackendIndex, lzma_index_buffer_decode, lzma_index_end,
+    lzma_index_uncompressed_size, lzma_stream_buffer_bound, lzma_stream_buffer_decode,
+    lzma_stream_flags as BackendStreamFlags, lzma_stream_footer_decode,
 };
 
 #[cfg(feature = "xz")]
@@ -225,7 +225,7 @@ fn usage() -> String {
     let mut message = String::new();
     message.push_str("Usage:\n");
     message.push_str(
-        "  cargo run -p perf-probe --release --no-default-features --features <liblzma-sys|xz-sys> -- \\\n",
+        "  cargo run -p perf-probe --release --no-default-features --features <xz|xz-sys|liblzma-sys> -- \\\n",
     );
     message.push_str("    --workload <encode|decode|size|crc32|crc64> [options]\n\n");
     message.push_str("Options:\n");
@@ -400,7 +400,8 @@ fn run_size(config: &Config) {
     );
 
     let measurement = measure(compressed.len(), config.iters, config.warmup, || unsafe {
-        backend_uncompressed_size(&compressed)
+        let input = black_box(compressed.as_slice());
+        backend_uncompressed_size(input)
     });
     print_measurement(&measurement, config.iters);
 }
@@ -488,7 +489,10 @@ fn fold_bytes(len: usize, data: &[u8]) -> u64 {
 }
 
 unsafe fn backend_encode(input: &[u8], preset: u32) -> Vec<u8> {
+    #[cfg(feature = "xz")]
     let bound = lzma_stream_buffer_bound(input.len());
+    #[cfg(any(feature = "xz-sys", feature = "liblzma-sys"))]
+    let bound = unsafe { lzma_stream_buffer_bound(input.len()) };
     let mut out = vec![0u8; bound];
     let mut out_pos: usize = 0;
     let ret = unsafe {
@@ -527,6 +531,16 @@ unsafe fn backend_decode(compressed: &[u8], out_size: usize) -> Vec<u8> {
         )
     };
     assert_eq!(ret, LZMA_OK, "{BACKEND_NAME} decode failed with {ret}");
+    assert_eq!(
+        in_pos,
+        compressed.len(),
+        "{BACKEND_NAME} decode left trailing input: consumed {in_pos} of {} bytes",
+        compressed.len()
+    );
+    assert_eq!(
+        out_pos, out_size,
+        "{BACKEND_NAME} decode produced {out_pos} bytes, expected {out_size}"
+    );
     out.truncate(out_pos);
     out
 }

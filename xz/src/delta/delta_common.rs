@@ -1,5 +1,5 @@
 use crate::types::*;
-unsafe extern "C" fn delta_coder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn delta_coder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
@@ -16,8 +16,7 @@ pub unsafe fn lzma_delta_coder_init(
             return LZMA_MEM_ERROR;
         }
         (*next).coder = coder as *mut c_void;
-        (*next).end =
-            Some(delta_coder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ());
+        (*next).end = Some(delta_coder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*coder).next = lzma_next_coder_s {
             coder: core::ptr::null_mut(),
             id: LZMA_VLI_UNKNOWN,
@@ -48,10 +47,10 @@ pub unsafe fn lzma_delta_coder_init(
         filters.offset(1),
     )
 }
-pub(crate) unsafe extern "C" fn lzma_delta_coder_memusage(options: *const c_void) -> u64 {
+pub(crate) unsafe fn lzma_delta_coder_memusage(options: *const c_void) -> u64 {
     let opt: *const lzma_options_delta = options as *const lzma_options_delta;
     if opt.is_null()
-        || (*opt).type_0 != LZMA_DELTA_TYPE_BYTE
+        || (*opt).type_ != LZMA_DELTA_TYPE_BYTE
         || (*opt).dist < LZMA_DELTA_DIST_MIN
         || (*opt).dist > LZMA_DELTA_DIST_MAX
     {

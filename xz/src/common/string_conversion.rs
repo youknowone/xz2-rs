@@ -6,9 +6,7 @@ pub struct filter_codec_def {
     pub name: [c_char; 12],
     pub opts_size: u32,
     pub id: lzma_vli,
-    pub parse: Option<
-        unsafe extern "C" fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
-    >,
+    pub parse: Option<unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char>,
     pub optmap: *const option_map,
     pub strfy_encoder: u8,
     pub strfy_decoder: u8,
@@ -18,7 +16,7 @@ pub struct filter_codec_def {
 #[repr(C)]
 pub struct option_map {
     pub name: [c_char; 12],
-    pub type_0: u8,
+    pub option_type: u8,
     pub flags: u8,
     pub offset: u16,
     pub u: option_value,
@@ -40,6 +38,20 @@ pub struct option_value_range {
 pub struct name_value_map {
     pub name: [c_char; 12],
     pub value: u32,
+}
+#[inline]
+const fn array_size<T, const N: usize>(_: *const [T; N]) -> usize {
+    N
+}
+#[inline]
+const fn c_chars<const N: usize>(bytes: [u8; N]) -> [c_char; N] {
+    let mut out = [0; N];
+    let mut i = 0;
+    while i < N {
+        out[i] = bytes[i] as c_char;
+        i += 1;
+    }
+    out
 }
 pub const OPTMAP_TYPE_LZMA_MATCH_FINDER: option_type = 2;
 pub const OPTMAP_TYPE_LZMA_MODE: option_type = 1;
@@ -107,27 +119,20 @@ unsafe fn str_append_u32(str: *mut lzma_str, mut v: u32, use_byte_suffix: bool) 
     if v == 0 {
         str_append_str(str, crate::c_str!("0"));
     } else {
-        static SUFFIXES: [[c_char; 4]; 4] = unsafe {
-            [
-                core::mem::transmute::<[u8; 4], [c_char; 4]>(*b"\0\0\0\0"),
-                core::mem::transmute::<[u8; 4], [c_char; 4]>(*b"KiB\0"),
-                core::mem::transmute::<[u8; 4], [c_char; 4]>(*b"MiB\0"),
-                core::mem::transmute::<[u8; 4], [c_char; 4]>(*b"GiB\0"),
-            ]
-        };
+        static SUFFIXES: [[c_char; 4]; 4] = [
+            c_chars(*b"\0\0\0\0"),
+            c_chars(*b"KiB\0"),
+            c_chars(*b"MiB\0"),
+            c_chars(*b"GiB\0"),
+        ];
         let mut suf: size_t = 0;
         if use_byte_suffix {
-            while v & 1023 == 0
-                && suf
-                    < core::mem::size_of::<[[c_char; 4]; 4]>() / core::mem::size_of::<[c_char; 4]>()
-                        - 1
-            {
+            while v & 1023 == 0 && suf < array_size(::core::ptr::addr_of!(SUFFIXES)) - 1 {
                 v >>= 10;
                 suf += 1;
             }
         }
-        let mut buf: [c_char; 16] =
-            core::mem::transmute::<[u8; 16], [c_char; 16]>(*b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+        let mut buf: [c_char; 16] = [0; 16];
         let mut pos: size_t = core::mem::size_of::<[c_char; 16]>() - 1;
         loop {
             pos -= 1;
@@ -148,70 +153,64 @@ pub const NAME_LEN_MAX: u32 = 11;
 pub const OPTMAP_USE_NAME_VALUE_MAP: u8 = 0x1;
 pub const OPTMAP_USE_BYTE_SUFFIX: u8 = 0x2;
 pub const OPTMAP_NO_STRFY_ZERO: u8 = 0x4;
-static mut bcj_optmap: [option_map; 1] = unsafe {
-    [option_map {
-        name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"start\0\0\0\0\0\0\0"),
-        type_0: 0,
-        flags: (OPTMAP_NO_STRFY_ZERO | OPTMAP_USE_BYTE_SUFFIX) as u8,
-        offset: 0,
-        u: option_value {
-            range: option_value_range {
-                min: 0,
-                max: UINT32_MAX,
-            },
+static mut bcj_optmap: [option_map; 1] = [option_map {
+    name: c_chars(*b"start\0\0\0\0\0\0\0"),
+    option_type: 0,
+    flags: (OPTMAP_NO_STRFY_ZERO | OPTMAP_USE_BYTE_SUFFIX) as u8,
+    offset: 0,
+    u: option_value {
+        range: option_value_range {
+            min: 0,
+            max: UINT32_MAX,
         },
-    }]
-};
-extern "C" fn parse_bcj(
+    },
+}];
+fn parse_bcj(
     str: *mut *const c_char,
     str_end: *const c_char,
     filter_options: *mut c_void,
 ) -> *const c_char {
-    return unsafe {
+    unsafe {
         parse_options(
             str,
             str_end,
             filter_options,
             ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            core::mem::size_of::<[option_map; 1]>() / core::mem::size_of::<option_map>(),
+            array_size(::core::ptr::addr_of!(bcj_optmap)),
         )
-    };
+    }
 }
-static mut delta_optmap: [option_map; 1] = unsafe {
-    [option_map {
-        name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"dist\0\0\0\0\0\0\0\0"),
-        type_0: 0,
-        flags: 0,
-        offset: 4,
-        u: option_value {
-            range: option_value_range {
-                min: LZMA_DELTA_DIST_MIN,
-                max: LZMA_DELTA_DIST_MAX,
-            },
+static mut delta_optmap: [option_map; 1] = [option_map {
+    name: c_chars(*b"dist\0\0\0\0\0\0\0\0"),
+    option_type: 0,
+    flags: 0,
+    offset: 4,
+    u: option_value {
+        range: option_value_range {
+            min: LZMA_DELTA_DIST_MIN,
+            max: LZMA_DELTA_DIST_MAX,
         },
-    }]
-};
-extern "C" fn parse_delta(
+    },
+}];
+fn parse_delta(
     str: *mut *const c_char,
     str_end: *const c_char,
     filter_options: *mut c_void,
 ) -> *const c_char {
-    return unsafe {
+    unsafe {
         let opts: *mut lzma_options_delta = filter_options as *mut lzma_options_delta;
-        (*opts).type_0 = LZMA_DELTA_TYPE_BYTE;
+        (*opts).type_ = LZMA_DELTA_TYPE_BYTE;
         (*opts).dist = LZMA_DELTA_DIST_MIN;
         parse_options(
             str,
             str_end,
             filter_options,
             ::core::ptr::addr_of!(delta_optmap) as *const option_map,
-            (core::mem::size_of::<[option_map; 1]>())
-                .wrapping_div(core::mem::size_of::<option_map>()),
+            array_size(::core::ptr::addr_of!(delta_optmap)),
         )
-    };
+    }
 }
-pub const LZMA12_PRESET_STR: [c_char; 7] =
-    unsafe { core::mem::transmute::<[u8; 7], [c_char; 7]>(*b"0-9[e]\0") };
+pub const LZMA12_PRESET_STR: [c_char; 7] = c_chars(*b"0-9[e]\0");
 unsafe fn parse_lzma12_preset(
     str: *mut *const c_char,
     str_end: *const c_char,
@@ -254,60 +253,56 @@ unsafe fn set_lzma12_preset(
     }
     core::ptr::null()
 }
-static lzma12_mode_map: [name_value_map; 3] = unsafe {
-    [
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"fast\0\0\0\0\0\0\0\0"),
-            value: LZMA_MODE_FAST as u32,
-        },
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"normal\0\0\0\0\0\0"),
-            value: LZMA_MODE_NORMAL as u32,
-        },
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"\0\0\0\0\0\0\0\0\0\0\0\0"),
-            value: 0,
-        },
-    ]
-};
-static lzma12_mf_map: [name_value_map; 6] = unsafe {
-    [
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"hc3\0\0\0\0\0\0\0\0\0"),
-            value: LZMA_MF_HC3 as u32,
-        },
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"hc4\0\0\0\0\0\0\0\0\0"),
-            value: LZMA_MF_HC4 as u32,
-        },
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"bt2\0\0\0\0\0\0\0\0\0"),
-            value: LZMA_MF_BT2 as u32,
-        },
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"bt3\0\0\0\0\0\0\0\0\0"),
-            value: LZMA_MF_BT3 as u32,
-        },
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"bt4\0\0\0\0\0\0\0\0\0"),
-            value: LZMA_MF_BT4 as u32,
-        },
-        name_value_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"\0\0\0\0\0\0\0\0\0\0\0\0"),
-            value: 0,
-        },
-    ]
-};
+static lzma12_mode_map: [name_value_map; 3] = [
+    name_value_map {
+        name: c_chars(*b"fast\0\0\0\0\0\0\0\0"),
+        value: LZMA_MODE_FAST as u32,
+    },
+    name_value_map {
+        name: c_chars(*b"normal\0\0\0\0\0\0"),
+        value: LZMA_MODE_NORMAL as u32,
+    },
+    name_value_map {
+        name: c_chars(*b"\0\0\0\0\0\0\0\0\0\0\0\0"),
+        value: 0,
+    },
+];
+static lzma12_mf_map: [name_value_map; 6] = [
+    name_value_map {
+        name: c_chars(*b"hc3\0\0\0\0\0\0\0\0\0"),
+        value: LZMA_MF_HC3 as u32,
+    },
+    name_value_map {
+        name: c_chars(*b"hc4\0\0\0\0\0\0\0\0\0"),
+        value: LZMA_MF_HC4 as u32,
+    },
+    name_value_map {
+        name: c_chars(*b"bt2\0\0\0\0\0\0\0\0\0"),
+        value: LZMA_MF_BT2 as u32,
+    },
+    name_value_map {
+        name: c_chars(*b"bt3\0\0\0\0\0\0\0\0\0"),
+        value: LZMA_MF_BT3 as u32,
+    },
+    name_value_map {
+        name: c_chars(*b"bt4\0\0\0\0\0\0\0\0\0"),
+        value: LZMA_MF_BT4 as u32,
+    },
+    name_value_map {
+        name: c_chars(*b"\0\0\0\0\0\0\0\0\0\0\0\0"),
+        value: 0,
+    },
+];
 static mut lzma12_optmap: [option_map; 9] = [option_map {
     name: [0; 12],
-    type_0: 0,
+    option_type: 0,
     flags: 0,
     offset: 0,
     u: option_value {
         map: core::ptr::null(),
     },
 }; 9];
-unsafe extern "C" fn parse_lzma12(
+unsafe fn parse_lzma12(
     str: *mut *const c_char,
     str_end: *const c_char,
     filter_options: *mut c_void,
@@ -319,7 +314,7 @@ unsafe extern "C" fn parse_lzma12(
         str_end,
         filter_options,
         ::core::ptr::addr_of!(lzma12_optmap) as *const option_map,
-        core::mem::size_of::<[option_map; 9]>() / core::mem::size_of::<option_map>(),
+        array_size(::core::ptr::addr_of!(lzma12_optmap)),
     );
     if !errmsg.is_null() {
         return errmsg;
@@ -329,197 +324,143 @@ unsafe extern "C" fn parse_lzma12(
     }
     core::ptr::null()
 }
-static mut filter_name_map: [filter_codec_def; 11] = unsafe {
-    [
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lzma1\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_lzma>() as u32,
-            id: LZMA_FILTER_LZMA1,
-            parse: Some(
-                parse_lzma12
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(lzma12_optmap) as *const option_map,
-            strfy_encoder: 9,
-            strfy_decoder: 5,
-            allow_null: false,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lzma2\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_lzma>() as u32,
-            id: LZMA_FILTER_LZMA2,
-            parse: Some(
-                parse_lzma12
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(lzma12_optmap) as *const option_map,
-            strfy_encoder: 9,
-            strfy_decoder: 2,
-            allow_null: false,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"x86\0\0\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_X86,
-            parse: Some(
-                parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: true,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"arm\0\0\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_ARM,
-            parse: Some(
-                parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: true,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"armthumb\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_ARMTHUMB,
-            parse: Some(
-                parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: true,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"arm64\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_ARM64,
-            parse: Some(
-                parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: true,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"riscv\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_RISCV,
-            parse: Some(
-                parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: true,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"powerpc\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_POWERPC,
-            parse: Some(
-                parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: true,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"ia64\0\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_IA64,
-            parse: Some(
-                parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: true,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"sparc\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
-            id: LZMA_FILTER_SPARC,
-            parse: Some(
-                parse_bcj
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: true,
-        },
-        filter_codec_def {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"delta\0\0\0\0\0\0\0"),
-            opts_size: core::mem::size_of::<lzma_options_delta>() as u32,
-            id: LZMA_FILTER_DELTA,
-            parse: Some(
-                parse_delta
-                    as unsafe extern "C" fn(
-                        *mut *const c_char,
-                        *const c_char,
-                        *mut c_void,
-                    ) -> *const c_char,
-            ),
-            optmap: ::core::ptr::addr_of!(delta_optmap) as *const option_map,
-            strfy_encoder: 1,
-            strfy_decoder: 1,
-            allow_null: false,
-        },
-    ]
-};
+static mut filter_name_map: [filter_codec_def; 11] = [
+    filter_codec_def {
+        name: c_chars(*b"lzma1\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_lzma>() as u32,
+        id: LZMA_FILTER_LZMA1,
+        parse: Some(
+            parse_lzma12
+                as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(lzma12_optmap) as *const option_map,
+        strfy_encoder: 9,
+        strfy_decoder: 5,
+        allow_null: false,
+    },
+    filter_codec_def {
+        name: c_chars(*b"lzma2\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_lzma>() as u32,
+        id: LZMA_FILTER_LZMA2,
+        parse: Some(
+            parse_lzma12
+                as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(lzma12_optmap) as *const option_map,
+        strfy_encoder: 9,
+        strfy_decoder: 2,
+        allow_null: false,
+    },
+    filter_codec_def {
+        name: c_chars(*b"x86\0\0\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
+        id: LZMA_FILTER_X86,
+        parse: Some(
+            parse_bcj as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: true,
+    },
+    filter_codec_def {
+        name: c_chars(*b"arm\0\0\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
+        id: LZMA_FILTER_ARM,
+        parse: Some(
+            parse_bcj as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: true,
+    },
+    filter_codec_def {
+        name: c_chars(*b"armthumb\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
+        id: LZMA_FILTER_ARMTHUMB,
+        parse: Some(
+            parse_bcj as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: true,
+    },
+    filter_codec_def {
+        name: c_chars(*b"arm64\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
+        id: LZMA_FILTER_ARM64,
+        parse: Some(
+            parse_bcj as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: true,
+    },
+    filter_codec_def {
+        name: c_chars(*b"riscv\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
+        id: LZMA_FILTER_RISCV,
+        parse: Some(
+            parse_bcj as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: true,
+    },
+    filter_codec_def {
+        name: c_chars(*b"powerpc\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
+        id: LZMA_FILTER_POWERPC,
+        parse: Some(
+            parse_bcj as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: true,
+    },
+    filter_codec_def {
+        name: c_chars(*b"ia64\0\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
+        id: LZMA_FILTER_IA64,
+        parse: Some(
+            parse_bcj as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: true,
+    },
+    filter_codec_def {
+        name: c_chars(*b"sparc\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_bcj>() as u32,
+        id: LZMA_FILTER_SPARC,
+        parse: Some(
+            parse_bcj as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(bcj_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: true,
+    },
+    filter_codec_def {
+        name: c_chars(*b"delta\0\0\0\0\0\0\0"),
+        opts_size: core::mem::size_of::<lzma_options_delta>() as u32,
+        id: LZMA_FILTER_DELTA,
+        parse: Some(
+            parse_delta
+                as unsafe fn(*mut *const c_char, *const c_char, *mut c_void) -> *const c_char,
+        ),
+        optmap: ::core::ptr::addr_of!(delta_optmap) as *const option_map,
+        strfy_encoder: 1,
+        strfy_decoder: 1,
+        allow_null: false,
+    },
+];
 unsafe fn parse_options(
     str: *mut *const c_char,
     str_end: *const c_char,
@@ -571,7 +512,7 @@ unsafe fn parse_options(
             if value_len == 0 {
                 return crate::c_str!("Option value cannot be empty");
             }
-            if (*optmap.offset(i as isize)).type_0 == OPTMAP_TYPE_LZMA_PRESET {
+            if (*optmap.offset(i as isize)).option_type == OPTMAP_TYPE_LZMA_PRESET {
                 let errmsg: *const c_char =
                     set_lzma12_preset(str, name_eq_value_end, filter_options);
                 if !errmsg.is_null() {
@@ -674,7 +615,7 @@ unsafe fn parse_options(
                 let ptr: *mut c_void = (filter_options as *mut c_char)
                     .offset((*optmap.offset(i as isize)).offset as isize)
                     as *mut c_void;
-                match (*optmap.offset(i as isize)).type_0 {
+                match (*optmap.offset(i as isize)).option_type {
                     1 => {
                         *(ptr as *mut lzma_mode) = v as lzma_mode;
                     }
@@ -739,8 +680,9 @@ unsafe fn parse_filter(
                 return crate::c_str!("Memory allocation failed");
             }
             *str = opts_start;
-            let errmsg: *const c_char =
-                filter_name_map[i as usize].parse.unwrap()(str, str_end, options);
+            debug_assert!(filter_name_map[i as usize].parse.is_some());
+            let parse = filter_name_map[i as usize].parse.unwrap_unchecked();
+            let errmsg: *const c_char = parse(str, str_end, options);
             if !errmsg.is_null() {
                 lzma_free(options, allocator);
                 return errmsg;
@@ -759,7 +701,6 @@ unsafe fn str_to_filters(
     flags: u32,
     allocator: *const lzma_allocator,
 ) -> *const c_char {
-    let mut current_block: u64;
     let mut errmsg: *const c_char = core::ptr::null();
     while **str as u8 == b' ' {
         *str = (*str).offset(1);
@@ -819,7 +760,6 @@ unsafe fn str_to_filters(
     loop {
         if i_0 == LZMA_FILTERS_MAX as size_t {
             errmsg = crate::c_str!("The maximum number of filters is four");
-            current_block = 6100283484465977373;
             break;
         } else {
             if *(*str) as u8 == b'-' && *(*str).offset(1) as u8 == b'-' {
@@ -836,7 +776,6 @@ unsafe fn str_to_filters(
             }
             if filter_end == *str {
                 errmsg = crate::c_str!("Filter name is missing");
-                current_block = 6100283484465977373;
                 break;
             } else {
                 errmsg = parse_filter(
@@ -848,7 +787,6 @@ unsafe fn str_to_filters(
                     only_xz,
                 );
                 if !errmsg.is_null() {
-                    current_block = 6100283484465977373;
                     break;
                 }
                 while **str as u8 == b' ' {
@@ -856,45 +794,39 @@ unsafe fn str_to_filters(
                 }
                 i_0 += 1;
                 if **str == 0 {
-                    current_block = 15090052786889560393;
                     break;
                 }
             }
         }
     }
-    match current_block {
-        15090052786889560393 => {
-            temp_filters[i_0 as usize].id = LZMA_VLI_UNKNOWN;
-            temp_filters[i_0 as usize].options = core::ptr::null_mut();
-            if flags & LZMA_STR_NO_VALIDATION as u32 == 0 {
-                let mut dummy: size_t = 0;
-                let ret: lzma_ret = lzma_validate_chain(
-                    ::core::ptr::addr_of_mut!(temp_filters) as *mut lzma_filter,
-                    ::core::ptr::addr_of_mut!(dummy),
-                );
-                if ret != LZMA_OK {
-                    errmsg = b"Invalid filter chain ('lzma2' missing at the end?)\0" as *const u8
-                        as *const c_char;
-                    current_block = 6100283484465977373;
-                } else {
-                    current_block = 12381812505308290051;
-                }
+    if errmsg.is_null() && **str == 0 {
+        temp_filters[i_0 as usize].id = LZMA_VLI_UNKNOWN;
+        temp_filters[i_0 as usize].options = core::ptr::null_mut();
+        if flags & LZMA_STR_NO_VALIDATION as u32 == 0 {
+            let mut dummy: size_t = 0;
+            let ret: lzma_ret = lzma_validate_chain(
+                ::core::ptr::addr_of_mut!(temp_filters) as *mut lzma_filter,
+                ::core::ptr::addr_of_mut!(dummy),
+            );
+            if ret != LZMA_OK {
+                errmsg = b"Invalid filter chain ('lzma2' missing at the end?)\0" as *const u8
+                    as *const c_char;
             } else {
-                current_block = 12381812505308290051;
+                core::ptr::copy_nonoverlapping(
+                    ::core::ptr::addr_of_mut!(temp_filters) as *const u8,
+                    filters as *mut u8,
+                    (i_0 + 1) * core::mem::size_of::<lzma_filter>(),
+                );
+                return core::ptr::null();
             }
-            match current_block {
-                6100283484465977373 => {}
-                _ => {
-                    core::ptr::copy_nonoverlapping(
-                        ::core::ptr::addr_of_mut!(temp_filters) as *const u8,
-                        filters as *mut u8,
-                        (i_0 + 1) * core::mem::size_of::<lzma_filter>(),
-                    );
-                    return core::ptr::null();
-                }
-            }
+        } else {
+            core::ptr::copy_nonoverlapping(
+                ::core::ptr::addr_of_mut!(temp_filters) as *const u8,
+                filters as *mut u8,
+                (i_0 + 1) * core::mem::size_of::<lzma_filter>(),
+            );
+            return core::ptr::null();
         }
-        _ => {}
     }
     while i_0 > 0 {
         i_0 -= 1;
@@ -942,12 +874,12 @@ unsafe fn strfy_filter(
 ) {
     let mut i: size_t = 0;
     while i < optmap_count {
-        if (*optmap.offset(i as isize)).type_0 != OPTMAP_TYPE_LZMA_PRESET {
+        if (*optmap.offset(i as isize)).option_type != OPTMAP_TYPE_LZMA_PRESET {
             let mut v: u32 = 0;
             let ptr: *const c_void = (filter_options as *const c_char)
                 .offset((*optmap.offset(i as isize)).offset as isize)
                 as *const c_void;
-            match (*optmap.offset(i as isize)).type_0 {
+            match (*optmap.offset(i as isize)).option_type {
                 1 => {
                     v = *(ptr as *const lzma_mode) as u32;
                 }
@@ -1023,9 +955,9 @@ pub unsafe fn lzma_str_from_filters(
         buf: core::ptr::null_mut(),
         pos: 0,
     };
-    let ret_: lzma_ret = str_init(::core::ptr::addr_of_mut!(dest), allocator);
-    if ret_ != LZMA_OK {
-        return ret_;
+    let ret: lzma_ret = str_init(::core::ptr::addr_of_mut!(dest), allocator);
+    if ret != LZMA_OK {
+        return ret;
     }
     let show_opts: bool = flags & (LZMA_STR_ENCODER as u32 | LZMA_STR_DECODER as u32) != 0;
     let opt_delim: *const c_char = if flags & LZMA_STR_GETOPT_LONG as u32 != 0 {
@@ -1117,9 +1049,9 @@ pub unsafe fn lzma_str_list_filters(
         buf: core::ptr::null_mut(),
         pos: 0,
     };
-    let ret_: lzma_ret = str_init(::core::ptr::addr_of_mut!(dest), allocator);
-    if ret_ != LZMA_OK {
-        return ret_;
+    let ret: lzma_ret = str_init(::core::ptr::addr_of_mut!(dest), allocator);
+    if ret != LZMA_OK {
+        return ret;
     }
     let show_opts: bool = flags & (LZMA_STR_ENCODER as u32 | LZMA_STR_DECODER as u32) != 0;
     let filter_delim: *const c_char = if show_opts {
@@ -1176,7 +1108,7 @@ pub unsafe fn lzma_str_list_filters(
                                 as *const c_char,
                         );
                         str_append_str(::core::ptr::addr_of_mut!(dest), crate::c_str!("=<"));
-                        if (*optmap.offset(j as isize)).type_0 == OPTMAP_TYPE_LZMA_PRESET {
+                        if (*optmap.offset(j as isize)).option_type == OPTMAP_TYPE_LZMA_PRESET {
                             str_append_str(
                                 ::core::ptr::addr_of_mut!(dest),
                                 LZMA12_PRESET_STR.as_ptr(),
@@ -1232,8 +1164,8 @@ pub unsafe fn lzma_str_list_filters(
 unsafe extern "C" fn run_static_initializers() {
     lzma12_optmap = [
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"preset\0\0\0\0\0\0"),
-            type_0: OPTMAP_TYPE_LZMA_PRESET,
+            name: c_chars(*b"preset\0\0\0\0\0\0"),
+            option_type: OPTMAP_TYPE_LZMA_PRESET,
             flags: 0,
             offset: 0,
             u: option_value {
@@ -1241,8 +1173,8 @@ unsafe extern "C" fn run_static_initializers() {
             },
         },
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"dict\0\0\0\0\0\0\0\0"),
-            type_0: 0,
+            name: c_chars(*b"dict\0\0\0\0\0\0\0\0"),
+            option_type: 0,
             flags: OPTMAP_USE_BYTE_SUFFIX,
             offset: 0,
             u: option_value {
@@ -1253,8 +1185,8 @@ unsafe extern "C" fn run_static_initializers() {
             },
         },
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lc\0\0\0\0\0\0\0\0\0\0"),
-            type_0: 0,
+            name: c_chars(*b"lc\0\0\0\0\0\0\0\0\0\0"),
+            option_type: 0,
             flags: 0,
             offset: 20,
             u: option_value {
@@ -1265,8 +1197,8 @@ unsafe extern "C" fn run_static_initializers() {
             },
         },
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"lp\0\0\0\0\0\0\0\0\0\0"),
-            type_0: 0,
+            name: c_chars(*b"lp\0\0\0\0\0\0\0\0\0\0"),
+            option_type: 0,
             flags: 0,
             offset: 24,
             u: option_value {
@@ -1277,8 +1209,8 @@ unsafe extern "C" fn run_static_initializers() {
             },
         },
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"pb\0\0\0\0\0\0\0\0\0\0"),
-            type_0: 0,
+            name: c_chars(*b"pb\0\0\0\0\0\0\0\0\0\0"),
+            option_type: 0,
             flags: 0,
             offset: 28,
             u: option_value {
@@ -1289,8 +1221,8 @@ unsafe extern "C" fn run_static_initializers() {
             },
         },
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"mode\0\0\0\0\0\0\0\0"),
-            type_0: OPTMAP_TYPE_LZMA_MODE,
+            name: c_chars(*b"mode\0\0\0\0\0\0\0\0"),
+            option_type: OPTMAP_TYPE_LZMA_MODE,
             flags: OPTMAP_USE_NAME_VALUE_MAP,
             offset: 32,
             u: option_value {
@@ -1298,8 +1230,8 @@ unsafe extern "C" fn run_static_initializers() {
             },
         },
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"nice\0\0\0\0\0\0\0\0"),
-            type_0: 0,
+            name: c_chars(*b"nice\0\0\0\0\0\0\0\0"),
+            option_type: 0,
             flags: 0,
             offset: 36,
             u: option_value {
@@ -1307,8 +1239,8 @@ unsafe extern "C" fn run_static_initializers() {
             },
         },
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"mf\0\0\0\0\0\0\0\0\0\0"),
-            type_0: OPTMAP_TYPE_LZMA_MATCH_FINDER,
+            name: c_chars(*b"mf\0\0\0\0\0\0\0\0\0\0"),
+            option_type: OPTMAP_TYPE_LZMA_MATCH_FINDER,
             flags: OPTMAP_USE_NAME_VALUE_MAP,
             offset: 40,
             u: option_value {
@@ -1316,8 +1248,8 @@ unsafe extern "C" fn run_static_initializers() {
             },
         },
         option_map {
-            name: core::mem::transmute::<[u8; 12], [c_char; 12]>(*b"depth\0\0\0\0\0\0\0"),
-            type_0: 0,
+            name: c_chars(*b"depth\0\0\0\0\0\0\0"),
+            option_type: 0,
             flags: 0,
             offset: 44,
             u: option_value {
@@ -1330,7 +1262,7 @@ unsafe extern "C" fn run_static_initializers() {
     ];
 }
 #[used]
-#[cfg_attr(target_os = "linux", link_section = ".init_array")]
-#[cfg_attr(target_os = "windows", link_section = ".CRT$XIB")]
-#[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
+#[cfg_attr(target_os = "linux", unsafe(link_section = ".init_array"))]
+#[cfg_attr(target_os = "windows", unsafe(link_section = ".CRT$XIB"))]
+#[cfg_attr(target_os = "macos", unsafe(link_section = "__DATA,__mod_init_func"))]
 static INIT_ARRAY: [unsafe extern "C" fn(); 1] = [run_static_initializers];

@@ -27,7 +27,7 @@ pub const LZMA_BUFFER_SIZE: u32 = 4096;
 pub const LZ_DICT_EXTRA: u32 = 0;
 pub const LZMA_LZ_DECODER_INIT: lzma_lz_decoder = lzma_lz_decoder {
     coder: core::ptr::null_mut(),
-    code: None,
+    code: lzma_lz_decoder_code_uninitialized,
     reset: None,
     set_uncompressed: None,
     end: None,
@@ -41,7 +41,7 @@ unsafe fn lz_decoder_reset(coder: *mut lzma_coder) {
 }
 unsafe fn decode_buffer(
     coder: *mut lzma_coder,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
     out: *mut u8,
@@ -71,10 +71,10 @@ unsafe fn decode_buffer(
                 (*coder).dict.size.wrapping_sub((*coder).dict.pos)
             },
         );
-        let ret: lzma_ret = (*coder).lz.code.unwrap()(
+        let ret: lzma_ret = ((*coder).lz.code)(
             (*coder).lz.coder,
             ::core::ptr::addr_of_mut!((*coder).dict),
-            in_0,
+            input,
             in_pos,
             in_size,
         );
@@ -97,10 +97,10 @@ unsafe fn decode_buffer(
         }
     }
 }
-unsafe extern "C" fn lz_decode(
+unsafe fn lz_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
     out: *mut u8,
@@ -110,16 +110,18 @@ unsafe extern "C" fn lz_decode(
 ) -> lzma_ret {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
     if (*coder).next.code.is_none() {
-        return decode_buffer(coder, in_0, in_pos, in_size, out, out_pos, out_size);
+        return decode_buffer(coder, input, in_pos, in_size, out, out_pos, out_size);
     }
     while *out_pos < out_size {
         if !(*coder).next_finished && (*coder).temp.pos == (*coder).temp.size {
             (*coder).temp.pos = 0;
             (*coder).temp.size = 0;
-            let ret: lzma_ret = (*coder).next.code.unwrap()(
+            debug_assert!((*coder).next.code.is_some());
+            let next_code = (*coder).next.code.unwrap_unchecked();
+            let ret: lzma_ret = next_code(
                 (*coder).next.coder,
                 allocator,
-                in_0,
+                input,
                 in_pos,
                 in_size,
                 ::core::ptr::addr_of_mut!((*coder).temp.buffer) as *mut u8,
@@ -142,7 +144,7 @@ unsafe extern "C" fn lz_decode(
             }
             return LZMA_OK;
         }
-        let ret_0: lzma_ret = decode_buffer(
+        let ret: lzma_ret = decode_buffer(
             coder,
             ::core::ptr::addr_of_mut!((*coder).temp.buffer) as *mut u8,
             ::core::ptr::addr_of_mut!((*coder).temp.pos),
@@ -151,22 +153,22 @@ unsafe extern "C" fn lz_decode(
             out_pos,
             out_size,
         );
-        if ret_0 == LZMA_STREAM_END {
+        if ret == LZMA_STREAM_END {
             (*coder).this_finished = true;
-        } else if ret_0 != LZMA_OK {
-            return ret_0;
+        } else if ret != LZMA_OK {
+            return ret;
         } else if (*coder).next_finished && *out_pos < out_size {
             return LZMA_DATA_ERROR;
         }
     }
     LZMA_OK
 }
-unsafe extern "C" fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).next), allocator);
     crate::alloc::internal_free((*coder).dict.buf as *mut c_void, allocator);
-    if (*coder).lz.end.is_some() {
-        (*coder).lz.end.unwrap()((*coder).lz.coder, allocator);
+    if let Some(end) = (*coder).lz.end {
+        end((*coder).lz.coder, allocator);
     } else {
         crate::alloc::internal_free((*coder).lz.coder, allocator);
     }
@@ -176,15 +178,13 @@ pub unsafe fn lzma_lz_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
-    lz_init: Option<
-        unsafe extern "C" fn(
-            *mut lzma_lz_decoder,
-            *const lzma_allocator,
-            lzma_vli,
-            *const c_void,
-            *mut lzma_lz_options,
-        ) -> lzma_ret,
-    >,
+    lz_init: unsafe fn(
+        *mut lzma_lz_decoder,
+        *const lzma_allocator,
+        lzma_vli,
+        *const c_void,
+        *mut lzma_lz_options,
+    ) -> lzma_ret,
 ) -> lzma_ret {
     let mut coder: *mut lzma_coder = (*next).coder as *mut lzma_coder;
     if coder.is_null() {
@@ -195,7 +195,7 @@ pub unsafe fn lzma_lz_decoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             lz_decode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -207,8 +207,7 @@ pub unsafe fn lzma_lz_decoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end =
-            Some(lz_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ());
+        (*next).end = Some(lz_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*coder).dict.buf = core::ptr::null_mut();
         (*coder).dict.size = 0;
         (*coder).lz = LZMA_LZ_DECODER_INIT;
@@ -230,22 +229,17 @@ pub unsafe fn lzma_lz_decoder_init(
         preset_dict: core::ptr::null(),
         preset_dict_size: 0,
     };
-    let lz_init = if let Some(lz_init) = lz_init {
-        lz_init
-    } else {
-        return LZMA_PROG_ERROR;
-    };
-    let ret_: lzma_ret = lz_init(
+    let ret: lzma_ret = lz_init(
         ::core::ptr::addr_of_mut!((*coder).lz),
         allocator,
         (*filters).id,
         (*filters).options,
         ::core::ptr::addr_of_mut!(lz_options),
     );
-    if ret_ != LZMA_OK {
-        return ret_;
+    if ret != LZMA_OK {
+        return ret;
     }
-    if (*coder).lz.code.is_none() {
+    if (*coder).lz.coder.is_null() {
         return LZMA_PROG_ERROR;
     }
     if lz_options.dict_size < 4096 {

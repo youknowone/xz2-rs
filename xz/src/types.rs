@@ -1,26 +1,4 @@
 pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ulonglong, c_void};
-#[cfg(windows)]
-use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, WAIT_OBJECT_0};
-#[cfg(windows)]
-use windows_sys::Win32::System::SystemInformation::GetTickCount;
-#[cfg(windows)]
-use windows_sys::Win32::System::Threading::{
-    DeleteCriticalSection, EnterCriticalSection, InitializeConditionVariable,
-    InitializeCriticalSection, LeaveCriticalSection, SleepConditionVariableCS, WaitForSingleObject,
-    WakeConditionVariable, CONDITION_VARIABLE, CRITICAL_SECTION, INFINITE,
-};
-
-#[cfg(windows)]
-unsafe extern "C" {
-    fn _beginthreadex(
-        security: *mut c_void,
-        stack_size: c_uint,
-        start_address: Option<unsafe extern "system" fn(*mut c_void) -> u32>,
-        arglist: *mut c_void,
-        initflag: c_uint,
-        thrdaddr: *mut c_uint,
-    ) -> usize;
-}
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 pub type size_t = usize;
 #[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
@@ -47,8 +25,8 @@ pub type probability = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_allocator {
-    pub alloc: Option<unsafe extern "C" fn(*mut c_void, size_t, size_t) -> *mut c_void>,
-    pub free: Option<unsafe extern "C" fn(*mut c_void, *mut c_void) -> ()>,
+    pub alloc: Option<unsafe fn(*mut c_void, size_t, size_t) -> *mut c_void>,
+    pub free: Option<unsafe fn(*mut c_void, *mut c_void) -> ()>,
     pub opaque: *mut c_void,
 }
 #[derive(Copy, Clone)]
@@ -57,57 +35,13 @@ pub struct lzma_filter {
     pub id: lzma_vli,
     pub options: *mut c_void,
 }
-pub type lzma_end_function = Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>;
-pub type lzma_code_function = Option<
-    unsafe extern "C" fn(
-        *mut c_void,
-        *const lzma_allocator,
-        *const u8,
-        *mut size_t,
-        size_t,
-        *mut u8,
-        *mut size_t,
-        size_t,
-        lzma_action,
-    ) -> lzma_ret,
->;
-pub type lzma_next_coder = lzma_next_coder_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_next_coder_s {
-    pub coder: *mut c_void,
-    pub id: lzma_vli,
-    pub init: uintptr_t,
-    pub code: lzma_code_function,
-    pub end: lzma_end_function,
-    pub get_progress: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64) -> ()>,
-    pub get_check: Option<unsafe extern "C" fn(*const c_void) -> lzma_check>,
-    pub memconfig: Option<unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret>,
-    pub update: Option<
-        unsafe extern "C" fn(
-            *mut c_void,
-            *const lzma_allocator,
-            *const lzma_filter,
-            *const lzma_filter,
-        ) -> lzma_ret,
-    >,
-    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
-}
-pub type lzma_init_function = Option<
-    unsafe extern "C" fn(
-        *mut lzma_next_coder,
-        *const lzma_allocator,
-        *const lzma_filter_info,
-    ) -> lzma_ret,
->;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_filter_info_s {
-    pub id: lzma_vli,
-    pub init: lzma_init_function,
-    pub options: *mut c_void,
-}
-pub type lzma_filter_info = lzma_filter_info_s;
+pub use crate::common::common_types::{
+    ISEQ_END, ISEQ_ERROR, ISEQ_FINISH, ISEQ_FULL_BARRIER, ISEQ_FULL_FLUSH, ISEQ_RUN,
+    ISEQ_SYNC_FLUSH, LZMA_MEMUSAGE_BASE, LZMA_SUPPORTED_FLAGS, LZMA_THREADS_MAX,
+    lzma_code_function, lzma_end_function, lzma_filter_info, lzma_filter_info_s,
+    lzma_init_function, lzma_internal, lzma_internal_s, lzma_internal_sequence, lzma_next_coder,
+    lzma_next_coder_s,
+};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_options_lzma {
@@ -136,24 +70,6 @@ pub struct lzma_options_lzma {
     pub reserved_ptr1: *mut c_void,
     pub reserved_ptr2: *mut c_void,
 }
-pub type lzma_internal_sequence = c_uint;
-pub const ISEQ_RUN: lzma_internal_sequence = 0;
-pub const ISEQ_SYNC_FLUSH: lzma_internal_sequence = 1;
-pub const ISEQ_FULL_FLUSH: lzma_internal_sequence = 2;
-pub const ISEQ_FINISH: lzma_internal_sequence = 3;
-pub const ISEQ_FULL_BARRIER: lzma_internal_sequence = 4;
-pub const ISEQ_END: lzma_internal_sequence = 5;
-pub const ISEQ_ERROR: lzma_internal_sequence = 6;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct lzma_internal_s {
-    pub next: lzma_next_coder,
-    pub sequence: lzma_internal_sequence,
-    pub avail_in: size_t,
-    pub supported_actions: [bool; 5],
-    pub allow_buf_error: bool,
-}
-pub type lzma_internal = lzma_internal_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_stream {
@@ -241,7 +157,6 @@ pub const LZMA_IGNORE_CHECK: c_uint = 0x10;
 pub const LZMA_FAIL_FAST: c_uint = 0x20;
 pub const LZMA_STREAM_HEADER_SIZE: u32 = 12;
 pub const LZMA_BLOCK_HEADER_SIZE_MAX: u32 = 1024;
-pub const LZMA_MEMUSAGE_BASE: u64 = 1 << 15;
 pub const LZMA_DICT_SIZE_MIN: c_uint = 4096;
 pub const STATE_LIT_LIT: lzma_lzma_state = 0;
 pub const STATE_MATCH_LIT_LIT: lzma_lzma_state = 1;
@@ -262,18 +177,11 @@ pub const LZMA_PB_MAX: u32 = 4;
 pub const LZMA_DELTA_DIST_MAX: u32 = 256;
 pub const LZMA_BACKWARD_SIZE_MIN: u32 = 4;
 pub const LZMA_BACKWARD_SIZE_MAX: u64 = 1 << 34;
-pub const LZMA_SUPPORTED_FLAGS: c_uint = LZMA_TELL_NO_CHECK
-    | LZMA_TELL_UNSUPPORTED_CHECK
-    | LZMA_TELL_ANY_CHECK
-    | LZMA_IGNORE_CHECK
-    | LZMA_CONCATENATED
-    | LZMA_FAIL_FAST;
 pub const UINTPTR_MAX: c_ulong = uintptr_t::MAX as c_ulong;
 pub const SIZE_MAX: c_ulong = UINTPTR_MAX;
 pub const INDEX_INDICATOR: u8 = 0;
 pub const UNPADDED_SIZE_MIN: c_ulonglong = 5;
 pub const UNPADDED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX & !3;
-pub const LZMA_THREADS_MAX: u32 = 16384;
 pub const LZMA_DELTA_DIST_MIN: u32 = 1;
 pub const LZMA_LZMA1EXT_ALLOW_EOPM: c_uint = 0x1;
 pub const RC_BIT_MODEL_TOTAL_BITS: u32 = 11;
@@ -317,8 +225,6 @@ pub const LZMA_PRESET_EXTREME: c_uint = 1u32 << 31;
 pub const COMPRESSED_SIZE_MAX: c_ulonglong = LZMA_VLI_MAX
     .wrapping_sub(LZMA_BLOCK_HEADER_SIZE_MAX as u64)
     .wrapping_sub(LZMA_CHECK_SIZE_MAX as u64);
-pub const MYTHREAD_RET_VALUE: *mut c_void = core::ptr::null_mut();
-pub const SIG_SETMASK: c_int = 3;
 pub type worker_state = c_uint;
 pub type lzma_index_iter_mode = c_uint;
 pub const THR_IDLE: worker_state = 0;
@@ -465,7 +371,7 @@ pub struct lzma_check_state {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_options_delta {
-    pub type_0: lzma_delta_type,
+    pub type_: lzma_delta_type,
     pub dist: u32,
     pub reserved_int1: u32,
     pub reserved_int2: u32,
@@ -495,25 +401,44 @@ pub struct lzma_dict {
 #[repr(C)]
 pub struct lzma_lz_decoder {
     pub coder: *mut c_void,
-    pub code: Option<
-        unsafe extern "C" fn(
-            *mut c_void,
-            *mut lzma_dict,
-            *const u8,
-            *mut size_t,
-            size_t,
-        ) -> lzma_ret,
-    >,
-    pub reset: Option<unsafe extern "C" fn(*mut c_void, *const c_void) -> ()>,
-    pub set_uncompressed: Option<unsafe extern "C" fn(*mut c_void, lzma_vli, bool) -> ()>,
-    pub end: Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>,
+    pub code: lzma_lz_decoder_code_function,
+    pub reset: Option<unsafe fn(*mut c_void, *const c_void) -> ()>,
+    pub set_uncompressed: Option<unsafe fn(*mut c_void, lzma_vli, bool) -> ()>,
+    pub end: Option<unsafe fn(*mut c_void, *const lzma_allocator) -> ()>,
 }
+pub type lzma_lz_decoder_code_function =
+    unsafe fn(*mut c_void, *mut lzma_dict, *const u8, *mut size_t, size_t) -> lzma_ret;
+
+#[cold]
+pub unsafe fn lzma_lz_decoder_code_uninitialized(
+    _coder: *mut c_void,
+    _dict: *mut lzma_dict,
+    _input: *const u8,
+    _in_pos: *mut size_t,
+    _in_size: size_t,
+) -> lzma_ret {
+    panic!("uninitialized LZ decoder callback")
+}
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_match {
     pub len: u32,
     pub dist: u32,
 }
+pub type lzma_mf_find_function = unsafe fn(*mut lzma_mf, *mut lzma_match) -> u32;
+pub type lzma_mf_skip_function = unsafe fn(*mut lzma_mf, u32) -> ();
+
+#[cold]
+pub unsafe fn lzma_mf_find_uninitialized(_mf: *mut lzma_mf, _matches: *mut lzma_match) -> u32 {
+    panic!("uninitialized match finder callback")
+}
+
+#[cold]
+pub unsafe fn lzma_mf_skip_uninitialized(_mf: *mut lzma_mf, _amount: u32) {
+    panic!("uninitialized match finder skip callback")
+}
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct lzma_mf_s {
@@ -527,8 +452,8 @@ pub struct lzma_mf_s {
     pub read_limit: u32,
     pub write_pos: u32,
     pub pending: u32,
-    pub find: Option<unsafe extern "C" fn(*mut lzma_mf, *mut lzma_match) -> u32>,
-    pub skip: Option<unsafe extern "C" fn(*mut lzma_mf, u32) -> ()>,
+    pub find: lzma_mf_find_function,
+    pub skip: lzma_mf_skip_function,
     pub hash: *mut u32,
     pub son: *mut u32,
     pub cyclic_pos: u32,
@@ -554,12 +479,23 @@ pub struct lzma_delta_coder {
 #[repr(C)]
 pub struct lzma_lz_encoder {
     pub coder: *mut c_void,
-    pub code: Option<
-        unsafe extern "C" fn(*mut c_void, *mut lzma_mf, *mut u8, *mut size_t, size_t) -> lzma_ret,
-    >,
-    pub end: Option<unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> ()>,
-    pub options_update: Option<unsafe extern "C" fn(*mut c_void, *const lzma_filter) -> lzma_ret>,
-    pub set_out_limit: Option<unsafe extern "C" fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
+    pub code: lzma_lz_encoder_code_function,
+    pub end: Option<unsafe fn(*mut c_void, *const lzma_allocator) -> ()>,
+    pub options_update: Option<unsafe fn(*mut c_void, *const lzma_filter) -> lzma_ret>,
+    pub set_out_limit: Option<unsafe fn(*mut c_void, *mut u64, u64) -> lzma_ret>,
+}
+pub type lzma_lz_encoder_code_function =
+    unsafe fn(*mut c_void, *mut lzma_mf, *mut u8, *mut size_t, size_t) -> lzma_ret;
+
+#[cold]
+pub unsafe fn lzma_lz_encoder_code_uninitialized(
+    _coder: *mut c_void,
+    _mf: *mut lzma_mf,
+    _out: *mut u8,
+    _out_pos: *mut size_t,
+    _out_size: size_t,
+) -> lzma_ret {
+    panic!("uninitialized LZ encoder callback")
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -634,418 +570,12 @@ pub struct lzma_lzma1_encoder_s {
 }
 pub type lzma_lzma1_encoder = lzma_lzma1_encoder_s;
 #[inline]
-pub fn read32le(buf: *const u8) -> u32 {
-    unsafe { core::ptr::read_unaligned(buf.cast::<u32>()).to_le() }
+pub fn read32le(buf: &[u8; 4]) -> u32 {
+    u32::from_le_bytes(*buf)
 }
 #[inline]
-pub fn write32le(buf: *mut u8, num: u32) {
-    unsafe {
-        core::ptr::write_unaligned(buf.cast::<u32>(), num.to_le());
-    }
-}
-pub type __uint32_t = u32;
-pub type __darwin_time_t = c_long;
-pub type __darwin_sigset_t = __uint32_t;
-#[cfg(not(windows))]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct __darwin_pthread_handler_rec {
-    pub __routine: Option<unsafe extern "C" fn(*mut c_void) -> ()>,
-    pub __arg: *mut c_void,
-    pub __next: *mut __darwin_pthread_handler_rec,
-}
-#[cfg(not(windows))]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _opaque_pthread_attr_t {
-    pub __sig: c_long,
-    pub __opaque: [c_char; 56],
-}
-#[cfg(not(windows))]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _opaque_pthread_cond_t {
-    pub __sig: c_long,
-    pub __opaque: [c_char; 40],
-}
-#[cfg(not(windows))]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _opaque_pthread_condattr_t {
-    pub __sig: c_long,
-    pub __opaque: [c_char; 8],
-}
-#[cfg(not(windows))]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _opaque_pthread_mutex_t {
-    pub __sig: c_long,
-    pub __opaque: [c_char; 56],
-}
-#[cfg(not(windows))]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _opaque_pthread_mutexattr_t {
-    pub __sig: c_long,
-    pub __opaque: [c_char; 8],
-}
-#[cfg(not(windows))]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _opaque_pthread_t {
-    pub __sig: c_long,
-    pub __cleanup_stack: *mut __darwin_pthread_handler_rec,
-    pub __opaque: [c_char; 8176],
-}
-#[cfg(not(windows))]
-pub type __darwin_pthread_attr_t = _opaque_pthread_attr_t;
-#[cfg(not(windows))]
-pub type __darwin_pthread_cond_t = _opaque_pthread_cond_t;
-#[cfg(not(windows))]
-pub type __darwin_pthread_condattr_t = _opaque_pthread_condattr_t;
-#[cfg(not(windows))]
-pub type __darwin_pthread_mutex_t = _opaque_pthread_mutex_t;
-#[cfg(not(windows))]
-pub type __darwin_pthread_mutexattr_t = _opaque_pthread_mutexattr_t;
-#[cfg(not(windows))]
-pub type __darwin_pthread_t = *mut _opaque_pthread_t;
-#[cfg(not(windows))]
-pub type pthread_attr_t = __darwin_pthread_attr_t;
-pub type sigset_t = __darwin_sigset_t;
-pub type time_t = __darwin_time_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct timespec {
-    pub tv_sec: __darwin_time_t,
-    pub tv_nsec: c_long,
-}
-pub type clockid_t = c_uint;
-pub const _CLOCK_THREAD_CPUTIME_ID: clockid_t = 16;
-pub const _CLOCK_PROCESS_CPUTIME_ID: clockid_t = 12;
-pub const _CLOCK_UPTIME_RAW_APPROX: clockid_t = 9;
-pub const _CLOCK_UPTIME_RAW: clockid_t = 8;
-pub const _CLOCK_MONOTONIC_RAW_APPROX: clockid_t = 5;
-pub const _CLOCK_MONOTONIC_RAW: clockid_t = 4;
-pub const _CLOCK_MONOTONIC: clockid_t = 6;
-pub const _CLOCK_REALTIME: clockid_t = 0;
-#[cfg(not(windows))]
-pub type pthread_cond_t = __darwin_pthread_cond_t;
-#[cfg(not(windows))]
-pub type pthread_condattr_t = __darwin_pthread_condattr_t;
-#[cfg(not(windows))]
-pub type pthread_mutex_t = __darwin_pthread_mutex_t;
-#[cfg(not(windows))]
-pub type pthread_mutexattr_t = __darwin_pthread_mutexattr_t;
-#[cfg(not(windows))]
-pub type pthread_t = __darwin_pthread_t;
-#[cfg(windows)]
-pub type pthread_attr_t = HANDLE;
-#[cfg(windows)]
-pub type pthread_cond_t = CONDITION_VARIABLE;
-#[cfg(windows)]
-pub type pthread_condattr_t = HANDLE;
-#[cfg(windows)]
-pub type pthread_mutex_t = CRITICAL_SECTION;
-#[cfg(windows)]
-pub type pthread_mutexattr_t = HANDLE;
-#[cfg(windows)]
-pub type pthread_t = HANDLE;
-#[cfg(not(windows))]
-pub type mythread = pthread_t;
-#[cfg(windows)]
-pub type mythread = HANDLE;
-#[cfg(not(windows))]
-pub type mythread_mutex = pthread_mutex_t;
-#[cfg(windows)]
-pub type mythread_mutex = CRITICAL_SECTION;
-#[cfg(not(windows))]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mythread_cond {
-    pub cond: pthread_cond_t,
-    pub clk_id: clockid_t,
-}
-#[cfg(windows)]
-pub type mythread_cond = CONDITION_VARIABLE;
-#[cfg(not(windows))]
-pub type mythread_condtime = timespec;
-#[cfg(windows)]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mythread_condtime {
-    pub start: u32,
-    pub timeout: u32,
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_sigmask(how: c_int, set: *const sigset_t, oset: *mut sigset_t) {
-    let _ret: c_int =
-        unsafe { pthread_sigmask(how, set as *const sigset_t, oset as *mut sigset_t) };
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_sigmask(_how: c_int, _set: *const sigset_t, _oset: *mut sigset_t) {}
-#[cfg(windows)]
-struct mythread_start_info {
-    func: Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
-    arg: *mut c_void,
-}
-#[cfg(windows)]
-unsafe extern "system" fn mythread_start(param: *mut c_void) -> u32 {
-    let info = Box::from_raw(param.cast::<mythread_start_info>());
-    if let Some(func) = info.func {
-        let _ = func(info.arg);
-    }
-    0
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_create(
-    thread: *mut mythread,
-    func: Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
-    arg: *mut c_void,
-) -> c_int {
-    let mut old: sigset_t = 0;
-    let mut all: sigset_t = 0;
-    all = !(0 as sigset_t);
-    mythread_sigmask(
-        SIG_SETMASK,
-        ::core::ptr::addr_of_mut!(all),
-        ::core::ptr::addr_of_mut!(old),
-    );
-    let ret: c_int = unsafe {
-        pthread_create(
-            thread as *mut pthread_t,
-            core::ptr::null(),
-            func as Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
-            arg as *mut c_void,
-        )
-    };
-    mythread_sigmask(
-        SIG_SETMASK,
-        ::core::ptr::addr_of_mut!(old),
-        core::ptr::null_mut(),
-    );
-    ret
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_create(
-    thread: *mut mythread,
-    func: Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
-    arg: *mut c_void,
-) -> c_int {
-    let info = Box::into_raw(Box::new(mythread_start_info { func, arg }));
-    let ret = unsafe {
-        _beginthreadex(
-            core::ptr::null_mut(),
-            0,
-            Some(mythread_start),
-            info.cast::<c_void>(),
-            0,
-            core::ptr::null_mut(),
-        )
-    };
-    if ret == 0 {
-        unsafe {
-            let _ = Box::from_raw(info);
-        }
-        -1
-    } else {
-        unsafe {
-            *thread = ret as HANDLE;
-        }
-        0
-    }
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_join(thread: mythread) -> c_int {
-    unsafe { pthread_join(thread as pthread_t, core::ptr::null_mut()) }
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_join(thread: mythread) -> c_int {
-    let mut ret = 0;
-    unsafe {
-        if WaitForSingleObject(thread, INFINITE) != WAIT_OBJECT_0 {
-            ret = -1;
-        }
-        if CloseHandle(thread) == 0 {
-            ret = -1;
-        }
-    }
-    ret
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_mutex_init(mutex: *mut mythread_mutex) -> c_int {
-    unsafe { pthread_mutex_init(mutex as *mut pthread_mutex_t, core::ptr::null()) }
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_mutex_init(mutex: *mut mythread_mutex) -> c_int {
-    unsafe {
-        InitializeCriticalSection(mutex);
-    }
-    0
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_mutex_destroy(mutex: *mut mythread_mutex) {
-    let _ret: c_int = unsafe { pthread_mutex_destroy(mutex as *mut pthread_mutex_t) };
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_mutex_destroy(mutex: *mut mythread_mutex) {
-    unsafe {
-        DeleteCriticalSection(mutex);
-    }
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_mutex_lock(mutex: *mut mythread_mutex) {
-    let _ret: c_int = unsafe { pthread_mutex_lock(mutex as *mut pthread_mutex_t) };
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_mutex_lock(mutex: *mut mythread_mutex) {
-    unsafe {
-        EnterCriticalSection(mutex);
-    }
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_mutex_unlock(mutex: *mut mythread_mutex) {
-    let _ret: c_int = unsafe { pthread_mutex_unlock(mutex as *mut pthread_mutex_t) };
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_mutex_unlock(mutex: *mut mythread_mutex) {
-    unsafe {
-        LeaveCriticalSection(mutex);
-    }
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_cond_init(mycond: *mut mythread_cond) -> c_int {
-    return unsafe {
-        (*mycond).clk_id = _CLOCK_REALTIME;
-        pthread_cond_init(::core::ptr::addr_of_mut!((*mycond).cond), core::ptr::null())
-    };
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_cond_init(cond: *mut mythread_cond) -> c_int {
-    unsafe {
-        InitializeConditionVariable(cond);
-    }
-    0
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_cond_destroy(cond: *mut mythread_cond) {
-    let _ret: c_int = unsafe { pthread_cond_destroy(::core::ptr::addr_of_mut!((*cond).cond)) };
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_cond_destroy(_cond: *mut mythread_cond) {}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_cond_signal(cond: *mut mythread_cond) {
-    let _ret: c_int = unsafe { pthread_cond_signal(::core::ptr::addr_of_mut!((*cond).cond)) };
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_cond_signal(cond: *mut mythread_cond) {
-    unsafe {
-        WakeConditionVariable(cond);
-    }
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_cond_wait(cond: *mut mythread_cond, mutex: *mut mythread_mutex) {
-    let _ret: c_int = unsafe {
-        pthread_cond_wait(
-            ::core::ptr::addr_of_mut!((*cond).cond),
-            mutex as *mut pthread_mutex_t,
-        )
-    };
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_cond_wait(cond: *mut mythread_cond, mutex: *mut mythread_mutex) {
-    unsafe {
-        let _ = SleepConditionVariableCS(cond, mutex, INFINITE);
-    }
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_cond_timedwait(
-    cond: *mut mythread_cond,
-    mutex: *mut mythread_mutex,
-    condtime: *const mythread_condtime,
-) -> c_int {
-    let ret: c_int = unsafe {
-        pthread_cond_timedwait(
-            ::core::ptr::addr_of_mut!((*cond).cond),
-            mutex as *mut pthread_mutex_t,
-            condtime as *const timespec,
-        )
-    };
-    ret
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_cond_timedwait(
-    cond: *mut mythread_cond,
-    mutex: *mut mythread_mutex,
-    condtime: *const mythread_condtime,
-) -> c_int {
-    let (start, timeout_ms) = unsafe { ((*condtime).start, (*condtime).timeout) };
-    let elapsed = unsafe { GetTickCount().wrapping_sub(start) };
-    let timeout = if elapsed >= timeout_ms {
-        0
-    } else {
-        timeout_ms - elapsed
-    };
-    let ret = unsafe { SleepConditionVariableCS(cond, mutex, timeout) };
-    i32::from(ret == 0)
-}
-#[cfg(not(windows))]
-#[inline]
-pub fn mythread_condtime_set(
-    condtime: *mut mythread_condtime,
-    cond: *const mythread_cond,
-    timeout_ms: u32,
-) {
-    unsafe {
-        (*condtime).tv_sec = timeout_ms.wrapping_div(1000) as time_t as __darwin_time_t;
-        (*condtime).tv_nsec = timeout_ms.wrapping_rem(1000).wrapping_mul(1_000_000) as c_long;
-        let mut now: timespec = timespec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        };
-        let _ret: c_int = clock_gettime((*cond).clk_id, ::core::ptr::addr_of_mut!(now));
-        (*condtime).tv_sec += now.tv_sec;
-        (*condtime).tv_nsec += now.tv_nsec;
-        if (*condtime).tv_nsec >= 1_000_000_000 {
-            (*condtime).tv_nsec -= 1_000_000_000;
-            (*condtime).tv_sec += 1;
-        }
-    }
-}
-#[cfg(windows)]
-#[inline]
-pub fn mythread_condtime_set(
-    condtime: *mut mythread_condtime,
-    _cond: *const mythread_cond,
-    timeout_ms: u32,
-) {
-    unsafe {
-        (*condtime).start = GetTickCount();
-        (*condtime).timeout = timeout_ms;
-    }
+pub fn write32le(buf: &mut [u8; 4], num: u32) {
+    *buf = num.to_le_bytes();
 }
 #[inline]
 pub fn vli_ceil4(vli: lzma_vli) -> lzma_vli {
@@ -1075,15 +605,11 @@ pub unsafe fn mf_avail(mf: *const lzma_mf) -> u32 {
 }
 #[inline]
 pub unsafe fn mf_skip(mf: *mut lzma_mf, amount: u32) {
-    mf_skip_raw(mf, amount, (*mf).skip.unwrap());
+    mf_skip_raw(mf, amount, (*mf).skip);
 }
 
 #[inline(always)]
-pub unsafe fn mf_skip_raw(
-    mf: *mut lzma_mf,
-    amount: u32,
-    skip: unsafe extern "C" fn(*mut lzma_mf, u32) -> (),
-) {
+pub unsafe fn mf_skip_raw(mf: *mut lzma_mf, amount: u32, skip: unsafe fn(*mut lzma_mf, u32) -> ()) {
     if amount != 0 {
         skip(mf, amount);
         (*mf).read_ahead = (*mf).read_ahead.wrapping_add(amount);
@@ -1115,20 +641,15 @@ pub unsafe fn lzma_memcmplen(buf1: *const u8, buf2: *const u8, mut len: u32, lim
         target_endian = "little",
         any(target_arch = "aarch64", target_arch = "x86_64")
     )))]
-    while len < limit && *buf1.offset(len as isize) == *buf2.offset(len as isize) {
-        len += 1;
-    }
-
-    #[cfg(not(all(
-        target_endian = "little",
-        any(target_arch = "aarch64", target_arch = "x86_64")
-    )))]
     {
+        while len < limit && *buf1.add(len as usize) == *buf2.add(len as usize) {
+            len += 1;
+        }
         len
     }
 }
 #[inline]
-pub unsafe fn get_dist_slot(dist: u32) -> u32 {
+pub fn get_dist_slot(dist: u32) -> u32 {
     if dist < 1 << FASTPOS_BITS + (0 + 0 * (FASTPOS_BITS - 1)) {
         return lzma_fastpos[dist as usize] as u32;
     }
@@ -1140,30 +661,26 @@ pub unsafe fn get_dist_slot(dist: u32) -> u32 {
         .wrapping_add((2 * (0 + 2 * (FASTPOS_BITS - 1))) as u32)
 }
 #[inline]
-unsafe fn rc_price_at(index: u32) -> u32 {
+fn rc_price_at(index: u32) -> u32 {
     debug_assert!((index as usize) < 128);
-    *(::core::ptr::addr_of!(lzma_rc_prices) as *const u8).add(index as usize) as u32
+    unsafe { *lzma_rc_prices.as_ptr().add(index as usize) as u32 }
 }
 #[inline]
 pub fn rc_bit_price(prob: probability, bit: u32) -> u32 {
-    unsafe {
-        rc_price_at(
-            ((prob as u32 ^ 0u32.wrapping_sub(bit) & (RC_BIT_MODEL_TOTAL as u32).wrapping_sub(1))
-                >> RC_MOVE_REDUCING_BITS) as u32,
-        )
-    }
+    rc_price_at(
+        ((prob as u32 ^ 0u32.wrapping_sub(bit) & (RC_BIT_MODEL_TOTAL as u32).wrapping_sub(1))
+            >> RC_MOVE_REDUCING_BITS) as u32,
+    )
 }
 #[inline]
 pub fn rc_bit_0_price(prob: probability) -> u32 {
-    unsafe { rc_price_at((prob >> RC_MOVE_REDUCING_BITS) as u32) }
+    rc_price_at((prob >> RC_MOVE_REDUCING_BITS) as u32)
 }
 #[inline]
 pub fn rc_bit_1_price(prob: probability) -> u32 {
-    unsafe {
-        rc_price_at(
-            ((prob as u32 ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1)) >> RC_MOVE_REDUCING_BITS) as u32,
-        )
-    }
+    rc_price_at(
+        ((prob as u32 ^ RC_BIT_MODEL_TOTAL.wrapping_sub(1)) >> RC_MOVE_REDUCING_BITS) as u32,
+    )
 }
 #[inline]
 pub unsafe fn rc_bittree_price(probs: *const probability, bit_levels: u32, mut symbol: u32) -> u32 {
@@ -1297,23 +814,26 @@ pub struct lzma_mt {
 pub struct lzma_filter_coder {
     pub id: lzma_vli,
     pub init: lzma_init_function,
-    pub memusage: Option<unsafe extern "C" fn(*const c_void) -> u64>,
+    pub memusage: Option<unsafe fn(*const c_void) -> u64>,
 }
-pub type lzma_filter_find = Option<unsafe extern "C" fn(lzma_vli) -> *const lzma_filter_coder>;
+pub type lzma_filter_find = Option<unsafe fn(lzma_vli) -> *const lzma_filter_coder>;
+pub(crate) type lzma_simple_filter_function =
+    unsafe fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_simple_coder {
-    pub next: lzma_next_coder,
-    pub end_was_reached: bool,
-    pub is_encoder: bool,
-    pub filter: Option<unsafe extern "C" fn(*mut c_void, u32, bool, *mut u8, size_t) -> size_t>,
-    pub simple: *mut c_void,
-    pub now_pos: u32,
-    pub allocated: size_t,
-    pub pos: size_t,
-    pub filtered: size_t,
-    pub size: size_t,
-    pub buffer: [u8; 0],
+pub(crate) struct lzma_simple_coder {
+    pub(crate) next: lzma_next_coder,
+    pub(crate) end_was_reached: bool,
+    pub(crate) is_encoder: bool,
+    pub(crate) filter: lzma_simple_filter_function,
+    pub(crate) simple: *mut c_void,
+    pub(crate) now_pos: u32,
+    pub(crate) allocated: size_t,
+    pub(crate) pos: size_t,
+    pub(crate) filtered: size_t,
+    pub(crate) size: size_t,
+    pub(crate) buffer: [u8; 0],
 }
 pub use crate::check::check::{
     lzma_check_finish, lzma_check_init, lzma_check_is_supported, lzma_check_size, lzma_check_update,
@@ -1355,6 +875,16 @@ pub use crate::common::stream_flags_decoder::{
 pub use crate::common::stream_flags_encoder::{
     lzma_stream_footer_encode, lzma_stream_header_encode,
 };
+pub use crate::common::threading::{
+    __darwin_time_t, _CLOCK_MONOTONIC, _CLOCK_MONOTONIC_RAW, _CLOCK_MONOTONIC_RAW_APPROX,
+    _CLOCK_PROCESS_CPUTIME_ID, _CLOCK_REALTIME, _CLOCK_THREAD_CPUTIME_ID, _CLOCK_UPTIME_RAW,
+    _CLOCK_UPTIME_RAW_APPROX, MYTHREAD_RET_VALUE, SIG_SETMASK, clockid_t, mythread, mythread_cond,
+    mythread_cond_destroy, mythread_cond_init, mythread_cond_signal, mythread_cond_timedwait,
+    mythread_cond_wait, mythread_condtime, mythread_condtime_set, mythread_create, mythread_join,
+    mythread_mutex, mythread_mutex_destroy, mythread_mutex_init, mythread_mutex_lock,
+    mythread_mutex_unlock, mythread_sigmask, pthread_attr_t, pthread_cond_t, pthread_condattr_t,
+    pthread_mutex_t, pthread_mutexattr_t, pthread_t, sigset_t, time_t, timespec,
+};
 pub use crate::common::vli_decoder::lzma_vli_decode;
 pub use crate::common::vli_encoder::lzma_vli_encode;
 pub use crate::common::vli_size::lzma_vli_size;
@@ -1370,33 +900,8 @@ pub use crate::lzma::lzma_encoder::lzma_lzma_lclppb_encode;
 pub(crate) use crate::lzma::lzma_encoder::{lzma_lzma_encoder_init, lzma_lzma_encoder_memusage};
 pub use crate::lzma::lzma_encoder_presets::lzma_lzma_preset;
 pub use crate::rangecoder::price_table::lzma_rc_prices;
-pub use crate::simple::simple_coder::lzma_simple_coder_init;
-#[cfg(not(windows))]
-extern "C" {
-    pub fn clock_gettime(__clock_id: clockid_t, __tp: *mut timespec) -> c_int;
-    pub fn pthread_cond_destroy(_: *mut pthread_cond_t) -> c_int;
-    pub fn pthread_cond_init(_: *mut pthread_cond_t, _: *const pthread_condattr_t) -> c_int;
-    pub fn pthread_cond_signal(_: *mut pthread_cond_t) -> c_int;
-    pub fn pthread_cond_timedwait(
-        _: *mut pthread_cond_t,
-        _: *mut pthread_mutex_t,
-        _: *const timespec,
-    ) -> c_int;
-    pub fn pthread_cond_wait(_: *mut pthread_cond_t, _: *mut pthread_mutex_t) -> c_int;
-    pub fn pthread_create(
-        _: *mut pthread_t,
-        _: *const pthread_attr_t,
-        _: Option<unsafe extern "C" fn(*mut c_void) -> *mut c_void>,
-        _: *mut c_void,
-    ) -> c_int;
-    pub fn pthread_join(_: pthread_t, _: *mut *mut c_void) -> c_int;
-    pub fn pthread_mutex_destroy(_: *mut pthread_mutex_t) -> c_int;
-    pub fn pthread_mutex_init(_: *mut pthread_mutex_t, _: *const pthread_mutexattr_t) -> c_int;
-    pub fn pthread_mutex_lock(_: *mut pthread_mutex_t) -> c_int;
-    pub fn pthread_mutex_unlock(_: *mut pthread_mutex_t) -> c_int;
-    pub fn pthread_sigmask(_: c_int, _: *const sigset_t, _: *mut sigset_t) -> c_int;
-}
-extern "C" {
+pub(crate) use crate::simple::simple_coder::lzma_simple_coder_init;
+unsafe extern "C" {
     pub fn memcmp(s1: *const c_void, s2: *const c_void, n: size_t) -> c_int;
     pub fn strlen(s: *const c_char) -> size_t;
 }

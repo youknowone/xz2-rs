@@ -1050,6 +1050,8 @@ unsafe fn crc64_step4(
         ^ *table0.add((tmp >> 24) as usize)
 }
 
+// Keep this loop pointer-based: the slice version left slice_index_fail
+// slow paths in optimized code for the large contiguous-buffer workload.
 #[inline(always)]
 unsafe fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mut crc: u64) -> u64 {
     let table0 = lzma_crc64_table[0].as_ptr();
@@ -1063,7 +1065,7 @@ unsafe fn lzma_crc64_generic(mut buf: *const u8, mut size: size_t, mut crc: u64)
             buf = buf.offset(1);
             size -= 1;
         }
-        let limit8 = buf.offset((size & !(7)) as isize);
+        let limit8 = buf.offset((size & !7) as isize);
         while buf < limit8 {
             crc = crc64_step4(table0, table1, table2, table3, buf, crc);
             buf = buf.offset(4);

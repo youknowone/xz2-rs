@@ -1,24 +1,26 @@
 use crate::types::*;
-unsafe fn decode_buffer(coder: *mut lzma_delta_coder, buffer: *mut u8, size: size_t) {
-    let distance: size_t = (*coder).distance;
-    let history = (*coder).history.as_mut_ptr();
-    let mut pos = (*coder).pos;
-    let mut i: size_t = 0;
-    while i < size {
-        let byte_ptr = buffer.add(i);
-        let byte = (*byte_ptr)
-            .wrapping_add(*history.add((distance.wrapping_add(pos as size_t) & 0xff) as usize));
-        *byte_ptr = byte;
-        *history.add((pos & 0xff) as usize) = byte;
+fn decode_buffer(coder: &mut lzma_delta_coder, buffer: &mut [u8]) {
+    let distance: size_t = coder.distance;
+    let history = coder.history.as_mut_ptr();
+    let mut pos = coder.pos;
+    let mut i: usize = 0;
+    while i < buffer.len() {
+        let byte = buffer[i].wrapping_add(unsafe {
+            *history.add((distance.wrapping_add(pos as size_t) & 0xff) as usize)
+        });
+        buffer[i] = byte;
+        unsafe {
+            *history.add((pos & 0xff) as usize) = byte;
+        }
         pos = pos.wrapping_sub(1);
         i += 1;
     }
-    (*coder).pos = pos;
+    coder.pos = pos;
 }
-unsafe extern "C" fn delta_decode(
+unsafe fn delta_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
     out: *mut u8,
@@ -26,12 +28,14 @@ unsafe extern "C" fn delta_decode(
     out_size: size_t,
     action: lzma_action,
 ) -> lzma_ret {
-    let coder: *mut lzma_delta_coder = coder_ptr as *mut lzma_delta_coder;
+    let coder: &mut lzma_delta_coder = &mut *(coder_ptr as *mut lzma_delta_coder);
     let out_start: size_t = *out_pos;
-    let ret: lzma_ret = (*coder).next.code.unwrap()(
-        (*coder).next.coder,
+    debug_assert!(coder.next.code.is_some());
+    let code = coder.next.code.unwrap_unchecked();
+    let ret: lzma_ret = code(
+        coder.next.coder,
         allocator,
-        in_0,
+        input,
         in_pos,
         in_size,
         out,
@@ -42,18 +46,21 @@ unsafe extern "C" fn delta_decode(
     debug_assert!(*out_pos >= out_start);
     let size: size_t = *out_pos - out_start;
     if size > 0 {
-        decode_buffer(coder, out.offset(out_start as isize), size);
+        decode_buffer(
+            coder,
+            core::slice::from_raw_parts_mut(out.add(out_start), size),
+        );
     }
     ret
 }
-pub(crate) unsafe extern "C" fn lzma_delta_decoder_init(
+pub(crate) unsafe fn lzma_delta_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
 ) -> lzma_ret {
     (*next).code = Some(
         delta_decode
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut c_void,
                 *const lzma_allocator,
                 *const u8,
@@ -67,7 +74,7 @@ pub(crate) unsafe extern "C" fn lzma_delta_decoder_init(
     );
     lzma_delta_coder_init(next, allocator, filters)
 }
-pub(crate) unsafe extern "C" fn lzma_delta_props_decode(
+pub(crate) unsafe fn lzma_delta_props_decode(
     options: *mut *mut c_void,
     allocator: *const lzma_allocator,
     props: *const u8,
@@ -82,7 +89,7 @@ pub(crate) unsafe extern "C" fn lzma_delta_props_decode(
     if opt.is_null() {
         return LZMA_MEM_ERROR;
     }
-    (*opt).type_0 = LZMA_DELTA_TYPE_BYTE;
+    (*opt).type_ = LZMA_DELTA_TYPE_BYTE;
     (*opt).dist = u32::from(*props) + 1;
     *options = opt as *mut c_void;
     LZMA_OK

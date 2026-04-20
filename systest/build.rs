@@ -7,6 +7,13 @@ fn target_deps_dir() -> PathBuf {
     let workspace_root = manifest_dir.parent().unwrap();
     let target_root = env::var_os("CARGO_TARGET_DIR")
         .map(PathBuf::from)
+        .map(|path| {
+            if path.is_relative() {
+                workspace_root.join(path)
+            } else {
+                path
+            }
+        })
         .unwrap_or_else(|| workspace_root.join("target"));
     let profile = env::var("PROFILE").unwrap();
     let target = env::var("TARGET").unwrap();
@@ -111,18 +118,13 @@ fn main() {
     cfg.header("lzma.h");
     cfg.rename_struct_ty(|ty| Some(ty.to_string()));
     cfg.rename_union_ty(|ty| Some(ty.to_string()));
-    cfg.rename_struct_field(|s, field| {
-        if s.ident() == "lzma_options_delta" && field.ident() == "type_" {
-            Some("type".to_string())
-        } else {
-            None
-        }
-    });
     cfg.define("LZMA_API_STATIC", None);
     cfg.skip_struct(move |s| {
-        use_bindgen && (s.ident().ends_with("_s") || s.ident().contains("__bindgen_ty_"))
+        (use_bindgen && (s.ident().ends_with("_s") || s.ident().contains("__bindgen_ty_")))
+            || (use_rs_sys && matches!(s.ident(), "StaticAllocator"))
     });
     cfg.skip_union(move |u| use_bindgen && u.ident().contains("__bindgen_ty_"));
+    cfg.skip_static(move |s| use_rs_sys && matches!(s.ident(), "C_ALLOCATOR"));
     cfg.skip_struct_field(move |s, field| {
         use_bindgen
             && s.ident() == "lzma_index_iter"
@@ -134,14 +136,15 @@ fn main() {
             && matches!(field.ident(), "stream" | "block" | "internal")
     });
     cfg.skip_fn(move |f| {
-        use_bindgen
+        (use_bindgen
             && !use_parallel
             && matches!(
                 f.ident(),
                 "lzma_stream_decoder_mt"
                     | "lzma_stream_encoder_mt"
                     | "lzma_stream_encoder_mt_memusage"
-            )
+            ))
+            || (use_rs_sys && matches!(f.ident(), "malloc" | "calloc" | "free"))
     });
     cfg.skip_alias(move |n| {
         matches!(n.ident(), "__enum_ty" | "c_enum" | "lzma_reserved_enum")
@@ -183,6 +186,5 @@ fn main() {
         &path_externs,
     );
     env::set_var("RUSTC", &rustc_wrapper);
-
     ctest::generate_test(&mut cfg, rust_api, "all.rs").unwrap();
 }

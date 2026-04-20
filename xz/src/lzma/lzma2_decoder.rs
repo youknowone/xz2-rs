@@ -24,7 +24,7 @@ pub const SEQ_UNCOMPRESSED_1: sequence = 1;
 pub const SEQ_CONTROL: sequence = 0;
 pub const LZMA_LZ_DECODER_INIT: lzma_lz_decoder = lzma_lz_decoder {
     coder: core::ptr::null_mut(),
-    code: None,
+    code: lzma_lz_decoder_code_uninitialized,
     reset: None,
     set_uncompressed: None,
     end: None,
@@ -32,7 +32,7 @@ pub const LZMA_LZ_DECODER_INIT: lzma_lz_decoder = lzma_lz_decoder {
 #[inline]
 unsafe fn dict_write(
     dict: *mut lzma_dict,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     mut in_size: size_t,
     left: *mut size_t,
@@ -41,7 +41,7 @@ unsafe fn dict_write(
         in_size = (*in_pos).wrapping_add(*left);
     }
     *left = (*left).wrapping_sub(lzma_bufcpy(
-        in_0,
+        input,
         in_pos,
         in_size,
         (*dict).buf,
@@ -56,10 +56,10 @@ unsafe fn dict_write(
 unsafe fn dict_reset(dict: *mut lzma_dict) {
     (*dict).need_reset = true;
 }
-unsafe extern "C" fn lzma2_decode(
+unsafe fn lzma2_decode(
     coder_ptr: *mut c_void,
     dict: *mut lzma_dict,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
 ) -> lzma_ret {
@@ -67,7 +67,7 @@ unsafe extern "C" fn lzma2_decode(
     while *in_pos < in_size || (*coder).sequence == SEQ_LZMA {
         match (*coder).sequence {
             0 => {
-                let control: u32 = *in_0.offset(*in_pos as isize) as u32;
+                let control: u32 = *input.offset(*in_pos as isize) as u32;
                 *in_pos = (*in_pos).wrapping_add(1);
                 if control == 0 {
                     return LZMA_STREAM_END;
@@ -89,7 +89,9 @@ unsafe extern "C" fn lzma2_decode(
                     } else {
                         (*coder).next_sequence = SEQ_LZMA;
                         if control >= 0xa0 {
-                            (*coder).lzma.reset.unwrap()(
+                            debug_assert!((*coder).lzma.reset.is_some());
+                            let reset = (*coder).lzma.reset.unwrap_unchecked();
+                            reset(
                                 (*coder).lzma.coder,
                                 ::core::ptr::addr_of_mut!((*coder).options) as *const c_void,
                             );
@@ -111,41 +113,46 @@ unsafe extern "C" fn lzma2_decode(
             1 => {
                 (*coder).uncompressed_size = (*coder)
                     .uncompressed_size
-                    .wrapping_add(((*in_0.offset(*in_pos as isize) as u32) << 8) as size_t);
+                    .wrapping_add(((*input.offset(*in_pos as isize) as u32) << 8) as size_t);
                 *in_pos += 1;
                 (*coder).sequence = SEQ_UNCOMPRESSED_2;
             }
             2 => {
                 (*coder).uncompressed_size = (*coder).uncompressed_size.wrapping_add(
-                    u32::from(*in_0.offset(*in_pos as isize)).wrapping_add(1) as size_t,
+                    u32::from(*input.offset(*in_pos as isize)).wrapping_add(1) as size_t,
                 );
                 *in_pos += 1;
                 (*coder).sequence = SEQ_COMPRESSED_0;
-                (*coder).lzma.set_uncompressed.unwrap()(
+                debug_assert!((*coder).lzma.set_uncompressed.is_some());
+                let set_uncompressed = (*coder).lzma.set_uncompressed.unwrap_unchecked();
+                set_uncompressed(
                     (*coder).lzma.coder,
                     (*coder).uncompressed_size as lzma_vli,
                     false,
                 );
             }
             3 => {
-                (*coder).compressed_size = ((*in_0.offset(*in_pos as isize) as u32) << 8) as size_t;
+                (*coder).compressed_size =
+                    ((*input.offset(*in_pos as isize) as u32) << 8) as size_t;
                 *in_pos += 1;
                 (*coder).sequence = SEQ_COMPRESSED_1;
             }
             4 => {
                 (*coder).compressed_size = (*coder).compressed_size.wrapping_add(
-                    u32::from(*in_0.offset(*in_pos as isize)).wrapping_add(1) as size_t,
+                    u32::from(*input.offset(*in_pos as isize)).wrapping_add(1) as size_t,
                 );
                 *in_pos += 1;
                 (*coder).sequence = (*coder).next_sequence as sequence;
             }
             5 => {
-                let prop_byte = *in_0.offset(*in_pos as isize);
+                let prop_byte = *input.offset(*in_pos as isize);
                 *in_pos += 1;
                 if lzma_lzma_lclppb_decode(::core::ptr::addr_of_mut!((*coder).options), prop_byte) {
                     return LZMA_DATA_ERROR;
                 }
-                (*coder).lzma.reset.unwrap()(
+                debug_assert!((*coder).lzma.reset.is_some());
+                let reset = (*coder).lzma.reset.unwrap_unchecked();
+                reset(
                     (*coder).lzma.coder,
                     ::core::ptr::addr_of_mut!((*coder).options) as *const c_void,
                 );
@@ -154,7 +161,7 @@ unsafe extern "C" fn lzma2_decode(
             6 => {
                 let in_start: size_t = *in_pos;
                 let ret: lzma_ret =
-                    (*coder).lzma.code.unwrap()((*coder).lzma.coder, dict, in_0, in_pos, in_size);
+                    ((*coder).lzma.code)((*coder).lzma.coder, dict, input, in_pos, in_size);
                 let in_used: size_t = (*in_pos).wrapping_sub(in_start);
                 if in_used > (*coder).compressed_size {
                     return LZMA_DATA_ERROR;
@@ -171,7 +178,7 @@ unsafe extern "C" fn lzma2_decode(
             7 => {
                 dict_write(
                     dict,
-                    in_0,
+                    input,
                     in_pos,
                     in_size,
                     ::core::ptr::addr_of_mut!((*coder).compressed_size),
@@ -186,12 +193,12 @@ unsafe extern "C" fn lzma2_decode(
     }
     LZMA_OK
 }
-unsafe extern "C" fn lzma2_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn lzma2_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_lzma2_coder = coder_ptr as *mut lzma_lzma2_coder;
     crate::alloc::internal_free((*coder).lzma.coder, allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn lzma2_decoder_init(
+unsafe fn lzma2_decoder_init(
     lz: *mut lzma_lz_decoder,
     allocator: *const lzma_allocator,
     _id: lzma_vli,
@@ -205,19 +212,8 @@ unsafe extern "C" fn lzma2_decoder_init(
             return LZMA_MEM_ERROR;
         }
         (*lz).coder = coder as *mut c_void;
-        (*lz).code = Some(
-            lzma2_decode
-                as unsafe extern "C" fn(
-                    *mut c_void,
-                    *mut lzma_dict,
-                    *const u8,
-                    *mut size_t,
-                    size_t,
-                ) -> lzma_ret,
-        );
-        (*lz).end = Some(
-            lzma2_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*lz).code = lzma2_decode as lzma_lz_decoder_code_function;
+        (*lz).end = Some(lzma2_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*coder).lzma = LZMA_LZ_DECODER_INIT;
     }
     let options: *const lzma_options_lzma = opt as *const lzma_options_lzma;
@@ -232,7 +228,7 @@ unsafe extern "C" fn lzma2_decoder_init(
         lz_options,
     )
 }
-pub(crate) unsafe extern "C" fn lzma_lzma2_decoder_init(
+pub(crate) unsafe fn lzma_lzma2_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     filters: *const lzma_filter_info,
@@ -241,23 +237,21 @@ pub(crate) unsafe extern "C" fn lzma_lzma2_decoder_init(
         next,
         allocator,
         filters,
-        Some(
-            lzma2_decoder_init
-                as unsafe extern "C" fn(
-                    *mut lzma_lz_decoder,
-                    *const lzma_allocator,
-                    lzma_vli,
-                    *const c_void,
-                    *mut lzma_lz_options,
-                ) -> lzma_ret,
-        ),
+        lzma2_decoder_init
+            as unsafe fn(
+                *mut lzma_lz_decoder,
+                *const lzma_allocator,
+                lzma_vli,
+                *const c_void,
+                *mut lzma_lz_options,
+            ) -> lzma_ret,
     )
 }
-pub(crate) extern "C" fn lzma_lzma2_decoder_memusage(options: *const c_void) -> u64 {
+pub(crate) unsafe fn lzma_lzma2_decoder_memusage(options: *const c_void) -> u64 {
     (core::mem::size_of::<lzma_lzma2_coder>() as u64)
         .wrapping_add(lzma_lzma_decoder_memusage_nocheck(options))
 }
-pub(crate) unsafe extern "C" fn lzma_lzma2_props_decode(
+pub(crate) unsafe fn lzma_lzma2_props_decode(
     options: *mut *mut c_void,
     allocator: *const lzma_allocator,
     props: *const u8,

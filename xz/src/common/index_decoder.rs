@@ -22,10 +22,10 @@ pub const SEQ_UNPADDED: index_decoder_seq = 3;
 pub const SEQ_MEMUSAGE: index_decoder_seq = 2;
 pub const SEQ_COUNT: index_decoder_seq = 1;
 pub const SEQ_INDICATOR: index_decoder_seq = 0;
-unsafe extern "C" fn index_decode(
+unsafe fn index_decode(
     coder_ptr: *mut c_void,
     allocator: *const lzma_allocator,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
     _out: *mut u8,
@@ -33,162 +33,184 @@ unsafe extern "C" fn index_decode(
     _out_size: size_t,
     _action: lzma_action,
 ) -> lzma_ret {
-    let mut current_block: u64;
     let coder: *mut lzma_index_coder = coder_ptr as *mut lzma_index_coder;
     let in_start: size_t = *in_pos;
     let mut ret: lzma_ret = LZMA_OK;
+
     while *in_pos < in_size {
-        match (*coder).sequence {
-            0 => {
-                let byte = *in_0.offset(*in_pos as isize);
-                *in_pos += 1;
-                if byte != INDEX_INDICATOR {
-                    return LZMA_DATA_ERROR;
-                }
-                (*coder).sequence = SEQ_COUNT;
-                continue;
-            }
-            1 => {
-                ret = lzma_vli_decode(
-                    ::core::ptr::addr_of_mut!((*coder).count),
-                    ::core::ptr::addr_of_mut!((*coder).pos),
-                    in_0,
-                    in_pos,
-                    in_size,
-                );
-                if ret != LZMA_STREAM_END {
-                    break;
-                }
-                (*coder).pos = 0;
-                (*coder).sequence = SEQ_MEMUSAGE;
-                current_block = 7642845755631126846;
-            }
-            2 => {
-                current_block = 7642845755631126846;
-            }
-            3 | 4 => {
-                let size: *mut lzma_vli = if (*coder).sequence == SEQ_UNPADDED {
-                    ::core::ptr::addr_of_mut!((*coder).unpadded_size)
-                } else {
-                    ::core::ptr::addr_of_mut!((*coder).uncompressed_size)
-                };
-                ret = lzma_vli_decode(
-                    size,
-                    ::core::ptr::addr_of_mut!((*coder).pos),
-                    in_0,
-                    in_pos,
-                    in_size,
-                );
-                if ret != LZMA_STREAM_END {
-                    break;
-                }
-                ret = LZMA_OK;
-                (*coder).pos = 0;
-                if (*coder).sequence == SEQ_UNPADDED {
-                    if (*coder).unpadded_size < UNPADDED_SIZE_MIN
-                        || (*coder).unpadded_size > UNPADDED_SIZE_MAX
-                    {
-                        return LZMA_DATA_ERROR;
-                    }
-                    (*coder).sequence = SEQ_UNCOMPRESSED;
-                } else {
-                    let ret_: lzma_ret = lzma_index_append(
-                        (*coder).index,
-                        allocator,
-                        (*coder).unpadded_size,
-                        (*coder).uncompressed_size,
-                    );
-                    if ret_ != LZMA_OK {
-                        return ret_;
-                    }
-                    (*coder).count -= 1;
-                    (*coder).sequence = (if (*coder).count == 0 {
-                        SEQ_PADDING_INIT
-                    } else {
-                        SEQ_UNPADDED
-                    }) as index_decoder_seq;
-                }
-                continue;
-            }
-            5 => {
-                (*coder).pos = lzma_index_padding_size((*coder).index) as size_t;
-                (*coder).sequence = SEQ_PADDING;
-                current_block = 8340016495055110192;
-            }
-            6 => {
-                current_block = 8340016495055110192;
-            }
-            7 => {
-                current_block = 9471676622948044094;
-            }
-            _ => return LZMA_PROG_ERROR,
-        }
-        match current_block {
-            8340016495055110192 => {
-                if (*coder).pos > 0 {
-                    (*coder).pos -= 1;
-                    let byte = *in_0.offset(*in_pos as isize);
+        loop {
+            match (*coder).sequence {
+                SEQ_INDICATOR => {
+                    let byte = *input.add(*in_pos);
                     *in_pos += 1;
-                    if byte != 0 {
+                    if byte != INDEX_INDICATOR {
                         return LZMA_DATA_ERROR;
                     }
-                    continue;
-                } else {
-                    (*coder).crc32 = lzma_crc32(
-                        in_0.offset(in_start as isize),
-                        *in_pos - in_start,
-                        (*coder).crc32,
-                    );
-                    (*coder).sequence = SEQ_CRC32;
-                }
-            }
-            7642845755631126846 => {
-                if lzma_index_memusage(1, (*coder).count) > (*coder).memlimit {
-                    ret = LZMA_MEMLIMIT_ERROR;
+
+                    (*coder).sequence = SEQ_COUNT;
                     break;
-                } else {
+                }
+
+                SEQ_COUNT => {
+                    ret = lzma_vli_decode(
+                        ::core::ptr::addr_of_mut!((*coder).count),
+                        ::core::ptr::addr_of_mut!((*coder).pos),
+                        input,
+                        in_pos,
+                        in_size,
+                    );
+                    if ret != LZMA_STREAM_END {
+                        return goto_out(coder, input, in_start, in_pos, ret);
+                    }
+
+                    (*coder).pos = 0;
+                    (*coder).sequence = SEQ_MEMUSAGE;
+                    continue;
+                }
+
+                SEQ_MEMUSAGE => {
+                    if lzma_index_memusage(1, (*coder).count) > (*coder).memlimit {
+                        ret = LZMA_MEMLIMIT_ERROR;
+                        return goto_out(coder, input, in_start, in_pos, ret);
+                    }
+
                     lzma_index_prealloc((*coder).index, (*coder).count);
                     ret = LZMA_OK;
-                    (*coder).sequence = (if (*coder).count == 0 {
+                    (*coder).sequence = if (*coder).count == 0 {
                         SEQ_PADDING_INIT
                     } else {
                         SEQ_UNPADDED
-                    }) as index_decoder_seq;
+                    };
+                    break;
+                }
+
+                SEQ_UNPADDED | SEQ_UNCOMPRESSED => {
+                    let size = if (*coder).sequence == SEQ_UNPADDED {
+                        ::core::ptr::addr_of_mut!((*coder).unpadded_size)
+                    } else {
+                        ::core::ptr::addr_of_mut!((*coder).uncompressed_size)
+                    };
+
+                    ret = lzma_vli_decode(
+                        size,
+                        ::core::ptr::addr_of_mut!((*coder).pos),
+                        input,
+                        in_pos,
+                        in_size,
+                    );
+                    if ret != LZMA_STREAM_END {
+                        return goto_out(coder, input, in_start, in_pos, ret);
+                    }
+
+                    ret = LZMA_OK;
+                    (*coder).pos = 0;
+
+                    if (*coder).sequence == SEQ_UNPADDED {
+                        if (*coder).unpadded_size < UNPADDED_SIZE_MIN
+                            || (*coder).unpadded_size > UNPADDED_SIZE_MAX
+                        {
+                            return LZMA_DATA_ERROR;
+                        }
+
+                        (*coder).sequence = SEQ_UNCOMPRESSED;
+                    } else {
+                        let ret_ = lzma_index_append(
+                            (*coder).index,
+                            allocator,
+                            (*coder).unpadded_size,
+                            (*coder).uncompressed_size,
+                        );
+                        if ret_ != LZMA_OK {
+                            return ret_;
+                        }
+
+                        (*coder).count -= 1;
+                        (*coder).sequence = if (*coder).count == 0 {
+                            SEQ_PADDING_INIT
+                        } else {
+                            SEQ_UNPADDED
+                        };
+                    }
+
+                    break;
+                }
+
+                SEQ_PADDING_INIT => {
+                    (*coder).pos = lzma_index_padding_size((*coder).index) as size_t;
+                    (*coder).sequence = SEQ_PADDING;
                     continue;
                 }
+
+                SEQ_PADDING => {
+                    if (*coder).pos > 0 {
+                        (*coder).pos -= 1;
+                        let byte = *input.add(*in_pos);
+                        *in_pos += 1;
+                        if byte != 0x00 {
+                            return LZMA_DATA_ERROR;
+                        }
+
+                        break;
+                    }
+
+                    (*coder).crc32 =
+                        lzma_crc32(input.add(in_start), *in_pos - in_start, (*coder).crc32);
+                    (*coder).sequence = SEQ_CRC32;
+                    continue;
+                }
+
+                SEQ_CRC32 => {
+                    loop {
+                        if *in_pos == in_size {
+                            return LZMA_OK;
+                        }
+
+                        let byte = *input.add(*in_pos);
+                        *in_pos += 1;
+                        if ((*coder).crc32 >> ((*coder).pos * 8)) & 0xff != byte as u32 {
+                            return LZMA_DATA_ERROR;
+                        }
+
+                        (*coder).pos += 1;
+                        if (*coder).pos >= 4 {
+                            break;
+                        }
+                    }
+
+                    *(*coder).index_ptr = (*coder).index;
+                    (*coder).index = core::ptr::null_mut();
+                    return LZMA_STREAM_END;
+                }
+
+                _ => return LZMA_PROG_ERROR,
             }
-            _ => {}
         }
-        loop {
-            if *in_pos == in_size {
-                return LZMA_OK;
-            }
-            let val = *in_0.offset(*in_pos as isize);
-            *in_pos += 1;
-            if (*coder).crc32 >> ((*coder).pos * 8) & 0xff != val as u32 {
-                return LZMA_DATA_ERROR;
-            }
-            (*coder).pos += 1;
-            if (*coder).pos >= 4 {
-                break;
-            }
-        }
-        *(*coder).index_ptr = (*coder).index;
-        (*coder).index = core::ptr::null_mut();
-        return LZMA_STREAM_END;
     }
-    let in_used: size_t = *in_pos - in_start;
+
+    goto_out(coder, input, in_start, in_pos, ret)
+}
+
+#[inline(always)]
+unsafe fn goto_out(
+    coder: *mut lzma_index_coder,
+    input: *const u8,
+    in_start: size_t,
+    in_pos: *mut size_t,
+    ret: lzma_ret,
+) -> lzma_ret {
+    let in_used = *in_pos - in_start;
     if in_used > 0 {
-        (*coder).crc32 = lzma_crc32(in_0.offset(in_start as isize), in_used, (*coder).crc32);
+        (*coder).crc32 = lzma_crc32(input.add(in_start), in_used, (*coder).crc32);
     }
+
     ret
 }
-unsafe extern "C" fn index_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+unsafe fn index_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_index_coder = coder_ptr as *mut lzma_index_coder;
     lzma_index_end((*coder).index, allocator);
     crate::alloc::internal_free(coder as *mut c_void, allocator);
 }
-unsafe extern "C" fn index_decoder_memconfig(
+unsafe fn index_decoder_memconfig(
     coder_ptr: *mut c_void,
     memusage: *mut u64,
     old_memlimit: *mut u64,
@@ -224,7 +246,7 @@ unsafe fn index_decoder_reset(
     (*coder).crc32 = 0;
     LZMA_OK
 }
-pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
+pub(crate) unsafe fn lzma_index_decoder_init(
     next: *mut lzma_next_coder,
     allocator: *const lzma_allocator,
     i: *mut *mut lzma_index,
@@ -232,7 +254,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
 ) -> lzma_ret {
     if core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut *mut lzma_index,
@@ -242,7 +264,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
         uintptr_t,
     >(Some(
         lzma_index_decoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut *mut lzma_index,
@@ -254,7 +276,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
     }
     (*next).init = core::mem::transmute::<
         Option<
-            unsafe extern "C" fn(
+            unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut *mut lzma_index,
@@ -264,7 +286,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
         uintptr_t,
     >(Some(
         lzma_index_decoder_init
-            as unsafe extern "C" fn(
+            as unsafe fn(
                 *mut lzma_next_coder,
                 *const lzma_allocator,
                 *mut *mut lzma_index,
@@ -283,7 +305,7 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
         (*next).coder = coder as *mut c_void;
         (*next).code = Some(
             index_decode
-                as unsafe extern "C" fn(
+                as unsafe fn(
                     *mut c_void,
                     *const lzma_allocator,
                     *const u8,
@@ -295,12 +317,10 @@ pub(crate) unsafe extern "C" fn lzma_index_decoder_init(
                     lzma_action,
                 ) -> lzma_ret,
         );
-        (*next).end = Some(
-            index_decoder_end as unsafe extern "C" fn(*mut c_void, *const lzma_allocator) -> (),
-        );
+        (*next).end =
+            Some(index_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*next).memconfig = Some(
-            index_decoder_memconfig
-                as unsafe extern "C" fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
+            index_decoder_memconfig as unsafe fn(*mut c_void, *mut u64, *mut u64, u64) -> lzma_ret,
         );
         (*coder).index = core::ptr::null_mut();
     } else {
@@ -338,14 +358,14 @@ pub unsafe fn lzma_index_buffer_decode(
     i: *mut *mut lzma_index,
     memlimit: *mut u64,
     allocator: *const lzma_allocator,
-    in_0: *const u8,
+    input: *const u8,
     in_pos: *mut size_t,
     in_size: size_t,
 ) -> lzma_ret {
     if !i.is_null() {
         *i = core::ptr::null_mut();
     }
-    if i.is_null() || memlimit.is_null() || in_0.is_null() || in_pos.is_null() || *in_pos > in_size
+    if i.is_null() || memlimit.is_null() || input.is_null() || in_pos.is_null() || *in_pos > in_size
     {
         return LZMA_PROG_ERROR;
     }
@@ -369,7 +389,7 @@ pub unsafe fn lzma_index_buffer_decode(
     let mut ret: lzma_ret = index_decode(
         ::core::ptr::addr_of_mut!(coder) as *mut c_void,
         allocator,
-        in_0,
+        input,
         in_pos,
         in_size,
         core::ptr::null_mut(),
