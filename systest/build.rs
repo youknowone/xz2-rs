@@ -120,9 +120,11 @@ fn main() {
     cfg.rename_union_ty(|ty| Some(ty.to_string()));
     cfg.define("LZMA_API_STATIC", None);
     cfg.skip_struct(move |s| {
-        use_bindgen && (s.ident().ends_with("_s") || s.ident().contains("__bindgen_ty_"))
+        (use_bindgen && (s.ident().ends_with("_s") || s.ident().contains("__bindgen_ty_")))
+            || (use_rs_sys && matches!(s.ident(), "StaticAllocator"))
     });
     cfg.skip_union(move |u| use_bindgen && u.ident().contains("__bindgen_ty_"));
+    cfg.skip_static(move |s| use_rs_sys && matches!(s.ident(), "C_ALLOCATOR"));
     cfg.skip_struct_field(move |s, field| {
         use_bindgen
             && s.ident() == "lzma_index_iter"
@@ -134,14 +136,15 @@ fn main() {
             && matches!(field.ident(), "stream" | "block" | "internal")
     });
     cfg.skip_fn(move |f| {
-        use_bindgen
+        (use_bindgen
             && !use_parallel
             && matches!(
                 f.ident(),
                 "lzma_stream_decoder_mt"
                     | "lzma_stream_encoder_mt"
                     | "lzma_stream_encoder_mt_memusage"
-            )
+            ))
+            || (use_rs_sys && matches!(f.ident(), "malloc" | "calloc" | "free"))
     });
     cfg.skip_alias(move |n| {
         matches!(n.ident(), "__enum_ty" | "c_enum" | "lzma_reserved_enum")
