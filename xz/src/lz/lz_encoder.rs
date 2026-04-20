@@ -377,10 +377,10 @@ unsafe fn lz_encoder_set_out_limit(
     out_limit: u64,
 ) -> lzma_ret {
     let coder: *mut lzma_coder = coder_ptr as *mut lzma_coder;
-    if (*coder).next.code.is_none()
-        && let Some(set_out_limit) = (*coder).lz.set_out_limit
-    {
-        return set_out_limit((*coder).lz.coder, uncomp_size, out_limit);
+    if (*coder).next.code.is_none() {
+        if let Some(set_out_limit) = (*coder).lz.set_out_limit {
+            return set_out_limit((*coder).lz.coder, uncomp_size, out_limit);
+        }
     }
     LZMA_OPTIONS_ERROR
 }

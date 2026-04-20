@@ -125,9 +125,8 @@ unsafe fn decode_index(
     update_file_cur_pos: bool,
 ) -> lzma_ret {
     let in_start: size_t = *in_pos;
-    let code = match (*coder).index_decoder.code {
-        Some(code) => code,
-        None => return LZMA_PROG_ERROR,
+    let Some(code) = (*coder).index_decoder.code else {
+        return LZMA_PROG_ERROR;
     };
     let ret: lzma_ret = code(
         (*coder).index_decoder.coder,
@@ -409,9 +408,8 @@ unsafe fn file_info_decoder_memconfig(
         this_index_memusage = lzma_index_memused((*coder).this_index);
     } else if (*coder).sequence == SEQ_INDEX_DECODE {
         let mut dummy: u64 = 0;
-        let memconfig = match (*coder).index_decoder.memconfig {
-            Some(memconfig) => memconfig,
-            None => return LZMA_PROG_ERROR,
+        let Some(memconfig) = (*coder).index_decoder.memconfig else {
+            return LZMA_PROG_ERROR;
         };
         if memconfig(
             (*coder).index_decoder.coder,
@@ -436,9 +434,8 @@ unsafe fn file_info_decoder_memconfig(
             let idec_new_memlimit: u64 = new_memlimit - combined_index_memusage;
             let mut dummy1: u64 = 0;
             let mut dummy2: u64 = 0;
-            let memconfig = match (*coder).index_decoder.memconfig {
-                Some(memconfig) => memconfig,
-                None => return LZMA_PROG_ERROR,
+            let Some(memconfig) = (*coder).index_decoder.memconfig else {
+                return LZMA_PROG_ERROR;
             };
             if memconfig(
                 (*coder).index_decoder.coder,

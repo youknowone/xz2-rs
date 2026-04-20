@@ -30,9 +30,8 @@ fn c_alloc_layout(size: usize) -> Option<Layout> {
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 fn malloc(size: size_t) -> *mut c_void {
-    let layout = match c_alloc_layout(size as usize) {
-        Some(layout) => layout,
-        None => return core::ptr::null_mut(),
+    let Some(layout) = c_alloc_layout(size as usize) else {
+        return core::ptr::null_mut();
     };
     let base = unsafe { alloc(layout) };
     if base.is_null() {
@@ -46,13 +45,11 @@ fn malloc(size: size_t) -> *mut c_void {
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 fn calloc(count: size_t, size: size_t) -> *mut c_void {
-    let size = match (count as usize).checked_mul(size as usize) {
-        Some(size) => size,
-        None => return core::ptr::null_mut(),
+    let Some(size) = (count as usize).checked_mul(size as usize) else {
+        return core::ptr::null_mut();
     };
-    let layout = match c_alloc_layout(size) {
-        Some(layout) => layout,
-        None => return core::ptr::null_mut(),
+    let Some(layout) = c_alloc_layout(size) else {
+        return core::ptr::null_mut();
     };
     let base = unsafe { alloc_zeroed(layout) };
     if base.is_null() {
@@ -76,11 +73,10 @@ unsafe fn free(ptr: *mut c_void) {
 }
 
 unsafe fn lzma_c_alloc(_opaque: *mut c_void, nmemb: size_t, size: size_t) -> *mut c_void {
-    let size = match (nmemb as usize).checked_mul(size as usize) {
-        Some(0) => 1,
-        Some(size) => size,
-        None => return core::ptr::null_mut(),
+    let Some(size) = (nmemb as usize).checked_mul(size as usize) else {
+        return core::ptr::null_mut();
     };
+    let size = if size == 0 { 1 } else { size };
     malloc(size as size_t)
 }
 

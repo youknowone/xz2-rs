@@ -40,10 +40,8 @@ unsafe fn alone_encode(
                 (*coder).sequence = SEQ_CODE;
             }
             1 => {
-                let code = match (*coder).next.code {
-                    Some(code) => code,
-                    None => return LZMA_PROG_ERROR,
-                };
+                debug_assert!((*coder).next.code.is_some());
+                let code = (*coder).next.code.unwrap_unchecked();
                 return code(
                     (*coder).next.coder,
                     allocator,

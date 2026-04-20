@@ -310,10 +310,8 @@ pub unsafe fn lzma_filters_update(strm: *mut lzma_stream, filters: *const lzma_f
     }
     (*reversed_filter_slot(::core::ptr::addr_of_mut!(reversed_filters), count as usize)).id =
         LZMA_VLI_UNKNOWN;
-    let update = match (*(*strm).internal).next.update {
-        Some(update) => update,
-        None => return LZMA_PROG_ERROR,
-    };
+    debug_assert!((*(*strm).internal).next.update.is_some());
+    let update = (*(*strm).internal).next.update.unwrap_unchecked();
     update(
         (*(*strm).internal).next.coder,
         (*strm).allocator,

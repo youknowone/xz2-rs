@@ -1015,9 +1015,8 @@ unsafe fn stream_decode_mt(
             STREAM_MT_BLOCK_DIRECT_RUN => {
                 let in_old_1: size_t = *in_pos;
                 let out_old: size_t = *out_pos;
-                let code = match (*coder).block_decoder.code {
-                    Some(code) => code,
-                    None => return LZMA_PROG_ERROR,
+                let Some(code) = (*coder).block_decoder.code else {
+                    return LZMA_PROG_ERROR;
                 };
                 let ret_4: lzma_ret = code(
                     (*coder).block_decoder.coder,

@@ -23,9 +23,8 @@ fn rust_alloc_layout(size: usize) -> Option<Layout> {
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 fn malloc(size: size_t) -> *mut c_void {
-    let layout = match rust_alloc_layout(size as usize) {
-        Some(layout) => layout,
-        None => return core::ptr::null_mut(),
+    let Some(layout) = rust_alloc_layout(size as usize) else {
+        return core::ptr::null_mut();
     };
     let base = unsafe { alloc(layout) };
     if base.is_null() {
@@ -39,13 +38,11 @@ fn malloc(size: size_t) -> *mut c_void {
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 fn calloc(count: size_t, size: size_t) -> *mut c_void {
-    let size = match (count as usize).checked_mul(size as usize) {
-        Some(size) => size,
-        None => return core::ptr::null_mut(),
+    let Some(size) = (count as usize).checked_mul(size as usize) else {
+        return core::ptr::null_mut();
     };
-    let layout = match rust_alloc_layout(size) {
-        Some(layout) => layout,
-        None => return core::ptr::null_mut(),
+    let Some(layout) = rust_alloc_layout(size) else {
+        return core::ptr::null_mut();
     };
     let base = unsafe { alloc_zeroed(layout) };
     if base.is_null() {
@@ -431,9 +428,8 @@ pub fn lzma_memusage(strm: *const lzma_stream) -> u64 {
         if strm.is_null() || (*strm).internal.is_null() {
             return 0;
         }
-        let memconfig = match (*(*strm).internal).next.memconfig {
-            Some(memconfig) => memconfig,
-            None => return 0,
+        let Some(memconfig) = (*(*strm).internal).next.memconfig else {
+            return 0;
         };
         if memconfig(
             (*(*strm).internal).next.coder,
@@ -454,9 +450,8 @@ pub fn lzma_memlimit_get(strm: *const lzma_stream) -> u64 {
         if strm.is_null() || (*strm).internal.is_null() {
             return 0;
         }
-        let memconfig = match (*(*strm).internal).next.memconfig {
-            Some(memconfig) => memconfig,
-            None => return 0,
+        let Some(memconfig) = (*(*strm).internal).next.memconfig else {
+            return 0;
         };
         if memconfig(
             (*(*strm).internal).next.coder,
@@ -476,9 +471,8 @@ pub unsafe fn lzma_memlimit_set(strm: *mut lzma_stream, mut new_memlimit: u64) -
     if strm.is_null() || (*strm).internal.is_null() {
         return LZMA_PROG_ERROR;
     }
-    let memconfig = match (*(*strm).internal).next.memconfig {
-        Some(memconfig) => memconfig,
-        None => return LZMA_PROG_ERROR,
+    let Some(memconfig) = (*(*strm).internal).next.memconfig else {
+        return LZMA_PROG_ERROR;
     };
     if new_memlimit == 0 {
         new_memlimit = 1;

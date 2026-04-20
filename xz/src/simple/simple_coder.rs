@@ -11,31 +11,30 @@ unsafe fn copy_or_code(
     out_size: size_t,
     action: lzma_action,
 ) -> lzma_ret {
-    if (*coder).next.code.is_none() {
-        lzma_bufcpy(input, in_pos, in_size, out, out_pos, out_size);
-        if (*coder).is_encoder && action == LZMA_FINISH && *in_pos == in_size {
-            (*coder).end_was_reached = true;
+    match (*coder).next.code {
+        None => {
+            lzma_bufcpy(input, in_pos, in_size, out, out_pos, out_size);
+            if (*coder).is_encoder && action == LZMA_FINISH && *in_pos == in_size {
+                (*coder).end_was_reached = true;
+            }
         }
-    } else {
-        let code = match (*coder).next.code {
-            Some(code) => code,
-            None => return LZMA_PROG_ERROR,
-        };
-        let ret: lzma_ret = code(
-            (*coder).next.coder,
-            allocator,
-            input,
-            in_pos,
-            in_size,
-            out,
-            out_pos,
-            out_size,
-            action,
-        );
-        if ret == LZMA_STREAM_END {
-            (*coder).end_was_reached = true;
-        } else if ret != LZMA_OK {
-            return ret;
+        Some(code) => {
+            let ret: lzma_ret = code(
+                (*coder).next.coder,
+                allocator,
+                input,
+                in_pos,
+                in_size,
+                out,
+                out_pos,
+                out_size,
+                action,
+            );
+            if ret == LZMA_STREAM_END {
+                (*coder).end_was_reached = true;
+            } else if ret != LZMA_OK {
+                return ret;
+            }
         }
     }
     LZMA_OK

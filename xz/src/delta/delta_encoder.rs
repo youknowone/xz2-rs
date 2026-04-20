@@ -36,58 +36,56 @@ unsafe fn delta_encode(
     action: lzma_action,
 ) -> lzma_ret {
     let coder: &mut lzma_delta_coder = &mut *(coder_ptr as *mut lzma_delta_coder);
-    let mut ret: lzma_ret = LZMA_OK;
-    if coder.next.code.is_none() {
-        debug_assert!(in_size >= *in_pos);
-        debug_assert!(out_size >= *out_pos);
-        let in_avail: size_t = in_size - *in_pos;
-        let out_avail: size_t = out_size - *out_pos;
-        let size: size_t = if in_avail < out_avail {
-            in_avail
-        } else {
-            out_avail
-        };
-        if size > 0 {
-            copy_and_encode(
-                coder,
-                core::slice::from_raw_parts(input.add(*in_pos), size),
-                core::slice::from_raw_parts_mut(out.add(*out_pos), size),
-            );
+    match coder.next.code {
+        None => {
+            debug_assert!(in_size >= *in_pos);
+            debug_assert!(out_size >= *out_pos);
+            let in_avail: size_t = in_size - *in_pos;
+            let out_avail: size_t = out_size - *out_pos;
+            let size: size_t = if in_avail < out_avail {
+                in_avail
+            } else {
+                out_avail
+            };
+            if size > 0 {
+                copy_and_encode(
+                    coder,
+                    core::slice::from_raw_parts(input.add(*in_pos), size),
+                    core::slice::from_raw_parts_mut(out.add(*out_pos), size),
+                );
+            }
+            *in_pos += size;
+            *out_pos += size;
+            if action != LZMA_RUN && *in_pos == in_size {
+                LZMA_STREAM_END
+            } else {
+                LZMA_OK
+            }
         }
-        *in_pos += size;
-        *out_pos += size;
-        ret = if action != LZMA_RUN && *in_pos == in_size {
-            LZMA_STREAM_END
-        } else {
-            LZMA_OK
-        };
-    } else {
-        let out_start: size_t = *out_pos;
-        let code = match coder.next.code {
-            Some(code) => code,
-            None => return LZMA_PROG_ERROR,
-        };
-        ret = code(
-            coder.next.coder,
-            allocator,
-            input,
-            in_pos,
-            in_size,
-            out,
-            out_pos,
-            out_size,
-            action,
-        );
-        debug_assert!(*out_pos >= out_start);
-        let size_0: size_t = *out_pos - out_start;
-        if size_0 > 0 {
-            encode_in_place(
-                coder,
-                core::slice::from_raw_parts_mut(out.add(out_start), size_0),
+        Some(code) => {
+            let out_start: size_t = *out_pos;
+            let ret = code(
+                coder.next.coder,
+                allocator,
+                input,
+                in_pos,
+                in_size,
+                out,
+                out_pos,
+                out_size,
+                action,
             );
+            debug_assert!(*out_pos >= out_start);
+            let size_0: size_t = *out_pos - out_start;
+            if size_0 > 0 {
+                encode_in_place(
+                    coder,
+                    core::slice::from_raw_parts_mut(out.add(out_start), size_0),
+                );
+            }
+            ret
         }
     }
-    ret
 }
 unsafe fn delta_encoder_update(
     coder_ptr: *mut c_void,

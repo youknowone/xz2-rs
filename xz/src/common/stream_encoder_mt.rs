@@ -841,9 +841,8 @@ unsafe fn stream_encode_mt_index(
     out_pos: *mut size_t,
     out_size: size_t,
 ) -> lzma_ret {
-    let code = match (*coder).index_encoder.code {
-        Some(code) => code,
-        None => return LZMA_PROG_ERROR,
+    let Some(code) = (*coder).index_encoder.code else {
+        return LZMA_PROG_ERROR;
     };
     let ret: lzma_ret = code(
         (*coder).index_encoder.coder,

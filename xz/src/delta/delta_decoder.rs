@@ -30,10 +30,8 @@ unsafe fn delta_decode(
 ) -> lzma_ret {
     let coder: &mut lzma_delta_coder = &mut *(coder_ptr as *mut lzma_delta_coder);
     let out_start: size_t = *out_pos;
-    let code = match coder.next.code {
-        Some(code) => code,
-        None => return LZMA_PROG_ERROR,
-    };
+    debug_assert!(coder.next.code.is_some());
+    let code = coder.next.code.unwrap_unchecked();
     let ret: lzma_ret = code(
         coder.next.coder,
         allocator,

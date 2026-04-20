@@ -196,9 +196,8 @@ unsafe fn lzip_decode(
             LZIP_BLOCK_LZMA_STREAM => {
                 let in_start: size_t = *in_pos;
                 let out_start: size_t = *out_pos;
-                let code = match (*coder).lzma_decoder.code {
-                    Some(code) => code,
-                    None => return LZMA_PROG_ERROR,
+                let Some(code) = (*coder).lzma_decoder.code else {
+                    return LZMA_PROG_ERROR;
                 };
                 let ret: lzma_ret = code(
                     (*coder).lzma_decoder.coder,

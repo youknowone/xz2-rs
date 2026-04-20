@@ -21,17 +21,15 @@ fn rust_alloc_impl(size: usize, align: usize, zeroed: bool) -> *mut c_void {
         .max(RUST_ALLOC_ALIGN)
         .max(core::mem::align_of::<RustAllocHeader>());
     let header_size = core::mem::size_of::<RustAllocHeader>();
-    let offset = match header_size.checked_add(align - 1) {
-        Some(value) => round_up(value, align),
-        None => return core::ptr::null_mut(),
+    let Some(value) = header_size.checked_add(align - 1) else {
+        return core::ptr::null_mut();
     };
-    let total_size = match offset.checked_add(size) {
-        Some(total_size) => total_size,
-        None => return core::ptr::null_mut(),
+    let offset = round_up(value, align);
+    let Some(total_size) = offset.checked_add(size) else {
+        return core::ptr::null_mut();
     };
-    let layout = match Layout::from_size_align(total_size, align) {
-        Ok(layout) => layout,
-        Err(_) => return core::ptr::null_mut(),
+    let Ok(layout) = Layout::from_size_align(total_size, align) else {
+        return core::ptr::null_mut();
     };
     let base = unsafe {
         if zeroed {
@@ -73,9 +71,8 @@ pub(crate) unsafe fn lzma_rust_alloc(
     nmemb: size_t,
     size: size_t,
 ) -> *mut c_void {
-    let size = match (nmemb as usize).checked_mul(size as usize) {
-        Some(size) => size,
-        None => return core::ptr::null_mut(),
+    let Some(size) = (nmemb as usize).checked_mul(size as usize) else {
+        return core::ptr::null_mut();
     };
     rust_alloc_impl(size, RUST_ALLOC_ALIGN, false)
 }
@@ -154,9 +151,8 @@ pub(crate) unsafe fn internal_alloc_array<T>(
     count: size_t,
     allocator: *const lzma_allocator,
 ) -> *mut T {
-    let size = match (count as usize).checked_mul(core::mem::size_of::<T>()) {
-        Some(size) => size,
-        None => return core::ptr::null_mut(),
+    let Some(size) = (count as usize).checked_mul(core::mem::size_of::<T>()) else {
+        return core::ptr::null_mut();
     };
     if !allocator.is_null()
         && let Some(alloc) = unsafe { (*allocator).alloc }
@@ -170,9 +166,8 @@ pub(crate) unsafe fn internal_alloc_zeroed_array<T>(
     count: size_t,
     allocator: *const lzma_allocator,
 ) -> *mut T {
-    let size = match (count as usize).checked_mul(core::mem::size_of::<T>()) {
-        Some(size) => size,
-        None => return core::ptr::null_mut(),
+    let Some(size) = (count as usize).checked_mul(core::mem::size_of::<T>()) else {
+        return core::ptr::null_mut();
     };
     if !allocator.is_null()
         && let Some(alloc) = unsafe { (*allocator).alloc }
