@@ -6,7 +6,7 @@ print_usage() {
 Usage: scripts/inspect_codegen.sh <symbol> [options]
 
 Options:
-  --package <name>     Cargo package to inspect (default: xz)
+  --package <name>     Cargo package to inspect (default: xz-core)
   --format <asm|llvm|mir>  Output format for cargo-asm (default: asm)
   --features <list>    Cargo feature list passed to cargo-asm
   --target-dir <dir>   Cargo target dir (default: target/codegen)

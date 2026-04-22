@@ -314,7 +314,7 @@ pub unsafe fn lzma_filters_update(strm: *mut lzma_stream, filters: *const lzma_f
     let update = (*(*strm).internal).next.update.unwrap_unchecked();
     update(
         (*(*strm).internal).next.coder,
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         filters,
         ::core::ptr::addr_of_mut!(reversed_filters) as *mut lzma_filter,
     )
@@ -339,7 +339,7 @@ pub unsafe fn lzma_raw_encoder(strm: *mut lzma_stream, filters: *const lzma_filt
     }
     let ret: lzma_ret = lzma_raw_coder_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         filters,
         coder_find as unsafe fn(lzma_vli) -> *const lzma_filter_coder,
         true,

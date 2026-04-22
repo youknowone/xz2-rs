@@ -4,9 +4,9 @@ This repository now has a repeatable loop for backend comparison, profiling, and
 
 Important: the C and Rust sys backends must never be linked into the same process when comparing performance. Both export the same `lzma_*` symbols, so shared-process comparisons can silently resolve to the wrong implementation.
 
-The root crate now has three backend modes:
+The root crate has three backend modes:
 
-- `xz-core`: direct Rust ABI calls into the pure Rust port
+- `xz-core`: direct Rust ABI calls into the pure Rust port. This is the default.
 - `xz-sys`: C ABI calls into the pure Rust port through the `xz-sys` shell
 - `liblzma-sys`: C ABI calls into vendored C `liblzma`
 
@@ -24,6 +24,8 @@ cargo test
 cargo test --no-default-features --features xz-sys
 cargo test --no-default-features --features liblzma-sys
 cargo test --test sys_equivalence
+cargo run --manifest-path systest/Cargo.toml --no-default-features --features xz-sys
+cargo run --manifest-path systest/Cargo.toml --no-default-features --features liblzma-sys
 ```
 
 ## 2. Compare the full test suite
@@ -80,7 +82,7 @@ still needs millions of in-process iterations; start around `--iters 2000000 --w
 comparison scripts also pre-generate its compressed input so the one-time encode setup
 doesn't hide the `uncompressed_size()` path.
 
-There is still a criterion bench in [`benches/backend_comparison.rs`](../benches/backend_comparison.rs), but it now measures one backend per run. Use it only with exactly one backend feature enabled.
+There is still a criterion bench in [`benches/backend_comparison.rs`](../benches/backend_comparison.rs), but it now measures one backend per run. Use it with exactly one backend feature enabled.
 
 For high-level API regressions, compare the root crate against the upstream XZ corpus:
 

@@ -53,6 +53,7 @@ pub struct worker_thread {
     pub in_pos: size_t,
     pub out_pos: size_t,
     pub coder: *mut lzma_stream_coder,
+    #[cfg(feature = "custom_allocator")]
     pub allocator: *const lzma_allocator,
     pub outbuf: *mut lzma_outbuf,
     pub progress_in: size_t,
@@ -66,6 +67,31 @@ pub struct worker_thread {
     pub mutex: mythread_mutex,
     pub cond: mythread_cond,
     pub thread_id: mythread,
+}
+#[inline]
+unsafe fn worker_allocator(thr: *const worker_thread) -> *const lzma_allocator {
+    #[cfg(feature = "custom_allocator")]
+    {
+        unsafe { (*thr).allocator }
+    }
+    #[cfg(not(feature = "custom_allocator"))]
+    {
+        let _ = thr;
+        core::ptr::null()
+    }
+}
+#[inline]
+unsafe fn set_worker_allocator(thr: *mut worker_thread, allocator: *const lzma_allocator) {
+    #[cfg(feature = "custom_allocator")]
+    {
+        unsafe {
+            (*thr).allocator = allocator;
+        }
+    }
+    #[cfg(not(feature = "custom_allocator"))]
+    {
+        let _ = (thr, allocator);
+    }
 }
 pub const THR_EXIT: worker_state = 2;
 pub type stream_decoder_mt_seq = c_uint;
@@ -127,10 +153,10 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
             } else {
                 if (*thr).state == THR_EXIT {
                     mythread_mutex_unlock(::core::ptr::addr_of_mut!((*thr).mutex));
-                    crate::alloc::internal_free((*thr).in_0 as *mut c_void, (*thr).allocator);
+                    crate::alloc::internal_free((*thr).in_0 as *mut c_void, worker_allocator(thr));
                     lzma_next_end(
                         ::core::ptr::addr_of_mut!((*thr).block_decoder),
-                        (*thr).allocator,
+                        worker_allocator(thr),
                     );
                     mythread_mutex_destroy(::core::ptr::addr_of_mut!((*thr).mutex));
                     mythread_cond_destroy(::core::ptr::addr_of_mut!((*thr).cond));
@@ -159,7 +185,7 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
         ret = match (*thr).block_decoder.code {
             Some(code) => code(
                 (*thr).block_decoder.coder,
-                (*thr).allocator,
+                worker_allocator(thr),
                 (*thr).in_0,
                 ::core::ptr::addr_of_mut!((*thr).in_pos),
                 in_filled,
@@ -215,7 +241,7 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
                 mythread_i_434 = 1;
             }
             if ret == LZMA_STREAM_END {
-                crate::alloc::internal_free((*thr).in_0 as *mut c_void, (*thr).allocator);
+                crate::alloc::internal_free((*thr).in_0 as *mut c_void, worker_allocator(thr));
                 (*thr).in_0 = core::ptr::null_mut();
             }
             let mut mythread_i_458: c_uint = 0;
@@ -344,7 +370,7 @@ unsafe fn initialize_new_thread(
             (*thr).state = THR_IDLE;
             (*thr).in_0 = core::ptr::null_mut();
             (*thr).in_size = 0;
-            (*thr).allocator = allocator;
+            set_worker_allocator(thr, allocator);
             (*thr).coder = coder as *mut lzma_stream_coder;
             (*thr).outbuf = core::ptr::null_mut();
             (*thr).block_decoder = lzma_next_coder_s {
@@ -1554,7 +1580,7 @@ pub unsafe fn lzma_stream_decoder_mt(strm: *mut lzma_stream, options: *const lzm
     }
     let ret__0: lzma_ret = stream_decoder_mt_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         options,
     );
     if ret__0 != LZMA_OK {

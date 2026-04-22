@@ -8,8 +8,7 @@
 
 [Documentation](https://docs.rs/xz)
 
-Bindings to the liblzma implementation in Rust, also provides types to
-read/write xz streams.
+Pure Rust xz2/liblzma-compatible crates for reading and writing xz streams.
 
 **This crate is forked from [xz2](https://crates.io/crates/xz2) and `xz = "0.1.x"` is fully compatible with `xz2 = "0.1.7"`,**
 so you can migrate simply.
@@ -45,11 +44,25 @@ so you can migrate simply.
 - XZ upgraded to 5.8
 - Dropped `tokio` support (If you need async I/O, use [`async-compression`](https://github.com/Nullus157/async-compression) crate with `lzma` feature flag)
 
-## Backend selection
+## Crates and backend selection
 
-The default build uses the pure Rust backend via `xz-core`.
+This repository contains three pure Rust crates:
 
-Use the original C backend only when you explicitly opt into it:
+- `xz-core` is a direct port of the xz C library internals.
+- `xz-sys` is a C ABI compatibility layer backed by `xz-core`. It is intended
+  to be compatible with `xz2-sys` and `liblzma-sys`, and should be easy to link
+  from C as a liblzma-compatible library.
+- `xz` is the high-level Rust interface intended as a replacement for `xz2`
+  and `liblzma`.
+
+The high-level `xz` crate defaults to the pure Rust `xz-core` backend. You can
+disable default features and choose exactly one backend explicitly:
+
+- `xz-core` calls the pure Rust core directly.
+- `xz-sys` calls the pure Rust core through the liblzma-compatible C ABI layer.
+- `liblzma-sys` calls the original C liblzma implementation.
+
+To use the original C backend:
 
 ```toml
 xz = { version = "0.4", default-features = false, features = ["liblzma-sys"] }

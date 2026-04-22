@@ -8,7 +8,7 @@ keywords = ["lzma", "xz", "encoding", "wasm"]
 repository = "https://github.com/youknowone/xz-rs"
 homepage = "https://github.com/youknowone/xz-rs"
 description = """
-Rust bindings to xz providing Read/Write streams as well as low-level
+Pure Rust xz library providing Read/Write streams as well as low-level
 in-memory encoding/decoding. forked from xz2.
 """
 categories = ["compression", "api-bindings"]
@@ -41,8 +41,8 @@ required-features = ["bench"]
 getrandom = { version = "0.2", features = ["js"] }
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
-xz-sys = { path = "xz-sys" }
-liblzma-sys = { path = "liblzma-sys" }
+xz-sys = { path = "xz-sys", features = ["parallel"] }
+liblzma-sys = { path = "liblzma-sys", features = ["parallel"] }
 
 [target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dev-dependencies]
 wasm-bindgen-test = "0.3"

@@ -1,7 +1,7 @@
 //! LZMA/XZ encoding and decoding streams
 //!
-//! This library is a binding crate that provides LZMA and xz
-//! encoding/decoding streams. I/O streams are provided in the `read`, `write`,
+//! This library provides LZMA and xz encoding/decoding streams.
+//! I/O streams are provided in the `read`, `write`,
 //! and `bufread` modules (same types, different bounds). Raw in-memory
 //! compression/decompression is provided via the `stream` module and contains
 //! many of the raw APIs exposed by the selected backend.
@@ -25,10 +25,10 @@
 //! # Static linking
 //!
 //! You can enable static-linking using the `static` feature, so that the XZ
-//! library is not required at runtime:
+//! library is not required at runtime when using the `liblzma-sys` backend:
 //!
 //! ```toml
-//! xz = { version = "0.4", features = ["static"] }
+//! xz = { version = "0.4", default-features = false, features = ["liblzma-sys", "static"] }
 //! ```
 //!
 //! # Multithreading

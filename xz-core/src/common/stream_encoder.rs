@@ -413,7 +413,7 @@ pub unsafe fn lzma_stream_encoder(
     }
     let ret__0: lzma_ret = stream_encoder_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         filters,
         check,
     );

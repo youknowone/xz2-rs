@@ -1,69 +1,5 @@
-use crate::alloc::allocator_or_rust;
+use crate::alloc::{lzma_alloc_bytes, lzma_alloc_zeroed_bytes, lzma_free_ptr};
 use crate::types::*;
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
-use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
-
-#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
-unsafe extern "C" {
-    fn malloc(__size: size_t) -> *mut c_void;
-    fn calloc(__count: size_t, __size: size_t) -> *mut c_void;
-    fn free(_: *mut c_void);
-}
-
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
-const LZMA_ALLOC_ALIGN: usize = 16;
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
-const LZMA_ALLOC_HEADER_SIZE: usize = 16;
-
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
-fn rust_alloc_layout(size: usize) -> Option<Layout> {
-    let total_size = size.checked_add(LZMA_ALLOC_HEADER_SIZE)?;
-    Layout::from_size_align(total_size, LZMA_ALLOC_ALIGN).ok()
-}
-
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
-fn malloc(size: size_t) -> *mut c_void {
-    let Some(layout) = rust_alloc_layout(size as usize) else {
-        return core::ptr::null_mut();
-    };
-    let base = unsafe { alloc(layout) };
-    if base.is_null() {
-        return core::ptr::null_mut();
-    }
-    unsafe {
-        *(base as *mut usize) = layout.size();
-        base.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
-    }
-}
-
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
-fn calloc(count: size_t, size: size_t) -> *mut c_void {
-    let Some(size) = (count as usize).checked_mul(size as usize) else {
-        return core::ptr::null_mut();
-    };
-    let Some(layout) = rust_alloc_layout(size) else {
-        return core::ptr::null_mut();
-    };
-    let base = unsafe { alloc_zeroed(layout) };
-    if base.is_null() {
-        return core::ptr::null_mut();
-    }
-    unsafe {
-        *(base as *mut usize) = layout.size();
-        base.add(LZMA_ALLOC_HEADER_SIZE) as *mut c_void
-    }
-}
-
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
-unsafe fn free(ptr: *mut c_void) {
-    if ptr.is_null() {
-        return;
-    }
-    let base = unsafe { (ptr as *mut u8).sub(LZMA_ALLOC_HEADER_SIZE) };
-    let total_size = unsafe { *(base as *const usize) };
-    let layout = unsafe { Layout::from_size_align_unchecked(total_size, LZMA_ALLOC_ALIGN) };
-    unsafe { dealloc(base, layout) };
-}
 pub const LZMA_VERSION_MAJOR: u32 = 5;
 pub const LZMA_VERSION_MINOR: u32 = 8;
 pub const LZMA_VERSION_PATCH: u32 = 3;
@@ -80,39 +16,26 @@ pub fn lzma_version_number() -> u32 {
 pub fn lzma_version_string() -> *const c_char {
     crate::c_str!("5.8.3")
 }
-pub unsafe fn lzma_alloc(mut size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
-    if size == 0 {
-        size = 1;
-    }
-    let allocator = allocator_or_rust(allocator);
-    if let Some(alloc) = (*allocator).alloc {
-        alloc((*allocator).opaque, 1, size)
-    } else {
-        malloc(size)
-    }
+pub unsafe fn lzma_alloc(size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
+    lzma_alloc_bytes(size, allocator)
 }
-pub unsafe fn lzma_alloc_zero(mut size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
-    if size == 0 {
-        size = 1;
-    }
-    let allocator = allocator_or_rust(allocator);
-    let ptr = if let Some(alloc) = (*allocator).alloc {
-        alloc((*allocator).opaque, 1, size)
-    } else {
-        calloc(1, size)
-    };
-    if !ptr.is_null() {
-        core::ptr::write_bytes(ptr as *mut u8, 0, size);
-    }
-    ptr
+pub unsafe fn lzma_alloc_zero(size: size_t, allocator: *const lzma_allocator) -> *mut c_void {
+    lzma_alloc_zeroed_bytes(size, allocator)
 }
 pub unsafe fn lzma_free(ptr: *mut c_void, allocator: *const lzma_allocator) {
-    let allocator = allocator_or_rust(allocator);
-    if let Some(free_func) = (*allocator).free {
-        free_func((*allocator).opaque, ptr);
-    } else {
-        free(ptr);
-    };
+    lzma_free_ptr(ptr, allocator);
+}
+#[inline]
+pub unsafe fn lzma_stream_allocator(strm: *const lzma_stream) -> *const lzma_allocator {
+    #[cfg(feature = "custom_allocator")]
+    {
+        unsafe { (*strm).allocator }
+    }
+    #[cfg(not(feature = "custom_allocator"))]
+    {
+        let _ = strm;
+        core::ptr::null()
+    }
 }
 #[inline]
 pub unsafe fn lzma_alloc_object<T>(allocator: *const lzma_allocator) -> *mut T {
@@ -219,7 +142,7 @@ pub unsafe fn lzma_strm_init(strm: *mut lzma_stream) -> lzma_ret {
         return LZMA_PROG_ERROR;
     }
     if (*strm).internal.is_null() {
-        (*strm).internal = lzma_alloc_object::<lzma_internal>((*strm).allocator);
+        (*strm).internal = lzma_alloc_object::<lzma_internal>(lzma_stream_allocator(strm));
         if (*strm).internal.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -315,7 +238,7 @@ pub unsafe fn lzma_code(strm: *mut lzma_stream, action: lzma_action) -> lzma_ret
     let code = (*(*strm).internal).next.code.unwrap_unchecked();
     let mut ret: lzma_ret = code(
         (*(*strm).internal).next.coder,
-        (*strm).allocator,
+        lzma_stream_allocator(strm),
         (*strm).next_in,
         ::core::ptr::addr_of_mut!(in_pos),
         (*strm).avail_in,
@@ -381,9 +304,9 @@ pub unsafe fn lzma_end(strm: *mut lzma_stream) {
     if !strm.is_null() && !(*strm).internal.is_null() {
         lzma_next_end(
             ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-            (*strm).allocator,
+            lzma_stream_allocator(strm),
         );
-        lzma_free((*strm).internal as *mut c_void, (*strm).allocator);
+        lzma_free((*strm).internal as *mut c_void, lzma_stream_allocator(strm));
         (*strm).internal = core::ptr::null_mut();
     }
 }
