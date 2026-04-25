@@ -79,6 +79,7 @@ pub struct lzma_stream {
     pub next_out: *mut u8,
     pub avail_out: size_t,
     pub total_out: u64,
+    #[cfg(feature = "custom_allocator")]
     pub allocator: *const lzma_allocator,
     pub internal: *mut lzma_internal,
     pub reserved_ptr1: *mut c_void,

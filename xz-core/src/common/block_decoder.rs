@@ -262,7 +262,7 @@ pub unsafe fn lzma_block_decoder(strm: *mut lzma_stream, block: *mut lzma_block)
     }
     let ret__0: lzma_ret = lzma_block_decoder_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         block,
     );
     if ret__0 != LZMA_OK {

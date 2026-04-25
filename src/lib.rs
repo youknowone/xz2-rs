@@ -1,15 +1,15 @@
 //! LZMA/XZ encoding and decoding streams
 //!
-//! This library is a binding to liblzma currently to provide LZMA and xz
-//! encoding/decoding streams. I/O streams are provided in the `read`, `write`,
+//! This library provides LZMA and xz encoding/decoding streams.
+//! I/O streams are provided in the `read`, `write`,
 //! and `bufread` modules (same types, different bounds). Raw in-memory
 //! compression/decompression is provided via the `stream` module and contains
-//! many of the raw APIs in liblzma.
+//! many of the raw APIs exposed by the selected backend.
 //!
 //! # Examples
 //!
 //! ```no_run
-//! use liblzma::read::{XzDecoder, XzEncoder};
+//! use xz::read::{XzDecoder, XzEncoder};
 //! use std::io::prelude::*;
 //!
 //! // Round trip some bytes from a byte source, into a compressor, into a
@@ -25,10 +25,10 @@
 //! # Static linking
 //!
 //! You can enable static-linking using the `static` feature, so that the XZ
-//! library is not required at runtime:
+//! library is not required at runtime when using the `liblzma-sys` backend:
 //!
 //! ```toml
-//! liblzma = { version = "0.4", features = ["static"] }
+//! xz = { version = "0.4", default-features = false, features = ["liblzma-sys", "static"] }
 //! ```
 //!
 //! # Multithreading
@@ -37,7 +37,7 @@
 //! feature of this crate:
 //!
 //! ```toml
-//! liblzma = { version = "0.4", features = ["parallel"] }
+//! xz = { version = "0.4", features = ["parallel"] }
 //! ```
 //!
 //! # Async I/O
@@ -49,7 +49,7 @@
 //! async-compression = { version = "0.4", features = ["lzma"] }
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/liblzma/0.4.6")]
+#![doc(html_root_url = "https://docs.rs/xz/0.4.6")]
 #![deny(missing_docs)]
 
 #[cfg(any(

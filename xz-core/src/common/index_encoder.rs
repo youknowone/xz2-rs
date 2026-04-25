@@ -209,7 +209,7 @@ pub unsafe fn lzma_index_encoder(strm: *mut lzma_stream, i: *const lzma_index) -
     }
     let ret: lzma_ret = lzma_index_encoder_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         i,
     );
     if ret != LZMA_OK {

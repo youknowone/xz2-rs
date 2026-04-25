@@ -588,7 +588,7 @@ pub unsafe fn lzma_file_info_decoder(
     }
     let ret__0: lzma_ret = lzma_file_info_decoder_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         ::core::ptr::addr_of_mut!((*strm).seek_pos),
         dest_index,
         memlimit,

@@ -210,7 +210,7 @@ pub unsafe fn lzma_alone_encoder(
     }
     let ret: lzma_ret = alone_encoder_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         options,
     );
     if ret != LZMA_OK {

@@ -243,7 +243,7 @@ pub unsafe fn lzma_alone_decoder(strm: *mut lzma_stream, memlimit: u64) -> lzma_
     }
     let ret__0: lzma_ret = lzma_alone_decoder_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         memlimit,
         false,
     );

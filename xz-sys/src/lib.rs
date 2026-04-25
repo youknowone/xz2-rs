@@ -16,8 +16,6 @@
 //! canonical types and thin wrapper functions that cast between structurally
 //! identical `#[repr(C)]` types.
 
-mod c_allocator;
-
 #[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
 use libc::size_t;
 #[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
@@ -28,7 +26,6 @@ use std::os::raw::{c_char, c_int, c_uchar, c_uint, c_void};
 type wasm_size_t = usize;
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 use self::wasm_size_t as size_t;
-use crate::c_allocator::{normalize_c_allocator, normalize_c_stream_allocator};
 
 /************************
  * Canonical type aliases
@@ -65,6 +62,16 @@ pub use xz_core::types::lzma_mt;
 pub use xz_core::types::lzma_options_lzma;
 pub use xz_core::types::lzma_stream;
 pub use xz_core::types::lzma_stream_flags;
+
+fn normalize_c_allocator(allocator: *const lzma_allocator) -> *const lzma_allocator {
+    xz_core::alloc::allocator_or_c(allocator.cast()).cast()
+}
+
+unsafe fn normalize_c_stream_allocator(strm: *mut lzma_stream) {
+    if !strm.is_null() && (*strm).allocator.is_null() {
+        (*strm).allocator = xz_core::alloc::c_allocator_ptr().cast();
+    }
+}
 
 #[repr(C)]
 pub struct lzma_options_bcj {

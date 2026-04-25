@@ -314,7 +314,7 @@ pub unsafe fn lzma_raw_decoder(strm: *mut lzma_stream, options: *const lzma_filt
     }
     let ret__0: lzma_ret = lzma_raw_decoder_init(
         ::core::ptr::addr_of_mut!((*(*strm).internal).next),
-        (*strm).allocator,
+        crate::common::common::lzma_stream_allocator(strm),
         options,
     );
     if ret__0 != LZMA_OK {
