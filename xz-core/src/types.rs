@@ -829,6 +829,7 @@ pub(crate) struct lzma_simple_coder {
     pub(crate) is_encoder: bool,
     pub(crate) filter: lzma_simple_filter_function,
     pub(crate) simple: *mut c_void,
+    pub(crate) simple_size: size_t,
     pub(crate) now_pos: u32,
     pub(crate) allocated: size_t,
     pub(crate) pos: size_t,

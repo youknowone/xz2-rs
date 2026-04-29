@@ -20,6 +20,6 @@ pub use rust::rust_allocator;
 pub use policy::{lzma_alloc, lzma_alloc_zero, lzma_free};
 
 pub(crate) use policy::{
-    internal_alloc_array, internal_alloc_bytes, internal_alloc_object, internal_alloc_zeroed_array,
-    internal_free, internal_free_array, internal_free_bytes,
+    internal_alloc_array, internal_alloc_object, internal_alloc_zeroed_array, internal_free,
+    internal_free_array, internal_free_bytes,
 };

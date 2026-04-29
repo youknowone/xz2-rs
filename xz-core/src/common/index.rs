@@ -87,6 +87,23 @@ pub const INDEX_GROUP_SIZE: u32 = 512;
 pub const PREALLOC_MAX: usize = (SIZE_MAX as usize)
     .wrapping_sub(core::mem::size_of::<index_group>())
     .wrapping_div(core::mem::size_of::<index_record>());
+#[inline]
+fn index_group_size(records: size_t) -> size_t {
+    core::mem::size_of::<index_group>() + records * core::mem::size_of::<index_record>()
+}
+unsafe fn index_group_alloc(records: size_t, allocator: *const lzma_allocator) -> *mut index_group {
+    crate::alloc::internal_alloc_array::<u8>(index_group_size(records), allocator)
+        as *mut index_group
+}
+unsafe fn index_group_free(g: *mut index_group, allocator: *const lzma_allocator) {
+    if !g.is_null() {
+        crate::alloc::internal_free_array(
+            g as *mut u8,
+            index_group_size((*g).allocated),
+            allocator,
+        );
+    }
+}
 unsafe fn index_tree_init(tree: *mut index_tree) {
     (*tree).root = core::ptr::null_mut();
     (*tree).leftmost = core::ptr::null_mut();
@@ -115,8 +132,8 @@ unsafe fn index_tree_end(
         index_tree_node_end((*tree).root, allocator, free_func);
     }
 }
-unsafe fn index_node_free(node: *mut c_void, allocator: *const lzma_allocator) {
-    lzma_free(node, allocator);
+unsafe fn index_group_node_free(node: *mut c_void, allocator: *const lzma_allocator) {
+    index_group_free(node as *mut index_group, allocator);
 }
 unsafe fn index_tree_append(tree: *mut index_tree, mut node: *mut index_tree_node) {
     (*node).parent = (*tree).rightmost;
@@ -189,8 +206,7 @@ unsafe fn index_stream_init(
     block_number_base: lzma_vli,
     allocator: *const lzma_allocator,
 ) -> *mut index_stream {
-    let s: *mut index_stream =
-        lzma_alloc(core::mem::size_of::<index_stream>(), allocator) as *mut index_stream;
+    let s: *mut index_stream = crate::alloc::internal_alloc_object::<index_stream>(allocator);
     if s.is_null() {
         return core::ptr::null_mut();
     }
@@ -213,13 +229,12 @@ unsafe fn index_stream_end(node: *mut c_void, allocator: *const lzma_allocator) 
     index_tree_end(
         ::core::ptr::addr_of_mut!((*s).groups),
         allocator,
-        index_node_free as unsafe fn(*mut c_void, *const lzma_allocator) -> (),
+        index_group_node_free as unsafe fn(*mut c_void, *const lzma_allocator) -> (),
     );
-    lzma_free(s as *mut c_void, allocator);
+    crate::alloc::internal_free(s, allocator);
 }
 unsafe fn index_init_plain(allocator: *const lzma_allocator) -> *mut lzma_index {
-    let i: *mut lzma_index =
-        lzma_alloc(core::mem::size_of::<lzma_index>(), allocator) as *mut lzma_index;
+    let i: *mut lzma_index = crate::alloc::internal_alloc_object::<lzma_index>(allocator);
     if !i.is_null() {
         index_tree_init(::core::ptr::addr_of_mut!((*i).streams));
         (*i).uncompressed_size = 0;
@@ -238,7 +253,7 @@ pub unsafe fn lzma_index_init(allocator: *const lzma_allocator) -> *mut lzma_ind
     }
     let s: *mut index_stream = index_stream_init(0, 0, 1, 0, allocator);
     if s.is_null() {
-        lzma_free(i as *mut c_void, allocator);
+        crate::alloc::internal_free(i, allocator);
         return core::ptr::null_mut();
     }
     index_tree_append(
@@ -254,7 +269,7 @@ pub unsafe fn lzma_index_end(i: *mut lzma_index, allocator: *const lzma_allocato
             allocator,
             index_stream_end as unsafe fn(*mut c_void, *const lzma_allocator) -> (),
         );
-        lzma_free(i as *mut c_void, allocator);
+        crate::alloc::internal_free(i, allocator);
     }
 }
 pub unsafe fn lzma_index_prealloc(i: *mut lzma_index, mut records: lzma_vli) {
@@ -481,11 +496,7 @@ pub unsafe fn lzma_index_append(
         (*g).last += 1;
     } else {
         debug_assert!((*i).prealloc > 0);
-        g = lzma_alloc(
-            core::mem::size_of::<index_group>()
-                + (*i).prealloc * core::mem::size_of::<index_record>(),
-            allocator,
-        ) as *mut index_group;
+        g = index_group_alloc((*i).prealloc, allocator);
         if g.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -576,11 +587,7 @@ pub unsafe fn lzma_index_cat(
     let s: *mut index_stream = (*dest).streams.rightmost as *mut index_stream;
     let g: *mut index_group = (*s).groups.rightmost as *mut index_group;
     if !g.is_null() && (*g).last + 1 < (*g).allocated {
-        let newg: *mut index_group = lzma_alloc(
-            core::mem::size_of::<index_group>()
-                + ((*g).last + 1) * core::mem::size_of::<index_record>(),
-            allocator,
-        ) as *mut index_group;
+        let newg: *mut index_group = index_group_alloc((*g).last + 1, allocator);
         if newg.is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -601,7 +608,7 @@ pub unsafe fn lzma_index_cat(
             (*s).groups.root = ::core::ptr::addr_of_mut!((*newg).node);
         }
         (*s).groups.rightmost = ::core::ptr::addr_of_mut!((*newg).node);
-        lzma_free(g as *mut c_void, allocator);
+        index_group_free(g, allocator);
     }
     (*dest).checks = lzma_index_checks(dest);
     let info: index_cat_info = index_cat_info {
@@ -620,7 +627,7 @@ pub unsafe fn lzma_index_cat(
     (*dest).record_count += (*src).record_count;
     (*dest).index_list_size += (*src).index_list_size;
     (*dest).checks |= (*src).checks;
-    lzma_free(src as *mut c_void, allocator);
+    crate::alloc::internal_free(src, allocator);
     LZMA_OK
 }
 unsafe fn index_dup_stream(
@@ -647,12 +654,7 @@ unsafe fn index_dup_stream(
     if (*src).groups.leftmost.is_null() {
         return dest;
     }
-    let destg: *mut index_group = lzma_alloc(
-        (core::mem::size_of::<index_group>() as lzma_vli
-            + (*src).record_count * core::mem::size_of::<index_record>() as lzma_vli)
-            as size_t,
-        allocator,
-    ) as *mut index_group;
+    let destg: *mut index_group = index_group_alloc((*src).record_count as size_t, allocator);
     if destg.is_null() {
         index_stream_end(dest as *mut c_void, allocator);
         return core::ptr::null_mut();

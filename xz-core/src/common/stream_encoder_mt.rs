@@ -8,6 +8,7 @@ pub type worker_thread = worker_thread_s;
 pub struct worker_thread_s {
     pub state: worker_state,
     pub in_0: *mut u8,
+    pub in_alloc_size: size_t,
     pub in_size: size_t,
     pub outbuf: *mut lzma_outbuf,
     pub coder: *mut lzma_stream_coder,
@@ -380,7 +381,7 @@ unsafe extern "C" fn worker_start(thr_ptr: *mut c_void) -> *mut c_void {
         ::core::ptr::addr_of_mut!((*thr).block_encoder),
         worker_allocator(thr),
     );
-    crate::alloc::internal_free_bytes((*thr).in_0 as *mut c_void, worker_allocator(thr));
+    crate::alloc::internal_free_array((*thr).in_0, (*thr).in_alloc_size, worker_allocator(thr));
     MYTHREAD_RET_VALUE
 }
 unsafe fn threads_stop(coder: *mut lzma_stream_coder, wait_for_threads: bool) {
@@ -487,10 +488,11 @@ unsafe fn initialize_new_thread(
         .threads
         .offset((*coder).threads_initialized as isize)
         as *mut worker_thread;
-    (*thr).in_0 = crate::alloc::internal_alloc_bytes((*coder).block_size, allocator) as *mut u8;
+    (*thr).in_0 = crate::alloc::internal_alloc_array::<u8>((*coder).block_size, allocator);
     if (*thr).in_0.is_null() {
         return LZMA_MEM_ERROR;
     }
+    (*thr).in_alloc_size = (*coder).block_size;
     if mythread_mutex_init(::core::ptr::addr_of_mut!((*thr).mutex)) == 0 {
         if mythread_cond_init(::core::ptr::addr_of_mut!((*thr).cond)) == 0 {
             (*thr).state = THR_IDLE;
@@ -526,7 +528,7 @@ unsafe fn initialize_new_thread(
         }
         mythread_mutex_destroy(::core::ptr::addr_of_mut!((*thr).mutex));
     }
-    crate::alloc::internal_free_bytes((*thr).in_0 as *mut c_void, allocator);
+    crate::alloc::internal_free_array((*thr).in_0, (*thr).in_alloc_size, allocator);
     LZMA_MEM_ERROR
 }
 unsafe fn get_thread(coder: *mut lzma_stream_coder, allocator: *const lzma_allocator) -> lzma_ret {
