@@ -15,7 +15,7 @@ pub struct lzma_stream_coder {
     pub buffer: [u8; LZMA_BLOCK_HEADER_SIZE_MAX as usize],
 }
 #[inline(always)]
-unsafe fn supported_action_slot(actions: *mut bool, index: u32) -> *mut bool {
+unsafe fn supported_action_slot(actions: *mut bool, index: lzma_action) -> *mut bool {
     debug_assert!((index as usize) < 5);
     actions.add(index as usize)
 }

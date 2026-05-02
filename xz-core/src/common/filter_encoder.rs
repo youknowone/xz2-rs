@@ -261,7 +261,7 @@ unsafe fn reversed_filter_slot(filters: *mut [lzma_filter; 5], index: usize) -> 
     (filters as *mut lzma_filter).add(index)
 }
 #[inline(always)]
-unsafe fn supported_action_slot(actions: *mut bool, index: u32) -> *mut bool {
+unsafe fn supported_action_slot(actions: *mut bool, index: lzma_action) -> *mut bool {
     debug_assert!((index as usize) < 5);
     actions.add(index as usize)
 }
