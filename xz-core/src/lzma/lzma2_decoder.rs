@@ -267,7 +267,7 @@ pub(crate) unsafe fn lzma_lzma2_props_decode(
         return LZMA_OPTIONS_ERROR;
     }
     let opt: *mut lzma_options_lzma =
-        lzma_alloc(core::mem::size_of::<lzma_options_lzma>(), allocator) as *mut lzma_options_lzma;
+        crate::alloc::internal_alloc_object::<lzma_options_lzma>(allocator);
     if opt.is_null() {
         return LZMA_MEM_ERROR;
     }

@@ -73,26 +73,32 @@ pub(crate) unsafe fn free_impl(ptr: *mut c_void) {
     unsafe { dealloc(base, layout) };
 }
 
+#[cfg(feature = "custom_allocator")]
 pub(crate) unsafe fn alloc_bytes(size: size_t) -> *mut c_void {
     alloc_impl(size as usize, RUST_ALLOC_ALIGN, false)
 }
 
+#[cfg(feature = "custom_allocator")]
 pub(crate) unsafe fn alloc_zeroed_bytes(size: size_t) -> *mut c_void {
     alloc_impl(size as usize, RUST_ALLOC_ALIGN, true)
 }
 
+#[cfg(feature = "custom_allocator")]
 pub(crate) unsafe fn free_ptr(ptr: *mut c_void) {
     unsafe { free_impl(ptr) };
 }
 
+#[cfg(feature = "custom_allocator")]
 pub unsafe fn lzma_alloc(size: size_t, _allocator: *const lzma_allocator) -> *mut c_void {
     unsafe { alloc_bytes(size) }
 }
 
+#[cfg(feature = "custom_allocator")]
 pub unsafe fn lzma_alloc_zero(size: size_t, _allocator: *const lzma_allocator) -> *mut c_void {
     unsafe { alloc_zeroed_bytes(size) }
 }
 
+#[cfg(feature = "custom_allocator")]
 pub unsafe fn lzma_free(ptr: *mut c_void, _allocator: *const lzma_allocator) {
     unsafe { free_ptr(ptr) };
 }
@@ -101,7 +107,33 @@ pub(crate) unsafe fn internal_alloc_bytes(
     size: size_t,
     _allocator: *const lzma_allocator,
 ) -> *mut c_void {
-    unsafe { alloc_bytes(size) }
+    let Some(layout) = raw_layout(size as usize, RUST_ALLOC_ALIGN) else {
+        return core::ptr::null_mut();
+    };
+    if layout.size() == 0 {
+        return core::ptr::NonNull::<u8>::dangling().as_ptr().cast();
+    }
+    unsafe { alloc(layout).cast() }
+}
+
+pub(crate) unsafe fn internal_alloc_untyped_bytes(
+    size: size_t,
+    _allocator: *const lzma_allocator,
+) -> *mut c_void {
+    alloc_impl(size as usize, RUST_ALLOC_ALIGN, false)
+}
+
+pub(crate) unsafe fn internal_alloc_zeroed_bytes(
+    size: size_t,
+    _allocator: *const lzma_allocator,
+) -> *mut c_void {
+    let Some(layout) = raw_layout(size as usize, RUST_ALLOC_ALIGN) else {
+        return core::ptr::null_mut();
+    };
+    if layout.size() == 0 {
+        return core::ptr::NonNull::<u8>::dangling().as_ptr().cast();
+    }
+    unsafe { alloc_zeroed(layout).cast() }
 }
 
 pub(crate) unsafe fn internal_alloc_object<T>(_allocator: *const lzma_allocator) -> *mut T {
@@ -146,8 +178,32 @@ pub(crate) unsafe fn internal_alloc_zeroed_array<T>(
     unsafe { alloc_zeroed(layout).cast::<T>() }
 }
 
-pub(crate) unsafe fn internal_free_bytes(ptr: *mut c_void, _allocator: *const lzma_allocator) {
-    unsafe { free_ptr(ptr) };
+pub(crate) unsafe fn internal_free_bytes(
+    ptr: *mut c_void,
+    size: size_t,
+    _allocator: *const lzma_allocator,
+) {
+    let Some(layout) = raw_layout(size as usize, RUST_ALLOC_ALIGN) else {
+        return;
+    };
+    if ptr.is_null() || layout.size() == 0 {
+        return;
+    }
+    unsafe { dealloc(ptr.cast::<u8>(), layout) };
+}
+
+pub(crate) unsafe fn internal_free_untyped(ptr: *mut c_void, _allocator: *const lzma_allocator) {
+    assert!(
+        ptr.is_null(),
+        "allocated xz-core coders must install a typed end function"
+    );
+}
+
+pub(crate) unsafe fn internal_free_untyped_bytes(
+    ptr: *mut c_void,
+    _allocator: *const lzma_allocator,
+) {
+    unsafe { free_impl(ptr) };
 }
 
 pub(crate) unsafe fn internal_free<T>(ptr: *mut T, _allocator: *const lzma_allocator) {
@@ -182,6 +238,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "custom_allocator")]
     fn raw_allocator_round_trip() {
         unsafe {
             let ptr = alloc_bytes(32);
@@ -191,6 +248,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "custom_allocator")]
     fn raw_allocation_respects_alignment() {
         #[repr(align(32))]
         struct Align32([u8; 32]);
@@ -204,6 +262,15 @@ mod tests {
             assert!(!ptr.is_null());
             assert_eq!((ptr as usize) % core::mem::align_of::<Align32>(), 0);
             free_impl(ptr);
+        }
+    }
+
+    #[test]
+    fn internal_allocator_round_trip() {
+        unsafe {
+            let ptr = internal_alloc_bytes(32, core::ptr::null());
+            assert!(!ptr.is_null());
+            internal_free_bytes(ptr, 32, core::ptr::null());
         }
     }
 }

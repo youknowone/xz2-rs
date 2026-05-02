@@ -45,8 +45,7 @@ pub unsafe fn lzma_index_hash_init(
     allocator: *const lzma_allocator,
 ) -> *mut lzma_index_hash {
     if index_hash.is_null() {
-        index_hash =
-            lzma_alloc(core::mem::size_of::<lzma_index_hash>(), allocator) as *mut lzma_index_hash;
+        index_hash = crate::alloc::internal_alloc_object::<lzma_index_hash>(allocator);
         if index_hash.is_null() {
             return core::ptr::null_mut();
         }
@@ -78,7 +77,7 @@ pub unsafe fn lzma_index_hash_end(
     index_hash: *mut lzma_index_hash,
     allocator: *const lzma_allocator,
 ) {
-    lzma_free(index_hash as *mut c_void, allocator);
+    crate::alloc::internal_free(index_hash, allocator);
 }
 pub fn lzma_index_hash_size(index_hash: *const lzma_index_hash) -> lzma_vli {
     unsafe {

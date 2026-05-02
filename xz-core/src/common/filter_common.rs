@@ -101,6 +101,37 @@ static FEATURES: [filter_features; 13] = [
         changes_size: false,
     },
 ];
+
+fn filter_options_size(id: lzma_vli) -> Option<size_t> {
+    let mut i: usize = 0;
+    while i < FEATURES.len() {
+        if FEATURES[i].id == id {
+            return Some(FEATURES[i].options_size);
+        }
+        if FEATURES[i].id == LZMA_VLI_UNKNOWN {
+            break;
+        }
+        i += 1;
+    }
+    None
+}
+
+pub(crate) unsafe fn lzma_filter_options_free(
+    filter: lzma_filter,
+    allocator: *const lzma_allocator,
+) {
+    if filter.options.is_null() {
+        return;
+    }
+    if let Some(size) = filter_options_size(filter.id) {
+        crate::alloc::internal_free_bytes(filter.options, size, allocator);
+    } else {
+        debug_assert!(false, "unknown filter options size");
+        #[cfg(feature = "custom_allocator")]
+        lzma_free(filter.options, allocator);
+    }
+}
+
 pub unsafe fn lzma_filters_copy(
     src: *const lzma_filter,
     real_dest: *mut lzma_filter,
@@ -138,7 +169,10 @@ pub unsafe fn lzma_filters_copy(
                         j += 1;
                     }
                 }
-                dest[i as usize].options = lzma_alloc(FEATURES[j as usize].options_size, allocator);
+                dest[i as usize].options = crate::alloc::internal_alloc_bytes(
+                    FEATURES[j as usize].options_size,
+                    allocator,
+                );
                 if dest[i as usize].options.is_null() {
                     ret = LZMA_MEM_ERROR;
                     break 's_15;
@@ -156,7 +190,7 @@ pub unsafe fn lzma_filters_copy(
     if ret != LZMA_OK {
         while i > 0 {
             i -= 1;
-            lzma_free(dest[i as usize].options, allocator);
+            lzma_filter_options_free(dest[i as usize], allocator);
         }
         return ret;
     }
@@ -178,7 +212,7 @@ pub unsafe fn lzma_filters_free(filters: *mut lzma_filter, allocator: *const lzm
         if i == LZMA_FILTERS_MAX as size_t {
             break;
         }
-        lzma_free((*filters.offset(i as isize)).options, allocator);
+        lzma_filter_options_free(*filters.offset(i as isize), allocator);
         (*filters.offset(i as isize)).options = core::ptr::null_mut();
         (*filters.offset(i as isize)).id = LZMA_VLI_UNKNOWN;
         i += 1;

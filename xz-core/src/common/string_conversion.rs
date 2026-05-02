@@ -1,4 +1,4 @@
-use crate::common::filter_common::lzma_validate_chain;
+use crate::common::filter_common::{lzma_filter_options_free, lzma_validate_chain};
 use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -76,6 +76,7 @@ pub const LZMA_LCLP_MIN: u32 = 0;
 pub const LZMA_PB_MIN: u32 = 0;
 pub const LZMA_PRESET_DEFAULT: c_uint = 6;
 pub const STR_ALLOC_SIZE: u32 = 800;
+#[cfg(feature = "custom_allocator")]
 unsafe fn str_init(str: *mut lzma_str, allocator: *const lzma_allocator) -> lzma_ret {
     (*str).buf = lzma_alloc(STR_ALLOC_SIZE as size_t, allocator) as *mut c_char;
     if (*str).buf.is_null() {
@@ -84,12 +85,14 @@ unsafe fn str_init(str: *mut lzma_str, allocator: *const lzma_allocator) -> lzma
     (*str).pos = 0;
     LZMA_OK
 }
+#[cfg(feature = "custom_allocator")]
 unsafe fn str_free(str: *mut lzma_str, allocator: *const lzma_allocator) {
     lzma_free((*str).buf as *mut c_void, allocator);
 }
 unsafe fn str_is_full(str: *const lzma_str) -> bool {
     (*str).pos == (STR_ALLOC_SIZE - 1) as size_t
 }
+#[cfg(feature = "custom_allocator")]
 unsafe fn str_finish(
     dest: *mut *mut c_char,
     str: *mut lzma_str,
@@ -674,8 +677,10 @@ unsafe fn parse_filter(
                 return b"This filter cannot be used in the .xz format\0" as *const u8
                     as *const c_char;
             }
-            let options: *mut c_void =
-                lzma_alloc_zero(filter_name_map[i as usize].opts_size as size_t, allocator);
+            let options: *mut c_void = crate::alloc::internal_alloc_zeroed_bytes(
+                filter_name_map[i as usize].opts_size as size_t,
+                allocator,
+            );
             if options.is_null() {
                 return crate::c_str!("Memory allocation failed");
             }
@@ -684,7 +689,11 @@ unsafe fn parse_filter(
             let parse = filter_name_map[i as usize].parse.unwrap_unchecked();
             let errmsg: *const c_char = parse(str, str_end, options);
             if !errmsg.is_null() {
-                lzma_free(options, allocator);
+                crate::alloc::internal_free_bytes(
+                    options,
+                    filter_name_map[i as usize].opts_size as size_t,
+                    allocator,
+                );
                 return errmsg;
             }
             (*filter).id = filter_name_map[i as usize].id;
@@ -736,13 +745,12 @@ unsafe fn str_to_filters(
             return errmsg;
         }
         let opts: *mut lzma_options_lzma =
-            lzma_alloc(core::mem::size_of::<lzma_options_lzma>(), allocator)
-                as *mut lzma_options_lzma;
+            crate::alloc::internal_alloc_object::<lzma_options_lzma>(allocator);
         if opts.is_null() {
             return crate::c_str!("Memory allocation failed");
         }
         if lzma_lzma_preset(opts, preset) != 0 {
-            lzma_free(opts as *mut c_void, allocator);
+            crate::alloc::internal_free(opts, allocator);
             return crate::c_str!("Unsupported preset");
         }
         (*filters).id = LZMA_FILTER_LZMA2;
@@ -830,7 +838,7 @@ unsafe fn str_to_filters(
     }
     while i_0 > 0 {
         i_0 -= 1;
-        lzma_free(temp_filters[i_0 as usize].options, allocator);
+        lzma_filter_options_free(temp_filters[i_0 as usize], allocator);
     }
     errmsg
 }
@@ -928,6 +936,7 @@ unsafe fn strfy_filter(
         i += 1;
     }
 }
+#[cfg(feature = "custom_allocator")]
 pub unsafe fn lzma_str_from_filters(
     output_str: *mut *mut c_char,
     filters: *const lzma_filter,
@@ -1028,6 +1037,7 @@ pub unsafe fn lzma_str_from_filters(
     }
     str_finish(output_str, ::core::ptr::addr_of_mut!(dest), allocator)
 }
+#[cfg(feature = "custom_allocator")]
 pub unsafe fn lzma_str_list_filters(
     output_str: *mut *mut c_char,
     filter_id: lzma_vli,

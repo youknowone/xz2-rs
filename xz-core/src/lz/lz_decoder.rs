@@ -174,7 +174,10 @@ unsafe fn lz_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocato
     if let Some(end) = (*coder).lz.end {
         end((*coder).lz.coder, allocator);
     } else {
-        crate::alloc::internal_free_bytes((*coder).lz.coder, allocator);
+        #[cfg(feature = "custom_allocator")]
+        crate::alloc::internal_free_bytes((*coder).lz.coder, 0, allocator);
+        #[cfg(not(feature = "custom_allocator"))]
+        debug_assert!((*coder).lz.coder.is_null());
     }
     crate::alloc::internal_free(coder, allocator);
 }
