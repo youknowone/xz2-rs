@@ -1,3 +1,4 @@
+#[cfg(feature = "custom_allocator")]
 pub use crate::alloc::{lzma_alloc, lzma_alloc_zero, lzma_free};
 use crate::types::*;
 pub const LZMA_VERSION_MAJOR: u32 = 5;
@@ -31,7 +32,7 @@ pub unsafe fn lzma_stream_allocator(strm: *const lzma_stream) -> *const lzma_all
 #[inline]
 pub unsafe fn lzma_alloc_object<T>(allocator: *const lzma_allocator) -> *mut T {
     debug_assert!(core::mem::align_of::<T>() <= 16);
-    lzma_alloc(core::mem::size_of::<T>() as size_t, allocator) as *mut T
+    crate::alloc::internal_alloc_object::<T>(allocator)
 }
 pub unsafe fn lzma_bufcpy(
     input: *const u8,
@@ -113,7 +114,7 @@ pub unsafe fn lzma_next_end(next: *mut lzma_next_coder, allocator: *const lzma_a
     if let Some(end) = (*next).end {
         end((*next).coder, allocator);
     } else {
-        lzma_free((*next).coder, allocator);
+        crate::alloc::internal_free_untyped((*next).coder, allocator);
     }
     *next = lzma_next_coder_s {
         coder: core::ptr::null_mut(),
@@ -297,7 +298,7 @@ pub unsafe fn lzma_end(strm: *mut lzma_stream) {
             ::core::ptr::addr_of_mut!((*(*strm).internal).next),
             lzma_stream_allocator(strm),
         );
-        lzma_free((*strm).internal as *mut c_void, lzma_stream_allocator(strm));
+        crate::alloc::internal_free((*strm).internal, lzma_stream_allocator(strm));
         (*strm).internal = core::ptr::null_mut();
     }
 }

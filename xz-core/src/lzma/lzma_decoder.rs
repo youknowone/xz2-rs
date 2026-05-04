@@ -2368,14 +2368,12 @@ pub unsafe fn lzma_lzma_decoder_create(
     lz_options: *mut lzma_lz_options,
 ) -> lzma_ret {
     if (*lz).coder.is_null() {
-        (*lz).coder = crate::alloc::internal_alloc_bytes(
-            core::mem::size_of::<lzma_lzma1_decoder>() as size_t,
-            allocator,
-        );
+        (*lz).coder = crate::alloc::internal_alloc_object::<lzma_lzma1_decoder>(allocator).cast();
         if (*lz).coder.is_null() {
             return LZMA_MEM_ERROR;
         }
         (*lz).code = lzma_decode as lzma_lz_decoder_code_function;
+        (*lz).end = Some(lzma_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*lz).reset = Some(lzma_decoder_reset as unsafe fn(*mut c_void, *const c_void) -> ());
         (*lz).set_uncompressed =
             Some(lzma_decoder_uncompressed as unsafe fn(*mut c_void, lzma_vli, bool) -> ());
@@ -2384,6 +2382,9 @@ pub unsafe fn lzma_lzma_decoder_create(
     (*lz_options).preset_dict = (*options).preset_dict;
     (*lz_options).preset_dict_size = (*options).preset_dict_size as size_t;
     LZMA_OK
+}
+unsafe fn lzma_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+    crate::alloc::internal_free(coder_ptr as *mut lzma_lzma1_decoder, allocator);
 }
 unsafe fn lzma_decoder_init(
     lz: *mut lzma_lz_decoder,
@@ -2416,6 +2417,7 @@ unsafe fn lzma_decoder_init(
     if ret != LZMA_OK {
         return ret;
     }
+    (*lz).end = Some(lzma_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
     lzma_decoder_reset((*lz).coder, options);
     lzma_decoder_uncompressed((*lz).coder, uncomp_size, allow_eopm);
     LZMA_OK
@@ -2470,12 +2472,12 @@ pub(crate) unsafe fn lzma_lzma_props_decode(
         return LZMA_OPTIONS_ERROR;
     }
     let opt: *mut lzma_options_lzma =
-        lzma_alloc(core::mem::size_of::<lzma_options_lzma>(), allocator) as *mut lzma_options_lzma;
+        crate::alloc::internal_alloc_object::<lzma_options_lzma>(allocator);
     if opt.is_null() {
         return LZMA_MEM_ERROR;
     }
     if lzma_lzma_lclppb_decode(opt, *props) {
-        lzma_free(opt as *mut c_void, allocator);
+        crate::alloc::internal_free(opt, allocator);
         return LZMA_OPTIONS_ERROR;
     } else {
         (*opt).dict_size = read32le(&*props.add(1).cast::<[u8; 4]>());

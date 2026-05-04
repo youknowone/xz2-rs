@@ -1038,10 +1038,7 @@ pub unsafe fn lzma_lzma_encoder_create(
     lz_options: *mut lzma_lz_options,
 ) -> lzma_ret {
     if (*coder_ptr).is_null() {
-        *coder_ptr = crate::alloc::internal_alloc_bytes(
-            core::mem::size_of::<lzma_lzma1_encoder>() as size_t,
-            allocator,
-        );
+        *coder_ptr = crate::alloc::internal_alloc_object::<lzma_lzma1_encoder>(allocator).cast();
         if (*coder_ptr).is_null() {
             return LZMA_MEM_ERROR;
         }
@@ -1086,6 +1083,9 @@ pub unsafe fn lzma_lzma_encoder_create(
     set_lz_options(lz_options, options);
     lzma_lzma_encoder_reset(coder, options)
 }
+unsafe fn lzma_encoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
+    crate::alloc::internal_free(coder_ptr as *mut lzma_lzma1_encoder, allocator);
+}
 unsafe fn lzma_encoder_init(
     lz: *mut lzma_lz_encoder,
     allocator: *const lzma_allocator,
@@ -1097,6 +1097,7 @@ unsafe fn lzma_encoder_init(
         return LZMA_PROG_ERROR;
     }
     (*lz).code = lzma_encode as lzma_lz_encoder_code_function;
+    (*lz).end = Some(lzma_encoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
     (*lz).set_out_limit =
         Some(lzma_lzma_set_out_limit as unsafe fn(*mut c_void, *mut u64, u64) -> lzma_ret);
     lzma_lzma_encoder_create(

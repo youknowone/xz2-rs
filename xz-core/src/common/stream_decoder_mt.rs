@@ -4,7 +4,7 @@ use crate::common::outqueue::{
 use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_stream_coder {
+struct lzma_stream_coder {
     pub sequence: stream_decoder_mt_seq,
     pub block_decoder: lzma_next_coder,
     pub block_options: lzma_block,
@@ -45,7 +45,7 @@ pub struct lzma_stream_coder {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct worker_thread {
+struct worker_thread {
     pub state: worker_state,
     pub in_0: *mut u8,
     pub in_size: size_t,
@@ -153,8 +153,9 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
             } else {
                 if (*thr).state == THR_EXIT {
                     mythread_mutex_unlock(::core::ptr::addr_of_mut!((*thr).mutex));
-                    crate::alloc::internal_free_bytes(
-                        (*thr).in_0 as *mut c_void,
+                    crate::alloc::internal_free_array(
+                        (*thr).in_0,
+                        (*thr).in_size,
                         worker_allocator(thr),
                     );
                     lzma_next_end(
@@ -244,8 +245,9 @@ unsafe extern "C" fn worker_decoder(thr_ptr: *mut c_void) -> *mut c_void {
                 mythread_i_434 = 1;
             }
             if ret == LZMA_STREAM_END {
-                crate::alloc::internal_free_bytes(
-                    (*thr).in_0 as *mut c_void,
+                crate::alloc::internal_free_array(
+                    (*thr).in_0,
+                    (*thr).in_size,
                     worker_allocator(thr),
                 );
                 (*thr).in_0 = core::ptr::null_mut();
@@ -817,7 +819,7 @@ unsafe fn stream_decode_mt_thread_init(
     }
     (*(*coder).thr).in_size = (*coder).mem_next_in as size_t;
     (*(*coder).thr).in_0 =
-        crate::alloc::internal_alloc_bytes((*(*coder).thr).in_size, allocator) as *mut u8;
+        crate::alloc::internal_alloc_array::<u8>((*(*coder).thr).in_size, allocator);
     if (*(*coder).thr).in_0.is_null() {
         threads_stop(coder);
         return Some(LZMA_MEM_ERROR);

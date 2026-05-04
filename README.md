@@ -10,21 +10,21 @@
 
 Pure Rust xz2/liblzma-compatible crates for reading and writing xz streams.
 
-**This crate is forked from [xz2](https://crates.io/crates/xz2) and `xz = "0.1.x"` is fully compatible with `xz2 = "0.1.7"`,**
+**This crate is forked from [liblzma](https://crates.io/crates/liblzma) and `xz = "0.4.x"` is fully compatible with `liblzma = "0.4.6"`,**
 so you can migrate simply.
 
-## Migrate from xz2
+## Migrate from liblzma
 
 ```diff
 # Cargo.toml
 [dependencies]
--xz2 = "0.1.7"
-+xz = "0.1.7"
+-liblzma = "0.4.6"
++xz = "0.4.6"
 ```
 
 ```diff
 // *.rs
--use xz2;
+-use liblzma;
 +use xz;
 ```
 

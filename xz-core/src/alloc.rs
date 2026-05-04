@@ -17,9 +17,12 @@ pub use custom::allocator_or_c;
 #[cfg(feature = "custom_allocator")]
 pub use rust::rust_allocator;
 
+#[cfg(feature = "custom_allocator")]
 pub use policy::{lzma_alloc, lzma_alloc_zero, lzma_free};
 
 pub(crate) use policy::{
-    internal_alloc_array, internal_alloc_bytes, internal_alloc_object, internal_alloc_zeroed_array,
-    internal_free, internal_free_array, internal_free_bytes,
+    internal_alloc_array, internal_alloc_bytes, internal_alloc_object,
+    internal_alloc_untyped_bytes, internal_alloc_zeroed_array, internal_alloc_zeroed_bytes,
+    internal_free, internal_free_array, internal_free_bytes, internal_free_untyped,
+    internal_free_untyped_bytes,
 };

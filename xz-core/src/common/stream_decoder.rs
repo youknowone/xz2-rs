@@ -286,7 +286,7 @@ unsafe fn stream_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allo
     let coder: *mut lzma_stream_coder = coder_ptr as *mut lzma_stream_coder;
     lzma_next_end(::core::ptr::addr_of_mut!((*coder).block_decoder), allocator);
     lzma_index_hash_end((*coder).index_hash, allocator);
-    crate::common::common::lzma_free(coder as *mut c_void, allocator);
+    crate::alloc::internal_free(coder, allocator);
 }
 unsafe fn stream_decoder_get_check(coder_ptr: *const c_void) -> lzma_check {
     let coder: *const lzma_stream_coder = coder_ptr as *const lzma_stream_coder;

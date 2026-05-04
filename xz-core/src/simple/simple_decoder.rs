@@ -12,13 +12,13 @@ pub(crate) unsafe fn lzma_simple_props_decode(
         return LZMA_OPTIONS_ERROR;
     }
     let opt: *mut lzma_options_bcj =
-        lzma_alloc(core::mem::size_of::<lzma_options_bcj>(), allocator) as *mut lzma_options_bcj;
+        crate::alloc::internal_alloc_object::<lzma_options_bcj>(allocator);
     if opt.is_null() {
         return LZMA_MEM_ERROR;
     }
     (*opt).start_offset = read32le(&*props.cast::<[u8; 4]>());
     if (*opt).start_offset == 0 {
-        lzma_free(opt as *mut c_void, allocator);
+        crate::alloc::internal_free(opt, allocator);
     } else {
         *options = opt as *mut c_void;
     }

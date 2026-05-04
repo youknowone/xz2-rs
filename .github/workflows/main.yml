@@ -103,3 +103,18 @@ jobs:
     - name: Install Rust
       run: rustup update stable && rustup default stable && rustup component add rustfmt
     - run: cargo fmt -- --check
+
+  upstream-c-tests:
+    name: Upstream C xz tests with xz-sys
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true
+    - name: Install Rust
+      run: rustup update stable --no-self-update && rustup default stable
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-targets: "false"
+    - name: Run upstream C xz test harness against xz-sys
+      run: scripts/run_xz_c_tests_with_xz_sys.sh

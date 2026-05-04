@@ -1,5 +1,5 @@
 use crate::lz::lz_decoder::{lzma_lz_decoder_init, lzma_lz_options};
-use crate::lzma::lzma_decoder::lzma_lzma_decoder_create;
+use crate::lzma::lzma_decoder::{lzma_lzma_decoder_create, lzma_lzma1_decoder};
 use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -195,7 +195,7 @@ unsafe fn lzma2_decode(
 }
 unsafe fn lzma2_decoder_end(coder_ptr: *mut c_void, allocator: *const lzma_allocator) {
     let coder: *mut lzma_lzma2_coder = coder_ptr as *mut lzma_lzma2_coder;
-    crate::alloc::internal_free_bytes((*coder).lzma.coder, allocator);
+    crate::alloc::internal_free((*coder).lzma.coder as *mut lzma_lzma1_decoder, allocator);
     crate::alloc::internal_free(coder, allocator);
 }
 unsafe fn lzma2_decoder_init(
@@ -267,7 +267,7 @@ pub(crate) unsafe fn lzma_lzma2_props_decode(
         return LZMA_OPTIONS_ERROR;
     }
     let opt: *mut lzma_options_lzma =
-        lzma_alloc(core::mem::size_of::<lzma_options_lzma>(), allocator) as *mut lzma_options_lzma;
+        crate::alloc::internal_alloc_object::<lzma_options_lzma>(allocator);
     if opt.is_null() {
         return LZMA_MEM_ERROR;
     }
