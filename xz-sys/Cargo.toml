@@ -1,6 +1,6 @@
 [package]
 name = "xz-sys"
-version = "0.1.0"
+version = "0.4.6"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "liblzma-sys compatible API layer backed by pure Rust xz-core"
