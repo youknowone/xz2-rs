@@ -4,7 +4,7 @@ use crate::common::outqueue::{
 use crate::types::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_stream_coder {
+struct lzma_stream_coder {
     pub sequence: stream_decoder_mt_seq,
     pub block_decoder: lzma_next_coder,
     pub block_options: lzma_block,
@@ -45,7 +45,7 @@ pub struct lzma_stream_coder {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct worker_thread {
+struct worker_thread {
     pub state: worker_state,
     pub in_0: *mut u8,
     pub in_size: size_t,

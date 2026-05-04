@@ -2373,6 +2373,7 @@ pub unsafe fn lzma_lzma_decoder_create(
             return LZMA_MEM_ERROR;
         }
         (*lz).code = lzma_decode as lzma_lz_decoder_code_function;
+        (*lz).end = Some(lzma_decoder_end as unsafe fn(*mut c_void, *const lzma_allocator) -> ());
         (*lz).reset = Some(lzma_decoder_reset as unsafe fn(*mut c_void, *const c_void) -> ());
         (*lz).set_uncompressed =
             Some(lzma_decoder_uncompressed as unsafe fn(*mut c_void, lzma_vli, bool) -> ());

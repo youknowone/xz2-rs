@@ -2,10 +2,10 @@ use crate::common::block_buffer_encoder::{lzma_block_buffer_bound64, lzma_block_
 use crate::common::filter_encoder::lzma_mt_block_size;
 use crate::common::outqueue::lzma_outq_memusage;
 use crate::types::*;
-pub type worker_thread = worker_thread_s;
+type worker_thread = worker_thread_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct worker_thread_s {
+struct worker_thread_s {
     pub state: worker_state,
     pub in_0: *mut u8,
     pub in_alloc_size: size_t,
@@ -49,10 +49,10 @@ unsafe fn set_worker_allocator(thr: *mut worker_thread, allocator: *const lzma_a
         let _ = (thr, allocator);
     }
 }
-pub type lzma_stream_coder = lzma_stream_coder_s;
+type lzma_stream_coder = lzma_stream_coder_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct lzma_stream_coder_s {
+struct lzma_stream_coder_s {
     pub sequence: stream_encoder_mt_seq,
     pub block_size: size_t,
     pub filters: [lzma_filter; 5],

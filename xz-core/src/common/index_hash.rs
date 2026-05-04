@@ -242,7 +242,20 @@ pub unsafe fn lzma_index_hash_decode(
                 continue;
             }
             5 => {}
-            6 => break,
+            6 => loop {
+                if *in_pos == in_size {
+                    return LZMA_OK;
+                }
+                let val = *input.offset(*in_pos as isize);
+                *in_pos += 1;
+                if (*index_hash).crc32 >> ((*index_hash).pos * 8) & 0xff != val as u32 {
+                    return LZMA_DATA_ERROR;
+                }
+                (*index_hash).pos += 1;
+                if (*index_hash).pos >= 4 {
+                    return LZMA_STREAM_END;
+                }
+            },
             _ => return LZMA_PROG_ERROR,
         }
         if (*index_hash).pos > 0 {
